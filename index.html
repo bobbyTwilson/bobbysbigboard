@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Bobby's Big Board | Dynasty Fantasy Football Rankings</title>
+  <meta name="description" content="Bobby's Big Board dynasty superflex rankings, rookie rankings, prospect grades, player profiles, and trade calculator.">
+  <meta name="theme-color" content="#06100c">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cellipse cx='32' cy='32' rx='25' ry='15' transform='rotate(-28 32 32)' fill='%23944a24' stroke='white' stroke-width='4'/%3E%3Cpath d='M24 27l16 10M27 25l-3 5m8-2l-3 5m8-2l-3 5' stroke='white' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="shell nav">
+    <a class="brand" href="#rankings"><div class="brand-ball">🏈</div><span>BOBBY'S BIG BOARD</span></a>
+    <nav class="nav-links">
+      <a href="#rankings">Dynasty Rankings</a><a href="#rookies">Rookie Rankings</a><a href="#prospects">Prospect Grades</a><a href="#trade">Trade Calculator</a><a href="https://www.youtube.com/@bobbysbigboard" target="_blank">YouTube ↗</a>
+    </nav>
+    <a class="nav-cta" href="#trade">TRADE CALCULATOR</a>
+  </div>
+</header>
+
+<main id="app">
+  <section class="hero" id="homeHero">
+    <div class="shell hero-grid">
+      <div><div class="eyebrow">DYNASTY SUPERFLEX</div><h1>Your Dynasty<br><span>Big Board.</span></h1><p>500 players ranked through a film-backed, market-aware dynasty lens. Search the board, filter by position, and see exactly where Bobby differs from consensus.</p><div class="actions"><a class="btn primary" href="#rankings">Explore Rankings</a><a class="btn" href="#trade">Trade Calculator</a></div></div>
+      <aside class="hero-card"><div class="card-top"><b>● CURRENT BOARD</b><span id="statusText">Supabase live</span></div><div id="topFive" class="preview-list"><div class="empty">Loading board…</div></div></aside>
+    </div>
+  </section>
+
+  <section class="metrics"><div class="shell metric-grid"><div><strong id="dynastyCount">—</strong><span>Dynasty players</span></div><div><strong id="rookieCount">—</strong><span>Rookies ranked</span></div><div><strong id="prospectCount">—</strong><span>Prospects graded</span></div><div><strong>SF</strong><span>Superflex format</span></div></div></section>
+
+  <section class="section" id="rankings"><div class="shell"><div class="section-head"><div><div class="kicker">THE BOARD</div><h2>Dynasty Top 500.</h2></div><p>Live from the Bobby's Big Board SQL database.</p></div><div class="panel"><div class="controls"><div class="tabs" id="dynastyTabs"></div><input id="dynastySearch" placeholder="Search player, team or position…"><select id="marketFilter"><option value="ALL">All market views</option><option value="BUY">BBB Buys</option><option value="FADE">BBB Fades</option><option value="MARKET">Near market</option></select></div><div class="table-wrap"><table><thead><tr><th>Rank</th><th>Player</th><th>Pos</th><th>Team</th><th>Age</th><th>Pos Rank</th><th>FP Rank</th><th>BBB vs FP</th><th>Market View</th></tr></thead><tbody id="dynastyBody"></tbody></table></div><div class="load-row"><span id="dynastyResultCount"></span><button id="dynastyMore">Show 50 More</button></div></div></div></section>
+
+  <section class="section alt" id="rookies"><div class="shell"><div class="section-head"><div><div class="kicker">2026 CLASS</div><h2>Rookie Rankings.</h2></div><p>Bobby's live rookie board with FantasyPros comparison data.</p></div><div class="panel"><div class="controls"><div class="tabs" id="rookieTabs"></div><input id="rookieSearch" placeholder="Search rookie…"><select id="rookieTier"><option value="ALL">All tiers</option><option>S</option><option>A</option><option>B</option><option>C</option><option>D</option><option>F</option></select></div><div class="table-wrap"><table><thead><tr><th>Rank</th><th>Player</th><th>Pos</th><th>Team</th><th>Age</th><th>FP Rookie Rank</th><th>BBB vs FP</th><th>Tier</th></tr></thead><tbody id="rookieBody"></tbody></table></div><div class="load-row"><span id="rookieResultCount"></span><button id="rookieMore">Show 50 More</button></div></div></div></section>
+
+  <section class="section" id="prospects"><div class="shell"><div class="section-head"><div><div class="kicker">FILM DATABASE</div><h2>Prospect Grades.</h2></div><p>Historical prospect grades, traits, and pro comps.</p></div><div class="panel"><div class="controls"><div class="tabs" id="prospectTabs"></div><input id="prospectSearch" placeholder="Search prospect or pro comp…"><select id="prospectYear"><option value="ALL">All classes</option></select></div><div class="table-wrap"><table><thead><tr><th>Player</th><th>Pos</th><th>Class</th><th>Grade</th><th>Pro Comp</th></tr></thead><tbody id="prospectBody"></tbody></table></div><div class="load-row"><span id="prospectResultCount"></span><button id="prospectMore">Show 50 More</button></div></div></div></section>
+
+  <section class="section alt" id="trade"><div class="shell"><div class="section-head"><div><div class="kicker">BBB DYNASTY TOOL</div><h2>Trade Calculator.</h2></div><p>Player values move with Bobby's ranking. Draft-pick values come directly from the SQL database.</p></div><div class="trade-grid"><div class="trade-side"><h3>Team A Receives</h3><input id="tradeSearchA" placeholder="Search player or draft pick…"><div id="tradeResultsA" class="trade-results"></div><div id="tradeAssetsA"></div></div><div class="verdict"><div class="kicker">BBB VERDICT</div><h3 id="tradeVerdict">BUILD A TRADE</h3><p id="tradeVerdictSub">Add assets to both sides.</p><div class="score"><span>Team A</span><strong id="teamAAdjusted">0</strong></div><div class="score"><span>Team B</span><strong id="teamBAdjusted">0</strong></div><button id="clearTrade">Clear Trade</button></div><div class="trade-side"><h3>Team B Receives</h3><input id="tradeSearchB" placeholder="Search player or draft pick…"><div id="tradeResultsB" class="trade-results"></div><div id="tradeAssetsB"></div></div></div></div></section>
+</main>
+
+<main id="profileView" class="hide"><div id="profileMount"></div></main>
+<footer><div class="shell">BOBBY'S BIG BOARD • Dynasty Fantasy Football • <a href="https://www.youtube.com/@bobbysbigboard" target="_blank">YouTube ↗</a></div></footer>
+<script src="/app.js"></script>
+</body></html>
