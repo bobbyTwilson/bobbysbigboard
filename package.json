@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npx serve .",
-    "build": "node build.mjs"
+    "build": "node build.mjs && node admin-build.mjs"
   },
   "engines": {"node": ">=20"}
 }
