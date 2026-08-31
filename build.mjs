@@ -100,7 +100,8 @@ for(const p of profiles){
 }
 
 const lastmod=new Date().toISOString().slice(0,10);
-const sitemapPaths=['/',...Object.keys(tools).map(x=>`/${x}`),...profiles.map(p=>`/player/${p.player_key}`)];
+const currentPlayerPaths=dynastyRows.filter(p=>p.player_key).map(p=>`/player/${p.player_key}`);
+const sitemapPaths=['/',...Object.keys(tools).map(x=>`/${x}`),...currentPlayerPaths];
 const sitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map(path=>`  <url><loc>${SITE}${path}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n')}\n</urlset>\n`;
 await writeFile(`${out}/static/sitemap.xml`,sitemap);
 await writeFile(`${out}/static/robots.txt`,`User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
@@ -128,4 +129,4 @@ await writeFile(`${out}/config.json`,JSON.stringify({
   ]
 },null,2));
 
-console.log(`Built production-identical Bobby's Big Board UI with SEO/social metadata, ${profiles.length} shareable player profiles, sitemap, robots, Profile V2, Trade Calculator V2, and advanced filters.`);
+console.log(`Built production-identical Bobby's Big Board UI with SEO/social metadata, ${profiles.length} shareable player profiles, ${currentPlayerPaths.length} current profiles in sitemap, robots, Profile V2, Trade Calculator V2, and advanced filters.`);
