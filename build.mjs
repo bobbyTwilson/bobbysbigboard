@@ -11,6 +11,7 @@ if(!response.ok)throw new Error(`Could not fetch production baseline: ${response
 let html=await response.text();
 
 const analytics=`<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script><script defer src="/_vercel/insights/script.js"></script>`;
+const moverNavFix=`<script>document.addEventListener('click',e=>{if(e.target.closest('.bbb-mover-row,.bbb-mover-card'))document.querySelector('#moversView')?.classList.add('hide')},true);</script>`;
 
 html=html
   .replaceAll('Google Sheet synced','Supabase SQL synced')
@@ -18,7 +19,7 @@ html=html
   .replaceAll("The rookie order updates directly from Bobby's sheet.","The rookie order updates directly from Bobby's database.")
   .replaceAll("Bobby's live Draft Pick Values sheet","Bobby's live SQL database")
   .replace('<a href="#trade">Trade Calculator</a>','')
-  .replace('</body>',`${analytics}<script src="/supabase-override.js"></script><script src="/profile-overview-fix.js"></script><script src="/updates-section.js"></script></body>`);
+  .replace('</body>',`${analytics}<script src="/supabase-override.js"></script><script src="/profile-overview-fix.js"></script><script src="/updates-section.js"></script>${moverNavFix}</body>`);
 
 await writeFile(`${out}/static/index.html`,html);
 await cp('supabase-override.js',`${out}/static/supabase-override.js`);
