@@ -16,10 +16,11 @@ html=html
   .replaceAll("The rookie order updates directly from Bobby's sheet.","The rookie order updates directly from Bobby's database.")
   .replaceAll("Bobby's live Draft Pick Values sheet","Bobby's live SQL database")
   .replace('<a href="#trade">Trade Calculator</a>','')
-  .replace('</body>','<script src="/supabase-override.js"></script></body>');
+  .replace('</body>','<script src="/supabase-override.js"></script><script src="/profile-overview-fix.js"></script></body>');
 
 await writeFile(`${out}/static/index.html`,html);
 await cp('supabase-override.js',`${out}/static/supabase-override.js`);
+await cp('profile-overview-fix.js',`${out}/static/profile-overview-fix.js`);
 await writeFile(`${out}/config.json`,JSON.stringify({
   version:3,
   routes:[
