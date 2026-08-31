@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="theme-color" content="#06100c">
+  <title>BBB Admin</title>
+  <style>
+    *{box-sizing:border-box}html{background:#050807;color:#edf4ef;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{margin:0;background:radial-gradient(circle at 80% 0,rgba(10,143,77,.14),transparent 32%),#050807;min-height:100vh}button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:none!important}.muted{color:#789086}.green{color:#61d99b}.red{color:#ef8585}.shell{width:min(1320px,calc(100% - 32px));margin:auto}.topbar{position:sticky;top:0;z-index:20;background:rgba(4,9,7,.95);backdrop-filter:blur(14px);border-bottom:1px solid #19352a}.topbar-inner{height:70px;display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{display:flex;align-items:center;gap:12px}.brand-mark{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;background:#0a8f4d;font-weight:1000;letter-spacing:-.04em}.brand-copy strong{display:block;font-size:14px;letter-spacing:.04em}.brand-copy span{display:block;color:#668176;font-size:9px;letter-spacing:.12em;font-weight:900;margin-top:2px}.top-actions{display:flex;align-items:center;gap:9px}.admin-pill{border:1px solid #23503c;background:#0b1a13;border-radius:999px;padding:7px 10px;color:#80dca9;font-size:9px;font-weight:950;letter-spacing:.1em}.ghost{border:1px solid #29483b;background:#0a120f;color:#b9c9c0;border-radius:9px;padding:9px 12px;font-size:10px;font-weight:900}.ghost:hover{border-color:#4a7a63;color:#fff}.login-wrap{min-height:100vh;display:grid;place-items:center;padding:34px 16px}.login-card{width:min(470px,100%);border:1px solid #1d3a2e;background:linear-gradient(160deg,#0d1813,#07100c);border-radius:20px;padding:28px;box-shadow:0 30px 100px rgba(0,0,0,.5)}.login-logo{width:58px;height:58px;border-radius:15px;background:#0a8f4d;display:grid;place-items:center;font-size:20px;font-weight:1000;margin-bottom:23px}.eyebrow{color:#55d591;font-size:9px;font-weight:950;letter-spacing:.15em;text-transform:uppercase}.login-card h1{font-size:34px;line-height:1;margin:8px 0 9px;letter-spacing:-.04em}.login-card p{color:#7e958a;font-size:12px;line-height:1.6;margin:0 0 22px}.auth-tabs{display:flex;border:1px solid #1c382c;background:#07100c;border-radius:10px;padding:4px;margin-bottom:16px}.auth-tab{flex:1;border:0;background:transparent;color:#758c81;padding:9px;border-radius:7px;font-size:10px;font-weight:950}.auth-tab.active{background:#0f2419;color:#7de0aa}.field{display:grid;gap:6px;margin-bottom:12px}.field label{color:#799087;font-size:9px;text-transform:uppercase;font-weight:950;letter-spacing:.09em}.input,.select,.textarea{width:100%;border:1px solid #28493a;background:#050a08;color:#edf4ef;border-radius:9px;padding:11px 12px;outline:none}.textarea{min-height:122px;resize:vertical;line-height:1.55}.input:focus,.select:focus,.textarea:focus{border-color:#39bd76}.primary{width:100%;border:0;background:#0a8f4d;color:white;border-radius:10px;padding:12px 14px;font-weight:950;margin-top:4px}.primary:hover{background:#0da15a}.primary:disabled{opacity:.5;cursor:wait}.auth-message{min-height:18px;font-size:10px;color:#ef8585;margin-top:12px;line-height:1.5}.auth-note{margin-top:14px;padding-top:14px;border-top:1px solid #173027;color:#60786c;font-size:9px;line-height:1.55}.app{padding-bottom:60px}.admin-layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:24px;padding-top:24px}.sidebar{position:sticky;top:94px;align-self:start}.side-card{border:1px solid #19372b;background:#080f0c;border-radius:14px;padding:8px}.nav-btn{width:100%;border:0;background:transparent;color:#80958b;text-align:left;padding:11px 12px;border-radius:9px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:space-between}.nav-btn:hover{color:#fff;background:#0b1712}.nav-btn.active{background:#0b2c1d;color:#7ee2ab}.nav-btn span:last-child{font-size:9px;color:#587266}.side-note{margin-top:12px;border:1px solid #173127;background:#08110d;border-radius:12px;padding:13px;color:#6b8176;font-size:9px;line-height:1.6}.content{min-width:0}.page-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:22px}.page-head h1{font-size:36px;letter-spacing:-.04em;line-height:1;margin:6px 0 0}.page-head p{color:#71877d;font-size:11px;margin:8px 0 0}.refresh-btn{border:1px solid #284d3b;background:#0a1511;color:#94a89e;border-radius:9px;padding:10px 13px;font-size:10px;font-weight:900}.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.metric{border:1px solid #19372b;background:linear-gradient(160deg,#0b1511,#07100c);border-radius:14px;padding:18px}.metric span{display:block;color:#6f877a;font-size:8px;font-weight:950;letter-spacing:.11em;text-transform:uppercase}.metric strong{display:block;font-size:29px;margin-top:8px}.panel{border:1px solid #19372b;background:#080f0c;border-radius:15px;overflow:hidden;margin-bottom:16px}.panel-head{padding:15px 17px;border-bottom:1px solid #173027;display:flex;align-items:center;justify-content:space-between;gap:14px}.panel-head h2{font-size:15px;margin:0}.panel-head span{color:#62796e;font-size:9px}.activity{display:grid}.activity-row{display:grid;grid-template-columns:120px 110px 90px minmax(0,1fr);gap:12px;padding:12px 17px;border-bottom:1px solid #14271f;align-items:center;font-size:10px}.activity-row:last-child{border-bottom:0}.activity-table{color:#7cd9a7;font-weight:900}.activity-op{font-weight:900}.activity-key{color:#9daea5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.empty{padding:28px 17px;text-align:center;color:#667d72;font-size:11px}.toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 150px 150px auto;gap:9px;padding:13px 14px;border-bottom:1px solid #173027}.small-btn{border:1px solid #2a4c3c;background:#0b1712;color:#b5c4bc;border-radius:8px;padding:9px 11px;font-size:9px;font-weight:950}.small-btn:hover{border-color:#50aa78;color:#fff}.rank-table{width:100%;border-collapse:collapse}.rank-table th{text-align:left;color:#637b70;font-size:8px;text-transform:uppercase;letter-spacing:.1em;padding:10px 12px;border-bottom:1px solid #1b382c}.rank-table td{padding:11px 12px;border-bottom:1px solid #14281f;font-size:10px;color:#b9c7c0}.rank-table tr:hover td{background:#0a1511}.rank-number{font-size:15px!important;color:#64d697!important;font-weight:950}.player-name{color:#fff!important;font-weight:950;font-size:11px!important}.pos{display:inline-flex;padding:3px 6px;border-radius:999px;border:1px solid #2a5a43;background:#0c2118;color:#9ed9b7;font-weight:950;font-size:8px}.move-wrap{display:flex;gap:5px;align-items:center}.rank-input{width:62px;border:1px solid #28493a;background:#050a08;color:#fff;border-radius:7px;padding:6px 7px;font-size:9px}.move-btn{border:1px solid #2e6449;background:#0c2b1c;color:#74dda5;border-radius:7px;padding:6px 8px;font-size:8px;font-weight:950}.edit-btn{border:1px solid #2c493c;background:#0a1310;color:#9db0a7;border-radius:7px;padding:6px 9px;font-size:8px;font-weight:950}.pager{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;color:#688076;font-size:9px}.pager-actions{display:flex;gap:7px}.drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:40}.drawer{position:fixed;right:0;top:0;bottom:0;width:min(560px,100%);z-index:41;background:#07100c;border-left:1px solid #244537;overflow:auto;box-shadow:-28px 0 90px rgba(0,0,0,.5)}.drawer-head{position:sticky;top:0;z-index:2;background:rgba(7,16,12,.97);backdrop-filter:blur(12px);padding:19px 21px;border-bottom:1px solid #1a372b;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.drawer-head h2{font-size:24px;letter-spacing:-.04em;margin:5px 0 0}.close-btn{border:1px solid #2b4c3e;background:#0a1410;color:#b6c6bd;border-radius:50%;width:34px;height:34px}.drawer-body{padding:20px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.form-full{grid-column:1/-1}.save-row{display:flex;gap:9px;align-items:center;margin-top:16px;padding-top:16px;border-top:1px solid #173027}.save-btn{border:0;background:#0a8f4d;color:#fff;border-radius:9px;padding:11px 15px;font-weight:950}.save-status{font-size:10px;color:#6e877b}.profile-link{margin-left:auto;color:#72dda4;font-size:9px;font-weight:900}.danger-note{margin:13px 0 0;border-left:3px solid #0a8f4d;background:#09140f;padding:11px 12px;color:#71877d;font-size:9px;line-height:1.55}@media(max-width:980px){.admin-layout{grid-template-columns:1fr}.sidebar{position:static}.side-card{display:flex;overflow:auto}.nav-btn{width:auto;flex:none}.side-note{display:none}.metric-grid{grid-template-columns:repeat(2,1fr)}.activity-row{grid-template-columns:105px 90px minmax(0,1fr)}.activity-op{display:none}}@media(max-width:700px){.shell{width:min(100% - 18px,1320px)}.topbar-inner{height:62px}.brand-copy span,.admin-pill{display:none}.admin-layout{padding-top:14px;gap:14px}.page-head{align-items:flex-start;flex-direction:column}.page-head h1{font-size:30px}.metric-grid{grid-template-columns:1fr 1fr;gap:8px}.metric{padding:14px}.metric strong{font-size:24px}.toolbar{grid-template-columns:1fr 1fr}.toolbar .input{grid-column:1/-1}.rank-scroll{overflow:auto}.rank-table{min-width:760px}.activity-row{grid-template-columns:90px minmax(0,1fr)}.activity-table{display:none}.form-grid{grid-template-columns:1fr}.form-full{grid-column:auto}}
+  </style>
+</head>
+<body>
+  <section id="loginView" class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">BBB</div>
+      <div class="eyebrow">Private Control Room</div>
+      <h1>Bobby's Big Board Admin</h1>
+      <p>Manage the live board and player data. Authentication alone does not grant write access; the database checks the BBB admin allowlist on every change.</p>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-auth-mode="login">Sign In</button>
+        <button class="auth-tab" data-auth-mode="signup">Create Account</button>
+      </div>
+      <form id="authForm">
+        <div class="field"><label>Email</label><input id="authEmail" class="input" type="email" autocomplete="email" required></div>
+        <div class="field"><label>Password</label><input id="authPassword" class="input" type="password" autocomplete="current-password" minlength="8" required></div>
+        <button id="authSubmit" class="primary" type="submit">SIGN IN</button>
+      </form>
+      <div id="authMessage" class="auth-message"></div>
+      <div class="auth-note">Only an email already approved in the BBB database can open the dashboard or write data. New accounts that are not approved remain locked out.</div>
+    </div>
+  </section>
+
+  <section id="appView" class="app hide">
+    <header class="topbar"><div class="shell topbar-inner">
+      <div class="brand"><div class="brand-mark">BBB</div><div class="brand-copy"><strong>BOBBY'S BIG BOARD</strong><span>ADMIN CONTROL ROOM</span></div></div>
+      <div class="top-actions"><span id="adminRole" class="admin-pill">OWNER ACCESS</span><a class="ghost" href="/" target="_blank">View Site ↗</a><button id="signOut" class="ghost">Sign Out</button></div>
+    </div></header>
+    <div class="shell admin-layout">
+      <aside class="sidebar">
+        <div class="side-card">
+          <button class="nav-btn active" data-page="dashboard">Dashboard <span>01</span></button>
+          <button class="nav-btn" data-page="rankings">Rankings Manager <span>02</span></button>
+          <button class="nav-btn" data-page="players">Player Editor <span>03</span></button>
+        </div>
+        <div class="side-note">Admin V1 writes directly to Supabase through authenticated RLS policies. Ranking moves also feed the existing ranking-history and audit systems.</div>
+      </aside>
+
+      <main class="content">
+        <section id="pageDashboard" class="admin-page">
+          <div class="page-head"><div><div class="eyebrow">Admin V1</div><h1>Dashboard</h1><p>Live health and recent changes across Bobby's Big Board.</p></div><button class="refresh-btn" data-refresh>Refresh Data</button></div>
+          <div class="metric-grid">
+            <div class="metric"><span>Dynasty Players</span><strong id="metricPlayers">—</strong></div>
+            <div class="metric"><span>Rookies</span><strong id="metricRookies">—</strong></div>
+            <div class="metric"><span>Prospect Grades</span><strong id="metricProspects">—</strong></div>
+            <div class="metric"><span>Injury Concerns</span><strong id="metricInjuries">—</strong></div>
+          </div>
+          <section class="panel"><div class="panel-head"><div><h2>Recent Admin Activity</h2><span>Existing BBB database audit log</span></div></div><div id="activityList" class="activity"><div class="empty">Loading activity…</div></div></section>
+        </section>
+
+        <section id="pageRankings" class="admin-page hide">
+          <div class="page-head"><div><div class="eyebrow">Live Top 500</div><h1>Rankings Manager</h1><p>Move a player to a new rank and BBB safely shifts the board around them.</p></div><button class="refresh-btn" data-refresh>Refresh Board</button></div>
+          <section class="panel">
+            <div class="toolbar"><input id="rankSearch" class="input" placeholder="Search player, team, college…"><select id="rankPos" class="select"><option value="ALL">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select><select id="rankMarket" class="select"><option value="ALL">All market views</option><option value="BUY">BBB Buys</option><option value="FADE">BBB Fades</option><option value="MARKET">Near market</option></select><button id="rankClear" class="small-btn">Clear</button></div>
+            <div class="rank-scroll"><table class="rank-table"><thead><tr><th>Rank</th><th>Player</th><th>Pos</th><th>Team</th><th>Market</th><th>Gap</th><th>Move To</th><th></th></tr></thead><tbody id="rankBody"></tbody></table></div>
+            <div class="pager"><span id="rankCount"></span><div class="pager-actions"><button id="rankPrev" class="small-btn">Previous</button><button id="rankNext" class="small-btn">Next</button></div></div>
+          </section>
+          <div class="danger-note"><strong>How moving works:</strong> the change is atomic. Overall rank, affected position ranks, BBB-vs-market gaps, market labels, ranking history, and the private audit log stay synchronized.</div>
+        </section>
+
+        <section id="pagePlayers" class="admin-page hide">
+          <div class="page-head"><div><div class="eyebrow">Player Database</div><h1>Player Editor</h1><p>Edit identity, age, college, overview and injury information without touching SQL.</p></div><button class="refresh-btn" data-refresh>Refresh Players</button></div>
+          <section class="panel">
+            <div class="toolbar"><input id="playerAdminSearch" class="input" placeholder="Search player, team, college…"><select id="playerAdminPos" class="select"><option value="ALL">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select><select id="playerAdminInjury" class="select"><option value="ALL">All injury statuses</option><option value="HEALTHY">Healthy</option><option value="CONCERN">Injury concern</option></select><button id="playerAdminClear" class="small-btn">Clear</button></div>
+            <div class="rank-scroll"><table class="rank-table"><thead><tr><th>Rank</th><th>Player</th><th>Pos</th><th>Team</th><th>Age</th><th>College</th><th>Injury</th><th></th></tr></thead><tbody id="playerAdminBody"></tbody></table></div>
+            <div class="pager"><span id="playerAdminCount"></span><div class="pager-actions"><button id="playerAdminPrev" class="small-btn">Previous</button><button id="playerAdminNext" class="small-btn">Next</button></div></div>
+          </section>
+        </section>
+      </main>
+    </div>
+  </section>
+
+  <div id="drawerBackdrop" class="drawer-backdrop hide"></div>
+  <aside id="playerDrawer" class="drawer hide">
+    <div class="drawer-head"><div><div class="eyebrow">Edit Player</div><h2 id="drawerTitle">Player</h2></div><button id="drawerClose" class="close-btn">×</button></div>
+    <form id="playerForm" class="drawer-body">
+      <input id="editKey" type="hidden">
+      <div class="form-grid">
+        <div class="field"><label>Name</label><input id="editName" class="input" required></div>
+        <div class="field"><label>Position</label><select id="editPosition" class="select"><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select></div>
+        <div class="field"><label>Team</label><input id="editTeam" class="input"></div>
+        <div class="field"><label>Age</label><input id="editAge" class="input" type="number" min="18" max="50" step="0.1"></div>
+        <div class="field"><label>Draft Year</label><input id="editDraft" class="input" type="number" min="2000" max="2035" step="1"></div>
+        <div class="field"><label>College</label><input id="editCollege" class="input"></div>
+        <div class="field"><label>Injury Status</label><input id="editInjury" class="input" placeholder="Healthy, Questionable, IR…"></div>
+        <div class="field"><label>Injury Updated</label><input id="editInjuryDate" class="input" type="date"></div>
+        <div class="field form-full"><label>Injury Note</label><textarea id="editInjuryNote" class="textarea" style="min-height:88px"></textarea></div>
+        <div class="field form-full"><label>Player Overview</label><textarea id="editOverview" class="textarea"></textarea></div>
+      </div>
+      <div class="save-row"><button id="savePlayer" class="save-btn" type="submit">SAVE PLAYER</button><span id="saveStatus" class="save-status"></span><a id="profileLink" class="profile-link" target="_blank">Open Public Profile ↗</a></div>
+    </form>
+  </aside>
+
+  <script src="/admin.js"></script>
+</body>
+</html>
