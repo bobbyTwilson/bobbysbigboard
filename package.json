@@ -1,0 +1,10 @@
+{
+  "name": "bobbys-big-board",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "node build.mjs"
+  },
+  "engines": {"node": ">=20"}
+}
