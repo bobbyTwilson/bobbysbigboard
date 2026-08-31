@@ -55,20 +55,42 @@ function bbbRankMoveHtml(move){
 }
 
 function bbbRankingChart(history){
-  const list=(history||[]).slice(-12).filter(x=>x.overall_rank!=null);
-  if(list.length<2)return '';
-  const width=720,height=190,padX=28,padY=24;
+  const list=(history||[]).slice(-30).filter(x=>x.overall_rank!=null);
+  if(!list.length)return '';
+
+  const width=760,height=230,padLeft=54,padRight=24,padTop=28,padBottom=36;
   const ranks=list.map(x=>Number(x.overall_rank));
-  let min=Math.min(...ranks),max=Math.max(...ranks);
-  if(min===max){min-=1;max+=1;}
-  const points=list.map((x,i)=>{
-    const px=padX+(i/(list.length-1))*(width-padX*2);
-    const py=padY+((Number(x.overall_rank)-min)/(max-min))*(height-padY*2);
-    return {x:px,y:py,rank:Number(x.overall_rank),date:x.snapshot_date};
-  });
-  const poly=points.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  const dots=points.map((p,i)=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${i===points.length-1?5:3.5}" class="bbb-rank-dot${i===points.length-1?' current':''}"><title>${bbbHistoryDate(p.date)} — #${p.rank}</title></circle>`).join('');
-  return `<div class="bbb-rank-chart-wrap"><svg class="bbb-rank-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="BBB ranking history"><line x1="${padX}" y1="${padY}" x2="${width-padX}" y2="${padY}" class="bbb-rank-gridline"/><line x1="${padX}" y1="${height-padY}" x2="${width-padX}" y2="${height-padY}" class="bbb-rank-gridline"/><polyline points="${poly}" class="bbb-rank-line"/>${dots}</svg><div class="bbb-rank-chart-dates"><span>${bbbHistoryDate(list[0].snapshot_date)}</span><span>${bbbHistoryDate(list[list.length-1].snapshot_date)}</span></div></div>`;
+  const observedMin=Math.min(...ranks),observedMax=Math.max(...ranks);
+  let min,max;
+
+  if(observedMin===observedMax){
+    const spread=Math.max(4,Math.ceil(observedMin*.08));
+    min=Math.max(1,observedMin-spread);
+    max=Math.min(500,observedMax+spread);
+    if(min===max){min=Math.max(1,observedMin-1);max=Math.min(500,observedMax+1);}
+  }else{
+    const pad=Math.max(2,Math.ceil((observedMax-observedMin)*.22));
+    min=Math.max(1,observedMin-pad);
+    max=Math.min(500,observedMax+pad);
+  }
+
+  const chartW=width-padLeft-padRight,chartH=height-padTop-padBottom;
+  const xFor=i=>list.length===1?padLeft+chartW/2:padLeft+(i/(list.length-1))*chartW;
+  const yFor=rank=>padTop+((rank-min)/(max-min))*chartH;
+  const points=list.map((x,i)=>({x:xFor(i),y:yFor(Number(x.overall_rank)),rank:Number(x.overall_rank),date:x.snapshot_date}));
+
+  const tickCount=4;
+  const ticks=Array.from({length:tickCount+1},(_,i)=>{
+    const value=Math.round(min+((max-min)*i/tickCount));
+    return {value,y:yFor(value)};
+  }).filter((t,i,a)=>i===0||t.value!==a[i-1].value);
+
+  const grid=ticks.map(t=>`<g><line x1="${padLeft}" y1="${t.y.toFixed(1)}" x2="${width-padRight}" y2="${t.y.toFixed(1)}" class="bbb-rank-gridline"/><text x="${padLeft-10}" y="${(t.y+3).toFixed(1)}" text-anchor="end" class="bbb-rank-axis-label">#${t.value}</text></g>`).join('');
+  const poly=points.length>1?`<polyline points="${points.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}" class="bbb-rank-line"/>`:'';
+  const dots=points.map((p,i)=>`<g><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${i===points.length-1?6:4}" class="bbb-rank-dot${i===points.length-1?' current':''}"><title>${bbbHistoryDate(p.date)} — BBB #${p.rank}</title></circle>${i===points.length-1?`<text x="${p.x.toFixed(1)}" y="${Math.max(14,p.y-13).toFixed(1)}" text-anchor="middle" class="bbb-rank-point-label">#${p.rank}</text>`:''}</g>`).join('');
+  const firstDate=bbbHistoryDate(list[0].snapshot_date),lastDate=bbbHistoryDate(list[list.length-1].snapshot_date);
+
+  return `<div class="bbb-rank-chart-wrap"><div class="bbb-rank-chart-head"><span>BBB rank over time</span><span>Rank #1 is best</span></div><svg class="bbb-rank-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="BBB ranking history over time">${grid}${poly}${dots}</svg><div class="bbb-rank-chart-dates"><span>${firstDate}</span><span>${list.length>1?lastDate:'Tracking begins here'}</span></div></div>`;
 }
 
 function bbbRankingHistoryHtml(history){
@@ -78,7 +100,8 @@ function bbbRankingHistoryHtml(history){
   const previous=history.length>1?history[history.length-2]:null;
   const chart=bbbRankingChart(history);
   const recent=history.slice(-5).reverse().map(x=>`<div class="bbb-rank-event"><span>${bbbHistoryDate(x.snapshot_date)}</span><strong>#${bbbEsc(x.overall_rank)}</strong></div>`).join('');
-  return `<div class="bbb-rank-summary"><div><span>Current BBB Rank</span><strong>#${bbbEsc(current.overall_rank)}</strong></div><div><span>Latest Movement</span><strong>${bbbRankMoveHtml(move)}</strong></div><div><span>${previous?'Previous Rank':'Tracking Since'}</span><strong>${previous?'#'+bbbEsc(previous.overall_rank):bbbHistoryDate(first.snapshot_date)}</strong></div><div><span>Best Tracked Rank</span><strong>#${bbbEsc(best)}</strong></div></div>${history.length===1?`<div class="bbb-rank-baseline"><strong>History starts here.</strong><span>Aug. 31, 2026 is the first preserved BBB ranking snapshot. Real movement will appear automatically when the board changes.</span></div>`:chart}<div class="bbb-rank-events">${recent}</div>`;
+  const baseline=history.length===1?`<div class="bbb-rank-baseline"><strong>History starts here.</strong><span>Aug. 31, 2026 is the first preserved BBB ranking snapshot. The graph will build automatically as daily snapshots are added and the board moves.</span></div>`:'';
+  return `<div class="bbb-rank-summary"><div><span>Current BBB Rank</span><strong>#${bbbEsc(current.overall_rank)}</strong></div><div><span>Latest Movement</span><strong>${bbbRankMoveHtml(move)}</strong></div><div><span>${previous?'Previous Rank':'Tracking Since'}</span><strong>${previous?'#'+bbbEsc(previous.overall_rank):bbbHistoryDate(first.snapshot_date)}</strong></div><div><span>Best Tracked Rank</span><strong>#${bbbEsc(best)}</strong></div></div>${chart}${baseline}<div class="bbb-rank-events">${recent}</div>`;
 }
 
 function bbbInjectRankingHistoryStyles(){
@@ -95,18 +118,22 @@ function bbbInjectRankingHistoryStyles(){
     .bbb-rank-move.up{background:#0a2b1d;border:1px solid #176743;color:#74e5a9}
     .bbb-rank-move.down{background:#351717;border:1px solid #743535;color:#f08b8b}
     .bbb-rank-move.neutral{background:#18201c;border:1px solid #34443b;color:#aab8b0}
-    .bbb-rank-chart-wrap{margin:6px 0 18px;padding:14px 14px 8px;border:1px solid #1a352a;background:linear-gradient(180deg,#08110d,#060b08);border-radius:12px}
+    .bbb-rank-chart-wrap{margin:6px 0 18px;padding:14px 14px 10px;border:1px solid #1a352a;background:linear-gradient(180deg,#08110d,#060b08);border-radius:12px}
+    .bbb-rank-chart-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:0 4px 2px;color:#667b70;font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.07em}
+    .bbb-rank-chart-head span:first-child{color:#9bb0a4}
     .bbb-rank-chart{display:block;width:100%;height:auto;overflow:visible}
     .bbb-rank-gridline{stroke:#173127;stroke-width:1}
+    .bbb-rank-axis-label{fill:#60766a;font-size:10px;font-weight:800}
     .bbb-rank-line{fill:none;stroke:#50ce8e;stroke-width:4;stroke-linejoin:round;stroke-linecap:round}
     .bbb-rank-dot{fill:#0b1711;stroke:#50ce8e;stroke-width:3}.bbb-rank-dot.current{fill:#50ce8e;stroke:#d8f6e6}
-    .bbb-rank-chart-dates{display:flex;justify-content:space-between;color:#60766a;font-size:9px;font-weight:800}
-    .bbb-rank-baseline{display:flex;gap:10px;align-items:flex-start;padding:15px;border-left:3px solid #0a8f4d;background:#09140f;margin-bottom:17px}.bbb-rank-baseline strong{flex:none;color:#75e1aa;font-size:11px}.bbb-rank-baseline span{color:#9caf a4;font-size:11px;line-height:1.55}.bbb-rank-baseline span{color:#9cafa4}
+    .bbb-rank-point-label{fill:#d9f4e5;font-size:11px;font-weight:950}
+    .bbb-rank-chart-dates{display:flex;justify-content:space-between;color:#60766a;font-size:9px;font-weight:800;padding:0 5px}
+    .bbb-rank-baseline{display:flex;gap:10px;align-items:flex-start;padding:15px;border-left:3px solid #0a8f4d;background:#09140f;margin-bottom:17px}.bbb-rank-baseline strong{flex:none;color:#75e1aa;font-size:11px}.bbb-rank-baseline span{color:#9cafa4;font-size:11px;line-height:1.55}
     .bbb-rank-events{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.bbb-rank-event{padding:10px;border:1px solid #173027;border-radius:9px;background:#08100c}.bbb-rank-event span{display:block;color:#667b70;font-size:8px;margin-bottom:4px}.bbb-rank-event strong{font-size:13px;color:#dce5e0}
     .bbb-rank-empty{color:#7f9087;font-size:12px}
     .profile-stat .bbb-inline-rank-move{display:inline-flex;margin-left:7px;vertical-align:middle;border-radius:999px;padding:3px 6px;font-size:8px;font-weight:950}.bbb-inline-rank-move.up{background:#0a2b1d;color:#74e5a9}.bbb-inline-rank-move.down{background:#351717;color:#f08b8b}.bbb-inline-rank-move.neutral{background:#18201c;color:#9cada4}
     @media(max-width:850px){.bbb-rank-summary{grid-template-columns:repeat(2,1fr)}.bbb-rank-events{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:560px){.bbb-rank-summary{grid-template-columns:1fr 1fr}.bbb-rank-summary>div{padding:12px}.bbb-rank-summary strong{font-size:15px}.bbb-rank-events{grid-template-columns:1fr 1fr}.bbb-rank-baseline{display:block}.bbb-rank-baseline strong{display:block;margin-bottom:6px}}
+    @media(max-width:560px){.bbb-rank-summary{grid-template-columns:1fr 1fr}.bbb-rank-summary>div{padding:12px}.bbb-rank-summary strong{font-size:15px}.bbb-rank-events{grid-template-columns:1fr 1fr}.bbb-rank-baseline{display:block}.bbb-rank-baseline strong{display:block;margin-bottom:6px}.bbb-rank-chart-wrap{padding:10px 7px 8px}.bbb-rank-chart-head{font-size:8px}.bbb-rank-axis-label{font-size:9px}}
   `;
   document.head.appendChild(style);
 }
