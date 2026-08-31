@@ -24,6 +24,7 @@ await writeFile(`${out}/static/index.html`,html);
 await cp('supabase-override.js',`${out}/static/supabase-override.js`);
 await cp('profile-overview-fix.js',`${out}/static/profile-overview-fix.js`);
 await cp('updates-section.js',`${out}/static/updates-section.js`);
+await cp('movers-section.js',`${out}/static/movers-section.js`);
 await writeFile(`${out}/config.json`,JSON.stringify({
   version:3,
   routes:[
@@ -33,4 +34,4 @@ await writeFile(`${out}/config.json`,JSON.stringify({
   ]
 },null,2));
 
-console.log("Built production-identical Bobby's Big Board UI with Supabase data layer, player updates, and Vercel Web Analytics.");
+console.log("Built production-identical Bobby's Big Board UI with Supabase data layer, player updates, board movers, and Vercel Web Analytics.");
