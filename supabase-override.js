@@ -8,11 +8,46 @@ async function bbbDb(table, query=''){
   return r.json();
 }
 
+function bbbEsc(v){
+  return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function bbbProfileSummaryHtml(p){
+  const overview=(p.overview||'').trim();
+  const latest=(p.latestUpdate||p.injuryNote||'').trim();
+  const date=p.updateDate||p.injuryUpdated||'';
+  const status=(p.injuryStatus||'').trim();
+  if(!overview&&!latest)return '';
+  const healthy=/healthy/i.test(status);
+  const statusHtml=status?`<span class="bbb-profile-status ${healthy?'healthy':'watch'}">${bbbEsc(status)}</span>`:'';
+  return `${overview?`<div class="bbb-profile-label">PLAYER OVERVIEW</div><div class="bbb-profile-copy">${bbbEsc(overview)}</div>`:''}${latest?`${overview?'<div class="bbb-profile-divider"></div>':''}<div class="bbb-profile-update-head"><div class="bbb-profile-label">LATEST UPDATE${date?' · '+bbbEsc(date):''}</div>${statusHtml}</div><div class="bbb-profile-copy">${bbbEsc(latest)}</div>`:''}`;
+}
+
+(function bbbInjectProfileStyles(){
+  if(document.querySelector('#bbb-sql-profile-summary-styles'))return;
+  const style=document.createElement('style');
+  style.id='bbb-sql-profile-summary-styles';
+  style.textContent=`
+    .bbb-profile-summary{padding:16px 16px 15px!important;color:#d5dfd9!important;background:#09140f!important}
+    .bbb-profile-label{color:#50d990;font-size:9px;font-weight:950;letter-spacing:.14em;text-transform:uppercase;margin-bottom:9px}
+    .bbb-profile-copy{font-size:12px;line-height:1.75;color:#d5dfd9}
+    .bbb-profile-divider{height:1px;background:#1b392c;margin:17px 0}
+    .bbb-profile-update-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+    .bbb-profile-update-head .bbb-profile-label{margin-bottom:0}
+    .bbb-profile-status{flex:none;border-radius:999px;padding:4px 8px;font-size:8px;font-weight:900;border:1px solid #6c5c29;background:#231f10;color:#e8cd74}
+    .bbb-profile-status.healthy{border-color:#176743;background:#0a2b1d;color:#74e5a9}
+    @media(max-width:560px){.bbb-profile-update-head{align-items:flex-start}.bbb-profile-copy{font-size:11px}}
+  `;
+  document.head.appendChild(style);
+})();
+
 load=async function(){
   const data=await bbbDb('site_dynasty','select=*&order=rank.asc');
   players=data.map(p=>({
     rank:num(p.rank),name:p.name,pos:p.pos,pr:num(p.pr),team:p.team||'',age:num(p.age),draft:num(p.draft),
     market:num(p.market),gap:num(p.gap),view:p.view||'',
+    overview:p.overview||'',injuryStatus:p.injury_status||'',injuryNote:p.injury_note||'',injuryUpdated:p.injury_updated||'',
+    latestUpdate:p.latest_update||'',updateDate:p.weekly_update_date||'',
     notes:p.latest_update||p.injury_note||p.overview||''
   })).filter(p=>p.rank).sort((a,b)=>a.rank-b.rank);
   document.querySelector('#totalCount').textContent=players.length;
@@ -65,3 +100,23 @@ profileLoadGrades=async function(){
     profileGradeDetails.set(profileNorm(p.name),{name:p.name,pos:p.pos,grade:p.grade,year:p.year,comp:p.comp||'',traits});
   });
 };
+
+if(typeof profileRender==='function'){
+  const bbbOriginalProfileRender=profileRender;
+  profileRender=async function(slug){
+    await bbbOriginalProfileRender(slug);
+    const found=typeof profileFind==='function'?profileFind(slug):null;
+    if(!found)return;
+    const dynasty=(players||[]).find(x=>profileNorm(x.name)===profileNorm(found.name));
+    if(!dynasty)return;
+    const cards=[...document.querySelectorAll('#profileMount .profile-card')];
+    const dynastyCard=cards.find(card=>card.querySelector('.profile-card-kicker')?.textContent.trim().toLowerCase()==='dynasty snapshot')||cards[0];
+    if(!dynastyCard)return;
+    let note=dynastyCard.querySelector('.profile-note');
+    const summary=bbbProfileSummaryHtml(dynasty);
+    if(!summary){note?.remove();return;}
+    if(!note){note=document.createElement('div');note.className='profile-note';dynastyCard.appendChild(note);}
+    note.classList.add('bbb-profile-summary');
+    note.innerHTML=summary;
+  };
+}
