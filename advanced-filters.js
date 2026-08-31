@@ -1,43 +1,43 @@
 (function(){
   const state={
-    team:'ALL',draft:'ALL',age:'ALL',injury:'ALL',college:'',gap:'ALL',marketRank:'ALL',movement:'ALL',sort:'bbb',
+    team:'ALL',draft:'ALL',age:'ALL',injury:'ALL',college:'ALL',gap:'ALL',marketRank:'ALL',movement:'ALL',sort:'bbb',
     quick:{under25:false,rookies:false,healthy:false,riser7:false,faller7:false,market100:false}
   };
   const quickKeys=['under25','rookies','healthy','riser7','faller7','market100'];
   const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'');
-  const n=v=>{const x=Number(v);return Number.isFinite(x)?x:null;};
+  const n=v=>{if(v===null||v===undefined||String(v).trim()==='')return null;const x=Number(v);return Number.isFinite(x)?x:null;};
   const isHealthy=p=>/^healthy$/i.test(String(p.injuryStatus||'').trim());
-  const marketView=p=>typeof mv==='function'?mv(p)[0]:'market';
   const moveVal=(p,k)=>n(p[k])??0;
   const tradeVal=p=>typeof val==='function'?val(p):Math.round(10000*Math.exp(-.012*((p.rank||500)-1)));
+  const collegeParts=v=>String(v||'').split(/\s*(?:,|;|\||\/)\s*/).map(x=>x.trim()).filter(Boolean);
 
   function advancedFilter(list){
     let out=list.filter(p=>{
       if(state.team!=='ALL'&&p.team!==state.team)return false;
-      if(state.draft!=='ALL'&&String(p.draft)!==state.draft)return false;
+      if(state.draft!=='ALL'&&String(n(p.draft))!==state.draft)return false;
       const age=n(p.age);
-      if(state.age==='u23'&&!(age!=null&&age<23))return false;
-      if(state.age==='u25'&&!(age!=null&&age<25))return false;
-      if(state.age==='23-25'&&!(age!=null&&age>=23&&age<25))return false;
-      if(state.age==='25-27'&&!(age!=null&&age>=25&&age<28))return false;
-      if(state.age==='28plus'&&!(age!=null&&age>=28))return false;
+      if(state.age==='u23'&&!(age!==null&&age<23))return false;
+      if(state.age==='u25'&&!(age!==null&&age<25))return false;
+      if(state.age==='23-25'&&!(age!==null&&age>=23&&age<25))return false;
+      if(state.age==='25-27'&&!(age!==null&&age>=25&&age<28))return false;
+      if(state.age==='28plus'&&!(age!==null&&age>=28))return false;
       if(state.injury==='HEALTHY'&&!isHealthy(p))return false;
       if(state.injury==='WATCH'&&isHealthy(p))return false;
-      if(state.college&&!String(p.college||'').toLowerCase().includes(state.college.toLowerCase()))return false;
+      if(state.college!=='ALL'&&!collegeParts(p.college).includes(state.college))return false;
       const gap=n(p.gap);
-      if(state.gap==='buy20'&&!(gap!=null&&gap>=20))return false;
-      if(state.gap==='buy50'&&!(gap!=null&&gap>=50))return false;
-      if(state.gap==='buy100'&&!(gap!=null&&gap>=100))return false;
-      if(state.gap==='fade20'&&!(gap!=null&&gap<=-20))return false;
-      if(state.gap==='fade50'&&!(gap!=null&&gap<=-50))return false;
-      if(state.gap==='fade100'&&!(gap!=null&&gap<=-100))return false;
+      if(state.gap==='buy20'&&!(gap!==null&&gap>=20))return false;
+      if(state.gap==='buy50'&&!(gap!==null&&gap>=50))return false;
+      if(state.gap==='buy100'&&!(gap!==null&&gap>=100))return false;
+      if(state.gap==='fade20'&&!(gap!==null&&gap<=-20))return false;
+      if(state.gap==='fade50'&&!(gap!==null&&gap<=-50))return false;
+      if(state.gap==='fade100'&&!(gap!==null&&gap<=-100))return false;
       const market=n(p.market);
-      if(state.marketRank==='top50'&&!(market!=null&&market<=50))return false;
-      if(state.marketRank==='top100'&&!(market!=null&&market<=100))return false;
-      if(state.marketRank==='100plus'&&!(market!=null&&market>=100))return false;
-      if(state.marketRank==='150plus'&&!(market!=null&&market>=150))return false;
-      if(state.marketRank==='200plus'&&!(market!=null&&market>=200))return false;
-      if(state.marketRank==='unranked'&&market!=null)return false;
+      if(state.marketRank==='top50'&&!(market!==null&&market<=50))return false;
+      if(state.marketRank==='top100'&&!(market!==null&&market<=100))return false;
+      if(state.marketRank==='100plus'&&!(market!==null&&market>=100))return false;
+      if(state.marketRank==='150plus'&&!(market!==null&&market>=150))return false;
+      if(state.marketRank==='200plus'&&!(market!==null&&market>=200))return false;
+      if(state.marketRank==='unranked'&&market!==null)return false;
       const m7=moveVal(p,'move7'),m30=moveVal(p,'move30');
       if(state.movement==='rise7'&&!(m7>0))return false;
       if(state.movement==='fall7'&&!(m7<0))return false;
@@ -45,21 +45,21 @@
       if(state.movement==='fall30'&&!(m30<0))return false;
       if(state.movement==='move20_7'&&!(Math.abs(m7)>=20))return false;
       if(state.movement==='move20_30'&&!(Math.abs(m30)>=20))return false;
-      if(state.quick.under25&&!(age!=null&&age<25))return false;
-      if(state.quick.rookies&&String(p.draft)!=='2026')return false;
+      if(state.quick.under25&&!(age!==null&&age<25))return false;
+      if(state.quick.rookies&&String(n(p.draft))!=='2026')return false;
       if(state.quick.healthy&&!isHealthy(p))return false;
       if(state.quick.riser7&&!(m7>0))return false;
       if(state.quick.faller7&&!(m7<0))return false;
-      if(state.quick.market100&&!(market!=null&&market>=100))return false;
+      if(state.quick.market100&&!(market!==null&&market>=100))return false;
       return true;
     });
     const cmp={
       bbb:(a,b)=>(a.rank||9999)-(b.rank||9999),
-      market:(a,b)=>(a.market??9999)-(b.market??9999)||(a.rank-b.rank),
-      ageYoung:(a,b)=>(a.age??999)-(b.age??999)||(a.rank-b.rank),
-      ageOld:(a,b)=>(b.age??-1)-(a.age??-1)||(a.rank-b.rank),
-      gapHigh:(a,b)=>(b.gap??-9999)-(a.gap??-9999)||(a.rank-b.rank),
-      gapLow:(a,b)=>(a.gap??9999)-(b.gap??9999)||(a.rank-b.rank),
+      market:(a,b)=>(n(a.market)??9999)-(n(b.market)??9999)||(a.rank-b.rank),
+      ageYoung:(a,b)=>(n(a.age)??999)-(n(b.age)??999)||(a.rank-b.rank),
+      ageOld:(a,b)=>(n(b.age)??-1)-(n(a.age)??-1)||(a.rank-b.rank),
+      gapHigh:(a,b)=>(n(b.gap)??-9999)-(n(a.gap)??-9999)||(a.rank-b.rank),
+      gapLow:(a,b)=>(n(a.gap)??9999)-(n(b.gap)??9999)||(a.rank-b.rank),
       rise7:(a,b)=>moveVal(b,'move7')-moveVal(a,'move7')||(a.rank-b.rank),
       fall7:(a,b)=>moveVal(a,'move7')-moveVal(b,'move7')||(a.rank-b.rank),
       rise30:(a,b)=>moveVal(b,'move30')-moveVal(a,'move30')||(a.rank-b.rank),
@@ -75,14 +75,19 @@
   async function enrichPlayers(){
     if(!Array.isArray(players)||!players.length)return;
     const [meta,movers]=await Promise.all([
-      bbbDb('site_dynasty','select=player_key,name,college'),
+      bbbDb('site_dynasty','select=player_key,name,age,draft,college'),
       bbbDb('site_movers','select=player_key,name,bbb_move_7d,bbb_move_30d')
     ]);
     const metaMap=new Map(meta.map(x=>[norm(x.name),x]));
     const moverMap=new Map(movers.map(x=>[norm(x.name),x]));
     players.forEach(p=>{
       const m=metaMap.get(norm(p.name)),mo=moverMap.get(norm(p.name));
-      if(m){p.playerKey=m.player_key||'';p.college=m.college||'';}
+      if(m){
+        p.playerKey=m.player_key||'';
+        p.college=m.college||'';
+        p.age=n(m.age);
+        p.draft=n(m.draft);
+      }
       p.move7=n(mo?.bbb_move_7d);
       p.move30=n(mo?.bbb_move_30d);
     });
@@ -110,18 +115,27 @@
   }
 
   function populateOptions(){
-    const team=document.querySelector('#bbbAdvTeam'),draft=document.querySelector('#bbbAdvDraft'),college=document.querySelector('#bbbCollegeOptions');
-    if(team&&team.options.length<=1){
+    const team=document.querySelector('#bbbAdvTeam'),draft=document.querySelector('#bbbAdvDraft'),college=document.querySelector('#bbbAdvCollege'),age=document.querySelector('#bbbAdvAge');
+    if(team){
       const teams=[...new Set(players.map(p=>p.team).filter(Boolean))].sort();
       team.innerHTML='<option value="ALL">All teams</option>'+teams.map(x=>`<option value="${bbbEsc(x)}">${bbbEsc(x)}</option>`).join('');
+      team.value=state.team;
     }
-    if(draft&&draft.options.length<=1){
-      const years=[...new Set(players.map(p=>p.draft).filter(Boolean))].sort((a,b)=>b-a);
+    if(draft){
+      const years=[...new Set(players.map(p=>n(p.draft)).filter(x=>x!==null))].sort((a,b)=>b-a);
       draft.innerHTML='<option value="ALL">All draft classes</option>'+years.map(x=>`<option value="${x}">${x}</option>`).join('');
+      draft.value=state.draft;
     }
-    if(college&&!college.children.length){
-      const schools=[...new Set(players.map(p=>p.college).filter(Boolean))].sort();
-      college.innerHTML=schools.map(x=>`<option value="${bbbEsc(x)}"></option>`).join('');
+    if(college){
+      const schools=[...new Set(players.flatMap(p=>collegeParts(p.college)))].sort((a,b)=>a.localeCompare(b));
+      college.innerHTML='<option value="ALL">All colleges</option>'+schools.map(x=>`<option value="${bbbEsc(x)}">${bbbEsc(x)}</option>`).join('');
+      college.value=state.college;
+    }
+    if(age){
+      const ages=players.map(p=>n(p.age)).filter(x=>x!==null);
+      const c={u23:ages.filter(x=>x<23).length,u25:ages.filter(x=>x<25).length,a2324:ages.filter(x=>x>=23&&x<25).length,a2527:ages.filter(x=>x>=25&&x<28).length,a28:ages.filter(x=>x>=28).length};
+      age.innerHTML=`<option value="ALL">Any age (${ages.length})</option><option value="u23">Under 23 (${c.u23})</option><option value="u25">Under 25 (${c.u25})</option><option value="23-25">23–24 (${c.a2324})</option><option value="25-27">25–27 (${c.a2527})</option><option value="28plus">28+ (${c.a28})</option>`;
+      age.value=state.age;
     }
   }
 
@@ -153,7 +167,7 @@
   }
 
   function clearAll(){
-    state.team='ALL';state.draft='ALL';state.age='ALL';state.injury='ALL';state.college='';state.gap='ALL';state.marketRank='ALL';state.movement='ALL';state.sort='bbb';
+    state.team='ALL';state.draft='ALL';state.age='ALL';state.injury='ALL';state.college='ALL';state.gap='ALL';state.marketRank='ALL';state.movement='ALL';state.sort='bbb';
     quickKeys.forEach(k=>state.quick[k]=false);
     if(typeof pos!=='undefined')pos='ALL';
     if(typeof q!=='undefined')q='';
@@ -161,8 +175,7 @@
     document.querySelectorAll('#rankings .tab[data-pos]').forEach(b=>b.classList.toggle('active',b.dataset.pos==='ALL'));
     const search=document.querySelector('#playerSearch');if(search)search.value='';
     const market=document.querySelector('#marketFilter');if(market)market.value='ALL';
-    ['Team','Draft','Age','Injury','Gap','MarketRank','Movement'].forEach(k=>{const el=document.querySelector('#bbbAdv'+k);if(el)el.value='ALL';});
-    const col=document.querySelector('#bbbAdvCollege');if(col)col.value='';
+    ['Team','Draft','Age','Injury','College','Gap','MarketRank','Movement'].forEach(k=>{const el=document.querySelector('#bbbAdv'+k);if(el)el.value='ALL';});
     const sort=document.querySelector('#bbbAdvSort');if(sort)sort.value='bbb';
     rerender();
   }
@@ -232,7 +245,7 @@
         <div class="bbb-adv-field"><label>Draft Class</label><select id="bbbAdvDraft"><option value="ALL">All draft classes</option></select></div>
         <div class="bbb-adv-field"><label>Age</label><select id="bbbAdvAge"><option value="ALL">Any age</option><option value="u23">Under 23</option><option value="u25">Under 25</option><option value="23-25">23–24</option><option value="25-27">25–27</option><option value="28plus">28+</option></select></div>
         <div class="bbb-adv-field"><label>Injury Status</label><select id="bbbAdvInjury"><option value="ALL">Any status</option><option value="HEALTHY">Healthy only</option><option value="WATCH">Injury / recovery watch</option></select></div>
-        <div class="bbb-adv-field"><label>College</label><input id="bbbAdvCollege" list="bbbCollegeOptions" placeholder="Search college…"><datalist id="bbbCollegeOptions"></datalist></div>
+        <div class="bbb-adv-field"><label>College</label><select id="bbbAdvCollege"><option value="ALL">All colleges</option></select></div>
         <div class="bbb-adv-field"><label>BBB vs Market Gap</label><select id="bbbAdvGap"><option value="ALL">Any gap</option><option value="buy20">BBB +20 or more</option><option value="buy50">BBB +50 or more</option><option value="buy100">BBB +100 or more</option><option value="fade20">Market +20 or more</option><option value="fade50">Market +50 or more</option><option value="fade100">Market +100 or more</option></select></div>
         <div class="bbb-adv-field"><label>Market Rank</label><select id="bbbAdvMarketRank"><option value="ALL">Any market rank</option><option value="top50">Market Top 50</option><option value="top100">Market Top 100</option><option value="100plus">Market 100+</option><option value="150plus">Market 150+</option><option value="200plus">Market 200+</option><option value="unranked">Market unranked</option></select></div>
         <div class="bbb-adv-field"><label>Board Movement</label><select id="bbbAdvMovement"><option value="ALL">Any movement</option><option value="rise7">7D risers</option><option value="fall7">7D fallers</option><option value="rise30">30D risers</option><option value="fall30">30D fallers</option><option value="move20_7">20+ spots in 7D</option><option value="move20_30">20+ spots in 30D</option></select></div>
@@ -244,9 +257,8 @@
     zone.querySelectorAll('.bbb-qf').forEach(b=>b.onclick=()=>toggleQuick(b.dataset.qf));
     const toggle=document.querySelector('#bbbAdvancedToggle'),adv=document.querySelector('#bbbAdvancedPanel');
     toggle.onclick=()=>{const opening=adv.classList.contains('hide');adv.classList.toggle('hide');toggle.textContent=opening?'ADVANCED FILTERS −':'ADVANCED FILTERS +';};
-    const bindings={Team:'team',Draft:'draft',Age:'age',Injury:'injury',Gap:'gap',MarketRank:'marketRank',Movement:'movement',Sort:'sort'};
+    const bindings={Team:'team',Draft:'draft',Age:'age',Injury:'injury',College:'college',Gap:'gap',MarketRank:'marketRank',Movement:'movement',Sort:'sort'};
     Object.entries(bindings).forEach(([id,key])=>document.querySelector('#bbbAdv'+id).onchange=e=>{state[key]=e.target.value;rerender();});
-    document.querySelector('#bbbAdvCollege').oninput=e=>{state.college=e.target.value.trim();rerender();};
     document.querySelector('#bbbClearFilters').onclick=clearAll;
 
     document.querySelectorAll('#rankings .tab[data-pos]').forEach(b=>b.addEventListener('click',()=>setTimeout(syncUi,0)));
