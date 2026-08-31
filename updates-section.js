@@ -80,3 +80,10 @@ function bbbUpdatesRoute(){
   if(show){['rankingsView','rookieView','prospectView','tradeView','profileView'].forEach(id=>document.querySelector('#'+id)?.classList.add('hide'));window.scrollTo(0,0)}
 }
 document.addEventListener('DOMContentLoaded',()=>{bbbInjectUpdatesUi();bbbLoadUpdates().catch(e=>{console.error('BBB updates:',e);const h=document.querySelector('#bbbUpdatesHomeGrid');if(h)h.innerHTML='<div class="bbb-updates-empty">Updates are temporarily unavailable.</div>'});bbbUpdatesRoute();window.addEventListener('hashchange',()=>setTimeout(bbbUpdatesRoute,0));window.addEventListener('popstate',()=>setTimeout(bbbUpdatesRoute,0));});
+
+(function bbbLoadMoversFeature(){
+  const s=document.createElement('script');
+  s.src='/movers-section.js';
+  s.defer=true;
+  document.body.appendChild(s);
+})();
