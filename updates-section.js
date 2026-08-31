@@ -52,7 +52,7 @@ function bbbInjectUpdatesUi(){
   document.querySelector('#bbbUpdateSearch').oninput=e=>{bbbUpdateQ=e.target.value.trim().toLowerCase();bbbUpdateVisible=30;bbbRenderUpdatesPage()};
   document.querySelector('#bbbUpdatePos').onchange=e=>{bbbUpdatePos=e.target.value;bbbUpdateVisible=30;bbbRenderUpdatesPage()};
   document.querySelector('#bbbUpdateMore').onclick=()=>{bbbUpdateVisible+=30;bbbRenderUpdatesPage()};
-  document.addEventListener('click',e=>{const card=e.target.closest('.bbb-update-card');if(card){const u=bbbUpdates.find(x=>x.player_key===card.dataset.playerKey);if(u&&typeof profileGo==='function')profileGo(u.name)}});
+  document.addEventListener('click',e=>{const card=e.target.closest('.bbb-update-card');if(card){const key=(card.dataset.playerKey||'').trim();if(key){history.pushState({},'',`/player/${encodeURIComponent(key)}`);if(typeof profileRender==='function'){document.querySelector('#app')?.classList.add('hide');document.querySelector('#updatesView')?.classList.add('hide');document.querySelector('#profileView')?.classList.remove('hide');window.scrollTo(0,0);profileRender(key);}else{location.href=`/player/${encodeURIComponent(key)}`;}}}});
 }
 function bbbRenderUpdatesHome(){
   const box=document.querySelector('#bbbUpdatesHomeGrid');if(!box)return;
