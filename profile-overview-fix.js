@@ -1,29 +1,22 @@
-let bbbAllProfilesPromise=null;
-const bbbRankingHistoryCache=new Map();
-
 async function bbbLoadAllProfiles(){
-  if(!bbbAllProfilesPromise){
-    bbbAllProfilesPromise=bbbDb('site_profiles','select=player_key,name,overall_breakdown,injury_status,injury_note,injury_updated,latest_weekly_update,weekly_update_date').then(rows=>{
-      const map=new Map();
-      rows.forEach(r=>{
-        const key=profileNorm(r.name);
-        const item={
-          playerKey:r.player_key||'',
-          name:r.name||'',
-          overview:r.overall_breakdown||'',
-          injuryStatus:r.injury_status||'',
-          injuryNote:r.injury_note||'',
-          injuryUpdated:r.injury_updated||'',
-          latestUpdate:r.latest_weekly_update||'',
-          updateDate:r.weekly_update_date||''
-        };
-        const existing=map.get(key);
-        if(!existing || (!existing.overview && item.overview)) map.set(key,item);
-      });
-      return map;
-    });
-  }
-  return bbbAllProfilesPromise;
+  const rows=await bbbDb('site_profiles','select=player_key,name,overall_breakdown,injury_status,injury_note,injury_updated,latest_weekly_update,weekly_update_date');
+  const map=new Map();
+  rows.forEach(r=>{
+    const key=profileNorm(r.name);
+    const item={
+      playerKey:r.player_key||'',
+      name:r.name||'',
+      overview:r.overall_breakdown||'',
+      injuryStatus:r.injury_status||'',
+      injuryNote:r.injury_note||'',
+      injuryUpdated:r.injury_updated||'',
+      latestUpdate:r.latest_weekly_update||'',
+      updateDate:r.weekly_update_date||''
+    };
+    const existing=map.get(key);
+    if(!existing || (!existing.overview && item.overview)) map.set(key,item);
+  });
+  return map;
 }
 
 function bbbHistoryDate(v){
@@ -34,10 +27,7 @@ function bbbHistoryDate(v){
 
 async function bbbLoadRankingHistory(playerKey){
   if(!playerKey)return [];
-  if(!bbbRankingHistoryCache.has(playerKey)){
-    bbbRankingHistoryCache.set(playerKey,bbbDb('site_ranking_history',`select=snapshot_date,overall_rank,position_rank,fp_sf_rank,bbb_vs_fp,market_view&player_key=eq.${encodeURIComponent(playerKey)}&order=snapshot_date.asc`));
-  }
-  return bbbRankingHistoryCache.get(playerKey);
+  return bbbDb('site_ranking_history',`select=snapshot_date,overall_rank,position_rank,fp_sf_rank,bbb_vs_fp,market_view,created_at,snapshot_kind&player_key=eq.${encodeURIComponent(playerKey)}&order=snapshot_date.asc,created_at.asc`);
 }
 
 function bbbRankMove(history){
