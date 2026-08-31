@@ -20,7 +20,7 @@ html=html
   .replaceAll("The rookie order updates directly from Bobby's sheet.","The rookie order updates directly from Bobby's database.")
   .replaceAll("Bobby's live Draft Pick Values sheet","Bobby's live SQL database")
   .replace('<a href="#trade">Trade Calculator</a>','')
-  .replace('</body>',`${analytics}<script src="/supabase-override.js"></script><script src="/profile-overview-fix.js"></script><script src="/updates-section.js"></script><script src="/compare-section.js"></script>${comparePolish}${moverNavFix}</body>`);
+  .replace('</body>',`${analytics}<script src="/supabase-override.js"></script><script src="/profile-overview-fix.js"></script><script src="/updates-section.js"></script><script src="/compare-section.js"></script><script src="/profile-v2.js"></script>${comparePolish}${moverNavFix}</body>`);
 
 await writeFile(`${out}/static/index.html`,html);
 await cp('supabase-override.js',`${out}/static/supabase-override.js`);
@@ -28,6 +28,7 @@ await cp('profile-overview-fix.js',`${out}/static/profile-overview-fix.js`);
 await cp('updates-section.js',`${out}/static/updates-section.js`);
 await cp('movers-section.js',`${out}/static/movers-section.js`);
 await cp('compare-section.js',`${out}/static/compare-section.js`);
+await cp('profile-v2.js',`${out}/static/profile-v2.js`);
 await writeFile(`${out}/config.json`,JSON.stringify({
   version:3,
   routes:[
@@ -37,4 +38,4 @@ await writeFile(`${out}/config.json`,JSON.stringify({
   ]
 },null,2));
 
-console.log("Built production-identical Bobby's Big Board UI with Supabase data layer, player updates, board movers, player compare, and Vercel Web Analytics.");
+console.log("Built production-identical Bobby's Big Board UI with Supabase data layer, player updates, board movers, player compare, Profile V2, and Vercel Web Analytics.");
