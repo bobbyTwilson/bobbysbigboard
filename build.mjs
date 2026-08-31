@@ -15,6 +15,7 @@ html=html
   .replaceAll('Sheet-backed database','SQL-backed database')
   .replaceAll("The rookie order updates directly from Bobby's sheet.","The rookie order updates directly from Bobby's database.")
   .replaceAll("Bobby's live Draft Pick Values sheet","Bobby's live SQL database")
+  .replace('<a href="#trade">Trade Calculator</a>','')
   .replace('</body>','<script src="/supabase-override.js"></script></body>');
 
 await writeFile(`${out}/static/index.html`,html);
