@@ -5,9 +5,8 @@
     const style=document.createElement('style');
     style.id='bbb-profile-render-gate-styles';
     style.textContent=`
-      #profileView.bbb-profile-v2-rendering #profileMount .profile-content{visibility:hidden!important}
-      #profileView.bbb-profile-v2-rendering #profileMount .profile-content *{visibility:hidden!important}
-      #profileView:not(.bbb-profile-v2-rendering) #profileMount .profile-content{visibility:visible}
+      #profileView.bbb-profile-v2-rendering #profileMount{visibility:hidden!important;pointer-events:none!important}
+      #profileView:not(.bbb-profile-v2-rendering) #profileMount{visibility:visible}
     `;
     document.head.appendChild(style);
   }
@@ -18,6 +17,11 @@
     view.classList.toggle('bbb-profile-v2-rendering',!!on);
     view.setAttribute('aria-busy',on?'true':'false');
   }
+
+  // Hide the entire legacy profile mount as early as possible on direct player-page loads.
+  // The previous gate only hid .profile-content, which left the old hero/header visible
+  // while Profile V2 was still assembling.
+  if(location.pathname.startsWith('/player/'))bbbProfileRenderGate(true);
 
   async function bbbProfileCollegeData(slug){
     const found=typeof profileFind==='function'?profileFind(slug):null;
