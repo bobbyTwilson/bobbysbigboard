@@ -12,6 +12,14 @@ function bbbEsc(v){
   return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function bbbApplyLiveBoardLabel(){
+  document.querySelectorAll('.hero-card .updated').forEach(el=>{
+    if(/snapshot/i.test(el.textContent||''))el.textContent='LIVE • SUPABASE SYNCED';
+  });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bbbApplyLiveBoardLabel);
+else bbbApplyLiveBoardLabel();
+
 function bbbProfileSummaryHtml(p){
   const overview=(p.overview||'').trim();
   const latest=(p.latestUpdate||p.injuryNote||'').trim();
@@ -44,7 +52,7 @@ function bbbProfileSummaryHtml(p){
 load=async function(){
   const data=await bbbDb('site_dynasty','select=*&order=rank.asc');
   players=data.map(p=>({
-    rank:num(p.rank),name:p.name,pos:p.pos,pr:num(p.pr),team:p.team||'',age:num(p.age),draft:num(p.draft),
+    playerKey:p.player_key||'',rank:num(p.rank),name:p.name,pos:p.pos,pr:num(p.pr),team:p.team||'',age:num(p.age),draft:num(p.draft),
     market:num(p.market),gap:num(p.gap),view:p.view||'',
     overview:p.overview||'',injuryStatus:p.injury_status||'',injuryNote:p.injury_note||'',injuryUpdated:p.injury_updated||'',
     latestUpdate:p.latest_update||'',updateDate:p.weekly_update_date||'',
@@ -60,7 +68,7 @@ load=async function(){
 
 loadRookies=async function(){
   const data=await bbbDb('site_rookies','select=*&order=rank.asc');
-  rookies=data.map(p=>({rank:num(p.rank),name:p.name,pos:p.pos,team:p.team||'',age:num(p.age),draft:num(p.draft),market:num(p.market),gap:num(p.gap),tier:(p.tier||'').trim(),notes:''})).filter(x=>x.rank).sort((a,b)=>a.rank-b.rank);
+  rookies=data.map(p=>({playerKey:p.player_key||'',rank:num(p.rank),name:p.name,pos:p.pos,team:p.team||'',age:num(p.age),draft:num(p.draft),market:num(p.market),gap:num(p.gap),tier:(p.tier||'').trim(),notes:''})).filter(x=>x.rank).sort((a,b)=>a.rank-b.rank);
   document.querySelector('#rookieCount').textContent=rookies.length;
   document.querySelector('#rookiePreviewRows').innerHTML=rookies.slice(0,5).map(p=>`<div class="preview-row"><div class="preview-rank">${p.rank}</div><div><div class="preview-name">${p.name}</div><div class="preview-meta">${p.team} • ${p.pos} • ${p.age??'—'} yrs</div></div><div class="preview-pos">${p.pos}</div></div>`).join('');
   renderRookies();
@@ -68,7 +76,7 @@ loadRookies=async function(){
 
 loadProspects=async function(){
   const data=await bbbDb('site_prospects','select=*&order=grade.desc');
-  prospects=data.map((p,i)=>({name:p.name,pos:p.pos,year:num(p.year),grade:num(p.grade),comp:p.comp||'',traits:p.traits||{},sourceOrder:i})).filter(p=>p.name&&p.grade!=null).sort((a,b)=>(b.grade-a.grade)||(posOrder[a.pos]-posOrder[b.pos])||(a.sourceOrder-b.sourceOrder));
+  prospects=data.map((p,i)=>({playerKey:p.player_key||'',name:p.name,pos:p.pos,year:num(p.year),grade:num(p.grade),comp:p.comp||'',traits:p.traits||{},sourceOrder:i})).filter(p=>p.name&&p.grade!=null).sort((a,b)=>(b.grade-a.grade)||(posOrder[a.pos]-posOrder[b.pos])||(a.sourceOrder-b.sourceOrder));
   document.querySelector('#prospectCount').textContent=prospects.length;
   const classes=[...new Set(prospects.map(p=>p.year).filter(Boolean))].sort((a,b)=>b-a);
   document.querySelector('#prospectClassCount').textContent=classes.length;
@@ -100,6 +108,16 @@ profileLoadGrades=async function(){
     profileGradeDetails.set(profileNorm(p.name),{name:p.name,pos:p.pos,grade:p.grade,year:p.year,comp:p.comp||'',traits});
   });
 };
+
+if(typeof profileFind==='function'){
+  const bbbOriginalProfileFind=profileFind;
+  profileFind=function(slug){
+    const key=String(slug||'');
+    const all=[...(players||[]),...(rookies||[]),...(prospects||[])];
+    const byKey=all.find(x=>String(x.playerKey||x.player_key||'')===key);
+    return byKey||bbbOriginalProfileFind(slug);
+  };
+}
 
 if(typeof profileRender==='function'){
   const bbbOriginalProfileRender=profileRender;
