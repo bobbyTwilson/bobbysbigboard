@@ -1,3 +1,8 @@
+// Canonical Supabase-backed loaders for Bobby's Big Board.
+// The filename is retained for deployment compatibility, but these functions
+// no longer override Google Sheets loaders; the legacy Sheet runtime is removed
+// before every production build.
+
 function bbbApplyLiveBoardLabel(){
   document.querySelectorAll('.hero-card .updated').forEach(el=>{
     if(/snapshot/i.test(el.textContent||''))el.textContent='LIVE • SUPABASE SYNCED';
@@ -35,7 +40,7 @@ function bbbProfileSummaryHtml(p){
   document.head.appendChild(style);
 })();
 
-load=async function(){
+async function load(){
   const data=await bbbDbCached('site_dynasty','select=*&order=rank.asc');
   players=data.map(p=>({
     playerKey:p.player_key||'',rank:num(p.rank),name:p.name,pos:p.pos,pr:num(p.pr),team:p.team||'',age:num(p.age),draft:num(p.draft),
@@ -50,17 +55,17 @@ load=async function(){
   buyCount.textContent=buys;fadeCount.textContent=fades;marketCount.textContent=players.length-buys-fades;
   previewRows.innerHTML=players.slice(0,5).map(p=>`<div class="preview-row"><div class="preview-rank">${p.rank}</div><div><div class="preview-name">${p.name}</div><div class="preview-meta">${p.team} • ${p.pos}${p.pr||''}</div></div><div class="preview-pos">${p.pos}</div></div>`).join('');
   render();tradeRender();
-};
+}
 
-loadRookies=async function(){
+async function loadRookies(){
   const data=await bbbDbCached('site_rookies','select=*&order=rank.asc');
   rookies=data.map(p=>({playerKey:p.player_key||'',rank:num(p.rank),name:p.name,pos:p.pos,team:p.team||'',age:num(p.age),draft:num(p.draft),market:num(p.market),gap:num(p.gap),tier:(p.tier||'').trim(),notes:''})).filter(x=>x.rank).sort((a,b)=>a.rank-b.rank);
   document.querySelector('#rookieCount').textContent=rookies.length;
   document.querySelector('#rookiePreviewRows').innerHTML=rookies.slice(0,5).map(p=>`<div class="preview-row"><div class="preview-rank">${p.rank}</div><div><div class="preview-name">${p.name}</div><div class="preview-meta">${p.team} • ${p.pos} • ${p.age??'—'} yrs</div></div><div class="preview-pos">${p.pos}</div></div>`).join('');
   renderRookies();
-};
+}
 
-loadProspects=async function(){
+async function loadProspects(){
   const data=await bbbDbCached('site_prospects','select=*&order=grade.desc');
   prospects=data.map((p,i)=>({playerKey:p.player_key||'',name:p.name,pos:p.pos,year:num(p.year),grade:num(p.grade),comp:p.comp||'',traits:p.traits||{},sourceOrder:i})).filter(p=>p.name&&p.grade!=null).sort((a,b)=>(b.grade-a.grade)||(posOrder[a.pos]-posOrder[b.pos])||(a.sourceOrder-b.sourceOrder));
   document.querySelector('#prospectCount').textContent=prospects.length;
@@ -71,15 +76,15 @@ loadProspects=async function(){
   const counts={QB:0,RB:0,WR:0,TE:0};prospects.forEach(p=>counts[p.pos]++);
   document.querySelector('#prospectPreviewRows').innerHTML=['QB','RB','WR','TE'].map(p=>`<div class="prospect-stat-row"><div class="prospect-stat-code">${p}</div><div class="prospect-stat-label">Prospects graded</div><div class="prospect-stat-count">${counts[p]}</div></div>`).join('');
   renderProspects();
-};
+}
 
-loadDraftPicks=async function(){
+async function loadDraftPicks(){
   const data=await bbbDbCached('site_draft_picks','select=*&order=year.asc');
   draftPicks=data.map(p=>({id:p.id||('pick:'+p.name),type:'pick',name:p.name,year:num(p.year),range:p.range||'',value:num(p.value)})).filter(x=>x.name&&x.value!=null);
   tradeRender();
-};
+}
 
-profileLoadGrades=async function(){
+async function profileLoadGrades(){
   if(profileGradeDetails.size)return;
   if(!prospects.length)await loadProspects();
   prospects.forEach(p=>{
@@ -93,18 +98,11 @@ profileLoadGrades=async function(){
     traits.sort((a,b)=>b.pct-a.pct||b.value-a.value);
     profileGradeDetails.set(profileNorm(p.name),{name:p.name,pos:p.pos,grade:p.grade,year:p.year,comp:p.comp||'',traits});
   });
-};
-
-if(typeof profileFind==='function'){
-  const bbbOriginalProfileFind=profileFind;
-  profileFind=function(slug){
-    const key=String(slug||'');
-    const all=[...(players||[]),...(rookies||[]),...(prospects||[])];
-    const byKey=all.find(x=>String(x.playerKey||x.player_key||'')===key);
-    return byKey||bbbOriginalProfileFind(slug);
-  };
 }
 
+// Keep the profile summary enhancement for the classic profile renderer. The
+// canonical runtime already resolves player_key routes directly, so no profile
+// lookup override is needed anymore.
 if(typeof profileRender==='function'){
   const bbbOriginalProfileRender=profileRender;
   profileRender=async function(slug){
