@@ -1,7 +1,6 @@
-import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 
 const out='.vercel/output';
-const baseline='https://bobbys-big-board-v2-pmu5e6526-bobbywilsonbtw-2065.vercel.app';
 const SITE='https://bobbysbigboard.com';
 const SUPABASE='https://twbduhmibbotregdxlla.supabase.co';
 const SUPABASE_KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
@@ -10,9 +9,7 @@ await rm(out,{recursive:true,force:true});
 await mkdir(`${out}/static`,{recursive:true});
 await mkdir(`${out}/static/seo/players`,{recursive:true});
 
-const response=await fetch(baseline);
-if(!response.ok)throw new Error(`Could not fetch production baseline: ${response.status}`);
-let html=await response.text();
+let html=await readFile('site-shell.html','utf8');
 
 const analytics=`<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script><script defer src="/_vercel/insights/script.js"></script>`;
 const moverNavFix=`<script>document.addEventListener('click',e=>{if(e.target.closest('.bbb-mover-row,.bbb-mover-card'))document.querySelector('#moversView')?.classList.add('hide')},true);</script>`;
@@ -130,4 +127,4 @@ await writeFile(`${out}/config.json`,JSON.stringify({
   ]
 },null,2));
 
-console.log(`Built production-identical Bobby's Big Board UI with shared BBB core data layer, SEO/social metadata, ${profiles.length} shareable player profiles, ${currentPlayerPaths.length} current profiles in sitemap, robots, Profile V2, Trade Calculator V2, and advanced filters.`);
+console.log(`Built production-identical Bobby's Big Board UI from the repo-owned site shell with shared BBB core data layer, SEO/social metadata, ${profiles.length} shareable player profiles, ${currentPlayerPaths.length} current profiles in sitemap, robots, Profile V2, Trade Calculator V2, and advanced filters.`);
