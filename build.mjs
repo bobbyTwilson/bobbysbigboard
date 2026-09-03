@@ -24,7 +24,7 @@ html=html
   .replaceAll("The rookie order updates directly from Bobby's sheet.","The rookie order updates directly from Bobby's database.")
   .replaceAll("Bobby's live Draft Pick Values sheet","Bobby's live SQL database")
   .replace('<a href="#trade">Trade Calculator</a>','')
-  .replace('</body>',`${analytics}<script src="/supabase-override.js"></script><script src="/profile-overview-fix.js"></script><script src="/updates-section.js"></script><script src="/compare-section.js"></script><script src="/profile-v2.js"></script><script src="/profile-v2-data-fix.js"></script><script src="/profile-college.js"></script><script src="/trade-v2.js"></script><script src="/advanced-filters.js"></script><script src="/seo-social.js"></script>${comparePolish}${moverNavFix}</body>`);
+  .replace('</body>',`${analytics}<script src="/bbb-core.js"></script><script src="/supabase-override.js"></script><script src="/profile-overview-fix.js"></script><script src="/updates-section.js"></script><script src="/compare-section.js"></script><script src="/profile-v2.js"></script><script src="/profile-v2-data-fix.js"></script><script src="/profile-college.js"></script><script src="/trade-v2.js"></script><script src="/advanced-filters.js"></script><script src="/seo-social.js"></script>${comparePolish}${moverNavFix}</body>`);
 
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function stripSeo(doc){
@@ -106,6 +106,7 @@ const sitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www
 await writeFile(`${out}/static/sitemap.xml`,sitemap);
 await writeFile(`${out}/static/robots.txt`,`User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
 
+await cp('bbb-core.js',`${out}/static/bbb-core.js`);
 await cp('supabase-override.js',`${out}/static/supabase-override.js`);
 await cp('profile-overview-fix.js',`${out}/static/profile-overview-fix.js`);
 await cp('updates-section.js',`${out}/static/updates-section.js`);
@@ -129,4 +130,4 @@ await writeFile(`${out}/config.json`,JSON.stringify({
   ]
 },null,2));
 
-console.log(`Built production-identical Bobby's Big Board UI with SEO/social metadata, ${profiles.length} shareable player profiles, ${currentPlayerPaths.length} current profiles in sitemap, robots, Profile V2, Trade Calculator V2, and advanced filters.`);
+console.log(`Built production-identical Bobby's Big Board UI with shared BBB core data layer, SEO/social metadata, ${profiles.length} shareable player profiles, ${currentPlayerPaths.length} current profiles in sitemap, robots, Profile V2, Trade Calculator V2, and advanced filters.`);
