@@ -1,17 +1,3 @@
-const BBB_SUPABASE_URL='https://twbduhmibbotregdxlla.supabase.co';
-const BBB_SUPABASE_KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
-
-async function bbbDb(table, query=''){
-  const url=BBB_SUPABASE_URL+'/rest/v1/'+table+(query?'?'+query:'');
-  const r=await fetch(url,{cache:'no-store',headers:{apikey:BBB_SUPABASE_KEY}});
-  if(!r.ok)throw new Error('Supabase '+table+' '+r.status);
-  return r.json();
-}
-
-function bbbEsc(v){
-  return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
 function bbbApplyLiveBoardLabel(){
   document.querySelectorAll('.hero-card .updated').forEach(el=>{
     if(/snapshot/i.test(el.textContent||''))el.textContent='LIVE • SUPABASE SYNCED';
@@ -53,7 +39,7 @@ load=async function(){
   const data=await bbbDb('site_dynasty','select=*&order=rank.asc');
   players=data.map(p=>({
     playerKey:p.player_key||'',rank:num(p.rank),name:p.name,pos:p.pos,pr:num(p.pr),team:p.team||'',age:num(p.age),draft:num(p.draft),
-    market:num(p.market),gap:num(p.gap),view:p.view||'',
+    market:num(p.market),gap:num(p.gap),view:p.view||'',college:p.college||'',
     overview:p.overview||'',injuryStatus:p.injury_status||'',injuryNote:p.injury_note||'',injuryUpdated:p.injury_updated||'',
     latestUpdate:p.latest_update||'',updateDate:p.weekly_update_date||'',
     notes:p.latest_update||p.injury_note||p.overview||''
