@@ -8,7 +8,7 @@ for(const file of requiredFiles)await access(`${root}/${file}`);
 
 const html=await readFile(`${root}/index.html`,'utf8');
 const sitemap=await readFile(`${root}/sitemap.xml`,'utf8');
-const config=await readFile('.vercel/output/config.json','utf8');
+const config=JSON.parse(await readFile('.vercel/output/config.json','utf8'));
 
 const requiredHtmlMarkers=[
   'id="rankingsView"','id="rookieView"','id="prospectView"','id="tradeView"','id="profileView"','id="bbb-runtime-script"','src="/bbb-core.js"','src="/supabase-override.js"','src="/updates-section.js"','src="/compare-section.js"','src="/profile-v2.js"','src="/trade-v2.js"','src="/advanced-filters.js"'
@@ -21,9 +21,10 @@ if(/docs\.google\.com\/spreadsheets/i.test(html))throw new Error('Build smoke ch
 const playerUrls=(sitemap.match(/<loc>https:\/\/bobbysbigboard\.com\/player\//g)||[]).length;
 if(playerUrls!==500)throw new Error(`Build smoke check failed: expected 500 player profile URLs, found ${playerUrls}`);
 
-for(const route of ['/rankings','/rookies','/prospects','/trade','/compare','/movers','/updates']){
-  if(!config.includes(`"src":"${route}/?"`))throw new Error(`Build smoke check failed: missing route ${route}`);
+const routeSources=new Set((config.routes||[]).map(r=>r.src).filter(Boolean));
+for(const route of ['/rankings/?','/rookies/?','/prospects/?','/trade/?','/compare/?','/movers/?','/updates/?']){
+  if(!routeSources.has(route))throw new Error(`Build smoke check failed: missing route ${route}`);
 }
-if(!config.includes('"src":"/player/([^/]+)/?"'))throw new Error('Build smoke check failed: missing player profile route');
+if(!routeSources.has('/player/([^/]+)/?'))throw new Error('Build smoke check failed: missing player profile route');
 
 console.log(`Build smoke checks passed: canonical runtime present, zero Google Sheets runtime references, ${playerUrls} player routes, and all primary BBB tools routed.`);
