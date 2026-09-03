@@ -29,9 +29,16 @@ if(/docs\.google\.com\/spreadsheets/i.test(runtime)){
   throw new Error('bbb-runtime.js must not contain Google Sheets data access');
 }
 
+// Fail the deployment before Vercel publishes it if the extracted browser
+// runtime has a syntax error or loses a required shared entry point.
+new Function(runtime);
+for(const required of ['let players=[]','function render()','function renderRookies()','function renderProspects()','function bbbView()','function profileRoute(']){
+  if(!runtime.includes(required))throw new Error(`bbb-runtime.js is missing required runtime marker: ${required}`);
+}
+
 const runtimeTag=`<script id="bbb-runtime-script">\n${runtime}\n</script>`;
 if(!html.includes('</body>'))throw new Error('site-shell.html is missing </body>');
 html=html.replace('</body>',runtimeTag+'</body>');
 
 await writeFile(shellPath,html);
-console.log('Prepared runtime shell: removed legacy Google Sheets loaders and installed canonical BBB UI runtime.');
+console.log('Prepared runtime shell: removed legacy Google Sheets loaders, validated BBB runtime syntax, and installed canonical UI runtime.');
