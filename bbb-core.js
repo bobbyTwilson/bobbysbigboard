@@ -6,7 +6,7 @@ function bbbBuildDbUrl(table,query=''){
   return BBB_SUPABASE_URL+'/rest/v1/'+table+(query?'?'+query:'');
 }
 
-async function bbbDb(table,query=''){
+async function bbbDbFresh(table,query=''){
   const r=await fetch(bbbBuildDbUrl(table,query),{
     cache:'no-store',
     headers:{apikey:BBB_SUPABASE_KEY}
@@ -18,11 +18,11 @@ async function bbbDb(table,query=''){
   return r.json();
 }
 
-function bbbDbCached(table,query='',options={}){
+function bbbDb(table,query='',options={}){
   const key=table+'?'+query;
   if(options.refresh)BBB_DB_CACHE.delete(key);
   if(!BBB_DB_CACHE.has(key)){
-    const pending=bbbDb(table,query).catch(error=>{
+    const pending=bbbDbFresh(table,query).catch(error=>{
       BBB_DB_CACHE.delete(key);
       throw error;
     });
@@ -30,6 +30,8 @@ function bbbDbCached(table,query='',options={}){
   }
   return BBB_DB_CACHE.get(key);
 }
+
+const bbbDbCached=bbbDb;
 
 function bbbClearDbCache(table=''){
   if(!table){BBB_DB_CACHE.clear();return;}
@@ -41,10 +43,10 @@ function bbbWait(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
 async function bbbDbSafe(table,query='',fallback=[],options={}){
   const attempts=Math.max(1,Number(options.attempts)||2);
   const delay=Math.max(0,Number(options.delay)||250);
-  const cached=!!options.cached;
+  const fresh=!!options.fresh;
   let lastError=null;
   for(let attempt=1;attempt<=attempts;attempt++){
-    try{return cached?await bbbDbCached(table,query,{refresh:attempt>1}):await bbbDb(table,query);}
+    try{return fresh?await bbbDbFresh(table,query):await bbbDb(table,query,{refresh:attempt>1});}
     catch(error){
       lastError=error;
       if(attempt<attempts){
@@ -70,7 +72,7 @@ function bbbNum(v){
 window.BBB_CORE={
   supabaseUrl:BBB_SUPABASE_URL,
   db:bbbDb,
-  dbCached:bbbDbCached,
+  dbFresh:bbbDbFresh,
   dbSafe:bbbDbSafe,
   clearDbCache:bbbClearDbCache,
   esc:bbbEsc,
