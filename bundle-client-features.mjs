@@ -6,7 +6,8 @@ const features=[
   ['watchlist.js','src="/watchlist.js"'],
   ['nav-polish.js','src="/nav-polish.js"'],
   ['profile-snapshot.js','src="/profile-snapshot.js"'],
-  ['profile-polish.js','src="/profile-polish.js"']
+  ['profile-polish.js','src="/profile-polish.js"'],
+  ['global-search.js','src="/global-search.js"']
 ];
 
 for(const [file] of features)await cp(file,join(root,file));
@@ -35,4 +36,4 @@ for(const file of pages){
   patched++;
 }
 
-console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, and final profile polish into ${patched} generated HTML pages.`);
+console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, and Global Player Search V1 into ${patched} generated HTML pages.`);
