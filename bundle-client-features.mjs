@@ -12,6 +12,7 @@ const features=[
   ['profile-fantasy-preview-fix.js','src="/profile-fantasy-preview-fix.js"'],
   ['trade-copy-polish.js','src="/trade-copy-polish.js"'],
   ['global-search.js','src="/global-search.js"'],
+  ['easter-egg-player.js','src="/easter-egg-player.js"'],
   ['search-polish.js','src="/search-polish.js"'],
   ['opportunity-feed.js','src="/opportunity-feed.js"'],
   ['homepage-structure.js','src="/homepage-structure.js"']
@@ -43,4 +44,4 @@ for(const file of pages){
   patched++;
 }
 
-console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Global Player Search V1, search UI polish, Opportunity Feed V1, and homepage structure polish into ${patched} generated HTML pages.`);
+console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, and homepage structure polish into ${patched} generated HTML pages.`);
