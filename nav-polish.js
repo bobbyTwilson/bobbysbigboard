@@ -35,7 +35,7 @@ function bbbNavInjectStyles(){
 function bbbNavMakeExplore(){
   const wrap=document.createElement('div');
   wrap.className='bbb-nav-explore';
-  wrap.innerHTML=`<button type="button" class="bbb-nav-explore-btn" aria-expanded="false" aria-haspopup="true">Explore <span class="bbb-nav-chevron">▾</span></button><div class="bbb-nav-explore-menu"><a href="#updates"><strong>Updates</strong><span>Latest injury, role, performance and roster news.</span></a><a href="#movers"><strong>Movers</strong><span>BBB risers, fallers and market-value gaps.</span></a><a href="#compare"><strong>Compare Players</strong><span>Put two dynasty assets side-by-side.</span></a></div>`;
+  wrap.innerHTML=`<button type="button" class="bbb-nav-explore-btn" aria-expanded="false" aria-haspopup="true">Explore <span class="bbb-nav-chevron">▾</span></button><div class="bbb-nav-explore-menu"><a href="#opportunity"><strong>Opportunity Feed</strong><span>Who just gained or lost meaningful dynasty opportunity.</span></a><a href="#updates"><strong>Updates</strong><span>Latest injury, role, performance and roster news.</span></a><a href="#movers"><strong>Movers</strong><span>BBB risers, fallers and market-value gaps.</span></a><a href="#compare"><strong>Compare Players</strong><span>Put two dynasty assets side-by-side.</span></a></div>`;
   const btn=wrap.querySelector('.bbb-nav-explore-btn');
   btn.addEventListener('click',e=>{
     e.preventDefault();e.stopPropagation();
@@ -66,7 +66,7 @@ function bbbNavPolishDesktop(nav){
 
   links.forEach(a=>{
     const key=bbbNavHrefKey(a);
-    if(['#updates','#movers','#compare'].includes(key))a.remove();
+    if(['#opportunity','#updates','#movers','#compare'].includes(key))a.remove();
   });
 
   let explore=nav.querySelector(':scope > .bbb-nav-explore');
@@ -84,6 +84,7 @@ function bbbNavPolishMobile(){
       else if(key==='#rookies')a.textContent='Rookies';
       else if(key==='#prospects')a.textContent='Prospects';
       else if(key==='#watchlist')a.textContent='My Players ☆';
+      else if(key==='#opportunity')a.textContent='Opportunity';
     });
   });
 }
