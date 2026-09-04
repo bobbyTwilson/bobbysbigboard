@@ -7,6 +7,7 @@ const requiredFiles=[
 for(const file of requiredFiles)await access(`${root}/${file}`);
 
 const html=await readFile(`${root}/index.html`,'utf8');
+const watchlist=await readFile(`${root}/watchlist.js`,'utf8');
 const sitemap=await readFile(`${root}/sitemap.xml`,'utf8');
 const config=JSON.parse(await readFile('.vercel/output/config.json','utf8'));
 
@@ -16,6 +17,10 @@ const requiredHtmlMarkers=[
 for(const marker of requiredHtmlMarkers){
   if(!html.includes(marker))throw new Error(`Build smoke check failed: missing ${marker}`);
 }
+for(const marker of ['bbb_watchlist_v1','watchlistView','bbbWatchInjectProfileButton','site_movers','site_updates']){
+  if(!watchlist.includes(marker))throw new Error(`Build smoke check failed: Watchlist runtime missing ${marker}`);
+}
+new Function(watchlist);
 if(/docs\.google\.com\/spreadsheets/i.test(html))throw new Error('Build smoke check failed: Google Sheets runtime survived into production HTML');
 
 const playerUrls=(sitemap.match(/<loc>https:\/\/bobbysbigboard\.com\/player\//g)||[]).length;
@@ -27,4 +32,4 @@ for(const route of ['/rankings/?','/rookies/?','/prospects/?','/trade/?','/compa
 }
 if(!routeSources.has('/player/([^/]+)/?'))throw new Error('Build smoke check failed: missing player profile route');
 
-console.log(`Build smoke checks passed: canonical runtime present, Watchlist V1 bundled, zero Google Sheets runtime references, ${playerUrls} player routes, and all primary BBB tools routed.`);
+console.log(`Build smoke checks passed: canonical runtime present, Watchlist V1 bundled and syntax-valid, zero Google Sheets runtime references, ${playerUrls} player routes, and all primary BBB tools routed.`);
