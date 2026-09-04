@@ -131,7 +131,7 @@
     row.className='bbb-search-result';
     row.href='/player/daejon-love';
     row.dataset.bbbSpecialPlayer='daejon-love';
-    row.innerHTML=`<div class="bbb-search-result-main"><strong>DAEJON LOVE</strong><span>WR • SF</span><div class="bbb-search-sources"><span class="bbb-search-source prospect">PROSPECT 91</span></div></div>`;
+    row.innerHTML=`<div class="bbb-search-result-main"><strong>Daejon Love</strong><span>WR • SF</span><div class="bbb-search-sources"><span class="bbb-search-source prospect">PROSPECT 91</span></div></div>`;
     results.prepend(row);
   }
 
