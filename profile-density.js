@@ -41,9 +41,8 @@
     const timeline=grid.querySelector('.bbb-v2-updates-card');
     const trend=grid.querySelector('.bbb-v2-trend-card');
     const ranking=grid.querySelector('.bbb-ranking-card');
-    const gameLog=grid.querySelector('.bbb-fantasy-gamelog-card');
     const career=grid.querySelector('.bbb-v2-career-card');
-    const prioritized=[overview,timeline,trend,ranking,gameLog,career].filter(Boolean);
+    const prioritized=[overview,timeline,trend,ranking,career].filter(Boolean);
     const prioritizedSet=new Set(prioritized);
     const remaining=[...grid.children].filter(el=>el.classList?.contains('profile-card')&&!prioritizedSet.has(el));
 
