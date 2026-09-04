@@ -40,10 +40,10 @@ for(const marker of ['Player Timeline V2','site_ranking_history','BBB Ranking','
 for(const marker of ['Final profile composition guard','bbbFinalEnsureOverview','bbbFinalRemoveDuplicateCompare','bbbFinalMergeTimeline','profileRender']){
   if(!profilePolish.includes(marker))throw new Error(`Build smoke check failed: final profile polish missing ${marker}`);
 }
-for(const marker of ['profile density polish','bbbProfileDensityArrange','bbb-v2-updates-card','bbb-profile-deep-research']){
+for(const marker of ['profile density polish','bbbProfileDensityArrange','bbb-v2-updates-card','bbb-profile-deep-research','bbb-fantasy-gamelog-card']){
   if(!profileDensity.includes(marker))throw new Error(`Build smoke check failed: profile density polish missing ${marker}`);
 }
-for(const marker of ['fantasy production profile layer','site_player_weekly_stats','PPR Rank','FANTASY GAME LOG','weekly_position_finish','bbbGameLog']){
+for(const marker of ['fantasy production profile layer','site_player_weekly_stats','PPR Rank','Season Production','FANTASY GAME LOG','weekly_position_finish','bbbGameLog','bbbFantasyCleanCompare','bbbFantasyScrollToGameLog']){
   if(!profileFantasy.includes(marker))throw new Error(`Build smoke check failed: fantasy profile runtime missing ${marker}`);
 }
 for(const marker of ['Opportunity Feed V1','BBB_OPPORTUNITY_DAYS','OPPORTUNITY ↑','OPPORTUNITY ↓','site_updates','opportunityView']){
