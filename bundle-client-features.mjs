@@ -8,6 +8,7 @@ const features=[
   ['profile-snapshot.js','src="/profile-snapshot.js"'],
   ['profile-polish.js','src="/profile-polish.js"'],
   ['profile-density.js','src="/profile-density.js"'],
+  ['preview-weekly-history.js','src="/preview-weekly-history.js"'],
   ['profile-fantasy-stats.js','src="/profile-fantasy-stats.js"'],
   ['profile-fantasy-preview-fix.js','src="/profile-fantasy-preview-fix.js"'],
   ['global-search.js','src="/global-search.js"'],
@@ -42,4 +43,4 @@ for(const file of pages){
   patched++;
 }
 
-console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, Global Player Search V1, search UI polish, Opportunity Feed V1, and homepage structure polish into ${patched} generated HTML pages.`);
+console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, preview full weekly-history routing, fantasy season/game-log profiles, preview fantasy-profile fixes, Global Player Search V1, search UI polish, Opportunity Feed V1, and homepage structure polish into ${patched} generated HTML pages.`);
