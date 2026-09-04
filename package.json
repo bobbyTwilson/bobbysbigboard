@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npx serve .",
-    "build": "node prepare-shell.mjs && node build.mjs && node bundle-client-features.mjs && node verify-build.mjs && node admin-build.mjs"
+    "build": "node prepare-shell.mjs && node build.mjs && node easter-egg-build.mjs && node bundle-client-features.mjs && node verify-build.mjs && node admin-build.mjs"
   },
   "engines": {"node": ">=20"}
 }
