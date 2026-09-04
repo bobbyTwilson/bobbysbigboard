@@ -15,7 +15,8 @@ const features=[
   ['easter-egg-player.js','src="/easter-egg-player.js"'],
   ['search-polish.js','src="/search-polish.js"'],
   ['opportunity-feed.js','src="/opportunity-feed.js"'],
-  ['homepage-structure.js','src="/homepage-structure.js"']
+  ['homepage-structure.js','src="/homepage-structure.js"'],
+  ['deep-link-routing-fix.js','src="/deep-link-routing-fix.js"']
 ];
 
 for(const [file] of features)await cp(file,join(root,file));
@@ -44,4 +45,4 @@ for(const file of pages){
   patched++;
 }
 
-console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, and homepage structure polish into ${patched} generated HTML pages.`);
+console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, and player deep-link routing protection into ${patched} generated HTML pages.`);
