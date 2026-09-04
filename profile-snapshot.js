@@ -48,7 +48,7 @@ function bbbSnapshotCleanDuplicates(){
   mount.querySelector('.bbb-v2-snapshot')?.remove();
   [...mount.querySelectorAll('a,button')].forEach(el=>{
     const text=String(el.textContent||'').trim().toUpperCase();
-    if(text==='COMPARE THIS PLAYER'&&!el.closest('.bbb-profile-atglance'))el.remove();
+    if(text.startsWith('COMPARE THIS PLAYER')&&!el.closest('.bbb-profile-atglance'))el.remove();
   });
 }
 function bbbSnapshotRender(slug,player,mover){
