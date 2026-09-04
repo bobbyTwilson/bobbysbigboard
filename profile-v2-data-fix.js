@@ -108,3 +108,154 @@
     </section>`;
   };
 })();
+
+// Player Timeline V2: merge meaningful BBB ranking changes with preserved player news.
+(function(){
+  if(typeof bbbV2UpdatesCard!=='function'||typeof bbbDbSafe!=='function')return;
+
+  function timelineNum(v){const n=Number(v);return Number.isFinite(n)?n:null}
+  function timelineStamp(v,fallback){const n=Date.parse(v||'');return Number.isFinite(n)?n:fallback||0}
+
+  function buildRankingEvents(rows){
+    const byDay=new Map();
+    (rows||[]).forEach(row=>{
+      const rank=timelineNum(row.overall_rank);
+      const date=String(row.snapshot_date||'');
+      if(rank==null||!date)return;
+      const stamp=timelineStamp(row.created_at,timelineStamp(date+'T23:59:59Z'));
+      const existing=byDay.get(date);
+      if(!existing||stamp>=existing._stamp)byDay.set(date,{...row,_stamp:stamp,_rank:rank});
+    });
+
+    const days=[...byDay.values()].sort((a,b)=>a._stamp-b._stamp||String(a.snapshot_date).localeCompare(String(b.snapshot_date)));
+    const events=[];
+    let previous=null;
+    days.forEach(row=>{
+      const rank=row._rank;
+      if(previous!=null&&rank!==previous){
+        const move=previous-rank;
+        const amount=Math.abs(move);
+        events.push({
+          id:`ranking-${row.snapshot_date}-${previous}-${rank}`,
+          update_date:row.snapshot_date,
+          update_type:'Ranking',
+          update_text:`BBB moved ${move>0?'up':'down'} ${amount} spot${amount===1?'':'s'}, from #${previous} to #${rank}.`,
+          injury_status:null,
+          rank_impact:`#${previous} → #${rank}`,
+          _timeline_kind:'ranking',
+          _from_rank:previous,
+          _to_rank:rank,
+          _move:move,
+          _sort:row._stamp
+        });
+      }
+      previous=rank;
+    });
+    return events;
+  }
+
+  function mergeTimeline(updates,history){
+    const news=(updates||[]).map(u=>({
+      ...u,
+      _timeline_kind:'news',
+      _sort:timelineStamp(String(u.update_date||'')+'T12:00:00Z')+(timelineNum(u.id)||0)/1000
+    }));
+    return [...news,...buildRankingEvents(history)]
+      .sort((a,b)=>b._sort-a._sort||String(b.update_date||'').localeCompare(String(a.update_date||'')));
+  }
+
+  bbbV2Load=async function(playerKey){
+    const key=encodeURIComponent(playerKey);
+    const [stats,movers,updates,marketHistory,rankingHistory]=await Promise.all([
+      bbbDbSafe('site_player_season_stats',`select=*&player_key=eq.${key}&order=season.desc`,[]),
+      bbbDbSafe('site_movers',`select=*&player_key=eq.${key}&limit=1`,[]),
+      bbbDbSafe('site_updates',`select=id,update_date,update_type,update_text,injury_status,rank_impact&player_key=eq.${key}&order=update_date.desc,id.desc&limit=40`,[]),
+      bbbDbSafe('site_market_history',`select=snapshot_date,market_rank,bbb_rank,created_at,snapshot_kind&player_key=eq.${key}&order=snapshot_date.asc,created_at.asc&limit=60`,[]),
+      bbbLoadRankingHistory(playerKey)
+    ]);
+    return {
+      stats:stats||[],
+      mover:movers?.[0]||null,
+      updates:mergeTimeline(updates||[],rankingHistory||[]),
+      marketHistory:marketHistory||[],
+      rankingHistory:rankingHistory||[]
+    };
+  };
+
+  const originalUpdateClass=bbbV2UpdateClass;
+  bbbV2UpdateClass=function(v){
+    if(String(v||'').toLowerCase()==='ranking')return'ranking';
+    return originalUpdateClass(v);
+  };
+
+  bbbV2UpdatesCard=function(events){
+    if(!events.length)return '';
+    const visible=6;
+    const newsCount=events.filter(e=>e._timeline_kind!=='ranking').length;
+    const rankCount=events.filter(e=>e._timeline_kind==='ranking').length;
+    const rows=events.map((u,i)=>{
+      const ranking=u._timeline_kind==='ranking';
+      const movement=timelineNum(u._move);
+      const movementLabel=ranking&&movement!=null
+        ? `${movement>0?'↑':'↓'} ${Math.abs(movement)}`
+        : '';
+      const right=ranking
+        ? `<small class="bbb-timeline-rank-change">#${bbbEsc(u._from_rank)} → #${bbbEsc(u._to_rank)}${movementLabel?` · ${bbbEsc(movementLabel)}`:''}</small>`
+        : u.injury_status?`<small>${bbbEsc(u.injury_status)}</small>`:'';
+      return `<div class="bbb-v2-timeline-item ${ranking?'ranking-event':''}${i>=visible?' bbb-v2-timeline-more':''}">
+        <div class="bbb-v2-timeline-rail"><span></span></div>
+        <div class="bbb-v2-timeline-body">
+          <div class="bbb-v2-timeline-head"><div><span class="bbb-v2-update-type ${bbbV2UpdateClass(u.update_type)}">${bbbEsc(ranking?'BBB Ranking':u.update_type||'Update')}</span><time>${bbbEsc(bbbV2Date(u.update_date))}</time></div>${right}</div>
+          <p>${bbbEsc(u.update_text||'')}</p>
+        </div>
+      </div>`;
+    }).join('');
+    const more=events.length-visible;
+    return `<section class="profile-card full bbb-v2-updates-card bbb-timeline-card">
+      <div class="profile-card-kicker">PLAYER TIMELINE</div>
+      <div class="bbb-v2-card-head">
+        <div><h2>What changed and when.</h2><p>Meaningful player news and Bobby's Big Board ranking moves together in one chronological history.</p></div>
+        <span class="bbb-v2-count">${events.length} EVENT${events.length===1?'':'S'}</span>
+      </div>
+      <div class="bbb-timeline-summary"><span>${newsCount} NEWS</span><span>${rankCount} BBB RANK MOVE${rankCount===1?'':'S'}</span></div>
+      <div class="bbb-v2-timeline">${rows}</div>
+      ${more>0?`<button type="button" class="bbb-timeline-toggle" aria-expanded="false"><span>Show full timeline</span><small>${more} more event${more===1?'':'s'}</small></button>`:''}
+    </section>`;
+  };
+
+  if(!document.querySelector('#bbb-player-timeline-v2-styles')){
+    const style=document.createElement('style');
+    style.id='bbb-player-timeline-v2-styles';
+    style.textContent=`
+      .bbb-timeline-summary{display:flex;gap:7px;flex-wrap:wrap;margin:-7px 0 16px 29px}
+      .bbb-timeline-summary span{display:inline-flex;border:1px solid #1d3d30;background:#08120e;color:#70877a;border-radius:999px;padding:5px 8px;font-size:7px;font-weight:950;letter-spacing:.07em}
+      .bbb-v2-update-type.ranking{background:#0d2924;color:#79dfc1;border:1px solid #22695b}
+      .bbb-v2-timeline-item.ranking-event .bbb-v2-timeline-rail span{background:#68d8ba;box-shadow:0 0 0 4px #0a1a12}
+      .bbb-timeline-rank-change{color:#91d7be!important;font-weight:900;white-space:nowrap}
+      .bbb-v2-timeline-more{display:none}
+      .bbb-timeline-card.is-expanded .bbb-v2-timeline-more{display:grid}
+      .bbb-timeline-toggle{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:2px;padding:10px 12px;border:1px solid #24483a;background:#09150f;color:#95d8b2;border-radius:10px;cursor:pointer;font:inherit}
+      .bbb-timeline-toggle:hover{border-color:#50ce8e;color:#fff}
+      .bbb-timeline-toggle span{font-size:9px;font-weight:950;text-transform:uppercase;letter-spacing:.06em}
+      .bbb-timeline-toggle small{font-size:8px;color:#657a6f}
+      @media(max-width:560px){
+        .bbb-timeline-summary{margin-left:0}
+        .bbb-timeline-rank-change{display:block;margin-top:5px;white-space:normal}
+        .bbb-timeline-toggle{display:block}
+        .bbb-timeline-toggle small{display:block;margin-top:4px}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  document.addEventListener('click',e=>{
+    const button=e.target.closest('.bbb-timeline-toggle');
+    if(!button)return;
+    const card=button.closest('.bbb-timeline-card');
+    if(!card)return;
+    const expanded=card.classList.toggle('is-expanded');
+    button.setAttribute('aria-expanded',String(expanded));
+    const label=button.querySelector('span');
+    if(label)label.textContent=expanded?'Show recent only':'Show full timeline';
+  });
+})();
