@@ -25,7 +25,7 @@ for(const marker of ['bbb_watchlist_v1','watchlistView','bbbWatchInjectProfileBu
 for(const marker of ['bbb-nav-explore','Explore','Compare Players','bbbNavPolishDesktop']){
   if(!navPolish.includes(marker))throw new Error(`Build smoke check failed: navigation polish missing ${marker}`);
 }
-for(const marker of ['bbb-profile-atglance','PLAYER SNAPSHOT','7D Movement','30D Movement','LATEST BBB TAKE','bbbSnapshotMover']){
+for(const marker of ['bbb-profile-atglance','PLAYER SNAPSHOT','7D Movement','30D Movement','LATEST BBB TAKE','bbbSnapshotMover','profile-statbar','bbb-v2-snapshot','COMPARE THIS PLAYER']){
   if(!profileSnapshot.includes(marker))throw new Error(`Build smoke check failed: Profile Snapshot runtime missing ${marker}`);
 }
 new Function(watchlist);
@@ -42,4 +42,4 @@ for(const route of ['/rankings/?','/rookies/?','/prospects/?','/trade/?','/compa
 }
 if(!routeSources.has('/player/([^/]+)/?'))throw new Error('Build smoke check failed: missing player profile route');
 
-console.log(`Build smoke checks passed: canonical runtime present, Watchlist V1, streamlined navigation, and Profile Snapshot V1 bundled and syntax-valid, zero Google Sheets runtime references, ${playerUrls} player routes, and all primary BBB tools routed.`);
+console.log(`Build smoke checks passed: canonical runtime present, Watchlist V1, streamlined navigation, and deduplicated Profile Snapshot V1 bundled and syntax-valid, zero Google Sheets runtime references, ${playerUrls} player routes, and all primary BBB tools routed.`);
