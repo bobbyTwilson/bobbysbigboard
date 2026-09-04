@@ -118,8 +118,8 @@
   }
 
   function shouldShowSearchResult(q){
-    const query=norm(q),name=norm(special.name);
-    return !!query&&(name.includes(query)||query.includes(name));
+    const query=norm(q);
+    return query==='daejon'||query.startsWith('daejon ');
   }
   function injectSearchResult(){
     const input=document.querySelector('#bbbGlobalSearchInput');
@@ -131,8 +131,12 @@
     row.className='bbb-search-result';
     row.href='/player/daejon-love';
     row.dataset.bbbSpecialPlayer='daejon-love';
-    row.innerHTML=`<div class="bbb-search-result-main"><strong>DAEJON LOVE</strong><span>SF • WR • Prospect Grade 91</span><div class="bbb-search-sources"><span class="bbb-search-source">PLAYER PROFILE</span></div></div>`;
+    row.innerHTML=`<div class="bbb-search-result-main"><strong>DAEJON LOVE</strong><span>WR • SF</span><div class="bbb-search-sources"><span class="bbb-search-source prospect">PROSPECT 91</span></div></div>`;
     results.prepend(row);
+  }
+
+  function ensureDirectRoute(){
+    if(isDaejon(location.pathname))renderDaejon();
   }
 
   document.addEventListener('input',e=>{
@@ -143,9 +147,10 @@
     if(!link)return;
     e.preventDefault();e.stopImmediatePropagation();
     history.pushState({},'', '/player/daejon-love');
-    if(typeof profileRoute==='function')profileRoute(true);else location.href='/player/daejon-love';
+    renderDaejon();
   },true);
   document.addEventListener('DOMContentLoaded',()=>{
+    setTimeout(ensureDirectRoute,0);
     let tries=0;
     const timer=setInterval(()=>{
       const results=document.querySelector('#bbbGlobalSearchResults');
@@ -155,6 +160,8 @@
       }else if(++tries>40)clearInterval(timer);
     },100);
   });
+  if(document.readyState!=='loading')setTimeout(ensureDirectRoute,0);
+  window.addEventListener('popstate',ensureDirectRoute);
 
   const style=document.createElement('style');style.id='bbb-secret-player-styles';style.textContent=`
     .bbb-secret-copy{color:#aebdb5;font-size:12px;line-height:1.75;margin:0 0 14px}.bbb-secret-story-card h2{margin-bottom:14px}.bbb-secret-disclaimer{margin-top:20px;padding:15px 16px;border:1px solid #31483d;background:#09100d;border-radius:10px}.bbb-secret-disclaimer strong{display:block;color:#82968b;font-size:8px;letter-spacing:.13em;margin-bottom:6px}.bbb-secret-disclaimer span{display:block;color:#778a7f;font-size:9px;line-height:1.6}
