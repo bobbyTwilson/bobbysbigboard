@@ -2,7 +2,7 @@ import {access,readFile} from 'node:fs/promises';
 
 const root='.vercel/output/static';
 const requiredFiles=[
-  'index.html','bbb-core.js','supabase-override.js','profile-overview-fix.js','updates-section.js','movers-section.js','compare-section.js','profile-v2.js','profile-v2-data-fix.js','profile-college.js','trade-v2.js','advanced-filters.js','seo-social.js','sitemap.xml','robots.txt'
+  'index.html','bbb-core.js','supabase-override.js','profile-overview-fix.js','updates-section.js','movers-section.js','compare-section.js','profile-v2.js','profile-v2-data-fix.js','profile-college.js','trade-v2.js','advanced-filters.js','watchlist.js','seo-social.js','sitemap.xml','robots.txt'
 ];
 for(const file of requiredFiles)await access(`${root}/${file}`);
 
@@ -11,7 +11,7 @@ const sitemap=await readFile(`${root}/sitemap.xml`,'utf8');
 const config=JSON.parse(await readFile('.vercel/output/config.json','utf8'));
 
 const requiredHtmlMarkers=[
-  'id="rankingsView"','id="rookieView"','id="prospectView"','id="tradeView"','id="profileView"','id="bbb-runtime-script"','src="/bbb-core.js"','src="/supabase-override.js"','src="/updates-section.js"','src="/compare-section.js"','src="/profile-v2.js"','src="/trade-v2.js"','src="/advanced-filters.js"'
+  'id="rankingsView"','id="rookieView"','id="prospectView"','id="tradeView"','id="profileView"','id="bbb-runtime-script"','src="/bbb-core.js"','src="/supabase-override.js"','src="/updates-section.js"','src="/compare-section.js"','src="/profile-v2.js"','src="/trade-v2.js"','src="/advanced-filters.js"','src="/watchlist.js"'
 ];
 for(const marker of requiredHtmlMarkers){
   if(!html.includes(marker))throw new Error(`Build smoke check failed: missing ${marker}`);
@@ -27,4 +27,4 @@ for(const route of ['/rankings/?','/rookies/?','/prospects/?','/trade/?','/compa
 }
 if(!routeSources.has('/player/([^/]+)/?'))throw new Error('Build smoke check failed: missing player profile route');
 
-console.log(`Build smoke checks passed: canonical runtime present, zero Google Sheets runtime references, ${playerUrls} player routes, and all primary BBB tools routed.`);
+console.log(`Build smoke checks passed: canonical runtime present, Watchlist V1 bundled, zero Google Sheets runtime references, ${playerUrls} player routes, and all primary BBB tools routed.`);
