@@ -9,7 +9,8 @@ const features=[
   ['profile-polish.js','src="/profile-polish.js"'],
   ['global-search.js','src="/global-search.js"'],
   ['search-polish.js','src="/search-polish.js"'],
-  ['opportunity-feed.js','src="/opportunity-feed.js"']
+  ['opportunity-feed.js','src="/opportunity-feed.js"'],
+  ['homepage-structure.js','src="/homepage-structure.js"']
 ];
 
 for(const [file] of features)await cp(file,join(root,file));
@@ -38,4 +39,4 @@ for(const file of pages){
   patched++;
 }
 
-console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, Global Player Search V1, search UI polish, and Opportunity Feed V1 into ${patched} generated HTML pages.`);
+console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, Global Player Search V1, search UI polish, Opportunity Feed V1, and homepage structure polish into ${patched} generated HTML pages.`);
