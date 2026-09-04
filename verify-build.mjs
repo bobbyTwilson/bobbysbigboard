@@ -10,6 +10,7 @@ const html=await readFile(`${root}/index.html`,'utf8');
 const watchlist=await readFile(`${root}/watchlist.js`,'utf8');
 const navPolish=await readFile(`${root}/nav-polish.js`,'utf8');
 const profileSnapshot=await readFile(`${root}/profile-snapshot.js`,'utf8');
+const profileDataFix=await readFile(`${root}/profile-v2-data-fix.js`,'utf8');
 const sitemap=await readFile(`${root}/sitemap.xml`,'utf8');
 const config=JSON.parse(await readFile('.vercel/output/config.json','utf8'));
 
@@ -28,9 +29,13 @@ for(const marker of ['bbb-nav-explore','Explore','Compare Players','bbbNavPolish
 for(const marker of ['bbb-profile-atglance','PLAYER SNAPSHOT','7D Movement','30D Movement','LATEST BBB TAKE','bbbSnapshotMover','profile-statbar','bbb-v2-snapshot','COMPARE THIS PLAYER']){
   if(!profileSnapshot.includes(marker))throw new Error(`Build smoke check failed: Profile Snapshot runtime missing ${marker}`);
 }
+for(const marker of ['Player Timeline V2','site_ranking_history','BBB Ranking','Show full timeline','bbb-timeline-card']){
+  if(!profileDataFix.includes(marker))throw new Error(`Build smoke check failed: Player Timeline runtime missing ${marker}`);
+}
 new Function(watchlist);
 new Function(navPolish);
 new Function(profileSnapshot);
+new Function(profileDataFix);
 if(/docs\.google\.com\/spreadsheets/i.test(html))throw new Error('Build smoke check failed: Google Sheets runtime survived into production HTML');
 
 const playerUrls=(sitemap.match(/<loc>https:\/\/bobbysbigboard\.com\/player\//g)||[]).length;
@@ -42,4 +47,4 @@ for(const route of ['/rankings/?','/rookies/?','/prospects/?','/trade/?','/compa
 }
 if(!routeSources.has('/player/([^/]+)/?'))throw new Error('Build smoke check failed: missing player profile route');
 
-console.log(`Build smoke checks passed: canonical runtime present, Watchlist V1, streamlined navigation, and deduplicated Profile Snapshot V1 bundled and syntax-valid, zero Google Sheets runtime references, ${playerUrls} player routes, and all primary BBB tools routed.`);
+console.log(`Build smoke checks passed: canonical runtime present, Watchlist V1, streamlined navigation, deduplicated Profile Snapshot V1, and Player Timeline V2 bundled and syntax-valid, zero Google Sheets runtime references, ${playerUrls} player routes, and all primary BBB tools routed.`);
