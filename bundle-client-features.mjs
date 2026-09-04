@@ -7,6 +7,7 @@ const features=[
   ['nav-polish.js','src="/nav-polish.js"'],
   ['profile-snapshot.js','src="/profile-snapshot.js"'],
   ['profile-polish.js','src="/profile-polish.js"'],
+  ['profile-density.js','src="/profile-density.js"'],
   ['global-search.js','src="/global-search.js"'],
   ['search-polish.js','src="/search-polish.js"'],
   ['opportunity-feed.js','src="/opportunity-feed.js"'],
@@ -39,4 +40,4 @@ for(const file of pages){
   patched++;
 }
 
-console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, Global Player Search V1, search UI polish, Opportunity Feed V1, and homepage structure polish into ${patched} generated HTML pages.`);
+console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, Global Player Search V1, search UI polish, Opportunity Feed V1, and homepage structure polish into ${patched} generated HTML pages.`);
