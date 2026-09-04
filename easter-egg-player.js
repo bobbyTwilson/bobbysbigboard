@@ -142,13 +142,10 @@
   document.addEventListener('input',e=>{
     if(e.target?.id==='bbbGlobalSearchInput')queueMicrotask(injectSearchResult);
   });
-  document.addEventListener('click',e=>{
-    const link=e.target.closest('[data-bbb-special-player="daejon-love"]');
-    if(!link)return;
-    e.preventDefault();e.stopImmediatePropagation();
-    history.pushState({},'', '/player/daejon-love');
-    renderDaejon();
-  },true);
+
+  // Do not intercept Daejon clicks here. The normal global-search click handler
+  // closes the overlay first, updates the URL, and calls profileRoute(), which
+  // now routes Daejon through the profileRender override above.
   document.addEventListener('DOMContentLoaded',()=>{
     setTimeout(ensureDirectRoute,0);
     let tries=0;
