@@ -57,7 +57,7 @@
   function pOverview(prospect,profile){
     const key=String(prospect?.playerKey||prospect?.player_key||'').trim();
     const copy=(profile?.overview||MANUAL_OVERVIEWS[key]||pFallbackOverview(prospect)).trim();
-    return `<section class="profile-card full bbb-prospect-overview-card"><div class="profile-card-kicker">SCOUTING OVERVIEW</div><h2>How the profile wins.</h2><div class="bbb-prospect-overview-copy">${bbbEsc(copy)}</div></section>`;
+    return `<section class="profile-card full bbb-prospect-overview-card"><div class="profile-card-kicker">SCOUTING OVERVIEW</div><h2>How the player wins.</h2><div class="bbb-prospect-overview-copy">${bbbEsc(copy)}</div></section>`;
   }
   function pEvaluation(prospect){
     const strengths=pTopTraits(prospect,3),concerns=pLowTraits(prospect,2);
