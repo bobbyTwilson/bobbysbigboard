@@ -2,8 +2,12 @@ import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 
 const out='.vercel/output';
 const SITE='https://bobbysbigboard.com';
-const SUPABASE='https://twbduhmibbotregdxlla.supabase.co';
-const SUPABASE_KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
+const SUPABASE=process.env.BBB_SUPABASE_URL;
+const SUPABASE_KEY=process.env.BBB_SUPABASE_KEY;
+
+if(!SUPABASE||!SUPABASE_KEY){
+  throw new Error('Missing BBB_SUPABASE_URL or BBB_SUPABASE_KEY environment variable.');
+}
 
 await rm(out,{recursive:true,force:true});
 await mkdir(`${out}/static`,{recursive:true});
@@ -120,7 +124,11 @@ const sitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www
 await writeFile(`${out}/static/sitemap.xml`,sitemap);
 await writeFile(`${out}/static/robots.txt`,`User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
 
-await cp('bbb-core.js',`${out}/static/bbb-core.js`);
+let bbbCore=await readFile('bbb-core.js','utf8');
+bbbCore=bbbCore
+  .replace('__BBB_SUPABASE_URL__',SUPABASE)
+  .replace('__BBB_SUPABASE_KEY__',SUPABASE_KEY);
+await writeFile(`${out}/static/bbb-core.js`,bbbCore);
 await cp('supabase-override.js',`${out}/static/supabase-override.js`);
 await cp('profile-overview-fix.js',`${out}/static/profile-overview-fix.js`);
 await cp('updates-section.js',`${out}/static/updates-section.js`);
