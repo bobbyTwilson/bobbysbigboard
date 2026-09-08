@@ -23,7 +23,7 @@ html=html
   .replace('<a href="#trade">Trade Calculator</a>','')
   .replace('</body>',`${analytics}<script src="/bbb-core.js"></script><script src="/supabase-override.js"></script><script src="/profile-overview-fix.js"></script><script src="/updates-section.js"></script><script src="/compare-section.js"></script><script src="/profile-v2.js"></script><script src="/profile-v2-data-fix.js"></script><script src="/profile-college.js"></script><script src="/profile-prospect-mode.js"></script><script src="/trade-v2.js"></script><script src="/advanced-filters.js"></script><script src="/seo-social.js"></script>${comparePolish}${moverNavFix}</body>`);
 
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));}
 function stripSeo(doc){
   return doc
     .replace(/<title[^>]*>[\s\S]*?<\/title>/i,'')
@@ -49,11 +49,13 @@ async function supa(table,query){
 const logo=html.match(/<img[^>]*class="[^"]*brand-logo[^"]*"[^>]*src="data:image\/webp;base64,([^"]+)"/i);
 if(logo)await writeFile(`${out}/static/bbb-share.webp`,Buffer.from(logo[1],'base64'));
 
-const [profileRows,dynastyRows]=await Promise.all([
+const [profileRows,dynastyRows,prospectRows]=await Promise.all([
   supa('site_profiles','select=player_key,name,pos,team,age,draft_year,college&order=name.asc'),
-  supa('site_dynasty','select=rank,player_key,name,pos,pr,team,age,draft,market,gap,college&order=rank.asc')
+  supa('site_dynasty','select=rank,player_key,name,pos,pr,team,age,draft,market,gap,college&order=rank.asc'),
+  supa('site_prospects','select=player_key,name,pos,year,grade,comp&order=grade.desc')
 ]);
 const dynastyMap=new Map(dynastyRows.map(x=>[x.player_key,x]));
+const prospectMap=new Map(prospectRows.map(x=>[x.player_key,x]));
 const profiles=profileRows.filter(x=>x.player_key&&x.name);
 
 const homeMeta={
@@ -81,24 +83,39 @@ for(const [slug,m] of Object.entries(tools)){
 
 for(const p of profiles){
   const d=dynastyMap.get(p.player_key);
-  const rank=d?.rank?`BBB dynasty rank #${d.rank}. `:'';
-  const pos=d?.pos||p.pos||'';
-  const team=d?.team||p.team||'';
-  const description=`${p.name} dynasty fantasy football profile. ${rank}${pos}${team?' • '+team:''}. Rankings, market value, player updates, ranking history, career fantasy production, and prospect context from Bobby's Big Board.`;
+  const prospect=prospectMap.get(p.player_key);
+  const pureProspect=!!prospect&&!d;
   const path=`/player/${p.player_key}`;
+  let title,description,pageName;
+  if(pureProspect){
+    const grade=Number(prospect.grade);
+    const gradeText=Number.isFinite(grade)?` BBB prospect grade ${Number.isInteger(grade)?grade:grade.toFixed(1)}.`:'';
+    const comp=prospect.comp?` Pro comp: ${prospect.comp}.`:'';
+    title=`${p.name} ${prospect.year} NFL Draft Prospect | Bobby's Big Board`;
+    description=`${p.name} ${prospect.pos} prospect profile for the ${prospect.year} NFL Draft.${gradeText}${comp} Film traits, scouting overview, strengths, concerns, and Bobby's evaluation.`;
+    pageName=`${p.name} ${prospect.year} NFL Draft Prospect Profile`;
+  }else{
+    const rank=d?.rank?`BBB dynasty rank #${d.rank}. `:'';
+    const pos=d?.pos||p.pos||'';
+    const team=d?.team||p.team||'';
+    title=`${p.name} Dynasty Profile | Bobby's Big Board`;
+    description=`${p.name} dynasty fantasy football profile. ${rank}${pos}${team?' • '+team:''}. Rankings, market value, player updates, ranking history, career fantasy production, and prospect context from Bobby's Big Board.`;
+    pageName=`${p.name} Dynasty Profile`;
+  }
   const page=withSeo(html,{
-    title:`${p.name} Dynasty Profile | Bobby's Big Board`,
+    title,
     description,
     path,
     type:'profile',
-    jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:`${p.name} Dynasty Profile`,url:SITE+path,description,about:{'@type':'Person',name:p.name}}
+    jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:pageName,url:SITE+path,description,about:{'@type':'Person',name:p.name}}
   });
   await writeFile(`${out}/static/seo/players/${p.player_key}.html`,page);
 }
 
 const lastmod=new Date().toISOString().slice(0,10);
 const currentPlayerPaths=dynastyRows.filter(p=>p.player_key).map(p=>`/player/${p.player_key}`);
-const sitemapPaths=['/',...Object.keys(tools).map(x=>`/${x}`),...currentPlayerPaths];
+const prospectProfilePaths=prospectRows.filter(p=>p.player_key&&!dynastyMap.has(p.player_key)).map(p=>`/player/${p.player_key}`);
+const sitemapPaths=['/',...Object.keys(tools).map(x=>`/${x}`),...new Set([...currentPlayerPaths,...prospectProfilePaths])];
 const sitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map(path=>`  <url><loc>${SITE}${path}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n')}\n</urlset>\n`;
 await writeFile(`${out}/static/sitemap.xml`,sitemap);
 await writeFile(`${out}/static/robots.txt`,`User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
@@ -128,4 +145,4 @@ await writeFile(`${out}/config.json`,JSON.stringify({
   ]
 },null,2));
 
-console.log(`Built production-identical Bobby's Big Board UI from the repo-owned site shell with shared BBB core data layer, SEO/social metadata, ${profiles.length} shareable player profiles, ${currentPlayerPaths.length} current profiles in sitemap, robots, Profile V2, Prospect Profile Mode, Trade Calculator V2, and advanced filters.`);
+console.log(`Built production-identical Bobby's Big Board UI from the repo-owned site shell with shared BBB core data layer, SEO/social metadata, ${profiles.length} shareable player profiles, ${currentPlayerPaths.length} current dynasty profiles, ${prospectProfilePaths.length} pure prospect profiles in sitemap, robots, Profile V2, Prospect Profile Mode, Trade Calculator V2, and advanced filters.`);
