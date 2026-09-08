@@ -1,5 +1,5 @@
-const BBB_SUPABASE_URL='https://twbduhmibbotregdxlla.supabase.co';
-const BBB_SUPABASE_KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
+const BBB_SUPABASE_URL='__BBB_SUPABASE_URL__';
+const BBB_SUPABASE_KEY='__BBB_SUPABASE_KEY__';
 const BBB_DB_CACHE=new Map();
 
 function bbbBuildDbUrl(table,query=''){
