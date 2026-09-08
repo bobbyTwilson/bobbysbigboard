@@ -21,7 +21,7 @@ html=html
   .replaceAll("The rookie order updates directly from Bobby's sheet.","The rookie order updates directly from Bobby's database.")
   .replaceAll("Bobby's live Draft Pick Values sheet","Bobby's live SQL database")
   .replace('<a href="#trade">Trade Calculator</a>','')
-  .replace('</body>',`${analytics}<script src="/bbb-core.js"></script><script src="/supabase-override.js"></script><script src="/profile-overview-fix.js"></script><script src="/updates-section.js"></script><script src="/compare-section.js"></script><script src="/profile-v2.js"></script><script src="/profile-v2-data-fix.js"></script><script src="/profile-college.js"></script><script src="/trade-v2.js"></script><script src="/advanced-filters.js"></script><script src="/seo-social.js"></script>${comparePolish}${moverNavFix}</body>`);
+  .replace('</body>',`${analytics}<script src="/bbb-core.js"></script><script src="/supabase-override.js"></script><script src="/profile-overview-fix.js"></script><script src="/updates-section.js"></script><script src="/compare-section.js"></script><script src="/profile-v2.js"></script><script src="/profile-v2-data-fix.js"></script><script src="/profile-college.js"></script><script src="/profile-prospect-mode.js"></script><script src="/trade-v2.js"></script><script src="/advanced-filters.js"></script><script src="/seo-social.js"></script>${comparePolish}${moverNavFix}</body>`);
 
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function stripSeo(doc){
@@ -112,6 +112,7 @@ await cp('compare-section.js',`${out}/static/compare-section.js`);
 await cp('profile-v2.js',`${out}/static/profile-v2.js`);
 await cp('profile-v2-data-fix.js',`${out}/static/profile-v2-data-fix.js`);
 await cp('profile-college.js',`${out}/static/profile-college.js`);
+await cp('profile-prospect-mode.js',`${out}/static/profile-prospect-mode.js`);
 await cp('trade-v2.js',`${out}/static/trade-v2.js`);
 await cp('advanced-filters.js',`${out}/static/advanced-filters.js`);
 await cp('seo-social.js',`${out}/static/seo-social.js`);
@@ -127,4 +128,4 @@ await writeFile(`${out}/config.json`,JSON.stringify({
   ]
 },null,2));
 
-console.log(`Built production-identical Bobby's Big Board UI from the repo-owned site shell with shared BBB core data layer, SEO/social metadata, ${profiles.length} shareable player profiles, ${currentPlayerPaths.length} current profiles in sitemap, robots, Profile V2, Trade Calculator V2, and advanced filters.`);
+console.log(`Built production-identical Bobby's Big Board UI from the repo-owned site shell with shared BBB core data layer, SEO/social metadata, ${profiles.length} shareable player profiles, ${currentPlayerPaths.length} current profiles in sitemap, robots, Profile V2, Prospect Profile Mode, Trade Calculator V2, and advanced filters.`);
