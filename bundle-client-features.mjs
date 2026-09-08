@@ -18,7 +18,8 @@ const features=[
   ['homepage-structure.js','src="/homepage-structure.js"'],
   ['deep-link-routing-fix.js','src="/deep-link-routing-fix.js"'],
   ['player-deep-link-guard.js','src="/player-deep-link-guard.js"'],
-  ['profile-render-gate.js','src="/profile-render-gate.js"']
+  ['profile-render-gate.js','src="/profile-render-gate.js"'],
+  ['mobile-polish.js','src="/mobile-polish.js"']
 ];
 
 const playerBootGuard=`<script id="bbb-player-boot-guard">if(/^\\/player\\/[^/?#]+\\/?$/.test(location.pathname))document.documentElement.classList.add('bbb-player-boot')</script><style id="bbb-player-boot-styles">html.bbb-player-boot #rankingsView,html.bbb-player-boot #rookieView,html.bbb-player-boot #prospectView,html.bbb-player-boot #tradeView,html.bbb-player-boot #compareView,html.bbb-player-boot #updatesView,html.bbb-player-boot #moversView,html.bbb-player-boot #watchlistView,html.bbb-player-boot #opportunityView{display:none!important}html.bbb-player-boot #profileView{display:block!important;min-height:72vh}html.bbb-player-boot #profileMount{min-height:62vh}html.bbb-player-boot #profileMount:empty:before{content:'Loading player profile…';display:grid;place-items:center;min-height:52vh;color:#819188;font-size:12px;font-weight:800;background:#050807}</style>`;
@@ -60,4 +61,4 @@ for(const file of pages){
   }
 }
 
-console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, hardened player deep-link routing, and the no-flash profile render gate into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
+console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, hardened player deep-link routing, the no-flash profile render gate, and Mobile Polish V1 into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
