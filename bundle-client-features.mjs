@@ -16,6 +16,7 @@ const features=[
   ['search-polish.js','src="/search-polish.js"'],
   ['opportunity-feed.js','src="/opportunity-feed.js"'],
   ['homepage-structure.js','src="/homepage-structure.js"'],
+  ['homepage-polish-v1.js','src="/homepage-polish-v1.js"'],
   ['deep-link-routing-fix.js','src="/deep-link-routing-fix.js"'],
   ['player-deep-link-guard.js','src="/player-deep-link-guard.js"'],
   ['profile-render-gate.js','src="/profile-render-gate.js"'],
@@ -66,4 +67,4 @@ for(const file of pages){
   }
 }
 
-console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, and full-profile data fallback into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
+console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, Homepage Polish V1 preview, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, and full-profile data fallback into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
