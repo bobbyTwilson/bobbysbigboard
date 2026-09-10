@@ -23,7 +23,6 @@ const features=[
   ['homepage-top-five-links.js','src="/homepage-top-five-links.js"'],
   ['deep-link-routing-fix.js','src="/deep-link-routing-fix.js"'],
   ['player-deep-link-guard.js','src="/player-deep-link-guard.js"'],
-  ['profile-render-gate.js','src="/profile-render-gate.js"'],
   ['mobile-polish.js','src="/mobile-polish.js"'],
   ['rankings-mobile-v2.js','src="/rankings-mobile-v2.js"'],
   ['rookie-rankings-v2-preview.js','src="/rookie-rankings-v2-preview.js"'],
@@ -34,7 +33,8 @@ const features=[
   ['profile-tabs-career-v2-tweaks.js','src="/profile-tabs-career-v2-tweaks.js"'],
   ['similar-players-v2-preview.js','src="/similar-players-v2-preview.js"'],
   ['site-ux-cleanup-v1-preview.js','src="/site-ux-cleanup-v1-preview.js"'],
-  ['profile-data-fallback.js','src="/profile-data-fallback.js"']
+  ['profile-data-fallback.js','src="/profile-data-fallback.js"'],
+  ['profile-render-gate.js','src="/profile-render-gate.js"']
 ];
 
 const playerBootGuard=`<script id="bbb-player-boot-guard">if(/^\\/player\\/[^/?#]+\\/?$/.test(location.pathname))document.documentElement.classList.add('bbb-player-boot')</script><style id="bbb-player-boot-styles">html.bbb-player-boot #rankingsView,html.bbb-player-boot #rookieView,html.bbb-player-boot #prospectView,html.bbb-player-boot #tradeView,html.bbb-player-boot #compareView,html.bbb-player-boot #updatesView,html.bbb-player-boot #moversView,html.bbb-player-boot #watchlistView,html.bbb-player-boot #opportunityView{display:none!important}html.bbb-player-boot #profileView{display:block!important;min-height:72vh}html.bbb-player-boot #profileMount{min-height:62vh}html.bbb-player-boot #profileMount:empty:before{content:'Loading player profile…';display:grid;place-items:center;min-height:52vh;color:#819188;font-size:12px;font-weight:800;background:#050807}</style>`;
@@ -76,4 +76,4 @@ for(const file of pages){
   }
 }
 
-console.log(`Bundled Watchlist V1 + Watchlist V2 preview, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Player Updates V2 preview, Global Player Search V1 + Global Search V2 preview, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, Homepage Polish V1 preview, clickable homepage Top 5 profiles, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Mobile Top 500 V2 preview, Rookie Rankings V2 preview, Prospect Grades V2 preview, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, Similar Players V2 preview, Site UX Cleanup V1 preview, and full-profile data fallback into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
+console.log(`Bundled Watchlist V1 + Watchlist V2 preview, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Player Updates V2 preview, Global Player Search V1 + Global Search V2 preview, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, Homepage Polish V1 preview, clickable homepage Top 5 profiles, hardened player deep-link routing, Mobile Polish V1, Mobile Top 500 V2 preview, Rookie Rankings V2 preview, Prospect Grades V2 preview, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, Similar Players V2 preview, Site UX Cleanup V1 preview, full-profile data fallback, and the final no-flash profile render gate into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
