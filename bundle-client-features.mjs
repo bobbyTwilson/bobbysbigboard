@@ -24,6 +24,7 @@ const features=[
   ['profile-render-gate.js','src="/profile-render-gate.js"'],
   ['mobile-polish.js','src="/mobile-polish.js"'],
   ['rankings-mobile-v2.js','src="/rankings-mobile-v2.js"'],
+  ['rookie-rankings-v2-preview.js','src="/rookie-rankings-v2-preview.js"'],
   ['profile-ui-redesign-preview.js','src="/profile-ui-redesign-preview.js"'],
   ['profile-tabs-career-v2-preview.js','src="/profile-tabs-career-v2-preview.js"'],
   ['profile-tabs-career-v2-dom-fix.js','src="/profile-tabs-career-v2-dom-fix.js"'],
@@ -70,4 +71,4 @@ for(const file of pages){
   }
 }
 
-console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Player Updates V2 preview, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, Homepage Polish V1 preview, clickable homepage Top 5 profiles, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Mobile Top 500 V2 preview, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, and full-profile data fallback into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
+console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Player Updates V2 preview, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, Homepage Polish V1 preview, clickable homepage Top 5 profiles, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Mobile Top 500 V2 preview, Rookie Rankings V2 preview, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, and full-profile data fallback into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
