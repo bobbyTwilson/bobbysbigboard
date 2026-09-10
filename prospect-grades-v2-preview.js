@@ -221,11 +221,12 @@
   function enhanceRows(){
     addHeader();
     const body=document.getElementById('prospectBody');
-    if(!body||!Array.isArray(window.prospects))return false;
+    const pool=(typeof prospects!=='undefined'&&Array.isArray(prospects))?prospects:null;
+    if(!body||!pool)return false;
     const rows=[...body.querySelectorAll('tr')].filter(r=>r.querySelector('.prospect-player'));
     rows.forEach(row=>{
       const name=row.querySelector('.prospect-player')?.textContent.trim();
-      const p=window.prospects.find(x=>String(x.name||'').trim()===name);
+      const p=pool.find(x=>String(x.name||'').trim()===name);
       if(!p)return;
       let cell=row.querySelector('.bbb-prospect-traits');
       if(!cell){cell=document.createElement('td');cell.className='bbb-prospect-traits';row.appendChild(cell);}
