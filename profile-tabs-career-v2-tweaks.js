@@ -107,6 +107,12 @@
     }).join('');
   }
 
+  function placeConsensus(system){
+    const notesPanel=system?.querySelector('[data-bbb-panel="notes"]');
+    const consensus=document.querySelector('#profileView .bbb-compact-consensus');
+    if(notesPanel&&consensus&&!notesPanel.contains(consensus))notesPanel.appendChild(consensus);
+  }
+
   function applyLabels(system){
     const historyTab=system?.querySelector('[data-bbb-tab="notes"]');
     setText(historyTab,'Rank History');
@@ -118,6 +124,7 @@
     career?.querySelectorAll('.bbb-career-block>span').forEach(label=>{
       if(/production timeline|career path/i.test(String(label.textContent||'').trim()))setText(label,'Career Path');
     });
+    placeConsensus(system);
   }
 
   function applyCanonical(system,key,data){
@@ -154,6 +161,7 @@
         if(timeline.innerHTML!==html)timeline.innerHTML=html;
       }
     }
+    placeConsensus(system);
     system.dataset.bbbCareerCanonicalKey=key;
   }
 
