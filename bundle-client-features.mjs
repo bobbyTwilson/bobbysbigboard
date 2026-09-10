@@ -11,6 +11,7 @@ const features=[
   ['profile-fantasy-stats.js','src="/profile-fantasy-stats.js"'],
   ['profile-fantasy-preview-fix.js','src="/profile-fantasy-preview-fix.js"'],
   ['trade-copy-polish.js','src="/trade-copy-polish.js"'],
+  ['trade-calculator-v2-preview.js','src="/trade-calculator-v2-preview.js"'],
   ['global-search.js','src="/global-search.js"'],
   ['easter-egg-player.js','src="/easter-egg-player.js"'],
   ['search-polish.js','src="/search-polish.js"'],
@@ -69,4 +70,4 @@ for(const file of pages){
   }
 }
 
-console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, Homepage Polish V1 preview, clickable homepage Top 5 profiles, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Mobile Top 500 V2 preview, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, and full-profile data fallback into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
+console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Trade Calculator V2 preview, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, Homepage Polish V1 preview, clickable homepage Top 5 profiles, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Mobile Top 500 V2 preview, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, and full-profile data fallback into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
