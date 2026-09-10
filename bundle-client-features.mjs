@@ -21,7 +21,8 @@ const features=[
   ['profile-render-gate.js','src="/profile-render-gate.js"'],
   ['mobile-polish.js','src="/mobile-polish.js"'],
   ['profile-ui-redesign-preview.js','src="/profile-ui-redesign-preview.js"'],
-  ['profile-tabs-career-v2-preview.js','src="/profile-tabs-career-v2-preview.js"']
+  ['profile-tabs-career-v2-preview.js','src="/profile-tabs-career-v2-preview.js"'],
+  ['profile-tabs-career-v2-dom-fix.js','src="/profile-tabs-career-v2-dom-fix.js"']
 ];
 
 const playerBootGuard=`<script id="bbb-player-boot-guard">if(/^\\/player\\/[^/?#]+\\/?$/.test(location.pathname))document.documentElement.classList.add('bbb-player-boot')</script><style id="bbb-player-boot-styles">html.bbb-player-boot #rankingsView,html.bbb-player-boot #rookieView,html.bbb-player-boot #prospectView,html.bbb-player-boot #tradeView,html.bbb-player-boot #compareView,html.bbb-player-boot #updatesView,html.bbb-player-boot #moversView,html.bbb-player-boot #watchlistView,html.bbb-player-boot #opportunityView{display:none!important}html.bbb-player-boot #profileView{display:block!important;min-height:72vh}html.bbb-player-boot #profileMount{min-height:62vh}html.bbb-player-boot #profileMount:empty:before{content:'Loading player profile…';display:grid;place-items:center;min-height:52vh;color:#819188;font-size:12px;font-weight:800;background:#050807}</style>`;
@@ -63,4 +64,4 @@ for(const file of pages){
   }
 }
 
-console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Player Profile Redesign Preview, and Profile Tabs + Career V2 Preview into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
+console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, and its DOM compatibility fix into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
