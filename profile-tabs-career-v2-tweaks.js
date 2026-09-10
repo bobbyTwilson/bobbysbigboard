@@ -35,36 +35,45 @@
     return bits.join(' · ');
   }
 
+  function setText(el,value){
+    if(el&&value&&String(el.textContent||'').trim()!==value)el.textContent=value;
+  }
+
   function apply(){
     const system=document.querySelector('#profileView .bbb-profile-tabs-v2');
-    if(!system)return;
+    if(!system)return false;
 
     const historyTab=system.querySelector('[data-bbb-tab="notes"]');
-    if(historyTab)historyTab.textContent='Rank History';
+    setText(historyTab,'Rank History');
 
     const career=system.querySelector('[data-bbb-panel="career"]');
-    if(!career)return;
+    if(!career)return true;
 
     career.querySelectorAll('.bbb-career-block>span').forEach(label=>{
-      if(String(label.textContent||'').trim().toLowerCase()==='production timeline')label.textContent='Career Path';
+      if(String(label.textContent||'').trim().toLowerCase()==='production timeline')setText(label,'Career Path');
     });
 
     const draftHigh=[...career.querySelectorAll('.bbb-career-high')].find(row=>{
       const label=row.querySelector('span');
-      return /draft\s*\/\s*college/i.test(String(label?.textContent||''));
+      return /draft\s*\/\s*college|draft profile/i.test(String(label?.textContent||''));
     });
     if(draftHigh){
       const label=draftHigh.querySelector('span');
       const strong=draftHigh.querySelector('strong');
       const small=draftHigh.querySelector('small');
-      if(label)label.textContent='Draft Profile';
+      setText(label,'Draft Profile');
       const line=draftLine();
-      if(strong&&line)strong.textContent=line;
+      setText(strong,line);
       if(small)small.remove();
     }
+    return true;
   }
 
-  const observer=new MutationObserver(apply);
+  // Observe only until the tab system exists, then disconnect. Scheduled passes cover
+  // the profile's async render without creating a permanent mutation feedback loop.
+  const observer=new MutationObserver(()=>{
+    if(apply())observer.disconnect();
+  });
   observer.observe(document.documentElement,{childList:true,subtree:true});
   [0,100,300,700,1400,2400].forEach(ms=>setTimeout(apply,ms));
 })();
