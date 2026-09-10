@@ -4,6 +4,7 @@ import {join} from 'node:path';
 const root='.vercel/output/static';
 const features=[
   ['watchlist.js','src="/watchlist.js"'],
+  ['watchlist-v2-preview.js','src="/watchlist-v2-preview.js"'],
   ['nav-polish.js','src="/nav-polish.js"'],
   ['profile-snapshot.js','src="/profile-snapshot.js"'],
   ['profile-polish.js','src="/profile-polish.js"'],
@@ -72,4 +73,4 @@ for(const file of pages){
   }
 }
 
-console.log(`Bundled Watchlist V1, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Player Updates V2 preview, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, Homepage Polish V1 preview, clickable homepage Top 5 profiles, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Mobile Top 500 V2 preview, Rookie Rankings V2 preview, Prospect Grades V2 preview, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, and full-profile data fallback into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
+console.log(`Bundled Watchlist V1 + Watchlist V2 preview, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Player Updates V2 preview, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, Homepage Polish V1 preview, clickable homepage Top 5 profiles, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Mobile Top 500 V2 preview, Rookie Rankings V2 preview, Prospect Grades V2 preview, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, and full-profile data fallback into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
