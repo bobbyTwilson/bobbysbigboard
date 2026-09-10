@@ -16,6 +16,7 @@ const features=[
   ['global-search.js','src="/global-search.js"'],
   ['easter-egg-player.js','src="/easter-egg-player.js"'],
   ['search-polish.js','src="/search-polish.js"'],
+  ['global-search-v2-preview.js','src="/global-search-v2-preview.js"'],
   ['opportunity-feed.js','src="/opportunity-feed.js"'],
   ['homepage-structure.js','src="/homepage-structure.js"'],
   ['homepage-polish-v1.js','src="/homepage-polish-v1.js"'],
@@ -73,4 +74,4 @@ for(const file of pages){
   }
 }
 
-console.log(`Bundled Watchlist V1 + Watchlist V2 preview, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Player Updates V2 preview, Global Player Search V1, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, Homepage Polish V1 preview, clickable homepage Top 5 profiles, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Mobile Top 500 V2 preview, Rookie Rankings V2 preview, Prospect Grades V2 preview, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, and full-profile data fallback into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
+console.log(`Bundled Watchlist V1 + Watchlist V2 preview, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, Player Updates V2 preview, Global Player Search V1 + Global Search V2 preview, Daejon Love easter egg, search UI polish, Opportunity Feed V1, homepage structure polish, Homepage Polish V1 preview, clickable homepage Top 5 profiles, hardened player deep-link routing, the no-flash profile render gate, Mobile Polish V1, Mobile Top 500 V2 preview, Rookie Rankings V2 preview, Prospect Grades V2 preview, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, and full-profile data fallback into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
