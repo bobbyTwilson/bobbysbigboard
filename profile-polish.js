@@ -75,10 +75,14 @@
 
   function bbbFinalRemoveDuplicateCompare(mount){
     [...mount.querySelectorAll('a,button')].forEach(el=>{
-      if(el.closest('.bbb-profile-atglance'))return;
+      // These are intentional, current Compare entry points. Never let the
+      // legacy duplicate-action cleanup touch them during delayed profile passes.
+      if(el.closest('.bbb-profile-atglance,.bbb-redesign-hero-actions,.bbb-similar-v2-card,.bbb-similar-player'))return;
       const text=String(el.textContent||'').trim().toUpperCase();
       const href=String(el.getAttribute?.('href')||'');
-      if((text.includes('COMPARE')&&text.includes('PLAYER'))||/#compare\?left=/.test(href))el.remove();
+      const legacySnapshotAction=!!el.closest('.bbb-v2-actions')&&/#compare\?left=/.test(href);
+      const legacyCompareButton=text.includes('COMPARE THIS PLAYER');
+      if(legacySnapshotAction||legacyCompareButton)el.remove();
     });
   }
 
