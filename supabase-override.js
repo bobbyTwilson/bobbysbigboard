@@ -44,6 +44,8 @@ async function load(){
   const data=await bbbDbCached('site_dynasty','select=*&order=rank.asc');
   players=data.map(p=>({
     playerKey:p.player_key||'',rank:num(p.rank),name:p.name,pos:p.pos,pr:num(p.pr),team:p.team||'',age:num(p.age),draft:num(p.draft),
+    draftRound:num(p.draft_round),draftPick:num(p.draft_pick),draftTeam:p.draft_team||'',draftCollege:p.draft_college||'',
+    rookieSeason:num(p.rookie_season),lastNflSeason:num(p.last_nfl_season),
     market:num(p.market),gap:num(p.gap),view:p.view||'',college:p.college||'',
     overview:p.overview||'',injuryStatus:p.injury_status||'',injuryNote:p.injury_note||'',injuryUpdated:p.injury_updated||'',
     latestUpdate:p.latest_update||'',updateDate:p.weekly_update_date||'',
