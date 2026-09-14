@@ -45,9 +45,12 @@
       }
       .bbb-ux-state-label:before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.85}
       .bbb-ux-error .bbb-ux-state-label{color:#e3a36f}
-      .bbb-ux-loading .bbb-ux-state-label:before{animation:bbbUxPulse 1.15s ease-in-out infinite}
       @keyframes bbbUxPulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
 
+      .bbb-ux-loading:before{
+        content:'';display:inline-block;width:6px;height:6px;margin-right:7px;border-radius:50%;
+        background:#65dca0;vertical-align:middle;animation:bbbUxPulse 1.15s ease-in-out infinite
+      }
       td.empty.bbb-ux-empty,td.empty.bbb-ux-error,td.empty.bbb-ux-loading{
         padding:32px 18px!important;text-align:center!important;color:#7f9489!important;line-height:1.55
       }
@@ -57,7 +60,7 @@
       #previewRows .empty.bbb-ux-loading{
         border:1px dashed #1d4231;border-radius:10px;background:#06100b;padding:19px!important;color:#81958a!important
       }
-      #previewRows .empty.bbb-ux-loading{min-height:70px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+      #previewRows .empty.bbb-ux-loading{min-height:70px;display:flex;flex-direction:row;gap:2px;justify-content:flex-start;align-items:center}
       .bbb-search-empty,.bbb-tab-placeholder,.bbb-compare-wait{
         border-color:#1f4332!important;background:linear-gradient(145deg,#07130e,#050b08)!important
       }
@@ -95,11 +98,17 @@
   function labelFor(text){
     const t=String(text||'').trim().toLowerCase();
     if(!t)return null;
-    if(t.includes('loading'))return ['loading','Loading'];
+    if(t.includes('loading'))return ['loading',''];
     if(t.includes('database unavailable')||t.includes('failed')||t.includes('error'))return ['error','Unavailable'];
     if(t.includes('add up to eight assets'))return ['empty','Empty side'];
     if(t.includes('no players')||t.includes('no rookies')||t.includes('no prospects')||t.includes('no matches')||t.includes('no recent')||t.includes('no nearby comps')||t.includes('no players found'))return ['empty','No results'];
     return null;
+  }
+
+  function cleanLoadingCopy(el){
+    if(el.closest('#rankingsView'))el.textContent='Loading Top 500…';
+    else if(el.closest('#rookieView'))el.textContent='Loading rookie rankings…';
+    else if(el.closest('#prospectView'))el.textContent='Loading prospect grades…';
   }
 
   function decorateState(el){
@@ -109,12 +118,13 @@
     const [kind,label]=found;
     el.dataset.bbbUxState='1';
     el.classList.add(`bbb-ux-${kind}`);
+    if(kind==='loading')cleanLoadingCopy(el);
     if(el.tagName==='TD'){
       const table=el.closest('table');
       const count=table?.querySelectorAll('thead th').length||0;
       if(count>1)el.colSpan=count;
     }
-    if(!el.querySelector(':scope > .bbb-ux-state-label')){
+    if(kind!=='loading'&&!el.querySelector(':scope > .bbb-ux-state-label')){
       const badge=document.createElement('span');
       badge.className='bbb-ux-state-label';
       badge.textContent=label;
