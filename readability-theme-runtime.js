@@ -1,28 +1,31 @@
 // Final-pass readability overrides for Bobby's Big Board preview.
-// Loaded after feature scripts so dynamic UI modules use the same neutral-charcoal palette.
+// Loaded after feature scripts so dynamic UI modules use the same richer emerald + teal palette.
 (function(){
   document.querySelector('#bbb-readability-runtime-styles')?.remove();
   const s=document.createElement('style');
   s.id='bbb-readability-runtime-styles';
   s.textContent=`
     :root{
-      --bbb-page:#090b0a;
-      --bbb-panel:#121413;
-      --bbb-tile:#191b1a;
-      --bbb-tile-strong:#1d201e;
-      --bbb-table:#161817;
-      --bbb-table-hover:#1e211f;
-      --bbb-line:#304038;
-      --bbb-line-soft:#27342e;
-      --bbb-copy:#f5f7f6;
-      --bbb-copy-2:#d8ddda;
-      --bbb-label:#a5aca8;
-      --bbb-accent:#59e09a;
+      --bbb-page:#07100e;
+      --bbb-panel:#0e1a17;
+      --bbb-panel-2:#10201b;
+      --bbb-tile:#14231f;
+      --bbb-tile-rich:#173128;
+      --bbb-table:#11201c;
+      --bbb-table-hover:#183129;
+      --bbb-line:#285545;
+      --bbb-line-soft:#1f4136;
+      --bbb-copy:#f7f8f3;
+      --bbb-copy-2:#d9e8e1;
+      --bbb-label:#9db5ac;
+      --bbb-accent:#53e49a;
+      --bbb-teal:#4ccfc6;
+      --bbb-amber:#e4bd63;
     }
 
     html,body,#profileView{background:var(--bbb-page)!important}
 
-    /* Outer cards: one charcoal panel tone everywhere. */
+    /* Outer cards: richer emerald depth without sacrificing contrast. */
     #profileView .bbb-profile-atglance,
     #profileView .bbb-fantasy-season-strip,
     #profileView .bbb-preview-season-summary,
@@ -33,11 +36,12 @@
     .trade-team-card,.trade-verdict-card,.trade-explainer,
     .bbb-about-card,.watchlist-card,.compare-card,.updates-card,.mover-card,
     .stats-card,.stats-panel,.leader-card{
-      background:var(--bbb-panel)!important;
+      background:linear-gradient(180deg,var(--bbb-panel-2),var(--bbb-panel))!important;
       border-color:var(--bbb-line)!important;
+      box-shadow:0 16px 44px rgba(0,0,0,.18),inset 0 1px 0 rgba(120,239,179,.04)!important;
     }
 
-    /* Inner tiles: one lighter neutral charcoal across every feature. */
+    /* Inner tiles: cool emerald/slate so data blocks feel alive, not dusty. */
     #profileView .bbb-snapshot-grid>div,
     #profileView .bbb-fantasy-season-main>div,
     #profileView .bbb-fantasy-statline.bbb-preview-production-grid>span,
@@ -54,55 +58,58 @@
     #profileView .bbb-compact-consensus-moves,
     .detail,.trade-asset,.trade-result,.preview-row,.stat-tile,.stat-card,
     .player-card,.update-card,.watchlist-player-card,.compare-player-card{
-      background:var(--bbb-tile)!important;
+      background:linear-gradient(180deg,#172a24,var(--bbb-tile))!important;
       border-color:var(--bbb-line)!important;
     }
 
-    /* Primary/highlight tiles are slightly brighter, not greener. */
+    /* Important rank tiles get a richer green treatment. */
     #profileView .bbb-snapshot-grid>div.primary,
     #profileView .bbb-fantasy-season-main>div:first-child{
-      background:var(--bbb-tile-strong)!important;
-      border-color:#3c594a!important;
+      background:linear-gradient(145deg,#19392d,#142820)!important;
+      border-color:#3d7b60!important;
+      box-shadow:inset 0 0 26px rgba(83,228,154,.035)!important;
     }
 
-    /* Notes/callouts use the same charcoal family. */
+    /* Latest take / notes use teal + emerald together. */
     #profileView .bbb-snapshot-take,
     #profileView .profile-note{
-      background:#171a18!important;
+      background:linear-gradient(90deg,rgba(76,207,198,.055),#13221e 18%,#11201c)!important;
       border-color:var(--bbb-line-soft)!important;
     }
     #profileView .bbb-snapshot-take{border-left-color:var(--bbb-accent)!important}
+    #profileView .profile-note{border-left-color:var(--bbb-teal)!important}
 
-    /* Tabs also stay neutral; green is only the active accent. */
+    /* Tabs carry a little color instead of sitting flat gray. */
     #profileView .bbb-tabs-bar,
     #profileView .profile-tabs,
     #profileView .profile-tabbar{
-      background:#101211!important;
+      background:#0b1815!important;
       border-color:var(--bbb-line)!important;
     }
     #profileView .bbb-tabs-btn,
     #profileView .profile-tab,
     #profileView .profile-tabs button,
     #profileView .profile-tabbar button{
-      color:#aab1ad!important;
+      color:#a7bbb3!important;
     }
     #profileView .bbb-tabs-btn:hover,
     #profileView .profile-tab:hover,
     #profileView .profile-tabs button:hover,
     #profileView .profile-tabbar button:hover{
-      background:#181b19!important;
-      color:#f4f7f5!important;
+      background:#132720!important;
+      color:#f5faf7!important;
     }
     #profileView .bbb-tabs-btn[aria-selected="true"],
     #profileView .profile-tab.active,
     #profileView .profile-tabs button.active,
     #profileView .profile-tabbar button.active{
-      background:#15251d!important;
-      color:#74e5a9!important;
-      border-color:#42cf86!important;
+      background:linear-gradient(135deg,#173b2c,#123a37)!important;
+      color:#7cf0b3!important;
+      border-color:#4edc96!important;
+      box-shadow:inset 0 -2px 0 rgba(76,207,198,.85)!important;
     }
 
-    /* Labels/copy: neutral grays instead of green-gray. */
+    /* Give secondary labels a cool-teal lean while keeping body copy bright. */
     #profileView .bbb-snapshot-grid span,
     #profileView .bbb-snapshot-grid .movement small,
     #profileView .bbb-snapshot-top p,
@@ -142,10 +149,13 @@
     #profileView .bbb-snapshot-grid strong.up,
     #profileView .bbb-snapshot-health.healthy,
     #profileView .bbb-fantasy-season-main .rank strong{color:var(--bbb-accent)!important}
+    #profileView .bbb-snapshot-grid .movement span,
+    #profileView .bbb-career-high span,
+    #profileView .bbb-news-date{color:#65d7ce!important}
     .profile-card-kicker,.bbb-fantasy-kicker,.bbb-snapshot-kicker,.kicker,.eyebrow,
     #profileView .bbb-career-block>span{color:var(--bbb-accent)!important}
 
-    /* Tables: every cell in a row gets the same surface. */
+    /* Tables stay uniform by row while getting richer color and clearer accents. */
     table tbody tr{background:transparent!important}
     table tbody td,
     table tbody td.muted,
@@ -162,14 +172,24 @@
     #profileView .bbb-preview-readable-game-table td,
     #profileView .bbb-game-table td:nth-child(2){
       background:var(--bbb-table)!important;
-      color:#e8ebe9!important;
+      color:#e8f0ec!important;
       border-bottom-color:var(--bbb-line-soft)!important;
     }
     table tbody tr:hover td{background:var(--bbb-table-hover)!important}
     #profileView .bbb-v2-career-table .bbb-preview-team-cell{box-shadow:1px 0 0 var(--bbb-line-soft)!important;font-weight:850!important}
     #profileView .bbb-v2-career-table td.ppr,
     #profileView .bbb-game-ppr.boom{color:#79e6ad!important}
-    table thead th{background:#111312!important;color:#b6bcb9!important;border-bottom-color:var(--bbb-line)!important}
+    #profileView .bbb-game-rank.top{border-color:#2f8d65!important;background:#15382a!important;color:#78efb3!important}
+    table thead th{background:#0e1a17!important;color:#a9beb6!important;border-bottom-color:var(--bbb-line)!important}
+
+    /* Selective info/status color keeps the page energetic without becoming rainbow UI. */
+    #profileView .bbb-career-source,
+    #profileView .bbb-snapshot-market.market{
+      background:#102a29!important;
+      border-color:#2e6865!important;
+      color:#78ded7!important;
+    }
+    #profileView .bbb-snapshot-health.watch{color:var(--bbb-amber)!important}
 
     @media(max-width:640px){
       table tbody tr{background:var(--bbb-table)!important;border-color:var(--bbb-line)!important}
