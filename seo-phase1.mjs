@@ -146,3 +146,4 @@ if(!config.routes.some(r=>r.src==='/stats/?')){
 }
 
 console.log(`SEO Phase 1: optimized homepage, ${Object.keys(PAGES).length} section pages, ${optimizedPlayers} player/prospect pages, added /stats route+sitemap entry, structured data, and internal footer links.`);
+await import('./seo-phase2-identity.mjs');
