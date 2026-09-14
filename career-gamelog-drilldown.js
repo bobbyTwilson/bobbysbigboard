@@ -100,6 +100,21 @@
     </div>`;
   }
 
+  function drillImmediatelyAfter(row){
+    const next=row.nextElementSibling;
+    if(!next?.classList.contains('bbb-career-drill-row'))return null;
+    const season=String(row.dataset.bbbCareerSeason||'');
+    return !season||String(next.dataset.season||'')===season?next:null;
+  }
+
+  function setRowState(row,expanded){
+    const season=String(row.dataset.bbbCareerSeason||'');
+    row.setAttribute('aria-expanded',expanded?'true':'false');
+    row.classList.toggle('is-expanded',expanded);
+    row.setAttribute('aria-label',`${expanded?'Collapse':'Expand'} ${season} weekly game log`);
+    row.title=`${expanded?'Collapse':'Expand'} ${season} weekly game log`;
+  }
+
   function expandedCount(table){return table.querySelectorAll('tbody tr.bbb-career-season-row[aria-expanded="true"]').length}
 
   function syncCollapseAll(table){
@@ -112,16 +127,27 @@
   }
 
   function collapseRow(row){
-    const drill=row.nextElementSibling;
-    if(drill?.classList.contains('bbb-career-drill-row'))drill.remove();
-    row.setAttribute('aria-expanded','false');
-    row.classList.remove('is-expanded');
+    const season=String(row.dataset.bbbCareerSeason||'');
+    let next=row.nextElementSibling;
+    // Defensive cleanup: remove every duplicate drill row for this season that may
+    // have been created by an older preview build before the state fix.
+    while(next?.classList.contains('bbb-career-drill-row')&&(!season||String(next.dataset.season||'')===season)){
+      const remove=next;
+      next=next.nextElementSibling;
+      remove.remove();
+    }
+    setRowState(row,false);
     const table=row.closest('table');
     if(table)syncCollapseAll(table);
   }
 
   function expandRow(row,seasonRows,pos){
-    if(row.getAttribute('aria-expanded')==='true'){collapseRow(row);return}
+    // The DOM is the source of truth. MutationObserver refreshes can run after an
+    // expansion, so never rely on aria-expanded alone to decide whether to close.
+    if(drillImmediatelyAfter(row)||row.getAttribute('aria-expanded')==='true'){
+      collapseRow(row);
+      return;
+    }
     const season=String(row.dataset.bbbCareerSeason||'');
     const table=row.closest('table');
     if(!table||!seasonRows.length)return;
@@ -140,10 +166,11 @@
     </div>`;
     detail.appendChild(td);
     row.insertAdjacentElement('afterend',detail);
-    row.setAttribute('aria-expanded','true');
-    row.classList.add('is-expanded');
+    setRowState(row,true);
     td.querySelector('.bbb-career-drill-close')?.addEventListener('click',event=>{
-      event.preventDefault();event.stopPropagation();collapseRow(row);
+      event.preventDefault();
+      event.stopPropagation();
+      collapseRow(row);
     });
     syncCollapseAll(table);
   }
@@ -157,7 +184,7 @@
     controls.innerHTML='<span>Tap a season to view its weekly games.</span><button type="button" class="bbb-career-collapse-all" hidden>Collapse all</button>';
     wrap.insertAdjacentElement('beforebegin',controls);
     controls.querySelector('.bbb-career-collapse-all')?.addEventListener('click',()=>{
-      table.querySelectorAll('tbody tr.bbb-career-season-row[aria-expanded="true"]').forEach(collapseRow);
+      table.querySelectorAll('tbody tr.bbb-career-season-row[aria-expanded="true"]').forEach(row=>collapseRow(row));
     });
   }
 
@@ -194,6 +221,7 @@
         row.removeAttribute('tabindex');
         row.removeAttribute('role');
         row.removeAttribute('aria-expanded');
+        row.classList.remove('is-expanded');
         row.title='Weekly game log is not available for this season.';
         return;
       }
@@ -201,9 +229,11 @@
       row.classList.remove('bbb-career-season-unavailable');
       row.setAttribute('tabindex','0');
       row.setAttribute('role','button');
-      row.setAttribute('aria-expanded','false');
-      row.setAttribute('aria-label',`Expand ${season} weekly game log`);
-      row.title=`Expand ${season} weekly game log`;
+
+      // MutationObserver runs after a drill row is inserted/removed. Preserve the
+      // live expansion state instead of resetting aria-expanded back to false.
+      const currentlyExpanded=!!drillImmediatelyAfter(row);
+      setRowState(row,currentlyExpanded);
 
       if(row.dataset.bbbCareerDrilldownBound==='1')return;
       row.dataset.bbbCareerDrilldownBound='1';
@@ -219,6 +249,7 @@
         expandRow(row,seasonRows,pos);
       });
     });
+    syncCollapseAll(table);
   }
 
   function injectStyles(){
