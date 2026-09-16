@@ -80,13 +80,16 @@ function bbbNavPolishDesktop(nav){
   const rankings=byKey.get('#rankings');
   const rookies=byKey.get('#rookies');
   const prospects=byKey.get('#prospects');
+  const trade=byKey.get('#trade');
   const watchlist=byKey.get('#watchlist');
+  const account=byKey.get('#account')||watchlist;
   const youtube=links.find(a=>(a.getAttribute('href')||'').includes('youtube.com'));
 
   if(rankings)rankings.textContent='Rankings';
   if(rookies)rookies.textContent='Rookies';
   if(prospects)prospects.textContent='Prospects';
-  if(watchlist)watchlist.textContent='My Players ☆';
+  if(trade)trade.textContent='Trade Calc';
+  if(account)account.textContent=bbbNavHrefKey(account)==='#account'?'My BBB':'My Players ☆';
   if(youtube)youtube.textContent='YouTube ↗';
 
   links.forEach(a=>{
@@ -97,7 +100,7 @@ function bbbNavPolishDesktop(nav){
   let explore=nav.querySelector(':scope > .bbb-nav-explore');
   if(!explore){explore=bbbNavMakeExplore();nav.insertBefore(explore,youtube||null)}
 
-  [rankings,rookies,prospects,watchlist,explore,youtube].filter(Boolean).forEach(el=>nav.appendChild(el));
+  [rankings,rookies,prospects,trade,account,explore,youtube].filter(Boolean).forEach(el=>nav.appendChild(el));
 }
 
 function bbbNavEnsureMobileSheet(){

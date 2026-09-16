@@ -38,10 +38,13 @@ const features=[
   ['similar-players-v2-preview.js','src="/similar-players-v2-preview.js"'],
   ['site-ux-cleanup-v1-preview.js','src="/site-ux-cleanup-v1-preview.js"'],
   ['profile-data-fallback.js','src="/profile-data-fallback.js"'],
-  ['profile-render-gate.js','src="/profile-render-gate.js"']
+  ['profile-render-gate.js','src="/profile-render-gate.js"'],
+  ['account-v1-preview.js','src="/account-v1-preview.js"'],
+  ['account-v1-nav-fix.js','src="/account-v1-nav-fix.js"']
 ];
 
 const playerBootGuard=`<script id="bbb-player-boot-guard">if(/^\\/player\\/[^/?#]+\\/?$/.test(location.pathname))document.documentElement.classList.add('bbb-player-boot')</script><style id="bbb-player-boot-styles">html.bbb-player-boot #rankingsView,html.bbb-player-boot #rookieView,html.bbb-player-boot #prospectView,html.bbb-player-boot #tradeView,html.bbb-player-boot #compareView,html.bbb-player-boot #updatesView,html.bbb-player-boot #moversView,html.bbb-player-boot #watchlistView,html.bbb-player-boot #opportunityView{display:none!important}html.bbb-player-boot #profileView{display:block!important;min-height:72vh}html.bbb-player-boot #profileMount{min-height:62vh}html.bbb-player-boot #profileMount:empty:before{content:'Loading player profile…';display:grid;place-items:center;min-height:52vh;color:#819188;font-size:12px;font-weight:800;background:#050807}</style>`;
+const accountNavBoot=`<style id="bbb-account-nav-boot">.site-header .nav>.nav-cta[href*="#trade"]{visibility:hidden!important}</style>`;
 
 for(const [file] of features)await cp(file,join(root,file));
 
@@ -57,10 +60,16 @@ async function htmlFiles(dir){
 }
 
 const pages=await htmlFiles(root);
-let patched=0,playerBootPatched=0;
+let patched=0,playerBootPatched=0,accountBootPatched=0;
 for(const file of pages){
   let html=await readFile(file,'utf8');
   if(!html.includes('</body>'))throw new Error(`Client feature bundle failed: ${file} has no closing body tag`);
+
+  if(!html.includes('id="bbb-account-nav-boot"')){
+    if(!html.includes('</head>'))throw new Error(`Client feature bundle failed: ${file} has no closing head tag`);
+    html=html.replace('</head>',`${accountNavBoot}</head>`);
+    accountBootPatched++;
+  }
 
   if(file.includes(`${root}/seo/players/`)&&!html.includes('id="bbb-player-boot-guard"')){
     if(!html.includes('</head>'))throw new Error(`Client feature bundle failed: ${file} has no closing head tag`);
@@ -74,10 +83,10 @@ for(const file of pages){
     html=html.replace('</body>',`${scripts}</body>`);
   }
 
-  if(missing.length||file.includes(`${root}/seo/players/`)){
+  if(missing.length||accountBootPatched||file.includes(`${root}/seo/players/`)){
     await writeFile(file,html);
     patched++;
   }
 }
 
-console.log(`Bundled Watchlist V1 + Watchlist V2 preview, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, draft-pick search polish, Compare V2 preview, Player Updates V2 preview, Global Player Search V1 + Global Search V2 preview, Daejon Love easter egg, search UI polish, Opportunity Feed V1 + Opportunity Feed V2 preview, homepage structure polish, Homepage Polish V1 preview, clickable homepage Top 5 profiles, hardened player deep-link routing, Mobile Polish V1, Mobile Top 500 V2 preview, Rookie Rankings V2 preview, Prospect Grades V2 preview, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, career season game-log drilldown, Similar Players V2 preview, Site UX Cleanup V1 preview, full-profile data fallback, and the final no-flash profile render gate into ${patched} generated HTML pages (${playerBootPatched} player boot guards).`);
+console.log(`Bundled Watchlist V1 + Watchlist V2 preview, streamlined navigation, Profile Snapshot V1, final profile polish, profile density polish, fantasy season/game-log profiles, preview fantasy-profile fixes, trade calculator copy polish, draft-pick search polish, Compare V2 preview, Player Updates V2 preview, Global Player Search V1 + Global Search V2 preview, Daejon Love easter egg, search UI polish, Opportunity Feed V1 + Opportunity Feed V2 preview, homepage structure polish, Homepage Polish V1 preview, clickable homepage Top 5 profiles, hardened player deep-link routing, Mobile Polish V1, Mobile Top 500 V2 preview, Rookie Rankings V2 preview, Prospect Grades V2 preview, Player Profile Redesign Preview, Profile Tabs + Career V2 Preview, its DOM compatibility fix, requested career label polish, career season game-log drilldown, Similar Players V2 preview, Site UX Cleanup V1 preview, full-profile data fallback, final no-flash profile render gate, BBB Account V1 preview, and refined account navigation into ${patched} generated HTML pages (${playerBootPatched} player boot guards, ${accountBootPatched} account nav boot guards).`);
