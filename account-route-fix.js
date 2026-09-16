@@ -7,6 +7,14 @@
     s.textContent=`
       @media(max-width:950px){
         #bbbMobileDock{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+        .site-header .bbb-global-search-trigger{width:118px!important;height:34px!important;padding:0 12px!important;justify-content:flex-start!important;gap:7px!important;border-radius:999px!important;background:#09130f!important;border-color:#315544!important}
+        .site-header .bbb-global-search-trigger-label{display:inline!important;font-size:9px!important;font-weight:900!important;color:#b6c8be!important}
+        .site-header .bbb-global-search-key{display:none!important}
+        .site-header .bbb-global-search-icon{font-size:17px!important;color:#63dda0!important}
+      }
+      @media(max-width:390px){
+        .site-header .bbb-global-search-trigger{width:96px!important;padding:0 10px!important}
+        .site-header .bbb-global-search-trigger-label{font-size:8px!important}
       }
     `;
     document.head.appendChild(s);
