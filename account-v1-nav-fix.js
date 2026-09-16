@@ -1,4 +1,4 @@
-// Account V1 navigation refinement: always expose My BBB and give Join Free the primary green CTA.
+// Account V1 navigation refinement: always expose My BBB and keep both account + trade CTAs prominent.
 (function(){
   function injectStyles(){
     if(document.querySelector('#bbb-account-nav-fix-styles'))return;
@@ -7,8 +7,8 @@
     s.textContent=`
       .site-header .nav{gap:12px!important}
       .site-header .nav-links{gap:15px!important}
-      .site-header .nav-cta{flex:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:32px!important;padding:0 10px!important;background:#08110d!important;border:1px solid #29483b!important;color:#aebdb5!important;border-radius:999px!important;font-size:9px!important;font-weight:900!important;letter-spacing:.02em!important;white-space:nowrap!important}
-      .site-header .nav-cta:hover{background:#0d1a14!important;border-color:#3c6a54!important;color:#fff!important}
+      .site-header .nav-cta{flex:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:32px!important;padding:0 10px!important;background:#0f6f43!important;border:1px solid #238b59!important;color:#fff!important;border-radius:999px!important;font-size:9px!important;font-weight:950!important;letter-spacing:.02em!important;white-space:nowrap!important;box-shadow:0 0 0 1px rgba(83,228,154,.04)!important}
+      .site-header .nav-cta:hover{background:#13824d!important;border-color:#41bf7d!important;color:#fff!important}
       .site-header .bbb-account-join{flex:none!important;min-height:36px!important;padding:0 15px!important;background:#169b5b!important;border:1px solid #169b5b!important;color:#fff!important;border-radius:999px!important;font-size:10px!important;font-weight:950!important;box-shadow:0 0 0 1px rgba(83,228,154,.05)!important}
       .site-header .bbb-account-join:hover{background:#1caf68!important;border-color:#1caf68!important;color:#fff!important}
       .site-header .bbb-account-nav-link{color:#d7e4dd!important}
