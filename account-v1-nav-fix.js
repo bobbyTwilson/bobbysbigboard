@@ -11,9 +11,6 @@
       .site-header .bbb-account-join:hover{background:#1caf68!important;border-color:#1caf68!important;color:#fff!important}
       .site-header .bbb-account-nav-link{color:#d7e4dd!important}
       .site-header .bbb-account-nav-link:hover{color:#fff!important}
-      .site-header .bbb-trade-nav-link{color:#69d99c!important;font-weight:900!important}
-      .site-header .bbb-trade-nav-link:hover{color:#fff!important}
-      .bbb-mobile-trade-link{color:#8ee4b5!important;border-color:#2b5c45!important}
       @media(max-width:1240px){
         .site-header .nav-links{gap:11px!important}
         .site-header .bbb-account-join{padding:0 11px!important;font-size:9px!important}
