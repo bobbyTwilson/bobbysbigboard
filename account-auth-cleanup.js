@@ -103,7 +103,7 @@
     const view=bbbAccountEnsureView();
     const card=view.querySelector('.bbb-auth-card');if(!card)return;
     const existingEmail=view.querySelector('#bbbAccountForm [name="email"]')?.value||'';
-    card.innerHTML=`<h3 class="bbb-auth-reset-title">Reset password</h3><p class="bbb-auth-reset-copy">Enter the email on your BBB account. We’ll send a secure reset link.</p><form id="bbbForgotForm"><div class="bbb-auth-field"><label>Email</label><input name="email" type="email" autocomplete="email" required value="${bbbAccountEsc(existingEmail)}" placeholder="you@email.com"></div><button class="bbb-auth-submit" type="submit">SEND RESET LINK</button><div class="bbb-auth-helper">For privacy, we’ll show the same confirmation whether or not an account exists for that email.</div><div class="bbb-auth-secondary"><button type="button" class="bbb-auth-link" id="bbbBackToSignIn">Back to sign in</button></div><div id="bbbForgotStatus"></div></form>`;
+    card.innerHTML=`<h3 class="bbb-auth-reset-title">Reset password</h3><p class="bbb-auth-reset-copy">Enter the email on your BBB account. We’ll send a secure reset link. While BBB email is still new, the message may land in Spam or Junk.</p><form id="bbbForgotForm"><div class="bbb-auth-field"><label>Email</label><input name="email" type="email" autocomplete="email" required value="${bbbAccountEsc(existingEmail)}" placeholder="you@email.com"></div><button class="bbb-auth-submit" type="submit">SEND RESET LINK</button><div class="bbb-auth-helper">For privacy, we’ll show the same confirmation whether or not an account exists for that email.</div><div class="bbb-auth-secondary"><button type="button" class="bbb-auth-link" id="bbbBackToSignIn">Back to sign in</button></div><div id="bbbForgotStatus"></div></form>`;
     card.querySelector('#bbbBackToSignIn')?.addEventListener('click',()=>{bbbAccountRender();setTimeout(()=>{enhanceAuthUi();const login=bbbAccountEnsureView().querySelector('[data-auth-mode="login"]');login?.click();},0);});
     card.querySelector('#bbbForgotForm')?.addEventListener('submit',requestPasswordReset);
   }
@@ -116,7 +116,7 @@
       const r=await fetch(`${BBB_SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(redirect)}`,{method:'POST',headers:authHeaders(),body:JSON.stringify({email})});
       const data=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error(data.msg||data.message||data.error_description||'Could not send reset email.');
-      status.className='bbb-auth-status success';status.textContent='If an account exists for that email, a password reset link is on the way. Check your inbox and spam folder.';
+      status.className='bbb-auth-status success';status.textContent='If an account exists for that email, a password reset link is on the way. Check your Inbox and Spam/Junk folder. If it lands there, mark it Not spam.';
     }catch(err){status.className='bbb-auth-status error';status.textContent=err.message||'Could not send reset email.';}finally{btn.disabled=false;}
   }
 
