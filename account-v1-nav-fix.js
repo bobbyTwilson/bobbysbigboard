@@ -21,6 +21,28 @@
         .site-header .brand-text{display:none!important}
         .site-header .nav-links{gap:10px!important}
       }
+      @media(max-width:950px){
+        .site-header .nav{min-height:62px!important;gap:8px!important}
+        .site-header .bbb-account-join{display:inline-flex!important;visibility:visible!important;min-height:34px!important;max-width:132px!important;padding:0 11px!important;font-size:9px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+        .site-header .mobile-subnav{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;overflow:visible!important;padding:0 10px 10px!important;white-space:normal!important}
+        .site-header .mobile-subnav>a,
+        .site-header .mobile-subnav>.bbb-mobile-explore-btn{display:inline-flex!important;width:100%!important;min-width:0!important;min-height:34px!important;align-items:center!important;justify-content:center!important;text-align:center!important;padding:7px 6px!important;margin:0!important;border:1px solid #203d30!important;background:#08110d!important;border-radius:999px!important;color:#a9bbb1!important;font-size:9px!important;font-weight:900!important;line-height:1.1!important;white-space:nowrap!important}
+        .site-header .mobile-subnav>a:hover,
+        .site-header .mobile-subnav>.bbb-mobile-explore-btn:hover{color:#fff!important;border-color:#3c6a54!important;background:#0b1a13!important}
+        .site-header .mobile-subnav>.bbb-account-mobile-link{border-color:#2d5743!important;color:#d7e9df!important}
+        .site-header .mobile-subnav>.bbb-mobile-trade-link{color:#fff!important}
+      }
+      @media(max-width:640px){
+        .site-header .brand-logo{width:54px!important;height:48px!important}
+        .site-header .brand-text{display:none!important}
+        .site-header .bbb-account-join{max-width:118px!important;min-height:32px!important;padding:0 10px!important;font-size:8px!important}
+        .site-header .mobile-subnav{padding:0 8px 9px!important;gap:5px!important}
+        .site-header .mobile-subnav>a,
+        .site-header .mobile-subnav>.bbb-mobile-explore-btn{min-height:32px!important;padding:6px 4px!important;font-size:8px!important}
+      }
+      @media(max-width:360px){
+        .site-header .mobile-subnav{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      }
     `;
     document.head.appendChild(s);
   }
@@ -75,9 +97,30 @@
   function fixMobileNav(){
     document.querySelectorAll('.mobile-subnav').forEach(nav=>{
       let trade=nav.querySelector('.bbb-mobile-trade-link');
-      if(!trade){trade=document.createElement('a');trade.className='bbb-mobile-trade-link';trade.href='#trade';trade.textContent='Trade Calc';}
-      const account=nav.querySelector('.bbb-account-mobile-link');
-      if(account){if(trade.nextElementSibling!==account)nav.insertBefore(trade,account);}else if(trade.parentElement!==nav){nav.appendChild(trade);}
+      if(!trade){
+        trade=document.createElement('a');
+        trade.className='bbb-mobile-trade-link';
+        trade.href='#trade';
+      }
+      trade.textContent='Trade Calc';
+
+      let account=nav.querySelector('.bbb-account-mobile-link');
+      if(!account){
+        account=document.createElement('a');
+        account.className='bbb-account-mobile-link';
+        account.href='#account';
+      }
+      account.textContent='My BBB';
+
+      const explore=nav.querySelector('.bbb-mobile-explore-btn');
+      if(explore){
+        if(trade.parentElement!==nav)nav.insertBefore(trade,explore);
+        if(account.parentElement!==nav)nav.insertBefore(account,explore);
+        else if(account.nextElementSibling!==explore)nav.insertBefore(account,explore);
+      }else{
+        if(trade.parentElement!==nav)nav.appendChild(trade);
+        if(account.parentElement!==nav)nav.appendChild(account);
+      }
     });
   }
 
@@ -95,5 +138,5 @@
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
-  [100,350,900,1700].forEach(ms=>setTimeout(apply,ms));
+  [100,350,900,1700,3000].forEach(ms=>setTimeout(apply,ms));
 })();
