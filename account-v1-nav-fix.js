@@ -11,6 +11,8 @@
       .site-header .bbb-account-join:hover{background:#1caf68!important;border-color:#1caf68!important;color:#fff!important}
       .site-header .bbb-account-nav-link{color:#d7e4dd!important}
       .site-header .bbb-account-nav-link:hover{color:#fff!important}
+      .site-header .bbb-trade-nav-link{color:#d7e4dd!important;font-weight:800!important}
+      .site-header .bbb-trade-nav-link:hover{color:#fff!important}
       @media(max-width:1240px){
         .site-header .nav-links{gap:11px!important}
         .site-header .bbb-account-join{padding:0 11px!important;font-size:9px!important}
@@ -27,8 +29,11 @@
     [...nav.children].filter(el=>el.tagName==='A'&&(el.getAttribute('href')||'').includes('youtube.com')).forEach(el=>el.remove());
 
     const header=nav.closest('.nav');
-    let trade=nav.querySelector(':scope > .bbb-trade-nav-link');
-    if(!trade){
+    let trade=nav.querySelector(':scope > .bbb-trade-nav-link')||nav.querySelector(':scope > a[href="#trade"]');
+    if(trade){
+      trade.classList.remove('nav-cta');
+      trade.classList.add('bbb-trade-nav-link');
+    }else{
       trade=header?.querySelector(':scope > .nav-cta[href*="#trade"]')||header?.querySelector('.nav-cta[href*="#trade"]');
       if(trade){
         trade.classList.remove('nav-cta');
@@ -56,13 +61,14 @@
     const prospects=[...nav.children].find(el=>el.tagName==='A'&&(el.getAttribute('href')||'').includes('#prospects'));
     const explore=nav.querySelector(':scope > .bbb-nav-explore');
     if(prospects){
-      prospects.insertAdjacentElement('afterend',trade);
-      trade.insertAdjacentElement('afterend',account);
+      if(prospects.nextElementSibling!==trade)prospects.insertAdjacentElement('afterend',trade);
+      if(trade.nextElementSibling!==account)trade.insertAdjacentElement('afterend',account);
     }else if(explore){
-      nav.insertBefore(trade,explore);
-      nav.insertBefore(account,explore);
+      if(trade.parentElement!==nav)nav.insertBefore(trade,explore);
+      if(account.parentElement!==nav)nav.insertBefore(account,explore);
     }else{
-      nav.append(trade,account);
+      if(trade.parentElement!==nav)nav.appendChild(trade);
+      if(account.parentElement!==nav)nav.appendChild(account);
     }
   }
 
@@ -71,7 +77,7 @@
       let trade=nav.querySelector('.bbb-mobile-trade-link');
       if(!trade){trade=document.createElement('a');trade.className='bbb-mobile-trade-link';trade.href='#trade';trade.textContent='Trade Calc';}
       const account=nav.querySelector('.bbb-account-mobile-link');
-      if(account)nav.insertBefore(trade,account);else nav.appendChild(trade);
+      if(account){if(trade.nextElementSibling!==account)nav.insertBefore(trade,account);}else if(trade.parentElement!==nav){nav.appendChild(trade);}
     });
   }
 
@@ -89,5 +95,5 @@
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
-  [100,350,900,1700,3000].forEach(ms=>setTimeout(apply,ms));
+  [100,350,900,1700].forEach(ms=>setTimeout(apply,ms));
 })();
