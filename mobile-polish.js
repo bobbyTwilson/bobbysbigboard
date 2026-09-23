@@ -6,46 +6,6 @@
   style.id='bbb-mobile-polish-v1-styles';
   style.textContent=`
     @media(max-width:640px){
-      /* Keep detailed fantasy tables as real horizontally scrollable tables.
-         The global rankings-card mobile rules should not transform these. */
-      #profileView .bbb-v2-career-table-wrap,
-      #profileView .bbb-game-table-wrap{
-        overflow-x:auto!important;
-        overflow-y:hidden!important;
-        -webkit-overflow-scrolling:touch;
-        max-width:100%;
-      }
-      #profileView .bbb-v2-career-table,
-      #profileView .bbb-game-table{
-        display:table!important;
-        width:100%!important;
-        border-collapse:collapse!important;
-      }
-      #profileView .bbb-v2-career-table{min-width:980px!important}
-      #profileView .bbb-game-table{min-width:960px!important}
-      #profileView .bbb-v2-career-table thead,
-      #profileView .bbb-game-table thead{display:table-header-group!important}
-      #profileView .bbb-v2-career-table tbody,
-      #profileView .bbb-game-table tbody{
-        display:table-row-group!important;
-        padding:0!important;
-      }
-      #profileView .bbb-v2-career-table tr,
-      #profileView .bbb-game-table tr{
-        display:table-row!important;
-        grid-template-columns:none!important;
-        gap:0!important;
-        padding:0!important;
-        border-radius:0!important;
-      }
-      #profileView .bbb-v2-career-table th,
-      #profileView .bbb-game-table th,
-      #profileView .bbb-v2-career-table td,
-      #profileView .bbb-game-table td{
-        display:table-cell!important;
-        white-space:nowrap!important;
-      }
-
       /* Fluid mobile display type so long names and hero headings do not crowd the viewport. */
       .hero h1,.trade-hero h1{
         font-size:clamp(40px,12.5vw,50px)!important;
