@@ -63,13 +63,19 @@ function bbbRankMoveHtml(move){
 }
 
 function bbbHistoryTradeValue(row){
-  const stored=Number(row?.bbb_trade_value);
-  if(Number.isFinite(stored))return stored;
-  const rank=Number(row?.overall_rank);
+  const rawStored=row?.bbb_trade_value;
+  if(rawStored!=null&&rawStored!==''){
+    const stored=Number(rawStored);
+    if(Number.isFinite(stored))return stored;
+  }
+  const rawRank=row?.overall_rank;
+  if(rawRank==null||rawRank==='')return null;
+  const rank=Number(rawRank);
   return Number.isFinite(rank)?Math.round(10000*Math.exp(-.012*(rank-1))):null;
 }
 
 function bbbHistorySigned(v){
+  if(v==null||v==='')return '—';
   const n=Number(v);
   if(!Number.isFinite(n))return '—';
   return n>0?`+${n}`:String(n);
