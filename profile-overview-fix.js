@@ -30,9 +30,27 @@ async function bbbLoadRankingHistory(playerKey){
   return bbbDb('site_ranking_history',`select=snapshot_date,overall_rank,position_rank,fp_sf_rank,bbb_vs_fp,market_view,created_at,snapshot_kind&player_key=eq.${encodeURIComponent(playerKey)}&order=snapshot_date.asc,created_at.asc`);
 }
 
+function bbbCleanRankingHistory(history){
+  const byDay=new Map();
+  (history||[]).forEach((row,index)=>{
+    const date=String(row?.snapshot_date||'');
+    const rank=Number(row?.overall_rank);
+    if(!date||!Number.isFinite(rank))return;
+    const stamp=Date.parse(row?.created_at||'')||0;
+    const existing=byDay.get(date);
+    if(!existing||stamp>existing._stamp||(stamp===existing._stamp&&index>existing._index)){
+      byDay.set(date,{...row,overall_rank:rank,_stamp:stamp,_index:index});
+    }
+  });
+  return [...byDay.values()]
+    .sort((a,b)=>String(a.snapshot_date).localeCompare(String(b.snapshot_date))||a._stamp-b._stamp)
+    .map(({_stamp,_index,...row})=>row);
+}
+
 function bbbRankMove(history){
-  if(!history || history.length<2)return null;
-  const current=history[history.length-1],previous=history[history.length-2];
+  const clean=bbbCleanRankingHistory(history);
+  if(clean.length<2)return null;
+  const current=clean[clean.length-1],previous=clean[clean.length-2];
   if(current.overall_rank==null || previous.overall_rank==null)return null;
   return previous.overall_rank-current.overall_rank;
 }
@@ -45,7 +63,7 @@ function bbbRankMoveHtml(move){
 }
 
 function bbbRankingChart(history){
-  const list=(history||[]).slice(-30).filter(x=>x.overall_rank!=null);
+  const list=bbbCleanRankingHistory(history).slice(-30).filter(x=>x.overall_rank!=null);
   if(!list.length)return '';
 
   const width=760,height=230,padLeft=54,padRight=24,padTop=28,padBottom=36;
@@ -84,13 +102,14 @@ function bbbRankingChart(history){
 }
 
 function bbbRankingHistoryHtml(history){
-  if(!history || !history.length)return '<div class="bbb-rank-empty">Ranking history is not available for this player yet.</div>';
-  const first=history[0],current=history[history.length-1],move=bbbRankMove(history);
-  const best=Math.min(...history.filter(x=>x.overall_rank!=null).map(x=>Number(x.overall_rank)));
-  const previous=history.length>1?history[history.length-2]:null;
-  const chart=bbbRankingChart(history);
-  const recent=history.slice(-5).reverse().map(x=>`<div class="bbb-rank-event"><span>${bbbHistoryDate(x.snapshot_date)}</span><strong>#${bbbEsc(x.overall_rank)}</strong></div>`).join('');
-  const baseline=history.length===1?`<div class="bbb-rank-baseline"><strong>History starts here.</strong><span>Aug. 31, 2026 is the first preserved BBB ranking snapshot. The graph will build automatically as daily snapshots are added and the board moves.</span></div>`:'';
+  const clean=bbbCleanRankingHistory(history);
+  if(!clean.length)return '<div class="bbb-rank-empty">Ranking history is not available for this player yet.</div>';
+  const first=clean[0],current=clean[clean.length-1],move=bbbRankMove(clean);
+  const best=Math.min(...clean.filter(x=>x.overall_rank!=null).map(x=>Number(x.overall_rank)));
+  const previous=clean.length>1?clean[clean.length-2]:null;
+  const chart=bbbRankingChart(clean);
+  const recent=clean.slice(-5).reverse().map(x=>`<div class="bbb-rank-event"><span>${bbbHistoryDate(x.snapshot_date)}</span><strong>#${bbbEsc(x.overall_rank)}</strong></div>`).join('');
+  const baseline=clean.length===1?`<div class="bbb-rank-baseline"><strong>History starts here.</strong><span>Aug. 31, 2026 is the first preserved BBB ranking snapshot. The graph will build automatically as daily snapshots are added and the board moves.</span></div>`:'';
   return `<div class="bbb-rank-summary"><div><span>Current BBB Rank</span><strong>#${bbbEsc(current.overall_rank)}</strong></div><div><span>Latest Movement</span><strong>${bbbRankMoveHtml(move)}</strong></div><div><span>${previous?'Previous Rank':'Tracking Since'}</span><strong>${previous?'#'+bbbEsc(previous.overall_rank):bbbHistoryDate(first.snapshot_date)}</strong></div><div><span>Best Tracked Rank</span><strong>#${bbbEsc(best)}</strong></div></div>${chart}${baseline}<div class="bbb-rank-events">${recent}</div>`;
 }
 
