@@ -78,10 +78,11 @@ function bbbHistorySigned(v){
 function bbbHistorySnapshotHtml(row){
   if(!row)return '';
   const value=bbbHistoryTradeValue(row);
-  const rank=Number(row.overall_rank);
-  const pos=Number(row.position_rank);
-  const market=Number(row.fp_sf_rank);
-  const gap=Number(row.bbb_vs_fp);
+  const toNum=v=>v==null||v===''?null:Number(v);
+  const rank=toNum(row.overall_rank);
+  const pos=toNum(row.position_rank);
+  const market=toNum(row.fp_sf_rank);
+  const gap=toNum(row.bbb_vs_fp);
   return `
     <div class="bbb-rank-snapshot-head">
       <div><span>SELECTED SNAPSHOT</span><strong>${bbbHistoryDate(row.snapshot_date)}</strong></div>
