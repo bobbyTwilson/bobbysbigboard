@@ -134,6 +134,26 @@
       #profileView .bbb-career-high strong{display:block;color:#dce7e1;font-size:12px;line-height:1.35}
       #profileView .bbb-career-high small{display:block;color:#7d9287;font-size:8px;margin-top:3px}
 
+      #profileView .bbb-prospect-card{padding:20px!important}
+      #profileView .bbb-prospect-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:15px}
+      #profileView .bbb-prospect-head h2{margin:5px 0 5px!important;font-size:28px!important}
+      #profileView .bbb-prospect-head p{margin:0;color:#84988d;font-size:10px;line-height:1.55}
+      #profileView .bbb-prospect-grade{flex:none;min-width:128px;border:1px solid #2b6c4b;background:#092117;border-radius:12px;padding:12px 14px;text-align:center}
+      #profileView .bbb-prospect-grade span{display:block;color:#6f8c7d;font-size:7px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
+      #profileView .bbb-prospect-grade strong{display:block;margin-top:5px;color:#6ce0a3;font-size:31px;line-height:1;font-weight:950}
+      #profileView .bbb-prospect-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:12px}
+      #profileView .bbb-prospect-meta>div{min-width:0;border:1px solid #17362a;background:#06110c;border-radius:10px;padding:11px 12px}
+      #profileView .bbb-prospect-meta span{display:block;color:#657b6f;font-size:7px;font-weight:950;letter-spacing:.075em;text-transform:uppercase;margin-bottom:5px}
+      #profileView .bbb-prospect-meta strong{display:block;color:#e8f0eb;font-size:13px;line-height:1.25;overflow-wrap:anywhere}
+      #profileView .bbb-prospect-traits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      #profileView .bbb-prospect-trait{min-width:0;border:1px solid #17362a;background:#06110c;border-radius:10px;padding:11px 12px}
+      #profileView .bbb-prospect-trait-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:8px}
+      #profileView .bbb-prospect-trait-head strong{color:#dfe9e3;font-size:11px}
+      #profileView .bbb-prospect-trait-head span{color:#82a091;font-size:9px;font-weight:900;white-space:nowrap}
+      #profileView .bbb-prospect-trait-track{height:7px;border-radius:999px;overflow:hidden;background:#12271d}
+      #profileView .bbb-prospect-trait-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#168a4e,#64dda0)}
+      #profileView .bbb-prospect-empty{color:#81958a;font-size:10px;line-height:1.55}
+
       #profileView .bbb-similar-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
       #profileView .bbb-similar-player{display:block;border:1px solid #17362a;background:#06110c;border-radius:11px;padding:13px;text-decoration:none;min-width:0;transition:transform .14s ease,border-color .14s ease,background .14s ease}
       #profileView .bbb-similar-player:hover{transform:translateY(-1px);border-color:#2c6e4d;background:#081812}
@@ -173,6 +193,14 @@
         #profileView .${SYSTEM_CLASS}{margin-left:-1px;margin-right:-1px}
         #profileView .bbb-tabs-bar{border-radius:10px;gap:1px;padding:3px}
         #profileView .bbb-tabs-btn{min-height:40px;padding:0 13px;font-size:7px}
+        #profileView .bbb-tabs-btn[data-mobile-label]{font-size:0!important}
+        #profileView .bbb-tabs-btn[data-mobile-label]::after{
+          content:attr(data-mobile-label);
+          font-size:7px;
+          font-weight:950;
+          letter-spacing:.075em;
+          text-transform:uppercase;
+        }
         #profileView .bbb-tabs-panel{margin-top:7px}
         #profileView .bbb-career-card{padding:14px!important}
         #profileView .bbb-career-head{display:block;margin-bottom:11px}
@@ -185,6 +213,107 @@
         #profileView .bbb-career-statgrid strong{font-size:15px}
         #profileView .bbb-career-block{padding:11px}
         #profileView .bbb-career-stop{flex-basis:112px;padding:9px}
+        #profileView .bbb-prospect-card{
+          padding:12px!important;
+          border-radius:12px!important;
+          overflow:hidden!important;
+        }
+        #profileView .bbb-prospect-head{
+          display:flex!important;
+          flex-direction:column!important;
+          gap:9px!important;
+          margin-bottom:10px!important;
+        }
+        #profileView .bbb-prospect-head>div:first-child{order:2}
+        #profileView .bbb-prospect-head h2{
+          margin:3px 0 4px!important;
+          font-size:21px!important;
+          line-height:1.02!important;
+        }
+        #profileView .bbb-prospect-head p{
+          font-size:9px!important;
+          line-height:1.45!important;
+        }
+        #profileView .bbb-prospect-grade{
+          order:1;
+          width:100%!important;
+          min-width:0!important;
+          margin:0!important;
+          display:flex!important;
+          align-items:center!important;
+          justify-content:space-between!important;
+          text-align:left!important;
+          padding:12px 13px!important;
+          border-radius:10px!important;
+          background:linear-gradient(135deg,#0a2a1d,#07150f)!important;
+          border-color:#2e7752!important;
+        }
+        #profileView .bbb-prospect-grade span{
+          margin:0!important;
+          color:#78a98f!important;
+          font-size:7px!important;
+        }
+        #profileView .bbb-prospect-grade strong{
+          margin:0!important;
+          font-size:36px!important;
+          line-height:.9!important;
+          color:#72e5aa!important;
+        }
+        #profileView .bbb-prospect-meta{
+          grid-template-columns:1fr 1fr!important;
+          gap:6px!important;
+          margin-bottom:9px!important;
+        }
+        #profileView .bbb-prospect-meta>div{
+          min-height:60px!important;
+          padding:9px 10px!important;
+          display:flex!important;
+          flex-direction:column!important;
+          justify-content:center!important;
+        }
+        #profileView .bbb-prospect-meta>div:last-child{
+          grid-column:1/-1!important;
+          min-height:56px!important;
+        }
+        #profileView .bbb-prospect-meta span{
+          margin-bottom:4px!important;
+          font-size:6.5px!important;
+        }
+        #profileView .bbb-prospect-meta strong{
+          font-size:12px!important;
+          line-height:1.2!important;
+        }
+        #profileView .bbb-prospect-traits{
+          grid-template-columns:1fr!important;
+          gap:6px!important;
+        }
+        #profileView .bbb-prospect-trait{
+          padding:10px 11px!important;
+          border-radius:9px!important;
+        }
+        #profileView .bbb-prospect-trait-head{
+          margin-bottom:7px!important;
+          align-items:center!important;
+        }
+        #profileView .bbb-prospect-trait-head strong{
+          font-size:11px!important;
+          line-height:1.2!important;
+        }
+        #profileView .bbb-prospect-trait-head span{
+          font-size:10px!important;
+          color:#a1b8ac!important;
+        }
+        #profileView .bbb-prospect-trait-track{
+          height:9px!important;
+        }
+        #profileView .bbb-tabs-btn[data-bbb-tab="prospect"]{
+          color:#8fc9ac!important;
+        }
+        #profileView .bbb-tabs-btn[data-bbb-tab="prospect"][aria-selected="true"]{
+          color:#7aefb1!important;
+          background:#0c3826!important;
+          box-shadow:inset 0 -2px 0 #53df99!important;
+        }
         #profileView .bbb-similar-grid{grid-template-columns:1fr 1fr;gap:6px}
         #profileView .bbb-similar-player{padding:11px}
         #profileView .bbb-news-item{grid-template-columns:1fr;gap:5px;padding:11px}
@@ -302,6 +431,32 @@
     return `<section class="profile-card full"><div class="profile-card-kicker">NEWS</div><div class="bbb-career-head"><div><h2>Latest player updates.</h2><p>Recent injury, performance, role and roster developments preserved in Bobby's Big Board.</p></div><span class="bbb-career-source">${rows.length} RECENT</span></div><div class="bbb-news-list">${rows.map(u=>`<div class="bbb-news-item"><time class="bbb-news-date">${esc(date(u.update_date))}</time><div class="bbb-news-copy"><strong>${esc(u.update_type||'Update')}</strong><p>${esc(u.update_text||'')}</p></div>${u.injury_status?`<span class="bbb-news-status">${esc(u.injury_status)}</span>`:''}</div>`).join('')}</div></section>`;
   }
 
+  function prospectCard(grade){
+    if(!grade)return '';
+    const gradeValue=n(grade.grade);
+    const traits=Array.isArray(grade.traits)?grade.traits:[];
+    const traitHtml=traits.length?traits.map(t=>{
+      const value=n(t.value),max=n(t.max),pct=n(t.pct);
+      const pctSafe=pct==null?(value!=null&&max?Math.max(0,Math.min(100,(value/max)*100)):0):Math.max(0,Math.min(100,pct));
+      const score=value==null?'—':(Number.isInteger(value)?String(value):value.toFixed(1));
+      const maxText=max==null?'':` / ${Number.isInteger(max)?max:max.toFixed(1)}`;
+      return `<div class="bbb-prospect-trait"><div class="bbb-prospect-trait-head"><strong>${esc(t.name||'Trait')}</strong><span>${esc(score+maxText)}</span></div><div class="bbb-prospect-trait-track"><div class="bbb-prospect-trait-fill" style="width:${pctSafe.toFixed(1)}%"></div></div></div>`;
+    }).join(''):'<div class="bbb-prospect-empty">Individual trait grades are not available for this prospect profile.</div>';
+    const gradeText=gradeValue==null?'—':(Number.isInteger(gradeValue)?String(gradeValue):gradeValue.toFixed(1));
+    return `<section class="profile-card full bbb-prospect-card">
+      <div class="bbb-prospect-head">
+        <div><div class="profile-card-kicker">PROSPECT PROFILE</div><h2>Original BBB scouting grade.</h2><p>The full pre-draft grade profile preserved alongside the player's NFL career.</p></div>
+        <div class="bbb-prospect-grade"><span>Overall Grade</span><strong>${esc(gradeText)}</strong></div>
+      </div>
+      <div class="bbb-prospect-meta">
+        <div><span>Draft Class</span><strong>${grade.year?esc(grade.year):'—'}</strong></div>
+        <div><span>Position</span><strong>${esc(grade.pos||'—')}</strong></div>
+        <div><span>Pro Comp</span><strong>${esc(grade.comp||'—')}</strong></div>
+      </div>
+      <div class="bbb-prospect-traits">${traitHtml}</div>
+    </section>`;
+  }
+
   function similarCard(player){
     const pool=typeof players!=='undefined'&&Array.isArray(players)?players:[];
     const rank=n(player?.rank),age=n(player?.age),pos=String(player?.pos||'').toUpperCase();
@@ -339,7 +494,7 @@
       </div>`;
   }
 
-  function tabLabel(key){return ({stats:'Stats',gamelog:'Game Log',news:'News',notes:'Notes',career:'Career',similar:'Similar Players'})[key]||key}
+  function tabLabel(key){return ({stats:'Stats',gamelog:'Game Log',news:'News',notes:'Notes',prospect:'Prospect Profile',career:'Career',similar:'Similar Players'})[key]||key}
 
   function setActive(system,key,focus=false){
     const btn=system.querySelector(`[data-bbb-tab="${key}"]`);
@@ -348,6 +503,9 @@
     system.querySelectorAll('[data-bbb-tab]').forEach(b=>b.setAttribute('aria-selected',String(b===btn)));
     system.querySelectorAll('[data-bbb-panel]').forEach(p=>p.hidden=p!==panel);
     system.dataset.active=key;
+    if(window.matchMedia&&window.matchMedia('(max-width:700px)').matches){
+      requestAnimationFrame(()=>btn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'}));
+    }
     if(focus)btn.focus({preventScroll:true});
   }
 
@@ -357,11 +515,12 @@
     return panel;
   }
 
-  function moveExistingCards(grid,system){
+  function moveExistingCards(grid,system,hasProspect){
     const statsPanel=ensurePanel(system,'stats');
     const gamePanel=ensurePanel(system,'gamelog');
     const notesPanel=ensurePanel(system,'notes');
     const careerPanel=ensurePanel(system,'career');
+    const prospectPanel=hasProspect?ensurePanel(system,'prospect'):null;
 
     const seasonTable=grid.querySelector('.bbb-v2-career-card');
     const game=grid.querySelector('#bbbGameLog');
@@ -369,31 +528,35 @@
     const ranking=grid.querySelector('.bbb-ranking-card');
     const timeline=grid.querySelector('.bbb-v2-updates-card');
     const trend=grid.querySelector('.bbb-v2-clarity-card,.bbb-v2-trend-card');
+    const legacyProspect=grid.querySelector('.profile-trait-head')?.closest('.profile-card');
 
     if(seasonTable&&!statsPanel.contains(seasonTable))statsPanel.appendChild(seasonTable);
     if(game&&!gamePanel.contains(game))gamePanel.appendChild(game);
     if(overview&&!notesPanel.contains(overview))notesPanel.appendChild(overview);
     if(ranking&&!notesPanel.contains(ranking))notesPanel.appendChild(ranking);
+    if(legacyProspect)legacyProspect.remove();
     if(timeline)timeline.remove();
 
     [...grid.children].filter(el=>el.classList?.contains('profile-card')&&el!==trend).forEach(el=>{
-      if(!statsPanel.contains(el)&&!gamePanel.contains(el)&&!notesPanel.contains(el)&&!careerPanel.contains(el))notesPanel.appendChild(el);
+      if(!statsPanel.contains(el)&&!gamePanel.contains(el)&&!notesPanel.contains(el)&&!careerPanel.contains(el)&&(!prospectPanel||!prospectPanel.contains(el)))notesPanel.appendChild(el);
     });
 
     return trend;
   }
 
   function buildSystem(content,grid,player,data){
+    const grade=typeof profileFindGrade==='function'?profileFindGrade(player?.name||''):null;
+    const tabKeys=['stats','gamelog','news','notes',...(grade?['prospect']:[]),'career','similar'];
     let system=content.querySelector('.'+SYSTEM_CLASS);
     if(!system){
       system=document.createElement('section');
       system.className=SYSTEM_CLASS;
       const bar=document.createElement('div');bar.className='bbb-tabs-bar';bar.setAttribute('role','tablist');bar.setAttribute('aria-label','Player profile content');
-      ['stats','gamelog','news','notes','career','similar'].forEach((key,i)=>{
-        const b=document.createElement('button');b.type='button';b.className='bbb-tabs-btn';b.dataset.bbbTab=key;b.setAttribute('role','tab');b.setAttribute('aria-selected',String(i===0));b.textContent=tabLabel(key);bar.appendChild(b);
+      tabKeys.forEach((key,i)=>{
+        const b=document.createElement('button');b.type='button';b.className='bbb-tabs-btn';b.dataset.bbbTab=key;b.setAttribute('role','tab');b.setAttribute('aria-selected',String(i===0));b.textContent=tabLabel(key);if(key==='prospect')b.dataset.mobileLabel='Prospect';bar.appendChild(b);
       });
       system.appendChild(bar);
-      ['stats','gamelog','news','notes','career','similar'].forEach(key=>ensurePanel(system,key));
+      tabKeys.forEach(key=>ensurePanel(system,key));
       content.insertBefore(system,grid);
       bar.addEventListener('click',e=>{const b=e.target.closest('[data-bbb-tab]');if(b)setActive(system,b.dataset.bbbTab)});
       bar.addEventListener('keydown',e=>{
@@ -407,18 +570,20 @@
       });
     }
 
-    const trend=moveExistingCards(grid,system);
+    const trend=moveExistingCards(grid,system,!!grade);
     const news=ensurePanel(system,'news');
     const career=ensurePanel(system,'career');
     const similar=ensurePanel(system,'similar');
+    const prospect=grade?ensurePanel(system,'prospect'):null;
     if(!news.dataset.built){news.innerHTML=newsCard(data.updates);news.dataset.built='1';}
+    if(prospect&&!prospect.dataset.built){prospect.innerHTML=prospectCard(grade);prospect.dataset.built='1';}
     if(!career.dataset.built){career.innerHTML=careerCard(player,data.stats,data.weekly);career.dataset.built='1';}
     if(!similar.dataset.built){similar.innerHTML=similarCard(player);similar.dataset.built='1';}
 
     const statsPanel=ensurePanel(system,'stats'),gamePanel=ensurePanel(system,'gamelog'),notesPanel=ensurePanel(system,'notes');
     if(!statsPanel.children.length)statsPanel.innerHTML='<section class="bbb-tab-placeholder"><div class="profile-card-kicker">STATS</div><h2>No season stats yet.</h2><p>Season-by-season NFL production will populate automatically when stats become available.</p></section>';
     if(!gamePanel.children.length)gamePanel.innerHTML='<section class="bbb-tab-placeholder"><div class="profile-card-kicker">GAME LOG</div><h2>No game log yet.</h2><p>Weekly NFL production will populate automatically when game data becomes available.</p></section>';
-    if(!notesPanel.children.length)notesPanel.innerHTML='<section class="bbb-tab-placeholder"><div class="profile-card-kicker">NOTES</div><h2>No BBB notes yet.</h2><p>Scouting overview and ranking-history notes will appear here when available.</p></section>';
+    if(!notesPanel.children.length)notesPanel.innerHTML='<section class="bbb-tab-placeholder"><div class="profile-card-kicker">RANK HISTORY</div><h2>No ranking history yet.</h2><p>BBB ranking movement and market context will appear here when enough history is available.</p></section>';
 
     grid.classList.add('bbb-tabs-grid-managed');
 
