@@ -416,9 +416,12 @@
   }
 
   function apply(){
-    if(!isPlayerRoute())return;
+    // Install the responsive profile rules before a player route is opened.
+    // This prevents a single-frame wide desktop table from influencing the
+    // mobile browser's initial page scale during SPA navigation.
     ensureViewport();
     injectStyles();
+    if(!isPlayerRoute())return;
     annotateAll();
   }
 
