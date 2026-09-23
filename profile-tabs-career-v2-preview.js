@@ -193,6 +193,14 @@
         #profileView .${SYSTEM_CLASS}{margin-left:-1px;margin-right:-1px}
         #profileView .bbb-tabs-bar{border-radius:10px;gap:1px;padding:3px}
         #profileView .bbb-tabs-btn{min-height:40px;padding:0 13px;font-size:7px}
+        #profileView .bbb-tabs-btn[data-mobile-label]{font-size:0!important}
+        #profileView .bbb-tabs-btn[data-mobile-label]::after{
+          content:attr(data-mobile-label);
+          font-size:7px;
+          font-weight:950;
+          letter-spacing:.075em;
+          text-transform:uppercase;
+        }
         #profileView .bbb-tabs-panel{margin-top:7px}
         #profileView .bbb-career-card{padding:14px!important}
         #profileView .bbb-career-head{display:block;margin-bottom:11px}
@@ -205,15 +213,107 @@
         #profileView .bbb-career-statgrid strong{font-size:15px}
         #profileView .bbb-career-block{padding:11px}
         #profileView .bbb-career-stop{flex-basis:112px;padding:9px}
-        #profileView .bbb-prospect-card{padding:14px!important}
-        #profileView .bbb-prospect-head{display:block;margin-bottom:11px}
-        #profileView .bbb-prospect-head h2{font-size:22px!important}
-        #profileView .bbb-prospect-grade{width:100%;min-width:0;margin-top:10px;display:flex;align-items:center;justify-content:space-between;text-align:left;padding:10px 12px}
-        #profileView .bbb-prospect-grade strong{margin-top:0;font-size:27px}
-        #profileView .bbb-prospect-meta{grid-template-columns:1fr 1fr;gap:6px}
-        #profileView .bbb-prospect-meta>div:last-child{grid-column:1/-1}
-        #profileView .bbb-prospect-traits{grid-template-columns:1fr;gap:6px}
-        #profileView .bbb-prospect-trait{padding:10px}
+        #profileView .bbb-prospect-card{
+          padding:12px!important;
+          border-radius:12px!important;
+          overflow:hidden!important;
+        }
+        #profileView .bbb-prospect-head{
+          display:flex!important;
+          flex-direction:column!important;
+          gap:9px!important;
+          margin-bottom:10px!important;
+        }
+        #profileView .bbb-prospect-head>div:first-child{order:2}
+        #profileView .bbb-prospect-head h2{
+          margin:3px 0 4px!important;
+          font-size:21px!important;
+          line-height:1.02!important;
+        }
+        #profileView .bbb-prospect-head p{
+          font-size:9px!important;
+          line-height:1.45!important;
+        }
+        #profileView .bbb-prospect-grade{
+          order:1;
+          width:100%!important;
+          min-width:0!important;
+          margin:0!important;
+          display:flex!important;
+          align-items:center!important;
+          justify-content:space-between!important;
+          text-align:left!important;
+          padding:12px 13px!important;
+          border-radius:10px!important;
+          background:linear-gradient(135deg,#0a2a1d,#07150f)!important;
+          border-color:#2e7752!important;
+        }
+        #profileView .bbb-prospect-grade span{
+          margin:0!important;
+          color:#78a98f!important;
+          font-size:7px!important;
+        }
+        #profileView .bbb-prospect-grade strong{
+          margin:0!important;
+          font-size:36px!important;
+          line-height:.9!important;
+          color:#72e5aa!important;
+        }
+        #profileView .bbb-prospect-meta{
+          grid-template-columns:1fr 1fr!important;
+          gap:6px!important;
+          margin-bottom:9px!important;
+        }
+        #profileView .bbb-prospect-meta>div{
+          min-height:60px!important;
+          padding:9px 10px!important;
+          display:flex!important;
+          flex-direction:column!important;
+          justify-content:center!important;
+        }
+        #profileView .bbb-prospect-meta>div:last-child{
+          grid-column:1/-1!important;
+          min-height:56px!important;
+        }
+        #profileView .bbb-prospect-meta span{
+          margin-bottom:4px!important;
+          font-size:6.5px!important;
+        }
+        #profileView .bbb-prospect-meta strong{
+          font-size:12px!important;
+          line-height:1.2!important;
+        }
+        #profileView .bbb-prospect-traits{
+          grid-template-columns:1fr!important;
+          gap:6px!important;
+        }
+        #profileView .bbb-prospect-trait{
+          padding:10px 11px!important;
+          border-radius:9px!important;
+        }
+        #profileView .bbb-prospect-trait-head{
+          margin-bottom:7px!important;
+          align-items:center!important;
+        }
+        #profileView .bbb-prospect-trait-head strong{
+          font-size:11px!important;
+          line-height:1.2!important;
+        }
+        #profileView .bbb-prospect-trait-head span{
+          font-size:10px!important;
+          color:#a1b8ac!important;
+        }
+        #profileView .bbb-prospect-trait-track{
+          height:9px!important;
+        }
+        #profileView .bbb-tabs-btn[data-bbb-tab="prospect"]{
+          color:#8fc9ac!important;
+        }
+        #profileView .bbb-tabs-btn[data-bbb-tab="prospect"][aria-selected="true"]{
+          color:#7aefb1!important;
+          background:#0c3826!important;
+          box-shadow:inset 0 -2px 0 #53df99!important;
+        }
         #profileView .bbb-similar-grid{grid-template-columns:1fr 1fr;gap:6px}
         #profileView .bbb-similar-player{padding:11px}
         #profileView .bbb-news-item{grid-template-columns:1fr;gap:5px;padding:11px}
@@ -403,6 +503,9 @@
     system.querySelectorAll('[data-bbb-tab]').forEach(b=>b.setAttribute('aria-selected',String(b===btn)));
     system.querySelectorAll('[data-bbb-panel]').forEach(p=>p.hidden=p!==panel);
     system.dataset.active=key;
+    if(window.matchMedia&&window.matchMedia('(max-width:700px)').matches){
+      requestAnimationFrame(()=>btn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'}));
+    }
     if(focus)btn.focus({preventScroll:true});
   }
 
@@ -450,7 +553,7 @@
       system.className=SYSTEM_CLASS;
       const bar=document.createElement('div');bar.className='bbb-tabs-bar';bar.setAttribute('role','tablist');bar.setAttribute('aria-label','Player profile content');
       tabKeys.forEach((key,i)=>{
-        const b=document.createElement('button');b.type='button';b.className='bbb-tabs-btn';b.dataset.bbbTab=key;b.setAttribute('role','tab');b.setAttribute('aria-selected',String(i===0));b.textContent=tabLabel(key);bar.appendChild(b);
+        const b=document.createElement('button');b.type='button';b.className='bbb-tabs-btn';b.dataset.bbbTab=key;b.setAttribute('role','tab');b.setAttribute('aria-selected',String(i===0));b.textContent=tabLabel(key);if(key==='prospect')b.dataset.mobileLabel='Prospect';bar.appendChild(b);
       });
       system.appendChild(bar);
       tabKeys.forEach(key=>ensurePanel(system,key));
