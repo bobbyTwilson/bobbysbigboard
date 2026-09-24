@@ -175,4 +175,8 @@ function bbbNavInit(){
   });
 }
 
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bbbNavInit);else bbbNavInit();
+// The feature bundle is loaded at the end of <body>, so the header already exists.
+  // Apply the visual nav structure immediately to avoid a first-paint layout shift,
+  // then install the full interaction layer on DOMContentLoaded.
+  bbbNavPolish();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bbbNavInit);else bbbNavInit();
