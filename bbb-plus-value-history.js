@@ -7,6 +7,7 @@
   const CARD_CLASS='bbb-plus-history';
   let renderToken=0;
   let observer=null;
+  const premiumCache=new Map();
 
   const q=s=>document.querySelector(s);
   const esc=v=>typeof bbbEsc==='function'?bbbEsc(v):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -175,18 +176,25 @@
   async function loadPremium(playerKey){
     const s=sess();
     if(!s?.access_token)return {kind:'locked'};
-    try{
-      const r=await fetch(BBB_SUPABASE_URL+'/functions/v1/bbb-plus-value-history?player_key='+encodeURIComponent(playerKey),{
-        headers:{apikey:BBB_SUPABASE_KEY,Authorization:'Bearer '+s.access_token}
-      });
-      const data=await r.json().catch(()=>({}));
-      if(r.status===401||r.status===403)return {kind:'locked',data};
-      if(!r.ok)throw new Error(data.error||'Premium history unavailable');
-      return {kind:'data',data};
-    }catch(err){
-      console.warn('BBB+ value history',err);
-      return {kind:'error'};
-    }
+    const cacheKey=playerKey+'::'+String(s.access_token).slice(-18);
+    if(premiumCache.has(cacheKey))return premiumCache.get(cacheKey);
+    const request=(async()=>{
+      try{
+        const r=await fetch(BBB_SUPABASE_URL+'/functions/v1/bbb-plus-value-history?player_key='+encodeURIComponent(playerKey),{
+          headers:{apikey:BBB_SUPABASE_KEY,Authorization:'Bearer '+s.access_token}
+        });
+        const data=await r.json().catch(()=>({}));
+        if(r.status===401||r.status===403)return {kind:'locked',data};
+        if(!r.ok)throw new Error(data.error||'Premium history unavailable');
+        return {kind:'data',data};
+      }catch(err){
+        console.warn('BBB+ value history',err);
+        premiumCache.delete(cacheKey);
+        return {kind:'error'};
+      }
+    })();
+    premiumCache.set(cacheKey,request);
+    return request;
   }
 
   function reportCopy(data){
