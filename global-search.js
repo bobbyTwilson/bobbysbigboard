@@ -252,5 +252,9 @@
     });
   }
 
+  // The header is already parsed because this bundle runs at the end of body.
+  // Paint and bind the trigger now so it is present on first render.
+  bbbSearchInjectStyles();
+  bbbSearchInjectTriggers();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bbbSearchInit);else bbbSearchInit();
 })();
