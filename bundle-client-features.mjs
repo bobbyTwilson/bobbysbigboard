@@ -47,7 +47,8 @@ const features=[
   ['account-route-fix.js','src="/account-route-fix.js"'],
   ['bbb-plus-v1.js','src="/bbb-plus-v1.js"'],
   ['legal-pages.js','src="/legal-pages.js"'],
-  ['bbb-plus-value-history.js','src="/bbb-plus-value-history.js"']
+  ['bbb-plus-value-history.js','src="/bbb-plus-value-history.js"'],
+  ['bbb-plus-trade-lab.js','src="/bbb-plus-trade-lab.js"']
 ];
 
 const playerBootGuard=`<script id="bbb-player-boot-guard">if(/^\\/player\\/[^/?#]+\\/?$/.test(location.pathname))document.documentElement.classList.add('bbb-player-boot')</script><style id="bbb-player-boot-styles">html.bbb-player-boot #rankingsView,html.bbb-player-boot #rookieView,html.bbb-player-boot #prospectView,html.bbb-player-boot #tradeView,html.bbb-player-boot #compareView,html.bbb-player-boot #updatesView,html.bbb-player-boot #moversView,html.bbb-player-boot #watchlistView,html.bbb-player-boot #opportunityView{display:none!important}html.bbb-player-boot #profileView{display:block!important;min-height:72vh}html.bbb-player-boot #profileMount{min-height:62vh}html.bbb-player-boot #profileMount:empty:before{content:'Loading player profile…';display:grid;place-items:center;min-height:52vh;color:#819188;font-size:12px;font-weight:800;background:#050807}</style>`;
