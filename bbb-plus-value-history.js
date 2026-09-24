@@ -7,6 +7,7 @@
   const CARD_CLASS='bbb-plus-history';
   let renderToken=0;
   let observer=null;
+  let lastObservedPlayer='';
   const premiumCache=new Map();
 
   const q=s=>document.querySelector(s);
@@ -85,6 +86,7 @@
       #profileView .bbbph-point.selected .bbbph-bbb-dot,#profileView .bbbph-point:focus .bbbph-bbb-dot{fill:#58d89a;stroke:#e8fff3;stroke-width:4}
       #profileView .bbbph-point.selected .bbbph-market-dot,#profileView .bbbph-point:focus .bbbph-market-dot{fill:#e3be54}
       #profileView .bbbph-chart-dates{display:flex;justify-content:space-between;color:#61756a;font-size:8px;font-weight:850;padding:0 4px}
+      #profileView .bbbph-range-note{margin:7px 4px 0;color:#6d8075;font-size:7px;line-height:1.45}
       #profileView .bbbph-snapshot{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}
       #profileView .bbbph-snapshot>div{border:1px solid #1c3329;background:#07110d;border-radius:8px;padding:9px 10px}
       #profileView .bbbph-snapshot span{display:block;color:#667a6f;font-size:6.5px;font-weight:950;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
@@ -221,6 +223,23 @@
     return filtered.length?filtered:rows;
   }
 
+  function dataRangeMeta(timeline){
+    const rows=Array.isArray(timeline)?timeline:[];
+    if(rows.length<2)return {days:0};
+    const first=new Date(rows[0].date+'T12:00:00Z').getTime();
+    const last=new Date(rows[rows.length-1].date+'T12:00:00Z').getTime();
+    return {days:Math.max(0,Math.round((last-first)/86400000))};
+  }
+
+  function rangeNote(meta,range){
+    const days=Number(meta?.days)||0;
+    if(range==='7d')return 'Showing the most recent 7 days of tracked history.';
+    if(range==='all')return 'Showing all tracked history.';
+    const wanted=Number(String(range).replace('d',''))||0;
+    if(days<wanted)return 'Only '+days+' days of history are tracked so far, so this view currently matches ALL.';
+    return 'Showing the most recent '+wanted+' days of tracked history.';
+  }
+
   function chartHtml(timeline,range='30d'){
     const list=rangeTimeline(timeline,range).filter(r=>num(r.bbb_rank)!=null||num(r.market_rank)!=null);
     if(!list.length)return '<div class="bbbph-empty">Premium chart history is still building.</div>';
@@ -251,9 +270,10 @@
 
     return '<div class="bbbph-chart-shell" data-bbbph-range="'+range+'">'+
       '<div class="bbbph-chart-top"><div class="bbbph-legend"><span class="bbb">BBB RANK</span><span class="market">CONSENSUS</span></div>'+
-      '<div class="bbbph-ranges"><button data-range="30d" class="'+(range==='30d'?'on':'')+'">30D</button><button data-range="90d" class="'+(range==='90d'?'on':'')+'">90D</button><button data-range="all" class="'+(range==='all'?'on':'')+'">ALL</button></div></div>'+
+      '<div class="bbbph-ranges"><button data-range="7d" class="'+(range==='7d'?'on':'')+'">7D</button><button data-range="30d" class="'+(range==='30d'?'on':'')+'">30D</button><button data-range="90d" class="'+(range==='90d'?'on':'')+'">90D</button><button data-range="all" class="'+(range==='all'?'on':'')+'">ALL</button></div></div>'+
       '<svg class="bbbph-chart" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="BBB plus premium value history chart">'+grid+bbbLine+marketLine+points+'</svg>'+
       '<div class="bbbph-chart-dates"><span>'+date(list[0].date)+'</span><span>'+date(list[list.length-1].date)+'</span></div>'+
+      '<div class="bbbph-range-note">'+rangeNote(dataRangeMeta(timeline),range)+'</div>'+
       '<div class="bbbph-snapshot" data-bbbph-snapshot>'+snapshotHtml(list[list.length-1])+'</div>'+
     '</div>';
   }
@@ -389,14 +409,26 @@
   }
 
   if(observer)observer.disconnect();
-  observer=new MutationObserver(()=>{
-    if(location.pathname.startsWith('/player/')&&targetPanel()){
-      observer.disconnect();
-      schedule(currentPlayerKey());
-      setTimeout(()=>observer?.observe(document.documentElement,{childList:true,subtree:true}),2700);
-    }
+  observer=new MutationObserver((mutations)=>{
+    if(!location.pathname.startsWith('/player/'))return;
+    const key=currentPlayerKey();
+    if(!key||!targetPanel())return;
+
+    const onlyPremiumMutations=mutations.length&&mutations.every(m=>{
+      const target=m.target instanceof Element?m.target:m.target?.parentElement;
+      return !!target?.closest?.('.'+CARD_CLASS);
+    });
+    if(onlyPremiumMutations)return;
+
+    const hasCard=!!targetPanel()?.querySelector('.'+CARD_CLASS);
+    if(key===lastObservedPlayer&&hasCard)return;
+    lastObservedPlayer=key;
+    schedule(key);
   });
   observer.observe(document.documentElement,{childList:true,subtree:true});
 
-  if(location.pathname.startsWith('/player/'))schedule(currentPlayerKey());
+  if(location.pathname.startsWith('/player/')){
+    lastObservedPlayer=currentPlayerKey();
+    schedule(lastObservedPlayer);
+  }
 })();
