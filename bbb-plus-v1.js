@@ -56,5 +56,8 @@
   function route(){const on=String(location.hash||'').startsWith('#plus'),v=view();if(!on){v.classList.add('hide');return}['rankingsView','rookieView','prospectView','tradeView','compareView','updatesView','moversView','watchlistView','opportunityView','profileView','statsView','accountView'].forEach(id=>q('#'+id)?.classList.add('hide'));v.classList.remove('hide');window.scrollTo(0,0)}
   function intercept(){document.addEventListener('click',e=>{const a=e.target.closest('a[href="#plus"],a[href="/#plus"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();if(location.pathname!=='/'||!String(location.hash).startsWith('#plus'))history.pushState({bbbView:'plus'},'', '/#plus');route()},true)}
   async function init(){css();view();if(typeof bbbAccountRefreshSession==='function'&&!sess())try{await bbbAccountRefreshSession()}catch{}await load();render();nav();strip();acct();route();intercept();const o=new MutationObserver(()=>{nav();acct()});o.observe(document.body,{childList:true,subtree:true});[120,450,1000,1800].forEach(ms=>setTimeout(()=>{nav();acct();route()},ms));window.addEventListener('hashchange',()=>setTimeout(route,0));window.addEventListener('popstate',()=>setTimeout(route,0))}
+  // Header controls should not wait on auth or membership network requests.
+  // Paint BBB+ (and its announcement strip) as soon as the end-of-body bundle runs.
+  css();nav();strip();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
