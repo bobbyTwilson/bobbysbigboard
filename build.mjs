@@ -78,10 +78,14 @@ const tools={
   compare:{hash:'#compare',title:"Dynasty Player Compare | Bobby's Big Board",description:"Compare two dynasty players head-to-head using Bobby's rankings, market value, age, injury status, movement, prospect grades, and recent updates."},
   movers:{hash:'#movers',title:"Dynasty Market Movers | Bobby's Big Board",description:"Track the biggest dynasty ranking risers, fallers, and BBB-vs-market movement across Bobby's Big Board."},
   updates:{hash:'#updates',title:"Dynasty Player Updates | Bobby's Big Board",description:"Read the latest meaningful dynasty player updates, injuries, role changes, roster news, and performance notes tracked by Bobby's Big Board."},
-  plus:{hash:'#plus',title:"BBB+ Founding Membership | Bobby's Big Board",description:"Join BBB+ Founding Membership for premium dynasty tools, deeper value history, advanced trade analysis, alerts, league-powered features, and early access while Bobby's core rankings remain free."}
+  plus:{hash:'#plus',title:"BBB+ Founding Membership | Bobby's Big Board",description:"Join BBB+ Founding Membership for premium dynasty tools, deeper value history, advanced trade analysis, alerts, league-powered features, and early access while Bobby's core rankings remain free."},
+  terms:{hash:'#terms',title:"Terms of Service | Bobby's Big Board",description:"Terms governing Bobby's Big Board accounts, fantasy football tools, content, and BBB+ subscription features."},
+  privacy:{hash:'#privacy',title:"Privacy Policy | Bobby's Big Board",description:"How Bobby's Big Board handles account, subscription, analytics, saved preference, and connected fantasy league information."},
+  billing:{hash:'#billing',title:"BBB+ Billing Policy | Bobby's Big Board",description:"BBB+ subscription pricing, automatic renewal, cancellation, refunds, failed payments, taxes, and Founding 100 billing terms."}
 };
 for(const [slug,m] of Object.entries(tools)){
-  const redirect=slug==='plus' ? `<script>if(location.pathname==='/plus'&&!location.hash){location.replace('/'+location.search+'#plus')}</script>` : `<script>if(location.pathname==='/${slug}'&&!location.hash){location.replace('/${m.hash}'+location.search)}</script>`;
+  const hashFirst=['plus','terms','privacy','billing'].includes(slug);
+  const redirect=hashFirst ? `<script>if(location.pathname==='/${slug}'&&!location.hash){location.replace('/'+location.search+'${m.hash}')}</script>` : `<script>if(location.pathname==='/${slug}'&&!location.hash){location.replace('/${m.hash}'+location.search)}</script>`;
   const page=withSeo(html,{title:m.title,description:m.description,path:`/${slug}`,extraHead:redirect});
   await writeFile(`${out}/static/seo/${slug}.html`,page);
 }
