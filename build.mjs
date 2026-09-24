@@ -77,10 +77,11 @@ const tools={
   trade:{hash:'#trade',title:"Dynasty Trade Calculator | Bobby's Big Board",description:"Build dynasty trades with Bobby's live Superflex values, cornerstone premiums, package discounts, draft picks, and BBB-vs-market valuation."},
   compare:{hash:'#compare',title:"Dynasty Player Compare | Bobby's Big Board",description:"Compare two dynasty players head-to-head using Bobby's rankings, market value, age, injury status, movement, prospect grades, and recent updates."},
   movers:{hash:'#movers',title:"Dynasty Market Movers | Bobby's Big Board",description:"Track the biggest dynasty ranking risers, fallers, and BBB-vs-market movement across Bobby's Big Board."},
-  updates:{hash:'#updates',title:"Dynasty Player Updates | Bobby's Big Board",description:"Read the latest meaningful dynasty player updates, injuries, role changes, roster news, and performance notes tracked by Bobby's Big Board."}
+  updates:{hash:'#updates',title:"Dynasty Player Updates | Bobby's Big Board",description:"Read the latest meaningful dynasty player updates, injuries, role changes, roster news, and performance notes tracked by Bobby's Big Board."},
+  plus:{hash:'#plus',title:"BBB+ Founding Membership | Bobby's Big Board",description:"Join BBB+ Founding Membership for premium dynasty tools, deeper value history, advanced trade analysis, alerts, league-powered features, and early access while Bobby's core rankings remain free."}
 };
 for(const [slug,m] of Object.entries(tools)){
-  const redirect=`<script>if(location.pathname==='/${slug}'&&!location.hash){location.replace('/${m.hash}'+location.search)}</script>`;
+  const redirect=slug==='plus' ? `<script>if(location.pathname==='/plus'&&!location.hash){location.replace('/'+location.search+'#plus')}</script>` : `<script>if(location.pathname==='/${slug}'&&!location.hash){location.replace('/${m.hash}'+location.search)}</script>`;
   const page=withSeo(html,{title:m.title,description:m.description,path:`/${slug}`,extraHead:redirect});
   await writeFile(`${out}/static/seo/${slug}.html`,page);
 }
