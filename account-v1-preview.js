@@ -121,4 +121,8 @@ async function bbbAccountInit(){
   window.addEventListener('hashchange',()=>setTimeout(bbbAccountRoute,0));
 }
 
+// Prepaint a stable account control from the locally cached session.
+bbbAccountSession=bbbAccountReadSession();
+bbbAccountInjectStyles();
+bbbAccountPolishNav();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bbbAccountInit);else bbbAccountInit();
