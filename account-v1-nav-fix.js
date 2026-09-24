@@ -165,6 +165,8 @@
     updateMobileActive();
   }
 
+  // Normalize the desktop header before first paint; the bundle executes after the header markup.
+  apply();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
   [100,350,900,1700,3000].forEach(ms=>setTimeout(apply,ms));
 })();
