@@ -120,6 +120,14 @@
       #plusView .bbbcc-edge-col strong{display:block;color:#d6e0da;font-size:9px}
       #plusView .bbbcc-edge-col.edge strong{color:#69dfa3}
       #plusView .bbbcc-tools{display:grid;gap:6px}
+      #plusView .bbbcc-membership{margin-top:8px;padding:12px;border:1px solid #5d4e28;border-radius:10px;background:#141109}
+      #plusView .bbbcc-membership-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+      #plusView .bbbcc-membership-top span{display:block;color:#d9ba5b;font-size:6px;font-weight:1000;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+      #plusView .bbbcc-membership-top strong{display:block;color:#f3e6b1;font-size:10px}
+      #plusView .bbbcc-membership p{margin:0;color:#9f9165;font-size:7px;line-height:1.5}
+      #plusView .bbbcc-membership .bbbcc-action{margin-top:10px;width:100%;border-color:#6c592c;background:#211b0c;color:#f0cf6e}
+      #plusView .bbbcc-membership.cancel{border-color:#755e28;background:#171309}
+      #plusView .bbbcc-membership.cancel .bbbcc-membership-top strong{color:#f2d27b}
       #plusView .bbbcc-tool{display:block;padding:11px;border:1px solid #173025;border-radius:9px;background:#050c08;text-decoration:none}
       #plusView .bbbcc-tool:hover{border-color:#345e4c}
       #plusView .bbbcc-tool span{display:block;color:#e7c45e;font-size:6px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
@@ -232,12 +240,26 @@
     '</div>').join('')+'</div>';
   }
 
-  function toolsHtml(){
+  function membershipHtml(access){
+    if(access?.source!=='membership'||!access?.membership)return '';
+    const m=access.membership;
+    const ending=!!m.cancel_at_period_end;
+    const end=m.current_period_end?new Date(m.current_period_end):null;
+    const endLabel=end&&!Number.isNaN(end.getTime())?end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'the end of your billing period';
+    const plan=String(m.plan_interval||'').toLowerCase()==='year'?'Yearly':'Monthly';
+    return '<div class="bbbcc-membership '+(ending?'cancel':'')+'">'+
+      '<div class="bbbcc-membership-top"><div><span>BBB+ Membership</span><strong>'+(ending?'Cancellation scheduled':plan+' plan active')+'</strong></div><strong>★</strong></div>'+
+      '<p>'+(ending?'Your premium access stays active through '+esc(endLabel)+'. You can resume from billing settings before then.':plan+' billing is active. You can update your payment method or cancel anytime through secure billing settings.')+'</p>'+
+      '<button type="button" class="bbbcc-action" data-bbbcc-billing>'+(ending?'MANAGE / RESUME MEMBERSHIP':'MANAGE / CANCEL MEMBERSHIP')+'</button>'+
+    '</div>';
+  }
+
+  function toolsHtml(access){
     return '<div class="bbbcc-tools">'+
       '<a class="bbbcc-tool" href="#trade"><span>TRADE LAB</span><strong>Build the deal. Then go deeper.</strong><small>Package concentration, BBB vs market and premium trade reads.</small></a>'+
       '<a class="bbbcc-tool" href="#watchlist"><span>PLAYER ALERTS</span><strong>Manage the players you track.</strong><small>Rank, market, injury and BBB update controls live in My Players.</small></a>'+
       '<a class="bbbcc-tool" href="#rankings"><span>VALUE HISTORY+</span><strong>Open any player from the Top 500.</strong><small>Premium historical rank, market gap and exact value snapshots live on player profiles.</small></a>'+
-    '</div>';
+    '</div>'+membershipHtml(access);
   }
 
   function contentHtml(){
@@ -248,7 +270,7 @@
     return '<div class="bbbcc">'+
       '<section class="bbbcc-hero"><div class="shell bbbcc-hero-inner">'+
         '<div class="bbbcc-topline"><div class="bbbcc-kicker">BBB+ COMMAND CENTER</div><div class="bbbcc-member"><strong>★ '+badge+'</strong><span>Premium data live</span></div></div>'+
-        '<div class="bbbcc-hero-grid"><div><h1 class="bbbcc-title">THIS IS<br><span>YOUR BOARD.</span></h1><p class="bbbcc-sub">No filler. Your players, Bobby’s current values, the market gap, and the movement that actually matters — in one place.</p><div class="bbbcc-nav"><a class="bbbcc-action primary" href="#watchlist">MANAGE MY PLAYERS</a><a class="bbbcc-action" href="#trade">OPEN TRADE LAB</a><a class="bbbcc-action" href="#rankings">TOP 500</a>'+(access.source==='membership'?'<button type="button" class="bbbcc-action" id="bbbCcBilling">BILLING</button>':'')+'</div></div>'+
+        '<div class="bbbcc-hero-grid"><div><h1 class="bbbcc-title">THIS IS<br><span>YOUR BOARD.</span></h1><p class="bbbcc-sub">No filler. Your players, Bobby’s current values, the market gap, and the movement that actually matters — in one place.</p><div class="bbbcc-nav"><a class="bbbcc-action primary" href="#watchlist">MANAGE MY PLAYERS</a><a class="bbbcc-action" href="#trade">OPEN TRADE LAB</a><a class="bbbcc-action" href="#rankings">TOP 500</a>'+(access.source==='membership'?'<button type="button" class="bbbcc-action" data-bbbcc-billing>MANAGE MEMBERSHIP</button>':'')+'</div></div>'+
         pulseHtml()+
         '</div></div></section>'+
       '<div class="shell bbbcc-main">'+
@@ -256,7 +278,7 @@
         (p.length?'<div class="bbbcc-player-grid">'+p.map(playerCard).join('')+'</div>':'<div class="bbbcc-empty"><strong>Your command center needs players.</strong><p>Star players anywhere on Bobby’s Big Board and they’ll appear here with premium value history and live movement context.</p><a class="bbbcc-action primary" href="#rankings">ADD PLAYERS FROM THE TOP 500</a></div>')+
         '<div class="bbbcc-lower">'+
           '<section class="bbbcc-panel"><div class="bbbcc-panel-head"><h3>Where BBB is ahead of the market</h3><span>Top live gaps</span></div>'+edgesHtml()+'</section>'+
-          '<aside class="bbbcc-panel"><div class="bbbcc-panel-head"><h3>BBB+ tools</h3><span>Live now</span></div>'+toolsHtml()+'</aside>'+
+          '<aside class="bbbcc-panel"><div class="bbbcc-panel-head"><h3>BBB+ tools</h3><span>Live now</span></div>'+toolsHtml(access)+'</aside>'+
         '</div>'+
       '</div>'+
     '</div>';
@@ -272,12 +294,12 @@
     const v=view();if(!v||!dashboard)return;
     v.classList.add('bbbcc-active');
     v.innerHTML=contentHtml();
-    q('#bbbCcBilling')?.addEventListener('click',openBilling);
+    document.querySelectorAll('[data-bbbcc-billing]').forEach(btn=>btn.addEventListener('click',openBilling));
   }
 
   async function openBilling(){
     const s=session();if(!s?.access_token)return;
-    const btn=q('#bbbCcBilling');if(btn)btn.disabled=true;
+    const buttons=[...document.querySelectorAll('[data-bbbcc-billing]')];buttons.forEach(btn=>btn.disabled=true);
     try{
       const r=await fetch(BBB_SUPABASE_URL+'/functions/v1/bbb-plus-portal',{
         method:'POST',
@@ -287,7 +309,7 @@
       if(!r.ok)throw new Error(body.error||'Billing settings unavailable.');
       if(body.url)location.href=body.url;
     }catch(err){alert(err.message||'Billing settings unavailable.')}
-    finally{if(btn)btn.disabled=false}
+    finally{buttons.forEach(btn=>btn.disabled=false)}
   }
 
   async function load(force=false){
