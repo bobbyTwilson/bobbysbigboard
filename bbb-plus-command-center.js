@@ -36,6 +36,7 @@
     s.textContent=`
       #plusView.bbbcc-active{background:#040705!important;min-height:78vh}
       #plusView .bbbcc{padding:0 0 84px;color:#edf3ef}
+      #plusView.bbbcc-active .shell{width:min(1560px,calc(100% - 40px));max-width:none}
       #plusView .bbbcc-hero{position:relative;overflow:hidden;border-bottom:1px solid #183429;background:#050a07;padding:54px 0 30px}
       #plusView .bbbcc-hero:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(80,223,153,.055) 1px,transparent 1px),linear-gradient(rgba(80,223,153,.04) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent 92%)}
       #plusView .bbbcc-hero-inner{position:relative}
@@ -44,7 +45,7 @@
       #plusView .bbbcc-kicker:before{content:"";width:24px;height:1px;background:#cda944}
       #plusView .bbbcc-member{display:flex;align-items:center;gap:8px;color:#9fafA6;font-size:8px;font-weight:850}
       #plusView .bbbcc-member strong{color:#efd06d}
-      #plusView .bbbcc-hero-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(430px,.9fr);gap:48px;align-items:end}
+      #plusView .bbbcc-hero-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(520px,.85fr);gap:58px;align-items:end}
       #plusView .bbbcc-title{margin:0;font-size:clamp(44px,5.4vw,72px);line-height:.9;letter-spacing:-.052em;text-transform:uppercase}
       #plusView .bbbcc-title span{color:#69dfa3}
       #plusView .bbbcc-sub{max-width:650px;margin:15px 0 0;color:#87998f;font-size:12px;line-height:1.65}
@@ -64,8 +65,8 @@
       #plusView .bbbcc-section-head h2{margin:0;color:#eff5f1;font-size:22px;letter-spacing:-.025em}
       #plusView .bbbcc-section-head p{margin:5px 0 0;color:#6f8278;font-size:8.5px;line-height:1.45}
       #plusView .bbbcc-section-meta{color:#60736a;font-size:7px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
-      #plusView .bbbcc-player-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-      #plusView .bbbcc-player{position:relative;min-width:0;border:1px solid #1e4031;border-radius:14px;background:#07100c;padding:14px;overflow:hidden;transition:border-color .14s ease,background-color .14s ease}
+      #plusView .bbbcc-player-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+      #plusView .bbbcc-player{position:relative;min-width:0;border:1px solid #1e4031;border-radius:14px;background:#07100c;padding:16px;overflow:hidden;transition:border-color .14s ease,background-color .14s ease}
       #plusView .bbbcc-player:hover{border-color:#32644d;background:#08140f}
       #plusView .bbbcc-player-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:11px}
       #plusView .bbbcc-player-name{min-width:0}
@@ -73,7 +74,7 @@
       #plusView .bbbcc-player-name span{display:block;color:#687b71;font-size:7px;margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
       #plusView .bbbcc-health{flex:none;border:1px solid #1f6a47;background:#08291b;color:#78e1a8;border-radius:999px;padding:4px 7px;font-size:6px;font-weight:950}
       #plusView .bbbcc-health.watch{border-color:#715d2b;background:#211a0b;color:#e8ca6b}
-      #plusView .bbbcc-player-body{display:grid;grid-template-columns:minmax(0,.9fr) minmax(180px,1.1fr);gap:12px;align-items:stretch}
+      #plusView .bbbcc-player-body{display:grid;grid-template-columns:minmax(0,.82fr) minmax(240px,1.18fr);gap:14px;align-items:stretch}
       #plusView .bbbcc-ranks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid #173025;border-radius:9px;background:#050b08;overflow:hidden}
       #plusView .bbbcc-rank{padding:10px;border-right:1px solid #142b21}
       #plusView .bbbcc-rank:last-child{border-right:0}
@@ -89,7 +90,7 @@
       #plusView .bbbcc-spark-top strong.up{color:#6fe0a5}
       #plusView .bbbcc-spark-top strong.down{color:#ee8e8e}
       #plusView .bbbcc-spark-top strong.flat{color:#8a9b92}
-      #plusView .bbbcc-spark svg{display:block;width:100%;height:50px;overflow:visible}
+      #plusView .bbbcc-spark svg{display:block;width:100%;height:64px;overflow:visible}
       #plusView .bbbcc-spark-line{fill:none;stroke:#65dca0;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
       #plusView .bbbcc-spark-line.down{stroke:#e77f7f}
       #plusView .bbbcc-spark-line.flat{stroke:#d5b759}
@@ -104,7 +105,7 @@
       #plusView .bbbcc-market-view.fade{border-color:#6e3838;background:#2e1515;color:#ef9292}
       #plusView .bbbcc-open{color:#b4c1ba;font-size:7px;font-weight:950;text-decoration:none}
       #plusView .bbbcc-open:hover{color:#fff}
-      #plusView .bbbcc-lower{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:10px;margin-top:26px}
+      #plusView .bbbcc-lower{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(360px,.55fr);gap:12px;margin-top:28px}
       #plusView .bbbcc-panel{border:1px solid #1d3d30;border-radius:13px;background:#07100c;padding:14px}
       #plusView .bbbcc-panel-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:9px}
       #plusView .bbbcc-panel-head h3{margin:0;color:#eef4f0;font-size:13px}
@@ -129,17 +130,18 @@
       #plusView .bbbcc-empty p{max-width:560px;margin:0 auto;color:#7f9188;font-size:9px;line-height:1.6}
       #plusView .bbbcc-empty a{display:inline-flex;margin-top:12px}
       #plusView .bbbcc-loading{min-height:420px;display:grid;place-items:center;background:#040705;color:#7d8f86;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
-      @media(max-width:1050px){
+      @media(max-width:1200px){
         #plusView .bbbcc-hero-grid{grid-template-columns:1fr;gap:24px}
         #plusView .bbbcc-lower{grid-template-columns:1fr}
       }
-      @media(max-width:820px){
+      @media(max-width:900px){
         #plusView .bbbcc-player-grid{grid-template-columns:1fr}
         #plusView .bbbcc-pulse{grid-template-columns:1fr 1fr}
         #plusView .bbbcc-pulse>div:nth-child(2){border-right:0}
         #plusView .bbbcc-pulse>div:nth-child(-n+2){border-bottom:1px solid #173025}
       }
       @media(max-width:620px){
+        #plusView.bbbcc-active .shell{width:min(100% - 24px,1560px)}
         #plusView .bbbcc-hero{padding:38px 0 24px}
         #plusView .bbbcc-title{font-size:45px}
         #plusView .bbbcc-topline{align-items:flex-start;flex-direction:column}
