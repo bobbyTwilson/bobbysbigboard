@@ -68,6 +68,20 @@ function bbbWatchLatestMap(){
   bbbWatchUpdates.forEach(u=>{const key=String(u.player_key||'');if(key&&!map.has(key))map.set(key,u)});
   return map;
 }
+function bbbWatchPreferredUpdate(player,historyUpdate){
+  const canonicalDate=String(player?.weekly_update_date||'').slice(0,10);
+  const historyDate=String(historyUpdate?.update_date||'').slice(0,10);
+  // site_dynasty is the canonical current player note. Use historical site_updates
+  // only when it is at least as new as the current player snapshot.
+  if(player?.latest_update&&(!historyUpdate||canonicalDate>historyDate)){
+    return {update_text:player.latest_update,update_date:canonicalDate,update_type:'Latest BBB update'};
+  }
+  return historyUpdate||(
+    player?.latest_update
+      ? {update_text:player.latest_update,update_date:canonicalDate,update_type:'Latest BBB update'}
+      : null
+  );
+}
 function bbbWatchMoverMap(){return new Map(bbbWatchMovers.map(m=>[String(m.player_key||''),m]))}
 function bbbWatchRows(){
   const moverMap=bbbWatchMoverMap();
@@ -77,7 +91,7 @@ function bbbWatchRows(){
     .map(p=>{
       const key=String(p.player_key||'');
       const mover=moverMap.get(key)||null;
-      const update=latestMap.get(key)||null;
+      const update=bbbWatchPreferredUpdate(p,latestMap.get(key)||null);
       return {p,key,mover,update,move7:bbbWatchMoveValue(mover,'7D'),move30:bbbWatchMoveValue(mover,'30D'),gap:bbbWatchNum(p.gap)};
     });
 }
@@ -208,22 +222,15 @@ function bbbWatchInjectUi(){
   document.querySelector('#bbbWatchSort').onchange=e=>{bbbWatchSort=e.target.value;bbbWatchRender()};
 }
 async function bbbWatchLoadData(){
-  // The board/movers payloads are reused elsewhere and are already cached. Updates
-  // are the expensive piece, so only request history for players actually watched
-  // in this browser instead of pulling ~2,000 site-wide rows on every My Players load.
-  const watched=[...bbbWatchKeys].map(String).filter(Boolean);
-  const updateQuery=watched.length
-    ? 'select=player_key,update_date,update_text,update_type,injury_status&id=not.is.null&player_key=in.('+watched.map(encodeURIComponent).join(',')+')&order=update_date.desc,id.desc&limit='+Math.min(500,Math.max(80,watched.length*30))
-    : '';
-
-  const [board,movers,updates]=await Promise.all([
+  // Current player notes live on site_dynasty, so My Players no longer needs a
+  // separate update-history request just to render the latest note.
+  const [board,movers]=await Promise.all([
     bbbDbCached('site_dynasty','select=*&order=rank.asc'),
-    bbbDbCached('site_movers','select=*'),
-    watched.length?bbbDbCached('site_updates',updateQuery):Promise.resolve([])
+    bbbDbCached('site_movers','select=*')
   ]);
   bbbWatchBoard=(board||[]).filter(x=>x.player_key&&x.rank).sort((a,b)=>Number(a.rank)-Number(b.rank));
   bbbWatchMovers=movers||[];
-  bbbWatchUpdates=updates||[];
+  bbbWatchUpdates=[];
   bbbWatchRender();
 }
 function bbbWatchRoute(){
