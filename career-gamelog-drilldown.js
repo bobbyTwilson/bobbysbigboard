@@ -74,7 +74,8 @@
       return `<strong class="bbb-drill-ppr ${cls}">${dec(p,1)}</strong>`;
     }
     if(key==='rank'){
-      const rawFinish=row.weekly_position_finish;\n      const finish=rawFinish==null||rawFinish===''?NaN:Number(rawFinish);
+      const rawFinish=row.weekly_position_finish;
+      const finish=rawFinish==null||rawFinish===''?NaN:Number(rawFinish);
       return Number.isFinite(finish)&&finish>0?`<span class="bbb-drill-rank ${finish<=12?'top':''}">${esc(pos+finish)}</span>`:'NR';
     }
     return int(row[key]);
@@ -90,7 +91,8 @@
     const ppr=rows.reduce((s,r)=>s+num(r.fantasy_points_ppr),0);
     const ppg=games?ppr/games:0;
     const best=[...rows].sort((a,b)=>num(b.fantasy_points_ppr)-num(a.fantasy_points_ppr))[0];
-    const rawFinish=rows[0]?.season_position_finish;\n    const finish=rawFinish==null||rawFinish===''?NaN:Number(rawFinish);
+    const rawFinish=rows[0]?.season_position_finish;
+    const finish=rawFinish==null||rawFinish===''?NaN:Number(rawFinish);
     return `<div class="bbb-career-drill-summary">
       <span><small>GAMES</small><strong>${games}</strong></span>
       <span><small>PPR</small><strong>${dec(ppr,1)}</strong></span>
