@@ -14,7 +14,11 @@ function bbbWatchRead(){
   }catch(_){bbbWatchKeys=new Set()}
 }
 function bbbWatchSave(){
-  try{localStorage.setItem(BBB_WATCH_STORAGE,JSON.stringify([...bbbWatchKeys]))}catch(_){ }
+  try{
+    const keys=[...bbbWatchKeys];
+    localStorage.setItem(BBB_WATCH_STORAGE,JSON.stringify(keys));
+    window.dispatchEvent(new CustomEvent('bbb:watchlist-changed',{detail:{keys}}));
+  }catch(_){ }
 }
 function bbbWatchKey(v){return String(v?.player_key||v?.playerKey||'').trim()}
 function bbbWatchIs(key){return bbbWatchKeys.has(String(key||''))}
