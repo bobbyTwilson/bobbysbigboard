@@ -98,8 +98,20 @@
   function nav(){qa('.site-header .nav').forEach(h=>{if(h.querySelector('.bbb-plus-nav'))return;const a=document.createElement('a');a.className='bbb-plus-nav';a.href='#plus';a.innerHTML='<span>BBB+</span><span class="bbb-plus-star">★</span>';const acct=h.querySelector('.bbb-account-join'),trade=h.querySelector('.nav-cta');if(acct)h.insertBefore(a,acct);else if(trade)trade.insertAdjacentElement('afterend',a);else h.appendChild(a)});qa('.mobile-subnav').forEach(n=>{if(n.querySelector('.bbb-plus-mobile'))return;const a=document.createElement('a');a.className='bbb-plus-mobile';a.href='#plus';a.textContent='BBB+';n.appendChild(a)})}
   function strip(){if(q('.bbb-plus-strip'))return;const h=q('.site-header');if(!h)return;const d=document.createElement('div');d.className='bbb-plus-strip';d.innerHTML='<strong>BBB+ FOUNDING 100</strong> Value History, Trade Lab and Player Alerts are live. <a href="#plus">OPEN BBB+ →</a>';h.insertAdjacentElement('afterend',d)}
   function acct(){const g=q('#accountView .bbb-account-grid');if(!g||g.querySelector('.bbb-plus-acct'))return;const c=document.createElement('article');c.className='bbb-account-card bbb-plus-acct';c.innerHTML='<div class="label" style="color:#f0c75e">BBB+ / FOUNDING 100</div><h3>Go deeper than the rankings.</h3><p>Premium history, advanced tools, alerts and league-powered analysis live in BBB+ while the core rankings stay free.</p><a class="action" href="#plus">EXPLORE BBB+</a>';g.appendChild(c)}
-  function route(){const on=String(location.hash||'').startsWith('#plus'),v=view();if(!on){v.classList.add('hide');return}['rankingsView','rookieView','prospectView','tradeView','compareView','updatesView','moversView','watchlistView','opportunityView','profileView','statsView','accountView'].forEach(id=>q('#'+id)?.classList.add('hide'));v.classList.remove('hide');window.scrollTo(0,0)}
-  function intercept(){document.addEventListener('click',e=>{const a=e.target.closest('a[href="#plus"],a[href="/#plus"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();if(location.pathname!=='/'||!String(location.hash).startsWith('#plus'))history.pushState({bbbView:'plus'},'', '/#plus');route()},true)}
+  function route(){
+    const on=String(location.hash||'').startsWith('#plus'),v=view();
+    if(!on){v.classList.add('hide');return}
+    ['rankingsView','rookieView','prospectView','tradeView','compareView','updatesView','moversView','watchlistView','opportunityView','profileView','statsView','accountView'].forEach(id=>q('#'+id)?.classList.add('hide'));
+    v.classList.remove('hide');
+    window.scrollTo(0,0);
+    // history.pushState does not fire hashchange. Explicitly hand the first BBB+
+    // navigation to the Command Center so members do not see a blank page until refresh.
+    if(entitled){
+      if(typeof window.bbbPlusCommandCenterOpen==='function')window.bbbPlusCommandCenterOpen(false);
+      else window.dispatchEvent(new CustomEvent('bbb:plus-entitled'));
+    }
+  }
+  function intercept(){document.addEventListener('click',e=>{const a=e.target.closest('a[href="#plus"],a[href="/#plus"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();if(location.pathname!=='/'||!String(location.hash).startsWith('#plus'))history.pushState({bbbView:'plus'},'', '/#plus');route();if(entitled){requestAnimationFrame(()=>window.bbbPlusCommandCenterOpen?.(false))}},true)}
   async function init(){css();view();if(typeof bbbAccountRefreshSession==='function'&&!sess())try{await bbbAccountRefreshSession()}catch{}await load();render();window.dispatchEvent(new CustomEvent('bbb:plus-ready'));nav();strip();acct();route();intercept();const o=new MutationObserver(()=>{nav();acct()});o.observe(document.body,{childList:true,subtree:true});[120,450,1000,1800].forEach(ms=>setTimeout(()=>{nav();acct();route()},ms));window.addEventListener('hashchange',()=>setTimeout(route,0));window.addEventListener('popstate',()=>setTimeout(route,0))}
   // Header controls should not wait on auth or membership network requests.
   // Paint BBB+ (and its announcement strip) as soon as the end-of-body bundle runs.
