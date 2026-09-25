@@ -208,10 +208,18 @@ function bbbWatchInjectUi(){
   document.querySelector('#bbbWatchSort').onchange=e=>{bbbWatchSort=e.target.value;bbbWatchRender()};
 }
 async function bbbWatchLoadData(){
+  // The board/movers payloads are reused elsewhere and are already cached. Updates
+  // are the expensive piece, so only request history for players actually watched
+  // in this browser instead of pulling ~2,000 site-wide rows on every My Players load.
+  const watched=[...bbbWatchKeys].map(String).filter(Boolean);
+  const updateQuery=watched.length
+    ? 'select=player_key,update_date,update_text,update_type,injury_status&id=not.is.null&player_key=in.('+watched.map(encodeURIComponent).join(',')+')&order=update_date.desc,id.desc&limit='+Math.min(500,Math.max(80,watched.length*30))
+    : '';
+
   const [board,movers,updates]=await Promise.all([
     bbbDbCached('site_dynasty','select=*&order=rank.asc'),
     bbbDbCached('site_movers','select=*'),
-    bbbDbCached('site_updates','select=player_key,update_date,update_text,update_type,injury_status&id=not.is.null&order=update_date.desc,id.desc&limit=2000')
+    watched.length?bbbDbCached('site_updates',updateQuery):Promise.resolve([])
   ]);
   bbbWatchBoard=(board||[]).filter(x=>x.player_key&&x.rank).sort((a,b)=>Number(a.rank)-Number(b.rank));
   bbbWatchMovers=movers||[];
