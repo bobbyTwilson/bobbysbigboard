@@ -45,7 +45,7 @@
   '<details><summary>Is every BBB+ feature live on day one?</summary><p>No. This is a founding membership and the premium toolset will grow. Roadmap items are labeled clearly.</p></details></div></div></section>'+
   '<section class="bbb-plus-final"><div class="shell"><div class="bbb-plus-k" style="justify-content:center">FOUNDING 100</div><h2>Help build the next version<br>of Bobby\'s Big Board.</h2><p>Join the first wave of BBB+ members and help fund the premium tools being built around the free dynasty board.</p></div></section>'}
   async function load(){
-    membership=null;entitled=false;entitlementSource=null;
+    membership=null;entitled=false;entitlementSource=null;window.__bbbPlusMemberEntitled=false;
     const s=sess();if(!s?.access_token||!s?.user?.id)return;
     const headers={apikey:BBB_SUPABASE_KEY,Authorization:'Bearer '+s.access_token};
     try{
@@ -62,13 +62,16 @@
         const e=await entitlementRes.json();
         entitled=!!e?.has_access;
         entitlementSource=e?.source||null;
+        window.__bbbPlusMemberEntitled=entitled;
       }else{
         entitled=isActive();
         entitlementSource=entitled?'membership':null;
+        window.__bbbPlusMemberEntitled=entitled;
       }
     }catch{
       entitled=isActive();
       entitlementSource=entitled?'membership':null;
+      window.__bbbPlusMemberEntitled=entitled;
     }
   }
   function bind(){qa('[data-int]').forEach(b=>b.onclick=()=>{interval=b.dataset.int;renderCard()});q('#bbbPlusSignin')?.addEventListener('click',()=>location.hash='#account');q('#bbbPlusCheckout')?.addEventListener('click',checkout);q('#bbbPlusPortal')?.addEventListener('click',portal)}
@@ -76,13 +79,13 @@
   function render(){
     const v=view();
     if(entitled){
-      // The Command Center owns the BBB+ member view. Do not paint the old
-      // marketing page or a competing placeholder here.
-      v.innerHTML='';
+      // The Command Center owns the BBB+ member view. Never clear an active
+      // command-center render while a request is in flight.
+      window.__bbbPlusMemberEntitled=true;
       if(typeof window.bbbPlusCommandCenterOpen==='function'){
         window.bbbPlusCommandCenterOpen(true);
       }else{
-        setTimeout(()=>window.bbbPlusCommandCenterOpen?.(true),0);
+        window.dispatchEvent(new CustomEvent('bbb:plus-entitled'));
       }
       return;
     }
