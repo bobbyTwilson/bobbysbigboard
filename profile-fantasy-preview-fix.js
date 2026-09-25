@@ -142,9 +142,11 @@
     const points=num(list[0]?.season_ppr)||list.reduce((sum,row)=>sum+num(row.fantasy_points_ppr),0);
     const games=list.length;
     const ppg=games?points/games:0;
-    const rawFinish=list[0]?.season_position_finish;\n    const finish=rawFinish==null||rawFinish===''?NaN:Number(rawFinish);
+    const rawFinish=list[0]?.season_position_finish;
+    const finish=rawFinish==null||rawFinish===''?NaN:Number(rawFinish);
     const best=[...list].sort((a,b)=>num(b.fantasy_points_ppr)-num(a.fantasy_points_ppr))[0];
-    const rawBestFinish=best?.weekly_position_finish;\n    const bestFinish=rawBestFinish==null||rawBestFinish===''?NaN:Number(rawBestFinish);
+    const rawBestFinish=best?.weekly_position_finish;
+    const bestFinish=rawBestFinish==null||rawBestFinish===''?NaN:Number(rawBestFinish);
     const production=seasonProductionCards(pos,t);
     return `<div class="bbb-preview-season-summary">
       <div class="bbb-preview-season-summary-head">
