@@ -76,9 +76,17 @@
   function render(){
     const v=view();
     if(entitled){
-      v.innerHTML='<section style="min-height:520px;display:grid;place-items:center;background:#040705;color:#7e9087;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Opening your BBB+ Command Center…</section>';
+      // The Command Center owns the BBB+ member view. Do not paint the old
+      // marketing page or a competing placeholder here.
+      v.innerHTML='';
+      if(typeof window.bbbPlusCommandCenterOpen==='function'){
+        window.bbbPlusCommandCenterOpen(true);
+      }else{
+        setTimeout(()=>window.bbbPlusCommandCenterOpen?.(true),0);
+      }
       return;
     }
+    v.classList.remove('bbbcc-active');
     v.innerHTML=markup();
     bind();
   }
