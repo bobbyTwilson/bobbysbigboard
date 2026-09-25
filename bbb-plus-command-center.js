@@ -313,6 +313,7 @@
   }
 
   async function load(force=false){
+    ensureStyles();
     if(!signed()||!String(location.hash||'').startsWith('#plus'))return;
     const keys=watchKeys();
     const sig=keys.join('|');
@@ -351,6 +352,8 @@
     if(!String(location.hash||'').startsWith('#plus'))return;
     setTimeout(()=>load(false),20);
   }
+
+  window.bbbPlusCommandCenterOpen=(force=false)=>load(force);
 
   function init(){
     if(started)return;started=true;
