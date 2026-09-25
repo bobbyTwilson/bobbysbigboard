@@ -9,6 +9,7 @@
   let loading=false;
   let lastKeySig='';
   let started=false;
+  let authRetry=0;
 
   const q=s=>document.querySelector(s);
   const esc=v=>typeof bbbEsc==='function'?bbbEsc(v):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -324,9 +325,13 @@
     ensureStyles();
     if(!String(location.hash||'').startsWith('#plus'))return;
     if(!signed()){
-      if(window.__bbbPlusMemberEntitled) setTimeout(()=>load(force),180);
+      if(window.__bbbPlusMemberEntitled&&authRetry<25){
+        authRetry++;
+        setTimeout(()=>load(force),180);
+      }
       return;
     }
+    authRetry=0;
     const keys=watchKeys();
     const sig=keys.join('|');
     if(!force&&dashboard&&sig===lastKeySig){render();return}
@@ -372,6 +377,7 @@
     ensureStyles();
     if(window.__bbbPlusMemberEntitled&&String(location.hash||'').startsWith('#plus'))setTimeout(()=>load(true),0);
     window.addEventListener('bbb:plus-ready',maybeLoad);
+    window.addEventListener('bbb:plus-entitled',()=>setTimeout(()=>load(true),0));
     window.addEventListener('hashchange',maybeLoad);
     window.addEventListener('popstate',maybeLoad);
     window.addEventListener('storage',e=>{if(e.key===STORAGE&&String(location.hash||'').startsWith('#plus'))load(true)});
