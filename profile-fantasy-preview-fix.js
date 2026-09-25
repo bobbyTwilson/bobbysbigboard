@@ -142,18 +142,18 @@
     const points=num(list[0]?.season_ppr)||list.reduce((sum,row)=>sum+num(row.fantasy_points_ppr),0);
     const games=list.length;
     const ppg=games?points/games:0;
-    const finish=Number(list[0]?.season_position_finish);
+    const rawFinish=list[0]?.season_position_finish;\n    const finish=rawFinish==null||rawFinish===''?NaN:Number(rawFinish);
     const best=[...list].sort((a,b)=>num(b.fantasy_points_ppr)-num(a.fantasy_points_ppr))[0];
-    const bestFinish=Number(best?.weekly_position_finish);
+    const rawBestFinish=best?.weekly_position_finish;\n    const bestFinish=rawBestFinish==null||rawBestFinish===''?NaN:Number(rawBestFinish);
     const production=seasonProductionCards(pos,t);
     return `<div class="bbb-preview-season-summary">
       <div class="bbb-preview-season-summary-head">
-        <div><span>${esc(season)} SEASON TOTALS</span><strong>${pos&&Number.isFinite(finish)?esc(pos+finish):'—'}</strong><small>PPR positional finish</small></div>
+        <div><span>${esc(season)} SEASON TOTALS</span><strong>${pos&&Number.isFinite(finish)&&finish>0?esc(pos+finish):'NR'}</strong><small>PPR positional finish</small></div>
         <div class="bbb-preview-season-fantasy-grid">
           <div><span>PPR POINTS</span><strong>${dec(points,1)}</strong></div>
           <div><span>PPR / GAME</span><strong>${dec(ppg,1)}</strong></div>
           <div><span>GAMES</span><strong>${games}</strong></div>
-          <div><span>BEST WEEK</span><strong>${best?`W${esc(best.week)} · ${dec(best.fantasy_points_ppr,1)}`:'—'}</strong><small>${best&&Number.isFinite(bestFinish)?esc(pos+bestFinish):''}</small></div>
+          <div><span>BEST WEEK</span><strong>${best?`W${esc(best.week)} · ${dec(best.fantasy_points_ppr,1)}`:'—'}</strong><small>${best&&Number.isFinite(bestFinish)&&bestFinish>0?esc(pos+bestFinish):''}</small></div>
         </div>
       </div>
       <div class="bbb-preview-season-production-grid">
