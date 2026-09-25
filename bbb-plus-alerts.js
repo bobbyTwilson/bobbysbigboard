@@ -321,7 +321,9 @@
     hookWatchToggle();
     if(location.hash==='#watchlist'){
       ensureMount();
-      [0,250,700].forEach(ms=>setTimeout(load,ms));
+      // One premium fetch is enough. Repeated startup fetches were causing the
+      // dashboard to repaint several times and made My Players feel sticky.
+      setTimeout(load,40);
     }
   }
 
