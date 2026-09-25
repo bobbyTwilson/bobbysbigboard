@@ -381,6 +381,10 @@
     window.addEventListener('hashchange',maybeLoad);
     window.addEventListener('popstate',maybeLoad);
     window.addEventListener('storage',e=>{if(e.key===STORAGE&&String(location.hash||'').startsWith('#plus'))load(true)});
+    window.addEventListener('bbb:watchlist-changed',()=>{
+      lastKeySig='';
+      if(String(location.hash||'').startsWith('#plus'))load(true);
+    });
     [120,420,900].forEach(ms=>setTimeout(maybeLoad,ms));
   }
 
