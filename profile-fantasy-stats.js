@@ -96,7 +96,8 @@
     if(!list.length)return '';
     const pos=position(player,list),t=totals(list),games=list.length;
     const seasonPpr=num(list[0]?.season_ppr)||list.reduce((s,r)=>s+num(r.fantasy_points_ppr),0);
-    const rawFinish=list[0]?.season_position_finish;\n    const finish=rawFinish==null||rawFinish===''?NaN:Number(rawFinish);
+    const rawFinish=list[0]?.season_position_finish;
+    const finish=rawFinish==null||rawFinish===''?NaN:Number(rawFinish);
     const ppg=games?seasonPpr/games:0;
     const isCurrent=Number(season)===currentYear();
     const status=isCurrent?'CURRENT':'FINAL';
@@ -138,7 +139,8 @@
       return `<strong class="bbb-game-ppr ${cls}">${dec(p,1)}</strong>`;
     }
     if(key==='rank'){
-      const rawFinish=row.weekly_position_finish;\n      const finish=rawFinish==null||rawFinish===''?NaN:Number(rawFinish);
+      const rawFinish=row.weekly_position_finish;
+      const finish=rawFinish==null||rawFinish===''?NaN:Number(rawFinish);
       return Number.isFinite(finish)&&finish>0?`<span class="bbb-game-rank ${finish<=12?'top':''}">${esc(pos+finish)}</span>`:'NR';
     }
     return int(row[key]);
