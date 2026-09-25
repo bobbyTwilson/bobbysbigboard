@@ -1,7 +1,7 @@
 // BBB+ Founding Membership V1 preview
 (function(){
   const CHECKOUT=new URLSearchParams(location.search).get('bbbplus_live_test')==='1', ACTIVE=new Set(['active','trialing']);
-  let membership=null, interval='year', busy=false;
+  let membership=null, interval='year', busy=false, entitled=false, entitlementSource=null;
   const q=s=>document.querySelector(s), qa=s=>[...document.querySelectorAll(s)];
   function sess(){try{return typeof bbbAccountSession!=='undefined'?bbbAccountSession:null}catch{return null}}
   function signed(){return !!sess()?.access_token}
@@ -44,10 +44,44 @@
   '<details><summary>Can I cancel?</summary><p>Yes. When billing goes live, active members can manage or cancel through the Stripe customer portal.</p></details>'+
   '<details><summary>Is every BBB+ feature live on day one?</summary><p>No. This is a founding membership and the premium toolset will grow. Roadmap items are labeled clearly.</p></details></div></div></section>'+
   '<section class="bbb-plus-final"><div class="shell"><div class="bbb-plus-k" style="justify-content:center">FOUNDING 100</div><h2>Help build the next version<br>of Bobby\'s Big Board.</h2><p>Join the first wave of BBB+ members and help fund the premium tools being built around the free dynasty board.</p></div></section>'}
-  async function load(){membership=null;const s=sess();if(!s?.access_token||!s?.user?.id)return;try{const r=await fetch(BBB_SUPABASE_URL+'/rest/v1/bbb_plus_memberships?user_id=eq.'+encodeURIComponent(s.user.id)+'&select=status,plan_interval,founding_member,cancel_at_period_end,current_period_end',{headers:{apikey:BBB_SUPABASE_KEY,Authorization:'Bearer '+s.access_token}});if(r.ok){const rows=await r.json();membership=rows[0]||null;if(isActive()&&['month','year'].includes(membership?.plan_interval))interval=membership.plan_interval}}catch{}}
+  async function load(){
+    membership=null;entitled=false;entitlementSource=null;
+    const s=sess();if(!s?.access_token||!s?.user?.id)return;
+    const headers={apikey:BBB_SUPABASE_KEY,Authorization:'Bearer '+s.access_token};
+    try{
+      const [memberRes,entitlementRes]=await Promise.all([
+        fetch(BBB_SUPABASE_URL+'/rest/v1/bbb_plus_memberships?user_id=eq.'+encodeURIComponent(s.user.id)+'&select=status,plan_interval,founding_member,cancel_at_period_end,current_period_end',{headers}),
+        fetch(BBB_SUPABASE_URL+'/functions/v1/bbb-plus-entitlement',{headers})
+      ]);
+      if(memberRes.ok){
+        const rows=await memberRes.json();
+        membership=rows[0]||null;
+        if(isActive()&&['month','year'].includes(membership?.plan_interval))interval=membership.plan_interval;
+      }
+      if(entitlementRes.ok){
+        const e=await entitlementRes.json();
+        entitled=!!e?.has_access;
+        entitlementSource=e?.source||null;
+      }else{
+        entitled=isActive();
+        entitlementSource=entitled?'membership':null;
+      }
+    }catch{
+      entitled=isActive();
+      entitlementSource=entitled?'membership':null;
+    }
+  }
   function bind(){qa('[data-int]').forEach(b=>b.onclick=()=>{interval=b.dataset.int;renderCard()});q('#bbbPlusSignin')?.addEventListener('click',()=>location.hash='#account');q('#bbbPlusCheckout')?.addEventListener('click',checkout);q('#bbbPlusPortal')?.addEventListener('click',portal)}
   function renderCard(){const n=q('#bbbPlusCard');if(n)n.innerHTML=card();bind()}
-  function render(){view().innerHTML=markup();bind()}
+  function render(){
+    const v=view();
+    if(entitled){
+      v.innerHTML='<section style="min-height:520px;display:grid;place-items:center;background:#040705;color:#7e9087;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Opening your BBB+ Command Center…</section>';
+      return;
+    }
+    v.innerHTML=markup();
+    bind();
+  }
   async function checkout(){if(!CHECKOUT||busy)return;const s=sess();if(!s?.access_token){location.hash='#account';return}busy=true;renderCard();try{const r=await fetch(BBB_SUPABASE_URL+'/functions/v1/bbb-plus-checkout',{method:'POST',headers:{apikey:BBB_SUPABASE_KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({interval})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Checkout could not be started.');if(!d.url)throw new Error('Stripe checkout URL was not returned.');location.href=d.url}catch(e){alert(e.message||'Checkout could not be started.');busy=false;renderCard()}}
   async function portal(){if(busy)return;const s=sess();if(!s?.access_token){location.hash='#account';return}busy=true;try{const r=await fetch(BBB_SUPABASE_URL+'/functions/v1/bbb-plus-portal',{method:'POST',headers:{apikey:BBB_SUPABASE_KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Billing settings unavailable.');if(d.url)location.href=d.url}catch(e){alert(e.message||'Billing settings unavailable.')}finally{busy=false}}
   function nav(){qa('.site-header .nav').forEach(h=>{if(h.querySelector('.bbb-plus-nav'))return;const a=document.createElement('a');a.className='bbb-plus-nav';a.href='#plus';a.innerHTML='<span>BBB+</span><span class="bbb-plus-star">★</span>';const acct=h.querySelector('.bbb-account-join'),trade=h.querySelector('.nav-cta');if(acct)h.insertBefore(a,acct);else if(trade)trade.insertAdjacentElement('afterend',a);else h.appendChild(a)});qa('.mobile-subnav').forEach(n=>{if(n.querySelector('.bbb-plus-mobile'))return;const a=document.createElement('a');a.className='bbb-plus-mobile';a.href='#plus';a.textContent='BBB+';n.appendChild(a)})}
