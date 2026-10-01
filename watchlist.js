@@ -245,6 +245,7 @@ function bbbWatchRoute(){
 function bbbWatchOpenPlayer(key){
   if(!key)return;
   document.querySelector('#watchlistView')?.classList.add('hide');
+  window.scrollTo({top:0,left:0,behavior:'auto'});
   history.pushState({},'',`/player/${encodeURIComponent(key)}`);
   if(typeof profileRoute==='function')profileRoute(true);else location.href=`/player/${encodeURIComponent(key)}`;
 }
@@ -273,7 +274,15 @@ if(typeof profileHideOtherViews==='function'){
 }
 if(typeof profileRender==='function'){
   const bbbWatchOriginalProfileRender=profileRender;
-  profileRender=async function(slug){const result=await bbbWatchOriginalProfileRender(slug);bbbWatchInjectProfileButton(slug);return result};
+  profileRender=async function(slug){
+    window.scrollTo({top:0,left:0,behavior:'auto'});
+    const result=await bbbWatchOriginalProfileRender(slug);
+    bbbWatchInjectProfileButton(slug);
+    // Mobile Safari/Chrome can restore the table scroll position while the
+    // async profile is painting. Re-anchor after the Watch Player control exists.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'})));
+    return result;
+  };
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bbbWatchInit);else bbbWatchInit();
