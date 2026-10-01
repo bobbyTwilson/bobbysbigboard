@@ -105,6 +105,7 @@
     })().finally(()=>{plusAccessRefresh=null});
     return plusAccessRefresh;
   }
+  window.bbbPlusRefreshAccess=refreshPlusAccess;
   function bind(){qa('[data-int]').forEach(b=>b.onclick=()=>{interval=b.dataset.int;renderCard()});q('#bbbPlusSignin')?.addEventListener('click',()=>location.hash='#account');q('#bbbPlusCheckout')?.addEventListener('click',checkout);q('#bbbPlusPortal')?.addEventListener('click',portal)}
   function renderCard(){const n=q('#bbbPlusCard');if(n)n.innerHTML=card();bind()}
   function render(){
