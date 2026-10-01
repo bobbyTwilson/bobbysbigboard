@@ -106,7 +106,7 @@
   function lockHtml(){
     const sign=signed();
     return '<div class="bbbpt-lock"><div><div class="bbbpt-kicker">BBB+ TRADE LAB</div><h3>Go beyond equal value.</h3><p>Trade Lab adds BBB-vs-market package analysis, concentration, age/profile context, asset-by-asset gaps and a deeper explanation of what is actually driving the deal.</p><div class="bbbpt-lock-features"><span>BBB VS MARKET</span><span>PACKAGE CONCENTRATION</span><span>AGE PROFILE</span><span>ASSET GAP BREAKDOWN</span><span>TRADE READ</span></div></div>'+
-      (sign?'<a class="bbbpt-lock-action" href="#plus">BBB+ LAUNCHING SOON</a>':'<a class="bbbpt-lock-action" href="#account">SIGN IN TO MY BBB</a>')+
+      (sign?'<a class="bbbpt-lock-action" href="#plus">EXPLORE BBB+</a>':'<a class="bbbpt-lock-action" href="#account">SIGN IN TO MY BBB</a>')+
       '</div>';
   }
 
