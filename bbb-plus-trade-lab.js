@@ -188,10 +188,10 @@
       '<div class="bbbpt-read">'+
         '<div class="bbbpt-read-main"><h4>Why this trade looks this way</h4><div class="bbbpt-insights">'+((data.read||[]).length?(data.read||[]).map(x=>'<div class="bbbpt-insight">'+esc(x)+'</div>').join(''):'<div class="bbbpt-insight">The package is too close to call beyond the value totals right now.</div>')+'</div></div>'+
         '<div class="bbbpt-read-side"><h4>Package snapshot</h4><div class="bbbpt-read-side-grid">'+
-          '<div><span>BBB Edge</span><strong>'+pct(bbb.edge_pct)+'</strong></div>'+
-          '<div><span>Market Edge</span><strong>'+pct(market.edge_pct)+'</strong></div>'+
-          '<div><span>A Concentration</span><strong>'+concentration(a)+'</strong></div>'+
-          '<div><span>B Concentration</span><strong>'+concentration(b)+'</strong></div>'+
+          '<div><span>BBB Fairness</span><strong>'+fairness(bbb.fairness)+'</strong></div>'+
+          '<div><span>Market Fairness</span><strong>'+fairness(market.fairness)+'</strong></div>'+
+          '<div><span>A Package</span><strong>'+concentration(a)+'</strong></div>'+
+          '<div><span>B Package</span><strong>'+concentration(b)+'</strong></div>'+
         '</div></div>'+
       '</div>';
   }
