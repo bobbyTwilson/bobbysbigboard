@@ -159,7 +159,7 @@
     const isSigned=signed();
     const heading=isSigned?'Premium Value History is built and gated.':'Sign in to preview BBB+ access.';
     const copy=isSigned
-      ? 'The premium history endpoint is live. Public checkout stays closed while we finish the rest of the BBB+ launch tools.'
+      ? 'Premium Value History is live for BBB+ members.'
       : 'BBB+ members get the deeper history layer while the regular rank-history graph stays free.';
     return '<section class="profile-card full '+CARD_CLASS+'"><div class="bbbph-lock">'+
       '<div class="bbbph-lock-top"><span>BBB+ VALUE HISTORY</span><span>PREMIUM</span></div>'+
@@ -171,7 +171,7 @@
         '<div><span>Snapshots</span><strong>Exact daily value drilldown</strong></div>'+
       '</div>'+
       (!isSigned?'<a class="bbbph-lock-action" href="/#account">SIGN IN TO MY BBB</a>':'')+
-      '<p class="bbbph-lock-note">'+(reason==='error'?'Premium data is temporarily unavailable. The free ranking history below still works.':'Payments remain closed until the full launch bundle is ready.')+'</p>'+
+      '<p class="bbbph-lock-note">'+(reason==='error'?'Premium data is temporarily unavailable. The free ranking history below still works.':'Explore BBB+ to learn more about premium access.')+'</p>'+
     '</div></section>';
   }
 
