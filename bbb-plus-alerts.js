@@ -123,7 +123,7 @@
   function lockHtml(){
     const isSigned=signed();
     return '<div class="bbbpa-lock"><div><div class="bbbpa-kicker">BBB+ PLAYER ALERTS</div><h3>Know what changed without hunting for it.</h3><p>Premium tracking watches the BBB rank, consensus rank, health status and new BBB updates for the players you care about, then gives you a clean “since your last visit” feed.</p><div class="bbbpa-lock-tags"><span>RANK ALERTS</span><span>MARKET ALERTS</span><span>INJURY ALERTS</span><span>NEWS ALERTS</span><span>DAILY MOVERS</span></div></div>'+
-      (isSigned?'<a class="bbbpa-action" href="#plus">BBB+ LAUNCHING SOON</a>':'<a class="bbbpa-action" href="#account">SIGN IN TO MY BBB</a>')+
+      (isSigned?'<a class="bbbpa-action" href="#plus">EXPLORE BBB+</a>':'<a class="bbbpa-action" href="#account">SIGN IN TO MY BBB</a>')+
       '</div>';
   }
 
