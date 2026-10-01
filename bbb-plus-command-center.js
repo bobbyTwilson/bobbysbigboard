@@ -348,7 +348,13 @@
       });
       if(r.status===401||r.status===403){
         dashboard=null;
-        const v=view();if(v)v.classList.remove('bbbcc-active');
+        window.__bbbPlusMemberEntitled=false;
+        const v=view();
+        if(v){
+          v.classList.remove('bbbcc-active');
+          v.innerHTML='';
+        }
+        window.bbbPlusRefreshAccess?.();
         return;
       }
       const body=await r.json().catch(()=>({}));
