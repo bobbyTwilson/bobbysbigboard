@@ -1,6 +1,6 @@
 // BBB+ Founding Membership V1 preview
 (function(){
-  const CHECKOUT=new URLSearchParams(location.search).get('bbbplus_live_test')==='1', ACTIVE=new Set(['active','trialing']);
+  const PARAMS=new URLSearchParams(location.search), CHECKOUT=PARAMS.get('bbbplus_live_test')==='1', CHECKOUT_RESULT=PARAMS.get('checkout')||'', ACTIVE=new Set(['active','trialing']);
   let membership=null, interval='year', busy=false, entitled=false, entitlementSource=null;
   const q=s=>document.querySelector(s), qa=s=>[...document.querySelectorAll(s)];
   function sess(){try{return typeof bbbAccountSession!=='undefined'?bbbAccountSession:null}catch{return null}}
@@ -21,12 +21,12 @@
     const p=price(), active=isActive(), btn=active?'<button class="bbb-plus-btn" id="bbbPlusPortal">'+(membership?.cancel_at_period_end?'MANAGE / RESUME BBB+':'MANAGE BBB+ BILLING')+'</button>':signed()?(CHECKOUT?'<button class="bbb-plus-btn" id="bbbPlusCheckout" '+(busy?'disabled':'')+'>'+(busy?'OPENING CHECKOUT...':'START LIVE CHECKOUT TEST')+'</button>':'<button class="bbb-plus-btn" id="bbbPlusCheckout" disabled>CHECKOUT OPENING SOON</button>'):'<button class="bbb-plus-btn" id="bbbPlusSignin">CREATE FREE ACCOUNT TO JOIN</button>';
     return '<aside class="bbb-plus-card"><div class="bbb-plus-mini">BBB+ FOUNDING MEMBERSHIP</div><h2>'+(active?'YOUR BBB+ MEMBERSHIP.':'BE ONE OF THE FIRST 100.')+'</h2><p>'+(active?'Your active plan and billing access live here.':'Support Bobby\'s Big Board and get the premium layer built on top of the free rankings you already use.')+'</p><div class="bbb-plus-price"><strong>'+p[0]+'</strong><span>'+p[1]+'</span></div><div class="bbb-plus-save">'+p[2]+'</div>'+planControl()+btn+'<div class="bbb-plus-note">The core rankings stay free. BBB+ funds the next layer of tools.</div>'+status()+'</aside>';
   }
-  function markup(){return '<section class="bbb-plus-hero"><div class="shell bbb-plus-grid"><div><div class="bbb-plus-k">BOBBY\'S BIG BOARD PREMIUM</div><h1 class="bbb-plus-title">GO DEEPER<br>WITH <span>BBB+.</span></h1><p class="bbb-plus-copy">The rankings aren\'t going behind a paywall. BBB+ is the premium layer for dynasty players who want deeper history, stronger tools, personalized league features, and a direct way to support what we\'re building.</p><div class="bbb-plus-pills"><span>RANKINGS STAY FREE</span><span>FOUNDING 100</span><span>PREMIUM TOOLS</span><span>EARLY ACCESS</span></div></div><div id="bbbPlusCard">'+card()+'</div></div></section>'+
+  function markup(){return '<section class="bbb-plus-hero"><div class="shell bbb-plus-grid"><div><div class="bbb-plus-k">BOBBY\'S BIG BOARD PREMIUM</div><h1 class="bbb-plus-title">GO DEEPER<br>WITH <span>BBB+.</span></h1><p class="bbb-plus-copy">The rankings aren\'t going behind a paywall. BBB+ is the premium layer for dynasty players who want deeper history, stronger tools, personalized player tracking, and a direct way to support what we\'re building.</p><div class="bbb-plus-pills"><span>RANKINGS STAY FREE</span><span>FOUNDING 100</span><span>PREMIUM TOOLS</span><span>EARLY ACCESS</span></div></div><div id="bbbPlusCard">'+card()+'</div></div></section>'+
   '<section class="bbb-plus-sec"><div class="shell"><div class="bbb-plus-head"><div><div class="bbb-plus-k">WHY BBB+</div><h2>More context. Better decisions.</h2></div><p>BBB+ adds a deeper layer for people who want to use Bobby\'s Big Board as a real dynasty command center.</p></div><div class="bbb-plus-features">'+
   '<article class="bbb-plus-f gold"><div class="bbb-plus-icon">↗</div><h3>Deeper value history</h3><p>BBB and market history, exact daily values, divergence and movement context on player profiles.</p><span class="bbb-plus-tag">LIVE</span></article>'+
   '<article class="bbb-plus-f gold"><div class="bbb-plus-icon">⇄</div><h3>Advanced trade tools</h3><p>Trade Lab adds package construction, concentration, age context and BBB-vs-market analysis to every deal.</p><span class="bbb-plus-tag">LIVE</span></article>'+
   '<article class="bbb-plus-f gold"><div class="bbb-plus-icon">!</div><h3>Alerts & watchlists</h3><p>Premium tracking for meaningful BBB rank, injury, news and market changes on your players.</p><span class="bbb-plus-tag">LIVE</span></article>'+
-  '<article class="bbb-plus-f"><div class="bbb-plus-icon">◎</div><h3>League-powered analysis</h3><p>Personalized contender/rebuilder analysis, roster recommendations and league-specific tools as Sleeper integration expands.</p><span class="bbb-plus-tag">SLEEPER ROADMAP</span></article>'+
+  '<article class="bbb-plus-f gold"><div class="bbb-plus-icon">◎</div><h3>BBB+ Command Center</h3><p>Your watched players, 30-day value traces, live BBB-vs-market gaps and premium tools in one personalized home.</p><span class="bbb-plus-tag">LIVE</span></article>'+
   '<article class="bbb-plus-f"><div class="bbb-plus-icon">★</div><h3>Founding member status</h3><p>The first 100 supporters get Founding Member status and first access to premium tools as they ship.</p><span class="bbb-plus-tag">FIRST 100 ONLY</span></article>'+
   '<article class="bbb-plus-f"><div class="bbb-plus-icon">B</div><h3>Support independent dynasty work</h3><p>Your membership helps fund the database, player updates, scouting work, site development and new tools.</p><span class="bbb-plus-tag">SUPPORT BBB</span></article></div></div></section>'+
   '<section class="bbb-plus-sec"><div class="shell"><div class="bbb-plus-head"><div><div class="bbb-plus-k">FREE VS BBB+</div><h2>The free site stays useful.</h2></div><p>BBB+ adds depth — it does not make the regular Bobby\'s Big Board experience worse.</p></div><div class="bbb-plus-table">'+
@@ -36,13 +36,13 @@
   '<div class="bbb-plus-row"><div class="label">Core trade calculator & player updates</div><div class="yes">✓ INCLUDED</div><div class="pyes">✓ INCLUDED</div></div>'+
   '<div class="bbb-plus-row"><div class="label">Advanced value history & premium reports</div><div class="muted">—</div><div class="pyes">✓ BBB+</div></div>'+
   '<div class="bbb-plus-row"><div class="label">Advanced / personalized trade tools</div><div class="muted">—</div><div class="pyes">✓ BBB+</div></div>'+
-  '<div class="bbb-plus-row"><div class="label">Premium alerts & league analysis</div><div class="muted">—</div><div class="pyes">✓ BBB+</div></div>'+
+  '<div class="bbb-plus-row"><div class="label">Premium alerts & personalized player tracking</div><div class="muted">—</div><div class="pyes">✓ BBB+</div></div>'+
   '<div class="bbb-plus-row"><div class="label">Founding 100 status</div><div class="muted">—</div><div class="pyes">★ FIRST 100</div></div></div></div></section>'+
   '<section class="bbb-plus-sec"><div class="shell"><div class="bbb-plus-head"><div><div class="bbb-plus-k">QUESTIONS</div><h2>Before you join.</h2></div></div><div class="bbb-plus-faq">'+
   '<details open><summary>Are the normal rankings becoming paid?</summary><p>No. The Top 500, rookie rankings, player profiles, prospect grades, core trade calculator and normal player updates remain free.</p></details>'+
   '<details><summary>What does Founding 100 mean?</summary><p>The first 100 active BBB+ members are marked as founding members. Launch pricing is $4.99/month or $39.99/year.</p></details>'+
-  '<details><summary>Can I cancel?</summary><p>Yes. When billing goes live, active members can manage or cancel through the Stripe customer portal.</p></details>'+
-  '<details><summary>Is every BBB+ feature live on day one?</summary><p>No. This is a founding membership and the premium toolset will grow. Roadmap items are labeled clearly.</p></details></div></div></section>'+
+  '<details><summary>Can I cancel?</summary><p>Yes. Active members can manage or cancel anytime through the secure Stripe customer portal. Access remains active through the already-paid billing period after an end-of-period cancellation.</p></details>'+
+  '<details><summary>What is live in BBB+?</summary><p>Value History+, Advanced Trade Lab, premium Player Alerts and the BBB+ Command Center are live now. Future additions will be labeled clearly as they are introduced.</p></details></div></div></section>'+
   '<section class="bbb-plus-final"><div class="shell"><div class="bbb-plus-k" style="justify-content:center">FOUNDING 100</div><h2>Help build the next version<br>of Bobby\'s Big Board.</h2><p>Join the first wave of BBB+ members and help fund the premium tools being built around the free dynasty board.</p></div></section>'}
   async function load(){
     membership=null;entitled=false;entitlementSource=null;window.__bbbPlusMemberEntitled=false;
@@ -74,6 +74,20 @@
       window.__bbbPlusMemberEntitled=entitled;
     }
   }
+  function wait(ms){return new Promise(r=>setTimeout(r,ms))}
+  async function settleCheckout(){
+    if(CHECKOUT_RESULT!=='success'||entitled||!signed())return;
+    const v=view();
+    v.classList.add('bbbcc-active');
+    v.innerHTML='<section style="min-height:520px;display:grid;place-items:center;background:#040705;color:#91a299;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Activating your BBB+ membership…</section>';
+    for(let i=0;i<10&&!entitled;i++){
+      await wait(500);
+      await load();
+    }
+    if(entitled){
+      history.replaceState({bbbView:'plus'},'', '/#plus');
+    }
+  }
   function bind(){qa('[data-int]').forEach(b=>b.onclick=()=>{interval=b.dataset.int;renderCard()});q('#bbbPlusSignin')?.addEventListener('click',()=>location.hash='#account');q('#bbbPlusCheckout')?.addEventListener('click',checkout);q('#bbbPlusPortal')?.addEventListener('click',portal)}
   function renderCard(){const n=q('#bbbPlusCard');if(n)n.innerHTML=card();bind()}
   function render(){
@@ -97,7 +111,7 @@
   async function portal(){if(busy)return;const s=sess();if(!s?.access_token){location.hash='#account';return}busy=true;try{const r=await fetch(BBB_SUPABASE_URL+'/functions/v1/bbb-plus-portal',{method:'POST',headers:{apikey:BBB_SUPABASE_KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Billing settings unavailable.');if(d.url)location.href=d.url}catch(e){alert(e.message||'Billing settings unavailable.')}finally{busy=false}}
   function nav(){qa('.site-header .nav').forEach(h=>{if(h.querySelector('.bbb-plus-nav'))return;const a=document.createElement('a');a.className='bbb-plus-nav';a.href='#plus';a.innerHTML='<span>BBB+</span><span class="bbb-plus-star">★</span>';const acct=h.querySelector('.bbb-account-join'),trade=h.querySelector('.nav-cta');if(acct)h.insertBefore(a,acct);else if(trade)trade.insertAdjacentElement('afterend',a);else h.appendChild(a)});qa('.mobile-subnav').forEach(n=>{if(n.querySelector('.bbb-plus-mobile'))return;const a=document.createElement('a');a.className='bbb-plus-mobile';a.href='#plus';a.textContent='BBB+';n.appendChild(a)})}
   function strip(){if(q('.bbb-plus-strip'))return;const h=q('.site-header');if(!h)return;const d=document.createElement('div');d.className='bbb-plus-strip';d.innerHTML='<strong>BBB+ FOUNDING 100</strong> Value History, Trade Lab and Player Alerts are live. <a href="#plus">OPEN BBB+ →</a>';h.insertAdjacentElement('afterend',d)}
-  function acct(){const g=q('#accountView .bbb-account-grid');if(!g||g.querySelector('.bbb-plus-acct'))return;const c=document.createElement('article');c.className='bbb-account-card bbb-plus-acct';c.innerHTML='<div class="label" style="color:#f0c75e">BBB+ / FOUNDING 100</div><h3>Go deeper than the rankings.</h3><p>Premium history, advanced tools, alerts and league-powered analysis live in BBB+ while the core rankings stay free.</p><a class="action" href="#plus">EXPLORE BBB+</a>';g.appendChild(c)}
+  function acct(){const g=q('#accountView .bbb-account-grid');if(!g||g.querySelector('.bbb-plus-acct'))return;const c=document.createElement('article');c.className='bbb-account-card bbb-plus-acct';c.innerHTML='<div class="label" style="color:#f0c75e">BBB+ / FOUNDING 100</div><h3>Go deeper than the rankings.</h3><p>Premium history, Trade Lab, personalized alerts and your Command Center live in BBB+ while the core rankings and Sleeper integration stay free.</p><a class="action" href="#plus">EXPLORE BBB+</a>';g.appendChild(c)}
   function route(){
     const on=String(location.hash||'').startsWith('#plus'),v=view();
     if(!on){v.classList.add('hide');return}
@@ -112,7 +126,7 @@
     }
   }
   function intercept(){document.addEventListener('click',e=>{const a=e.target.closest('a[href="#plus"],a[href="/#plus"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();if(location.pathname!=='/'||!String(location.hash).startsWith('#plus'))history.pushState({bbbView:'plus'},'', '/#plus');route();if(entitled){requestAnimationFrame(()=>window.bbbPlusCommandCenterOpen?.(false))}},true)}
-  async function init(){css();view();if(typeof bbbAccountRefreshSession==='function'&&!sess())try{await bbbAccountRefreshSession()}catch{}await load();render();window.dispatchEvent(new CustomEvent('bbb:plus-ready'));nav();strip();acct();route();intercept();const o=new MutationObserver(()=>{nav();acct()});o.observe(document.body,{childList:true,subtree:true});[120,450,1000,1800].forEach(ms=>setTimeout(()=>{nav();acct();route()},ms));window.addEventListener('hashchange',()=>setTimeout(route,0));window.addEventListener('popstate',()=>setTimeout(route,0))}
+  async function init(){css();view();if(typeof bbbAccountRefreshSession==='function'&&!sess())try{await bbbAccountRefreshSession()}catch{}await load();await settleCheckout();render();window.dispatchEvent(new CustomEvent('bbb:plus-ready'));nav();strip();acct();route();intercept();const o=new MutationObserver(()=>{nav();acct()});o.observe(document.body,{childList:true,subtree:true});[120,450,1000,1800].forEach(ms=>setTimeout(()=>{nav();acct();route()},ms));window.addEventListener('hashchange',()=>setTimeout(route,0));window.addEventListener('popstate',()=>setTimeout(route,0))}
   // Header controls should not wait on auth or membership network requests.
   // Paint BBB+ (and its announcement strip) as soon as the end-of-body bundle runs.
   css();nav();strip();
