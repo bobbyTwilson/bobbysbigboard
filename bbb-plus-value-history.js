@@ -157,9 +157,9 @@
 
   function lockedHtml(reason){
     const isSigned=signed();
-    const heading=isSigned?'Premium Value History is built and gated.':'Sign in to preview BBB+ access.';
+    const heading=isSigned?'Unlock deeper value history.':'Sign in to preview BBB+ access.';
     const copy=isSigned
-      ? 'Premium Value History is live for BBB+ members.'
+      ? 'Your regular BBB rank history stays free. BBB+ adds the full BBB + market timeline, movement windows, divergence and exact daily value drilldowns.'
       : 'BBB+ members get the deeper history layer while the regular rank-history graph stays free.';
     return '<section class="profile-card full '+CARD_CLASS+'"><div class="bbbph-lock">'+
       '<div class="bbbph-lock-top"><span>BBB+ VALUE HISTORY</span><span>PREMIUM</span></div>'+
@@ -170,8 +170,8 @@
         '<div><span>Divergence</span><strong>BBB vs consensus over time</strong></div>'+
         '<div><span>Snapshots</span><strong>Exact daily value drilldown</strong></div>'+
       '</div>'+
-      (!isSigned?'<a class="bbbph-lock-action" href="/#account">SIGN IN TO MY BBB</a>':'')+
-      '<p class="bbbph-lock-note">'+(reason==='error'?'Premium data is temporarily unavailable. The free ranking history below still works.':'Explore BBB+ to learn more about premium access.')+'</p>'+
+      (isSigned?'<a class="bbbph-lock-action" href="/#plus">EXPLORE BBB+</a>':'<a class="bbbph-lock-action" href="/#account">SIGN IN TO MY BBB</a>')+
+      '<p class="bbbph-lock-note">'+(reason==='error'?'Premium data is temporarily unavailable. The free ranking history below still works.':'The free ranking history below remains available.')+'</p>'+
     '</div></section>';
   }
 
