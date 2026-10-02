@@ -58,9 +58,11 @@ function openEditor(key){const b=board.find(x=>x.player_key===key),p=profileMap.
 function closeEditor(){$('#drawerBackdrop').classList.add('hide');$('#playerDrawer').classList.add('hide')}
 async function savePlayer(e){e.preventDefault();const key=$('#editKey').value;if(!key)return;const save=$('#savePlayer');save.disabled=true;$('#saveStatus').textContent='Saving…';const identity={name:$('#editName').value.trim(),position:$('#editPosition').value,team:$('#editTeam').value.trim(),age:n($('#editAge').value),draft_year:n($('#editDraft').value),college:$('#editCollege').value.trim()||null};const profile={player_key:key,overall_breakdown:$('#editOverview').value.trim(),breakdown_basis:'BBB Admin',breakdown_updated:new Date().toISOString().slice(0,10),injury_status:$('#editInjury').value.trim()||'Healthy',injury_note:$('#editInjuryNote').value.trim(),injury_updated:$('#editInjuryDate').value||new Date().toISOString().slice(0,10),review_status:'Reviewed'};try{await rest(`players?player_key=eq.${encodeURIComponent(key)}`,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(identity)});await rest(`player_profiles?on_conflict=player_key`,{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(profile)});$('#saveStatus').textContent='Saved ✓';await Promise.all([loadBoard(),loadProfiles(),loadActivity()]);renderRankings();renderPlayers();$('#metricInjuries').textContent=board.filter(v=>!healthy(v.injury_status)).length;$('#drawerTitle').textContent=identity.name}catch(err){$('#saveStatus').textContent=err.message;$('#saveStatus').style.color='#ef8585'}finally{save.disabled=false}}
 function page(name){
-  $('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
-  $('.admin-page').forEach(p=>p.classList.add('hide'));
-  $(`#page${name[0].toUpperCase()+name.slice(1)}`).classList.remove('hide');
+  $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+  $$('.admin-page').forEach(p=>p.classList.add('hide'));
+  const target=$(`#page${name[0].toUpperCase()+name.slice(1)}`);
+  if(!target)return;
+  target.classList.remove('hide');
   if(name==='rankings')renderRankings();
   if(name==='players')renderPlayers();
   if(name==='review'){renderReviewQueue();renderDataHealth()}
