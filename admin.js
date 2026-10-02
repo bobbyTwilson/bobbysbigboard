@@ -22,7 +22,13 @@ async function signIn(email,password){const x=await jsonFetch(`${SUPA}/auth/v1/t
 function showLogin(){ $('#loginView').classList.remove('hide');$('#appView').classList.add('hide') }
 function showApp(admin){$('#loginView').classList.add('hide');$('#appView').classList.remove('hide');$('#adminRole').textContent=`${String(admin.role||'admin').toUpperCase()} ACCESS`}
 async function boot(){let raw=localStorage.getItem(STORE);if(raw)try{session=JSON.parse(raw)}catch{}if(!session){showLogin();return}if(session.expires_at&&Date.now()/1000>session.expires_at-60&&!await refreshSession()){showLogin();return}try{const admin=await checkAdmin();if(!admin){clearSession();showLogin();return}showApp(admin);await loadAll()}catch(e){console.error(e);clearSession();showLogin()}}
-async function loadAll(){await Promise.all([loadBoard(),loadProfiles(),loadActivity(),loadReviewQueue(),loadDataHealth()]);await loadCounts();renderRankings();renderPlayers();renderReviewQueue();renderDataHealth()}
+async function loadAll(){
+  const jobs=await Promise.allSettled([loadBoard(),loadProfiles(),loadActivity(),loadReviewQueue(),loadDataHealth()]);
+  const failed=jobs.filter(x=>x.status==='rejected');
+  if(failed.length)console.error('BBB Admin data load warning',failed.map(x=>x.reason));
+  try{await loadCounts()}catch(e){console.error('BBB Admin count load warning',e)}
+  renderRankings();renderPlayers();renderReviewQueue();renderDataHealth()
+}
 async function loadBoard(){board=await rest('site_dynasty?select=rank,player_key,name,pos,pr,team,age,draft,market,gap,view,injury_status,injury_note,injury_updated,college,overview&order=rank.asc')||[]}
 async function loadProfiles(){const rows=await rest('site_profiles?select=player_key,name,pos,team,age,draft_year,college,overall_breakdown,injury_status,injury_note,injury_updated&order=name.asc')||[];profileMap=new Map(rows.map(x=>[x.player_key,x]))}
 async function loadReviewQueue(){reviewQueue=await rpc('admin_get_review_queue',{p_limit:500})||[]}
@@ -51,7 +57,14 @@ async function movePlayer(key){const x=board.find(p=>p.player_key===key);const i
 function openEditor(key){const b=board.find(x=>x.player_key===key),p=profileMap.get(key)||{};if(!b)return;$('#editKey').value=key;$('#drawerTitle').textContent=b.name;$('#editName').value=b.name||'';$('#editPosition').value=b.pos||'WR';$('#editTeam').value=b.team||'';$('#editAge').value=b.age??'';$('#editDraft').value=b.draft??'';$('#editCollege').value=b.college||'';$('#editInjury').value=p.injury_status||b.injury_status||'Healthy';$('#editInjuryDate').value=(p.injury_updated||b.injury_updated||'').slice(0,10);$('#editInjuryNote').value=p.injury_note||b.injury_note||'';$('#editOverview').value=p.overall_breakdown||b.overview||'';$('#profileLink').href=`/player/${encodeURIComponent(key)}`;$('#saveStatus').textContent='';$('#drawerBackdrop').classList.remove('hide');$('#playerDrawer').classList.remove('hide')}
 function closeEditor(){$('#drawerBackdrop').classList.add('hide');$('#playerDrawer').classList.add('hide')}
 async function savePlayer(e){e.preventDefault();const key=$('#editKey').value;if(!key)return;const save=$('#savePlayer');save.disabled=true;$('#saveStatus').textContent='Saving…';const identity={name:$('#editName').value.trim(),position:$('#editPosition').value,team:$('#editTeam').value.trim(),age:n($('#editAge').value),draft_year:n($('#editDraft').value),college:$('#editCollege').value.trim()||null};const profile={player_key:key,overall_breakdown:$('#editOverview').value.trim(),breakdown_basis:'BBB Admin',breakdown_updated:new Date().toISOString().slice(0,10),injury_status:$('#editInjury').value.trim()||'Healthy',injury_note:$('#editInjuryNote').value.trim(),injury_updated:$('#editInjuryDate').value||new Date().toISOString().slice(0,10),review_status:'Reviewed'};try{await rest(`players?player_key=eq.${encodeURIComponent(key)}`,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(identity)});await rest(`player_profiles?on_conflict=player_key`,{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(profile)});$('#saveStatus').textContent='Saved ✓';await Promise.all([loadBoard(),loadProfiles(),loadActivity()]);renderRankings();renderPlayers();$('#metricInjuries').textContent=board.filter(v=>!healthy(v.injury_status)).length;$('#drawerTitle').textContent=identity.name}catch(err){$('#saveStatus').textContent=err.message;$('#saveStatus').style.color='#ef8585'}finally{save.disabled=false}}
-function page(name){$$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));$$('.admin-page').forEach(p=>p.classList.add('hide'));$(`#page${name[0].toUpperCase()+name.slice(1)}`).classList.remove('hide')}
+function page(name){
+  $('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+  $('.admin-page').forEach(p=>p.classList.add('hide'));
+  $(`#page${name[0].toUpperCase()+name.slice(1)}`).classList.remove('hide');
+  if(name==='rankings')renderRankings();
+  if(name==='players')renderPlayers();
+  if(name==='review'){renderReviewQueue();renderDataHealth()}
+}
 document.addEventListener('DOMContentLoaded',()=>{
   $$('.auth-tabs').forEach(x=>x.remove());
   $('#authForm').onsubmit=async e=>{e.preventDefault();const btn=$('#authSubmit');btn.disabled=true;msg('');try{const email=$('#authEmail').value.trim().toLowerCase(),password=$('#authPassword').value;const admin=await signIn(email,password);showApp(admin);await loadAll()}catch(err){msg(err.message)}finally{btn.disabled=false}};
