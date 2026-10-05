@@ -140,11 +140,25 @@ function profileTraitMax(pos,name,header){const m=String(header||'').match(/\((\
 function profileCleanTrait(h){return String(h||'').replace(/\s*\([^)]*\)\s*$/,'').trim();}
 function profileIsTrait(name){return !['Player','Players','Year','Overall Grade','Prospect Score','Prospect Score (100)','Pro Comp','Analytics','College Analytics','Projected Draft Capital'].includes(name);}
 function profileFindGrade(name){const n=profileNorm(name),g=profileGradeDetails.get(n);if(g)return g;if(n==='jeremiyahlove')return profileGradeDetails.get('jeremiahlove')||null;return null;}
-function profileHideOtherViews(){['rankingsView','rookieView','prospectView','tradeView'].forEach(id=>document.querySelector('#'+id)?.classList.add('hide'));profileView?.classList.remove('hide');}
-function profileShowSite(){profileView?.classList.add('hide');if(typeof bbbView==='function')bbbView();}
+function profileSetRouteActive(on){
+  document.documentElement.classList.toggle('bbb-profile-route-active',!!on);
+  document.body?.classList.toggle('bbb-profile-route-active',!!on);
+}
+function profileResetViewport(){
+  const scroller=document.scrollingElement||document.documentElement;
+  if(scroller)scroller.scrollTop=0;
+  window.scrollTo(0,0);
+}
+function profileHideOtherViews(){
+  ['rankingsView','rookieView','prospectView','tradeView'].forEach(id=>document.querySelector('#'+id)?.classList.add('hide'));
+  profileView?.classList.remove('hide');
+  profileSetRouteActive(true);
+}
+function profileShowSite(){profileSetRouteActive(false);profileView?.classList.add('hide');if(typeof bbbView==='function')bbbView();}
 function profileCard(title,kicker,body,full=false){return '<section class="profile-card'+(full?' full':'')+'"><div class="profile-card-kicker">'+kicker+'</div><h2>'+title+'</h2>'+body+'</section>';}
 async function profileRender(slug){
   profileHideOtherViews();
+  profileResetViewport();
   const mount=document.querySelector('#profileMount');mount.innerHTML='<div class="profile-loading shell">Loading player profile…</div>';
   let tries=0,p=null;while(!p&&tries<25){p=profileFind(slug);if(p)break;await new Promise(r=>setTimeout(r,120));tries++;}
   if(!p){mount.innerHTML='<div class="profile-missing shell"><div class="profile-kicker">BBB PLAYER DATABASE</div><h1>Player not found.</h1><p>This profile is not available on the current board.</p><a class="btn btn-primary" href="#rankings">Back to rankings</a></div>';return;}
@@ -166,7 +180,6 @@ async function profileRender(slug){
 function profileRoute(force=false){
   const slug=profileNameFromPath();
   if(slug){
-    window.scrollTo({top:0,left:0,behavior:'auto'});
     profileRender(slug);
     return;
   }
