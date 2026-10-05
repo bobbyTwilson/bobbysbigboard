@@ -1494,6 +1494,120 @@ body:after{
   .cyber-activity .activity-row{grid-template-columns:52px 74px minmax(0,1fr)!important}
 }
 </style>
+
+<style id="bbb-prospect-lab-v1">
+.nav-btn[data-page="prospects"]:before{content:"✦"!important}
+.prospect-hero{
+  position:relative;overflow:hidden;min-height:154px;margin-bottom:10px;padding:22px 24px;
+  border:1px solid rgba(57,255,155,.13);border-radius:16px;
+  background:
+    radial-gradient(circle at 82% 40%,rgba(57,255,155,.13),transparent 24%),
+    linear-gradient(125deg,rgba(5,24,15,.94),rgba(3,12,8,.96));
+  box-shadow:var(--cy-shadow),inset 0 1px 0 rgba(255,255,255,.018);
+}
+.prospect-hero:after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cy-green),transparent);opacity:.45;
+}
+.prospect-hero-copy{position:relative;z-index:2;max-width:760px}
+.prospect-hero h2{margin:5px 0 7px;color:#f2fff8;font-size:30px;letter-spacing:-.035em}
+.prospect-hero p{max-width:700px;margin:0;color:#71917f;font-size:9px;line-height:1.6}
+.prospect-radar{
+  position:absolute;right:4%;top:50%;width:132px;height:132px;transform:translateY(-50%);
+  display:grid;place-items:center;border:1px solid rgba(57,255,155,.17);border-radius:50%;
+  background:repeating-radial-gradient(circle,transparent 0 20px,rgba(57,255,155,.055) 21px 22px);
+  box-shadow:0 0 34px rgba(57,255,155,.05),inset 0 0 28px rgba(57,255,155,.03);
+}
+.prospect-radar:before,.prospect-radar:after{content:"";position:absolute;background:rgba(57,255,155,.12)}
+.prospect-radar:before{width:1px;height:100%}.prospect-radar:after{height:1px;width:100%}
+.prospect-radar i{position:absolute;width:5px;height:5px;border-radius:50%;background:#5dffae;box-shadow:0 0 9px #5dffae}
+.prospect-radar i:nth-child(1){left:24%;top:33%}.prospect-radar i:nth-child(2){right:22%;top:25%}.prospect-radar i:nth-child(3){left:45%;bottom:18%}.prospect-radar i:nth-child(4){right:28%;bottom:38%}
+.prospect-radar span{position:relative;z-index:2;color:#9affc5;font-size:8px;font-weight:1000;letter-spacing:.13em}
+.prospect-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.prospect-kpis .metric-icon{font-size:12px;font-weight:1000}
+.prospect-toolbar{grid-template-columns:minmax(230px,1fr) 150px 140px 180px auto!important}
+.prospect-toggle{
+  min-height:38px;display:flex;align-items:center;gap:7px;padding:0 10px;
+  border:1px solid rgba(57,255,155,.12);border-radius:9px;background:rgba(3,14,9,.72);
+  color:#72917f;font-size:7px;font-weight:900;white-space:nowrap;cursor:pointer;
+}
+.prospect-toggle input{accent-color:#22db83}
+.prospect-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:10px;
+}
+.prospect-card{
+  position:relative;overflow:hidden;min-height:205px;padding:13px;border:1px solid rgba(57,255,155,.11);
+  border-radius:12px;background:linear-gradient(145deg,rgba(7,25,16,.91),rgba(3,12,8,.94));
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+.prospect-card:hover{transform:translateY(-2px);border-color:rgba(57,255,155,.25);box-shadow:0 18px 42px rgba(0,0,0,.23),0 0 24px rgba(57,255,155,.045)}
+.prospect-card:before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(57,255,155,.38),transparent)}
+.prospect-card-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center}
+.prospect-pos{
+  width:38px;height:38px;border-radius:9px;display:grid;place-items:center;
+  border:1px solid rgba(88,234,255,.14);background:rgba(9,48,48,.18);color:#8eeaf0;font-size:9px;font-weight:1000;
+}
+.prospect-name strong{display:block;color:#effff7;font-size:12px;letter-spacing:-.01em}
+.prospect-name span{display:block;margin-top:2px;color:#587461;font-size:7px}
+.prospect-class{
+  padding:4px 7px;border:1px solid rgba(57,255,155,.12);border-radius:999px;color:#73dc9f;font-size:6px;font-weight:1000;
+}
+.prospect-card-summary{
+  min-height:50px;margin:12px 0 10px;color:#769181;font-size:8px;line-height:1.48;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.prospect-card-rec{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;
+}
+.prospect-card-rec>div{padding:8px;border:1px solid rgba(57,255,155,.075);border-radius:8px;background:rgba(3,15,10,.62)}
+.prospect-card-rec span{display:block;color:#4f6c59;font-size:5.5px;font-weight:950;letter-spacing:.08em}
+.prospect-card-rec strong{display:block;margin-top:4px;color:#b9f8d3;font-size:10px}
+.prospect-card-rec strong.pending{color:#6c786f;font-size:7px}
+.prospect-card-actions{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.research-state{display:inline-flex;align-items:center;gap:5px;color:#5f7b69;font-size:6px;font-weight:900}
+.research-state i{width:6px;height:6px;border-radius:50%;background:#54665b}
+.research-state.ready{color:#73dda2}.research-state.ready i{background:#4dffa3;box-shadow:0 0 8px #4dffa3}
+.grade-prospect-btn{min-width:92px}
+.prospect-graded{
+  position:absolute;right:9px;top:9px;padding:4px 7px;border-radius:999px;
+  background:rgba(57,255,155,.10);border:1px solid rgba(57,255,155,.18);color:#87f5b7;font-size:6px;font-weight:1000;
+}
+.prospect-drawer{width:min(900px,100%)!important}
+.prospect-drawer-meta{margin-top:4px;color:#60806c;font-size:8px}
+.prospect-recommendation{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.prospect-recommendation>div{padding:12px;border:1px solid rgba(57,255,155,.10);border-radius:10px;background:rgba(4,19,12,.78)}
+.prospect-recommendation span{display:block;color:#55715f;font-size:6px;font-weight:950;letter-spacing:.1em}
+.prospect-recommendation strong{display:block;margin-top:5px;color:#c4ffe0;font-size:17px}
+.prospect-summary{padding:12px;margin-bottom:14px;border-left:2px solid rgba(57,255,155,.38);background:rgba(4,18,12,.56);color:#84a18f;font-size:8px;line-height:1.62}
+.prospect-grade-head{display:flex;justify-content:space-between;align-items:end;margin:12px 0 8px}
+.prospect-grade-head h3{margin:3px 0;color:#f2fff8;font-size:17px}
+.prospect-grade-head p{margin:0;color:#5c7766;font-size:7px}
+.prospect-trait-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.prospect-trait{
+  display:grid;grid-template-columns:minmax(0,1fr) auto 88px;gap:8px;align-items:center;padding:8px 9px;
+  border:1px solid rgba(57,255,155,.08);border-radius:9px;background:rgba(3,14,9,.66);
+}
+.prospect-trait label{min-width:0;color:#9eb5a8;font-size:7px;font-weight:900}
+.prospect-trait .trait-rec{color:#5d7a68;font-size:6px;white-space:nowrap}
+.prospect-trait .trait-input{width:88px!important;text-align:center;font-weight:950;color:#d7ffe8!important}
+.prospect-final-row{display:grid;grid-template-columns:180px minmax(0,1fr);gap:10px;align-items:end;margin-top:12px}
+.prospect-total{padding:11px;border:1px solid rgba(57,255,155,.15);border-radius:10px;background:rgba(0,105,59,.09)}
+.prospect-total span{display:block;color:#5f806c;font-size:6px;font-weight:950;letter-spacing:.1em}
+.prospect-total strong{display:inline-block;margin-top:4px;color:#75ffb2;font-size:25px}
+.prospect-total small{color:#5c7766;font-size:8px;margin-left:3px}
+@media(max-width:1200px){.prospect-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.prospect-toolbar{grid-template-columns:1fr 1fr 1fr!important}.prospect-toolbar .input{grid-column:1/-1}.prospect-toggle{justify-content:center}}
+@media(max-width:700px){
+  .prospect-hero{min-height:145px;padding:16px 14px}.prospect-hero h2{font-size:24px}.prospect-hero p{max-width:72%;font-size:7px}.prospect-radar{right:-24px;width:118px;height:118px;opacity:.65}
+  .prospect-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .prospect-toolbar{grid-template-columns:1fr 1fr!important}.prospect-toolbar .input{grid-column:1/-1!important}.prospect-toggle{grid-column:1/-1}
+  .prospect-grid{grid-template-columns:1fr;padding:8px}
+  .prospect-card{min-height:190px}
+  .prospect-trait-grid{grid-template-columns:1fr}
+  .prospect-final-row{grid-template-columns:1fr}
+  .prospect-recommendation{grid-template-columns:1fr}
+}
+</style>
+
 </head>
 <body>
   <section id="loginView" class="login-wrap">
@@ -1534,7 +1648,8 @@ body:after{
           <button class="nav-btn active" data-page="dashboard">Dashboard <span>01</span></button>
           <button class="nav-btn" data-page="rankings">Rankings Manager <span>02</span></button>
           <button class="nav-btn" data-page="players">Player Editor <span>03</span></button>
-          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">04</span></button>
+          <button class="nav-btn" data-page="prospects">Prospect Lab <span id="prospectNavCount">04</span></button>
+          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">05</span></button>
         </div>
         <div class="side-note"><strong>SECURE COMMAND LINK</strong><span>Every write is audited. The board moves only when you command it.</span></div>
       </aside>
@@ -1627,7 +1742,46 @@ body:after{
           </section>
         </section>
 
-        <section id="pageReview" class="admin-page hide">
+        
+        <section id="pageProspects" class="admin-page hide">
+          <div class="page-head">
+            <div><div class="eyebrow">DRAFT INTELLIGENCE · 2027 / 2028</div><h1>Prospect Lab</h1><p>Scout the next two draft classes, compare BBB recommendations, and lock in your own grades.</p></div>
+            <button class="refresh-btn" data-refresh>Refresh Lab</button>
+          </div>
+
+          <section class="prospect-hero">
+            <div class="prospect-hero-copy">
+              <div class="panel-kicker">UNFINISHED BUSINESS</div>
+              <h2>Your next grades are waiting.</h2>
+              <p>The lab surfaces ungraded QB, RB, WR and TE prospects from the next two NFL Draft classes. Research recommendations are suggestions only — your final grade is the one that gets published.</p>
+            </div>
+            <div class="prospect-radar" aria-hidden="true"><i></i><i></i><i></i><i></i><span>SCOUT</span></div>
+          </section>
+
+          <div class="metric-grid prospect-kpis">
+            <div class="metric cyber-metric"><div class="metric-icon">◎</div><div><span>Ungraded</span><strong id="prospectUngraded">—</strong><small>WAITING FOR YOUR GRADE</small></div></div>
+            <div class="metric cyber-metric"><div class="metric-icon">27</div><div><span>2027 Class</span><strong id="prospect2027">—</strong><small>IN SCOUTING DATABASE</small></div></div>
+            <div class="metric cyber-metric"><div class="metric-icon">28</div><div><span>2028 Class</span><strong id="prospect2028">—</strong><small>IN SCOUTING DATABASE</small></div></div>
+            <div class="metric cyber-metric"><div class="metric-icon">✦</div><div><span>Research Ready</span><strong id="prospectResearched">—</strong><small>HAS BBB RECOMMENDATIONS</small></div></div>
+          </div>
+
+          <section class="panel prospect-console">
+            <div class="panel-head">
+              <div><div class="panel-kicker">SCOUTING QUEUE</div><h2>Prospects To Grade</h2><span>Open a prospect to compare the recommendation against your own film grade.</span></div>
+              <div class="hud-badge">2027 + 2028</div>
+            </div>
+            <div class="toolbar prospect-toolbar">
+              <input id="prospectSearch" class="input" placeholder="Search prospect or school…">
+              <select id="prospectYear" class="select"><option value="ALL">2027 + 2028</option><option value="2027">2027</option><option value="2028">2028</option></select>
+              <select id="prospectPos" class="select"><option value="ALL">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select>
+              <select id="prospectResearch" class="select"><option value="ALL">All research states</option><option value="READY">Recommendation ready</option><option value="PENDING">Research pending</option></select>
+              <label class="prospect-toggle"><input id="prospectIncludeGraded" type="checkbox"><span>Show graded</span></label>
+            </div>
+            <div id="prospectLabGrid" class="prospect-grid"><div class="empty">Loading prospect lab…</div></div>
+          </section>
+        </section>
+
+<section id="pageReview" class="admin-page hide">
           <div class="page-head"><div><div class="eyebrow">THE WATCHTOWER</div><h1>Review Queue</h1><p>Players that need a freshness check, source review, or manual ranking decision.</p></div><button class="refresh-btn" data-refresh>Refresh Queue</button></div>
           <div class="metric-grid">
             <div class="metric"><span>High Priority</span><strong id="metricReviewHigh">—</strong></div>
@@ -1650,7 +1804,37 @@ body:after{
     </div>
   </section>
 
-  <div id="drawerBackdrop" class="drawer-backdrop hide"></div>
+  
+  <div id="prospectDrawerBackdrop" class="drawer-backdrop hide"></div>
+  <aside id="prospectDrawer" class="drawer prospect-drawer hide">
+    <div class="drawer-head">
+      <div><div class="eyebrow">PROSPECT LAB · FINAL GRADE</div><h2 id="prospectDrawerTitle">Prospect</h2><div id="prospectDrawerMeta" class="prospect-drawer-meta"></div></div>
+      <button id="prospectDrawerClose" class="close-btn">×</button>
+    </div>
+    <form id="prospectGradeForm" class="drawer-body">
+      <input id="prospectKey" type="hidden">
+      <div class="prospect-recommendation">
+        <div><span>BBB RECOMMENDED GRADE</span><strong id="prospectRecGrade">Pending</strong></div>
+        <div><span>PRO COMP IDEA</span><strong id="prospectRecComp">Research pending</strong></div>
+      </div>
+      <div id="prospectSummary" class="prospect-summary">Research notes have not been loaded for this prospect yet.</div>
+      <div class="prospect-grade-head">
+        <div><div class="panel-kicker">YOUR TRAIT CARD</div><h3>Build the grade</h3><p>Trait scores total to the final BBB prospect grade.</p></div>
+        <button id="prospectApplyRec" class="small-btn" type="button">USE RECOMMENDATION</button>
+      </div>
+      <div id="prospectTraitGrid" class="prospect-trait-grid"></div>
+      <div class="prospect-final-row">
+        <div class="prospect-total"><span>YOUR OVERALL GRADE</span><strong id="prospectGradeTotal">0.0</strong><small>/ 100</small></div>
+        <div class="field"><label>Final Pro Comp</label><input id="prospectFinalComp" class="input" placeholder="Your comp…"></div>
+      </div>
+      <div class="save-row">
+        <button id="saveProspectGrade" class="save-btn" type="submit">LOCK IN GRADE</button>
+        <span id="prospectSaveStatus" class="save-status"></span>
+      </div>
+    </form>
+  </aside>
+
+<div id="drawerBackdrop" class="drawer-backdrop hide"></div>
   <aside id="playerDrawer" class="drawer hide">
     <div class="drawer-head"><div><div class="eyebrow">Edit Player</div><h2 id="drawerTitle">Player</h2></div><button id="drawerClose" class="close-btn">×</button></div>
     <form id="playerForm" class="drawer-body">
@@ -1671,6 +1855,6 @@ body:after{
     </form>
   </aside>
 
-  <script src="/admin.js?v=cyber-command-20261005d"></script>
+  <script src="/admin.js?v=prospect-lab-20261005a"></script>
 </body>
 </html>
