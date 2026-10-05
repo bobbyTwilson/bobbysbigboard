@@ -215,21 +215,40 @@ function renderProspectLab(){
  grid.innerHTML=list.length?list.map(x=>`<article class="prospect-card" data-open-prospect="${esc(x.player_key)}">${x.graded?'<span class="prospect-graded">GRADED</span>':''}<div class="prospect-card-head"><span class="prospect-pos">${esc(x.position)}</span><div class="prospect-name"><strong>${esc(x.name)}</strong><span>${esc(x.school||'School TBD')}</span></div><span class="prospect-class">${x.class_year}</span></div><div class="prospect-card-summary">${esc(x.summary||'Research profile pending. This player is in your scouting queue and ready for a BBB grading pass.')}</div><div class="prospect-card-rec"><div><span>RECOMMENDED GRADE</span><strong class="${x.recommended_overall_grade==null?'pending':''}">${x.recommended_overall_grade==null?'PENDING':Number(x.recommended_overall_grade).toFixed(1)}</strong></div><div><span>PRO COMP IDEA</span><strong class="${x.recommended_pro_comp?'':'pending'}">${esc(x.recommended_pro_comp||'PENDING')}</strong></div></div><div class="prospect-card-actions"><span class="research-state ${prospectReady(x)?'ready':''}"><i></i>${prospectReady(x)?'RESEARCH READY':'RESEARCH PENDING'}</span><button class="small-btn grade-prospect-btn" data-grade-prospect="${esc(x.player_key)}">${x.graded?'EDIT GRADE':'GRADE PLAYER'}</button></div></article>`).join(''):'<div class="empty">No prospects match these filters.</div>';
 }
 function prospectTotal(){const t=$$('[data-prospect-trait]').reduce((a,i)=>a+(+i.value||0),0);$('#prospectGradeTotal').textContent=t.toFixed(1);return +t.toFixed(1)}
-function openProspectGrader(key){
- const x=prospectLab.find(v=>v.player_key===key);if(!x)return;
- $('#prospectKey').value=key;$('#prospectDrawerTitle').textContent=x.name;$('#prospectDrawerMeta').textContent=`${x.position} · ${x.school||'School TBD'} · ${x.class_year} NFL Draft Class`;$('#prospectRecGrade').textContent=x.recommended_overall_grade==null?'Pending':(+x.recommended_overall_grade).toFixed(1);$('#prospectRecComp').textContent=x.recommended_pro_comp||'Research pending';$('#prospectSummary').textContent=x.summary||x.recommendation_notes||'Research notes have not been loaded for this prospect yet.';$('#prospectFinalComp').value=x.pro_comp||x.recommended_pro_comp||'';
- const current=x.traits||{},rec=x.recommended_traits||{};
- $('#prospectTraitGrid').innerHTML=(PROSPECT_TRAITS[x.position]||[]).map(([label,max])=>`<div class="prospect-trait"><label>${esc(label)} <small>/ ${max}</small></label><span class="trait-rec">REC ${rec[label]??'—'}</span><input class="input trait-input" type="number" min="0" max="${max}" step="0.5" data-prospect-trait="${esc(label)}" value="${current[label]??''}"></div>`).join('');
- $('#prospectApplyRec').disabled=!Object.keys(rec).length;$('#prospectApplyRec').dataset.playerKey=key;$$('[data-prospect-trait]').forEach(i=>i.oninput=prospectTotal);prospectTotal();$('#prospectSaveStatus').textContent='';$('#prospectDrawerBackdrop').classList.remove('hide');$('#prospectDrawer').classList.remove('hide');
+function prospectByKey(key){return prospectLab.find(v=>v.player_key===key)}
+function renderProspectRecommendationTraits(x){
+ const el=$('#prospectRecommendationTraits');if(!el)return;const traits=x?.recommended_traits||{},schema=PROSPECT_TRAITS[x?.position]||[];
+ if(!Object.keys(traits).length){el.innerHTML='<div class="empty">Full trait recommendations are still being researched.</div>';return}
+ el.innerHTML=schema.map(([label,max])=>`<div class="prospect-rec-trait"><span>${esc(label)}</span><strong>${traits[label]??'—'} / ${max}</strong></div>`).join('');
+}
+function renderProspectSources(x){
+ const el=$('#prospectSourceLinks');if(!el)return;const urls=Array.isArray(x?.source_urls)?x.source_urls:[];
+ el.innerHTML=urls.length?urls.map((url,i)=>`<a href="${esc(url)}" target="_blank" rel="noopener">SOURCE ${i+1} ↗</a>`).join(''):'<span class="empty">Source trail pending.</span>';
+}
+function setProspectDrawerHeader(x,mode='report'){
+ $('#prospectDrawerTitle').textContent=x.name;$('#prospectDrawerMeta').textContent=`${x.position} · ${x.school||'School TBD'} · ${x.class_year} NFL Draft Class`;const eyebrow=$('#prospectDrawer .eyebrow');if(eyebrow)eyebrow.textContent=mode==='grade'?'PROSPECT LAB · FINAL GRADE':'PROSPECT LAB · SCOUTING REPORT';
+}
+function showProspectReport(){$('#prospectReportView').classList.remove('hide');$('#prospectGradeForm').classList.add('hide')}
+function showProspectGrade(){$('#prospectReportView').classList.add('hide');$('#prospectGradeForm').classList.remove('hide')}
+function openProspectReport(key){
+ const x=prospectByKey(key);if(!x)return;$('#prospectKey').value=key;setProspectDrawerHeader(x,'report');
+ $('#prospectRecGrade').textContent=x.recommended_overall_grade==null?'Pending':(+x.recommended_overall_grade).toFixed(1);$('#prospectRecComp').textContent=x.recommended_pro_comp||'Research pending';
+ $('#prospectClassLabel').textContent=String(x.class_year||'—');$('#prospectClassAudit').textContent=`Checked against current ${x.class_year} prospect sources`;$('#prospectResearchState').textContent=prospectReady(x)?'Research ready':'Research pending';
+ $('#prospectSummary').textContent=x.summary||'A full scouting breakdown has not been completed yet. The player is tracked so he stays on the BBB radar.';$('#prospectRecommendationNotes').textContent=x.recommendation_notes||'No additional recommendation notes yet.';
+ renderProspectRecommendationTraits(x);renderProspectSources(x);$('#prospectStartGrade').dataset.playerKey=key;showProspectReport();$('#prospectDrawerBackdrop').classList.remove('hide');$('#prospectDrawer').classList.remove('hide');
+}
+function startProspectGrade(key){
+ const x=prospectByKey(key);if(!x)return;$('#prospectKey').value=key;setProspectDrawerHeader(x,'grade');$('#prospectGradeRecGrade').textContent=x.recommended_overall_grade==null?'Pending':(+x.recommended_overall_grade).toFixed(1);$('#prospectGradeRecComp').textContent=x.recommended_pro_comp||'Research pending';$('#prospectFinalComp').value=x.pro_comp||x.recommended_pro_comp||'';
+ const current=x.traits||{},rec=x.recommended_traits||{};$('#prospectTraitGrid').innerHTML=(PROSPECT_TRAITS[x.position]||[]).map(([label,max])=>`<div class="prospect-trait"><label>${esc(label)} <small>/ ${max}</small></label><span class="trait-rec">REC ${rec[label]??'—'}</span><input class="input trait-input" type="number" min="0" max="${max}" step="0.5" data-prospect-trait="${esc(label)}" value="${current[label]??''}"></div>`).join('');
+ $('#prospectApplyRec').disabled=!Object.keys(rec).length;$('#prospectApplyRec').dataset.playerKey=key;$$('[data-prospect-trait]').forEach(i=>i.oninput=prospectTotal);prospectTotal();$('#prospectSaveStatus').textContent='';showProspectGrade();$('#prospectDrawerBackdrop').classList.remove('hide');$('#prospectDrawer').classList.remove('hide');
 }
 function closeProspectGrader(){$('#prospectDrawerBackdrop').classList.add('hide');$('#prospectDrawer').classList.add('hide')}
-function applyProspectRec(){const x=prospectLab.find(v=>v.player_key===$('#prospectApplyRec').dataset.playerKey);if(!x)return;$$('[data-prospect-trait]').forEach(i=>{if(x.recommended_traits?.[i.dataset.prospectTrait]!=null)i.value=x.recommended_traits[i.dataset.prospectTrait]});if(x.recommended_pro_comp)$('#prospectFinalComp').value=x.recommended_pro_comp;prospectTotal()}
+function applyProspectRec(){const x=prospectByKey($('#prospectApplyRec').dataset.playerKey);if(!x)return;$$('[data-prospect-trait]').forEach(i=>{if(x.recommended_traits?.[i.dataset.prospectTrait]!=null)i.value=x.recommended_traits[i.dataset.prospectTrait]});if(x.recommended_pro_comp)$('#prospectFinalComp').value=x.recommended_pro_comp;prospectTotal()}
 async function saveProspectGrade(e){
- e.preventDefault();const x=prospectLab.find(v=>v.player_key===$('#prospectKey').value);if(!x)return;const traits={};$$('[data-prospect-trait]').forEach(i=>{if(i.value!=='')traits[i.dataset.prospectTrait]=String(+i.value)});if(Object.keys(traits).length!==(PROSPECT_TRAITS[x.position]||[]).length)return alert('Finish every trait grade first.');
+ e.preventDefault();const x=prospectByKey($('#prospectKey').value);if(!x)return;const traits={};$$('[data-prospect-trait]').forEach(i=>{if(i.value!=='')traits[i.dataset.prospectTrait]=String(+i.value)});if(Object.keys(traits).length!==(PROSPECT_TRAITS[x.position]||[]).length)return alert('Finish every trait grade first.');
  const btn=$('#saveProspectGrade');btn.disabled=true;$('#prospectSaveStatus').textContent='Saving grade…';
  try{await rpc('admin_grade_prospect',{p_player_key:x.player_key,p_name:x.name,p_position:x.position,p_school:x.school||null,p_class_year:+x.class_year,p_overall_grade:prospectTotal(),p_pro_comp:$('#prospectFinalComp').value.trim()||null,p_traits:traits});await Promise.all([loadProspectLab(),loadCounts()]);renderProspectLab();$('#prospectSaveStatus').textContent='Grade locked ✓';setTimeout(closeProspectGrader,300)}catch(err){$('#prospectSaveStatus').textContent=err.message}finally{btn.disabled=false}
 }
-
 function reviewPriorityLabel(p){return Number(p)===1?'Critical':Number(p)===2?'High':'Normal'}
 function reviewAge(h){const x=Number(h);if(!Number.isFinite(x))return'—';if(x<1)return'<1h ago';if(x<48)return`${Math.round(x)}h ago`;return`${Math.round(x/24)}d ago`}
 function reviewSource(x){const src=x.source_1||x.source_2;if(!src)return'';if(/^https?:\/\//i.test(src))return `<a class="queue-source" href="${esc(src)}" target="_blank" rel="noopener">Source ↗</a>`;return `<div class="review-status">Source: ${esc(src)}</div>`}
