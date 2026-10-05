@@ -39,10 +39,9 @@
       meta.name='viewport';
       document.head.appendChild(meta);
     }
-    const current=String(meta.content||'');
-    if(!/width=device-width/i.test(current)){
-      meta.content='width=device-width, initial-scale=1, viewport-fit=cover';
-    }
+    // Keep Safari on the device viewport and stop wide intermediate profile
+    // content from making the page feel slightly zoomed/scaled.
+    meta.content='width=device-width, initial-scale=1, viewport-fit=cover, shrink-to-fit=no';
   }
 
   function injectStyles(){
@@ -51,7 +50,9 @@
     s.id=STYLE_ID;
     s.textContent=`
       @media(max-width:700px){
-        html,body{max-width:100%;overflow-x:clip}
+        html,body{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important}
+        html.bbb-profile-route-active,html.bbb-profile-route-active body{scroll-behavior:auto!important}
+        #profileView{width:100%!important;max-width:100vw!important;min-width:0!important;overflow-x:hidden!important}
         #profileView,#profileMount,
         #profileView .profile-hero,
         #profileView .profile-content,
@@ -78,29 +79,29 @@
         }
 
         #profileView .bbb-redesign-hero-row{
-          grid-template-columns:62px minmax(0,1fr)!important;
-          gap:10px!important;
+          grid-template-columns:52px minmax(0,1fr)!important;
+          gap:9px!important;
           align-items:center!important;
         }
         #profileView .bbb-redesign-team-logo{
-          width:62px!important;
-          height:62px!important;
-          border-radius:12px!important;
+          width:52px!important;
+          height:52px!important;
+          border-radius:11px!important;
         }
         #profileView .bbb-redesign-team-logo img{
-          width:46px!important;
-          height:46px!important;
+          width:39px!important;
+          height:39px!important;
         }
         #profileView .profile-title{
-          font-size:clamp(28px,9vw,38px)!important;
+          font-size:clamp(25px,7.6vw,32px)!important;
           line-height:.98!important;
           letter-spacing:-.04em!important;
           overflow-wrap:anywhere;
         }
         #profileView .profile-meta{
-          font-size:9px!important;
+          font-size:8px!important;
           gap:4px!important;
-          margin-top:6px!important;
+          margin-top:5px!important;
         }
         #profileView .bbb-redesign-hero-actions{
           grid-column:1/-1!important;
@@ -366,10 +367,10 @@
         }
 
         #profileView .profile-card{
-          padding:12px!important;
-          border-radius:12px!important;
+          padding:11px!important;
+          border-radius:11px!important;
         }
-        #profileView .profile-card h2{font-size:20px!important}
+        #profileView .profile-card h2{font-size:19px!important}
         #profileView .bbb-game-head{
           gap:9px!important;
           margin-bottom:11px!important;
