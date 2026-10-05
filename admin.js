@@ -215,10 +215,52 @@ function updateAdminClock(){
 async function loadActivity(){try{adminActivity=await rpc('admin_recent_activity',{p_limit:20})||[];renderActivityStream()}catch(e){adminActivity=[];if($('#activityList'))$('#activityList').innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
 function marketKind(x){const s=String(x.view||'').toUpperCase();if(s.includes('BUY'))return'BUY';if(s.includes('FADE'))return'FADE';return'MARKET'}
 function filteredRank(){const q=$('#rankSearch').value.trim().toLowerCase(),pos=$('#rankPos').value,m=$('#rankMarket').value;return board.filter(x=>(pos==='ALL'||x.pos===pos)&&(m==='ALL'||marketKind(x)===m)&&(!q||`${x.name} ${x.team} ${x.college||''}`.toLowerCase().includes(q)))}
-function renderRankings(){const list=filteredRank();const max=Math.max(0,Math.ceil(list.length/PAGE)-1);rankPage=Math.min(rankPage,max);const rows=list.slice(rankPage*PAGE,(rankPage+1)*PAGE);$('#rankBody').innerHTML=rows.map(x=>`<tr><td class="rank-number">${x.rank}</td><td class="player-name">${esc(x.name)}</td><td><span class="pos">${esc(x.pos)}</span></td><td>${esc(x.team||'—')}</td><td>${x.market?`#${x.market}`:'UR'}</td><td class="${x.gap>0?'green':x.gap<0?'red':''}">${x.gap==null?'—':(x.gap>0?'+':'')+x.gap}</td><td><div class="move-wrap"><input class="rank-input" type="number" min="1" max="${board.length}" value="${x.rank}" data-move-input="${esc(x.player_key)}"><button class="move-btn" data-move="${esc(x.player_key)}">MOVE</button></div></td><td><button class="edit-btn" data-edit="${esc(x.player_key)}">EDIT</button></td></tr>`).join('')||'<tr><td colspan="8" class="empty">No players match.</td></tr>';$('#rankCount').textContent=`${list.length?rankPage*PAGE+1:0}–${Math.min((rankPage+1)*PAGE,list.length)} of ${list.length}`;$('#rankPrev').disabled=rankPage===0;$('#rankNext').disabled=rankPage>=max;bindRows()}
+function renderRankings(){
+  const list=filteredRank();
+  const max=Math.max(0,Math.ceil(list.length/PAGE)-1);rankPage=Math.min(rankPage,max);
+  const rows=list.slice(rankPage*PAGE,(rankPage+1)*PAGE);
+  $('#rankBody').innerHTML=rows.map(x=>{
+    const gap=x.gap==null?'—':((Number(x.gap)>0?'+':'')+x.gap);
+    return '<tr data-rank-player="'+esc(x.player_key)+'" class="'+(selectedRankKey===x.player_key?'rank-selected':'')+'">'+
+      '<td class="rank-number">'+x.rank+'</td>'+
+      '<td class="player-name">'+esc(x.name)+'</td>'+
+      '<td><span class="pos">'+esc(x.pos)+'</span></td>'+
+      '<td>'+esc(x.team||'—')+'</td>'+
+      '<td>'+(x.market?'#'+x.market:'UR')+'</td>'+
+      '<td class="'+(x.gap>0?'green':x.gap<0?'red':'')+'">'+gap+'</td>'+
+      '<td><div class="move-wrap"><input class="rank-input" type="number" min="1" max="'+board.length+'" value="'+x.rank+'" data-move-input="'+esc(x.player_key)+'"><button class="move-btn" data-move="'+esc(x.player_key)+'">MOVE</button></div></td>'+
+      '<td><button class="edit-btn" data-edit="'+esc(x.player_key)+'">EDIT</button></td></tr>';
+  }).join('')||'<tr><td colspan="8" class="empty">No players match.</td></tr>';
+  $('#rankCount').textContent=(list.length?rankPage*PAGE+1:0)+'–'+Math.min((rankPage+1)*PAGE,list.length)+' of '+list.length;
+  $('#rankPrev').disabled=rankPage===0;$('#rankNext').disabled=rankPage>=max;bindRows();renderRankLens();
+}
 function filteredPlayers(){const q=$('#playerAdminSearch').value.trim().toLowerCase(),pos=$('#playerAdminPos').value,inj=$('#playerAdminInjury').value;return board.filter(x=>(pos==='ALL'||x.pos===pos)&&(inj==='ALL'||(inj==='HEALTHY'?healthy(x.injury_status):!healthy(x.injury_status)))&&(!q||`${x.name} ${x.team} ${x.college||''}`.toLowerCase().includes(q)))}
 function renderPlayers(){const list=filteredPlayers();const max=Math.max(0,Math.ceil(list.length/PAGE)-1);playerPage=Math.min(playerPage,max);const rows=list.slice(playerPage*PAGE,(playerPage+1)*PAGE);$('#playerAdminBody').innerHTML=rows.map(x=>`<tr><td class="rank-number">${x.rank}</td><td class="player-name">${esc(x.name)}</td><td><span class="pos">${esc(x.pos)}</span></td><td>${esc(x.team||'—')}</td><td>${x.age??'—'}</td><td>${esc(x.college||'—')}</td><td class="${healthy(x.injury_status)?'green':'red'}">${esc(x.injury_status||'Healthy')}</td><td><button class="edit-btn" data-edit="${esc(x.player_key)}">EDIT</button></td></tr>`).join('')||'<tr><td colspan="8" class="empty">No players match.</td></tr>';$('#playerAdminCount').textContent=`${list.length?playerPage*PAGE+1:0}–${Math.min((playerPage+1)*PAGE,list.length)} of ${list.length}`;$('#playerAdminPrev').disabled=playerPage===0;$('#playerAdminNext').disabled=playerPage>=max;bindRows()}
-function bindRows(){$$('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit));$$('[data-move]').forEach(b=>b.onclick=()=>movePlayer(b.dataset.move))}
+function bindRows(){$('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit));$('[data-move]').forEach(b=>b.onclick=()=>movePlayer(b.dataset.move))}
+function selectRankPlayer(key){selectedRankKey=key;renderRankings()}
+function renderRankLens(){
+  const el=$('#rankLens');if(!el)return;
+  const x=board.find(v=>v.player_key===selectedRankKey);
+  if(!x){el.innerHTML='<div class="rank-lens-empty"><div class="rank-lens-orb">⌁</div><div><div class="panel-kicker">BOARD LENS</div><strong>Select a player</strong><span>Click any player row to inspect rank, market gap, health and quick actions without leaving the board.</span></div></div>';return}
+  const gap=x.gap==null?'—':((Number(x.gap)>0?'+':'')+x.gap);
+  el.innerHTML='<div class="rank-lens-player">'+
+    '<div class="rank-lens-rank"><span>BBB RANK</span><strong>#'+x.rank+'</strong></div>'+
+    '<div class="rank-lens-id"><strong>'+esc(x.name)+'</strong><span>'+esc(x.pos)+' · '+esc(x.team||'FA')+' · '+esc(x.college||'College —')+'</span><p>'+esc(clip(x.overview||x.injury_note||'No current overview loaded for this player.',150))+'</p></div>'+
+    '<div class="rank-lens-stat"><span>POS RANK</span><strong>'+(x.pr?'#'+x.pr:'—')+'</strong></div>'+
+    '<div class="rank-lens-stat"><span>MARKET</span><strong>'+(x.market?'#'+x.market:'UR')+'</strong></div>'+
+    '<div class="rank-lens-stat"><span>EDGE</span><strong class="'+(Number(x.gap)>0?'green':Number(x.gap)<0?'red':'')+'">'+gap+'</strong></div>'+
+    '<div class="rank-lens-stat"><span>STATUS</span><strong class="'+(healthy(x.injury_status)?'green':'red')+'">'+esc(x.injury_status||'Healthy')+'</strong></div>'+
+    '<div class="rank-lens-actions"><button type="button" data-lens-edit="'+esc(x.player_key)+'">EDIT DATA</button><a href="/player/'+encodeURIComponent(x.player_key)+'" target="_blank">PROFILE ↗</a><button type="button" data-lens-step="-1" '+(x.rank<=1?'disabled':'')+'>MOVE +1</button><button type="button" data-lens-step="1" '+(x.rank>=board.length?'disabled':'')+'>MOVE -1</button></div>'+
+  '</div>';
+  $('[data-lens-edit]')?.addEventListener('click',()=>openEditor(x.player_key));
+  $('[data-lens-step]').forEach(b=>b.onclick=()=>quickMoveSelected(Number(b.dataset.lensStep)));
+}
+async function quickMoveSelected(delta){
+  const x=board.find(v=>v.player_key===selectedRankKey);if(!x)return;
+  const nr=x.rank+delta;if(nr<1||nr>board.length)return;
+  try{await rpc('admin_move_dynasty_player',{p_player_key:x.player_key,p_new_rank:nr});await Promise.all([loadBoard(),loadActivity()]);renderRankings();renderPlayers();renderCommandDashboard()}catch(e){alert(e.message)}
+}
+
 const clip=(v,len=180)=>{const x=String(v??'').replace(/\s+/g,' ').trim();return x.length>len?x.slice(0,len-1)+'…':x};
 const PROSPECT_TRAITS={
 QB:[['Arm Talent (10)',10],['Deep Accuracy (10)',10],['Play Extension (5)',5],['Rushing Upside (5)',5],['Short Accuracy (5)',5],['Pocket Presence (10)',10],['Pressure / Clutch (5)',5],['Throw Off-Platform (5)',5],['Pre-Snap Processing (5)',5],['Post-Snap Processing (10)',10],['Anticipation / Timing (10)',10],['Intermediate Accuracy (10)',10],['Decision Making / Ball Security (10)',10]],
