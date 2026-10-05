@@ -225,18 +225,21 @@
           overflow:hidden;
         }
 
-        /* Main profile tabs remain reachable as the user scrolls. */
+        /* Player-profile tab rail: keep it in normal flow on phones.
+           Sticky positioning was sitting over the first line of Overview / Rank History. */
         #profileView .bbb-tabs-bar{
-          position:sticky!important;
-          top:var(--bbb-mobile-header)!important;
-          z-index:38!important;
-          margin:0 -1px 8px!important;
+          position:relative!important;
+          top:auto!important;
+          z-index:2!important;
+          margin:0 0 10px!important;
           padding:4px!important;
           background:rgba(5,16,11,.97)!important;
           border-color:#1c4936!important;
-          box-shadow:0 8px 22px rgba(0,0,0,.2);
+          box-shadow:none!important;
           backdrop-filter:blur(12px);
         }
+        /* The V2 tab system replaces the older jump-link strip on mobile. */
+        #profileView .bbb-redesign-tabs{display:none!important}
         #profileView .bbb-tabs-btn{
           min-height:42px!important;
           padding:0 13px!important;
