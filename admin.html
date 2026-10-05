@@ -1381,15 +1381,16 @@ body:after{
 .review-mini-age{color:#668372;font-size:7px}
 
 .cyber-activity .activity-row{
-  min-height:45px!important;grid-template-columns:58px 82px minmax(0,1fr)!important;gap:8px!important;padding:9px 12px!important;
-  border-bottom-color:rgba(57,255,155,.055)!important;
+  width:100%;min-height:45px!important;grid-template-columns:52px 130px minmax(0,1fr)!important;gap:8px!important;padding:9px 12px!important;
+  border:0;border-bottom:1px solid rgba(57,255,155,.055)!important;background:transparent;color:inherit;text-align:left;cursor:pointer;
 }
 .cyber-activity .activity-row:hover{background:rgba(57,255,155,.035)!important}
 .cyber-activity .activity-time{color:#557a63;font-size:7px}
 .cyber-activity .activity-table{
-  display:inline-flex!important;align-items:center;gap:5px;color:#6be6a5!important;font-size:6px!important;text-transform:uppercase;letter-spacing:.07em
+  display:block!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:#8cf1b5!important;font-size:7px!important;font-weight:950;letter-spacing:.01em!important;text-transform:none!important;
 }
-.cyber-activity .activity-table:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--cy-green);box-shadow:0 0 7px var(--cy-green)}
+.cyber-activity .activity-table:before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--cy-green);box-shadow:0 0 7px var(--cy-green);margin-right:6px;vertical-align:1px}
 .cyber-activity .activity-key{font-size:7px!important;color:#9bb4a6!important}
 
 .market-edge-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:0}
@@ -1670,6 +1671,6 @@ body:after{
     </form>
   </aside>
 
-  <script src="/admin.js?v=cyber-command-20261005c"></script>
+  <script src="/admin.js?v=cyber-command-20261005d"></script>
 </body>
 </html>
