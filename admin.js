@@ -50,13 +50,16 @@ function renderActivityStream(){
 }
 function boardHealthChecks(){
   const h=dataHealth||{};
+  const ranked=Number(h.ranked_players)||0,slots=Number(h.unique_rank_slots)||0;
+  const breakdowns=Number(h.missing_breakdowns)||0,sources=Number(h.missing_breakdown_sources)||0;
+  const teams=Number(h.team_mismatches)||0,injuries=Number(h.injury_status_mismatches)||0,dupes=Number(h.duplicate_ranking_history_groups)||0;
   return [
-    ['Rank slots',Number(h.ranked_players)===500&&Number(h.unique_rank_slots)===500],
-    ['Player breakdowns',Number(h.missing_breakdowns)===0],
-    ['Source coverage',Number(h.missing_breakdown_sources)===0],
-    ['Team synchronization',Number(h.team_mismatches)===0],
-    ['Injury synchronization',Number(h.injury_status_mismatches)===0],
-    ['Ranking history',Number(h.duplicate_ranking_history_groups)===0]
+    {label:'Rank slots',ok:ranked===500&&slots===500,value:`${slots}/500`,target:'rankings'},
+    {label:'Player breakdowns',ok:breakdowns===0,value:breakdowns===0?'Complete':`${breakdowns} missing`,target:'players'},
+    {label:'Source coverage',ok:sources===0,value:sources===0?'Complete':`${sources} missing`,target:'review',kind:'SOURCE'},
+    {label:'Team synchronization',ok:teams===0,value:teams===0?'Clean':`${teams} issues`,target:'players'},
+    {label:'Injury synchronization',ok:injuries===0,value:injuries===0?'Clean':`${injuries} issues`,target:'review',kind:'INJURY'},
+    {label:'Ranking history',ok:dupes===0,value:dupes===0?'Clean':`${dupes} duplicate groups`,target:'rankings'}
   ];
 }
 function renderMarketSignal(){
@@ -74,36 +77,62 @@ function renderMarketSignal(){
     <line class="signal-zero" x1="0" x2="${w}" y1="${mid}" y2="${mid}"/>
     <path class="signal-area" d="${area}"/><path class="signal-line" d="${line}"/>
     ${coords.filter((_,i)=>i%7===0||i===coords.length-1).map(p=>`<circle class="signal-point" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.2"/>`).join('')}
-  </svg><div class="signal-axis"><span>#1</span><span>#10</span><span>#20</span><span>#30</span><span>#42</span></div><div class="signal-summary"><span>BBB Buys <b>${buys}</b></span><span>BBB Fades <b>${fades}</b></span><span>Signal range <b>±${Math.round(max)}</b></span></div>`;
+  </svg><div class="signal-axis"><span>#1</span><span>#10</span><span>#20</span><span>#30</span><span>#42</span></div><div class="signal-summary"><button type="button" data-market-jump="BUY">BBB Buys <b>${buys}</b></button><button type="button" data-market-jump="FADE">BBB Fades <b>${fades}</b></button><span>Signal range <b>±${Math.round(max)}</b></span></div>`;
 }
 function renderBoardCore(){
   const towerEl=$('#positionTowers'),legend=$('#positionLegend');if(!towerEl||!legend)return;
   const positions=['QB','RB','WR','TE'];
   const counts=Object.fromEntries(positions.map(pos=>[pos,board.filter(x=>x.pos===pos).length]));
   const max=Math.max(1,...Object.values(counts));
-  towerEl.innerHTML=positions.map(pos=>{const count=counts[pos]||0;const height=82+Math.round((count/max)*185);return `<div class="position-tower" style="--tower-h:${height}px"><span class="tower-value">${count}</span><div class="tower-cap"></div><div class="tower-beam"></div><span class="tower-label">${pos}</span></div>`}).join('');
-  legend.innerHTML=positions.map(pos=>`<div><span>${pos} PLAYERS</span><strong>${counts[pos]||0}</strong></div>`).join('');
+  towerEl.innerHTML=positions.map(pos=>{const count=counts[pos]||0;const height=82+Math.round((count/max)*185);return `<button type="button" class="position-tower" data-core-pos="${pos}" style="--tower-h:${height}px" title="Open ${pos} rankings"><span class="tower-value">${count}</span><div class="tower-cap"></div><div class="tower-beam"></div><span class="tower-label">${pos}</span></button>`}).join('');
+  legend.innerHTML=positions.map(pos=>`<button type="button" data-core-pos="${pos}"><span>${pos} PLAYERS</span><strong>${counts[pos]||0}</strong></button>`).join('');
   if($('#dashBoardTotal'))$('#dashBoardTotal').textContent=board.length||'—';
 }
 function renderDashboardHealth(){
   const gauge=$('#dashHealthGauge'),scoreEl=$('#dashHealthScore'),list=$('#dashHealthList');if(!gauge||!scoreEl||!list)return;
-  const checks=boardHealthChecks(),passed=checks.filter(x=>x[1]).length,score=Math.round(passed/checks.length*100);
+  const checks=boardHealthChecks(),passed=checks.filter(x=>x.ok).length,score=Math.round(passed/checks.length*100);
   gauge.style.setProperty('--score',(score*3.6)+'deg');scoreEl.textContent=score+'%';
-  list.innerHTML=checks.map(([label,ok])=>`<div class="health-line ${ok?'':'bad'}"><i>${ok?'✓':'!'}</i><span>${esc(label)}</span></div>`).join('');
+  list.innerHTML=checks.map(x=>`<button type="button" class="health-line ${x.ok?'':'bad'}" data-health-target="${esc(x.target||'review')}" data-health-kind="${esc(x.kind||'')}"><i>${x.ok?'✓':'!'}</i><span>${esc(x.label)}</span><b>${esc(x.value)}</b></button>`).join('');
 }
 function renderDashboardReview(){
   if($('#dashReviewCount'))$('#dashReviewCount').textContent=reviewQueue.length;
   const el=$('#dashReviewPreview');if(!el)return;
   const rows=[...reviewQueue].sort((a,b)=>Number(a.queue_priority)-Number(b.queue_priority)||Number(a.overall_rank||999)-Number(b.overall_rank||999)).slice(0,5);
-  el.innerHTML=rows.length?rows.map(x=>`<div class="review-mini"><span class="review-mini-priority p${x.queue_priority||3}"></span><span class="review-mini-rank">#${x.overall_rank??'—'}</span><div><strong>${esc(x.name)}</strong><small>${esc(x.position||'')} · ${esc(x.team||'FA')} · ${esc(x.attention_reason||'Review needed')}</small></div><span class="review-mini-age">${reviewAge(x.hours_since_verified)}</span></div>`).join(''):'<div class="empty">Watchtower clear.</div>';
+  el.innerHTML=rows.length?rows.map(x=>`<button type="button" class="review-mini" data-review-open="${esc(x.player_key)}"><span class="review-mini-priority p${x.queue_priority||3}"></span><span class="review-mini-rank">#${x.overall_rank??'—'}</span><div><strong>${esc(x.name)}</strong><small>${esc(x.position||'')} · ${esc(x.team||'FA')} · ${esc(x.attention_reason||'Review needed')}</small></div><span class="review-mini-age">${reviewAge(x.hours_since_verified)} ›</span></button>`).join(''):'<div class="empty">Watchtower clear.</div>';
 }
 function renderMarketEdges(){
   const el=$('#dashMarketEdges');if(!el)return;
   const buys=board.filter(x=>marketKind(x)==='BUY'&&Number.isFinite(Number(x.gap))).sort((a,b)=>Number(b.gap)-Number(a.gap)).slice(0,5);
   const fades=board.filter(x=>marketKind(x)==='FADE'&&Number.isFinite(Number(x.gap))).sort((a,b)=>Number(a.gap)-Number(b.gap)).slice(0,5);
   const max=Math.max(1,...[...buys,...fades].map(x=>Math.abs(Number(x.gap))));
-  const column=(title,list,kind)=>`<div class="edge-column ${kind}"><div class="edge-title"><span>${title}</span><b>${list.length}</b></div><div class="edge-list">${list.map(x=>{const g=Number(x.gap)||0;return `<div class="edge-row"><span class="edge-rank">#${x.rank}</span><div class="edge-player"><strong>${esc(x.name)}</strong><small>${esc(x.pos)} · ${esc(x.team||'FA')} · Market ${x.market?'#'+x.market:'UR'}</small></div><span class="edge-gap ${kind}">${g>0?'+':''}${g}</span><div class="edge-track"><i style="width:${Math.max(8,Math.round(Math.abs(g)/max*100))}%"></i></div></div>`}).join('')||'<div class="empty">No signals.</div>'}</div></div>`;
+  const column=(title,list,kind)=>`<div class="edge-column ${kind}"><div class="edge-title"><span>${title}</span><b>${list.length}</b></div><div class="edge-list">${list.map(x=>{const g=Number(x.gap)||0;return `<button type="button" class="edge-row" data-edge-player="${esc(x.player_key)}"><span class="edge-rank">#${x.rank}</span><div class="edge-player"><strong>${esc(x.name)}</strong><small>${esc(x.pos)} · ${esc(x.team||'FA')} · Market ${x.market?'#'+x.market:'UR'}</small></div><span class="edge-gap ${kind}">${g>0?'+':''}${g}</span><div class="edge-track"><i style="width:${Math.max(8,Math.round(Math.abs(g)/max*100))}%"></i></div></button>`}).join('')||'<div class="empty">No signals.</div>'}</div></div>`;
   el.innerHTML=column('BBB ABOVE MARKET',buys,'buy')+column('BBB BELOW MARKET',fades,'fade');
+}
+function goRankings(filters={}){
+  page('rankings');
+  if($('#rankSearch'))$('#rankSearch').value=filters.q||'';
+  if($('#rankPos'))$('#rankPos').value=filters.pos||'ALL';
+  if($('#rankMarket'))$('#rankMarket').value=filters.market||'ALL';
+  rankPage=0;renderRankings();
+}
+function goReview(filters={}){
+  page('review');
+  if($('#reviewSearch'))$('#reviewSearch').value=filters.q||'';
+  if($('#reviewPriority'))$('#reviewPriority').value=filters.priority||'ALL';
+  if($('#reviewKind'))$('#reviewKind').value=filters.kind||'ALL';
+  reviewPage=0;renderReviewQueue();
+}
+function bindDashboardActions(){
+  $('[data-core-pos]').forEach(b=>b.onclick=()=>goRankings({pos:b.dataset.corePos}));
+  $('[data-market-jump]').forEach(b=>b.onclick=()=>goRankings({market:b.dataset.marketJump}));
+  $('[data-edge-player]').forEach(b=>b.onclick=()=>{const p=board.find(x=>x.player_key===b.dataset.edgePlayer);goRankings({q:p?.name||''})});
+  $('[data-review-open]').forEach(b=>b.onclick=()=>{const x=reviewQueue.find(v=>v.player_key===b.dataset.reviewOpen);goReview({q:x?.name||''})});
+  $('[data-health-target]').forEach(b=>b.onclick=()=>{
+    const target=b.dataset.healthTarget,kind=b.dataset.healthKind||'';
+    if(target==='review')goReview({kind});
+    else if(target==='players')page('players');
+    else goRankings();
+  });
 }
 function renderCommandDashboard(){
   if(!$('#pageDashboard'))return;
@@ -111,7 +140,7 @@ function renderCommandDashboard(){
   if($('#metricInjuries'))$('#metricInjuries').textContent=board.filter(x=>!healthy(x.injury_status)).length;
   if($('#metricRookies'))$('#metricRookies').textContent=rookiesCount;
   if($('#metricProspects'))$('#metricProspects').textContent=prospectsCount;
-  renderMarketSignal();renderBoardCore();renderDashboardHealth();renderDashboardReview();renderMarketEdges();renderActivityStream();
+  renderMarketSignal();renderBoardCore();renderDashboardHealth();renderDashboardReview();renderMarketEdges();renderActivityStream();bindDashboardActions();
 }
 function updateAdminClock(){
   const d=new Date(),time=$('#adminClock'),date=$('#adminDate');if(time)time.textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});if(date)date.textContent=d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
