@@ -1,7 +1,7 @@
 const SUPA='https://twbduhmibbotregdxlla.supabase.co';
 const KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
 const STORE='bbb_admin_session_v1';
-let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0;
+let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0;
 const PAGE=50;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -177,13 +177,37 @@ function bindDashboardActions(){
     if(p)goRankings({q:p.name});
   });
 }
+function renderOpsActionCenter(){
+  const el=$('#opsActionGrid');if(!el)return;
+  const high=reviewQueue.filter(x=>Number(x.queue_priority)<=2).length;
+  const ungraded=prospectLab.filter(x=>!x.graded).length;
+  const injuries=board.filter(x=>!healthy(x.injury_status)).length;
+  const buys=board.filter(x=>marketKind(x)==='BUY').length;
+  const actions=[
+    {key:'review',icon:'◈',count:high,label:'High-priority reviews',sub:'Open the players most likely to need a decision now.',accent:'#ff7f90'},
+    {key:'prospects',icon:'✦',count:ungraded,label:'Prospects to grade',sub:'Continue working through the 2027 and 2028 scouting queue.',accent:'#39ff9b'},
+    {key:'injuries',icon:'＋',count:injuries,label:'Injury concerns',sub:'Jump straight to players carrying an active availability flag.',accent:'#ffc861'},
+    {key:'buys',icon:'↗',count:buys,label:'BBB market buys',sub:'Review the players where your board is ahead of market.',accent:'#58eaff'}
+  ];
+  el.innerHTML=actions.map(a=>'<button type="button" class="ops-action" data-ops-action="'+a.key+'" style="--action-accent:'+a.accent+'"><div class="ops-action-top"><span class="ops-action-icon">'+a.icon+'</span><span class="ops-action-count">'+a.count+'</span></div><strong>'+a.label+'</strong><small>'+a.sub+'</small></button>').join('');
+  if($('#opsAttentionLabel'))$('#opsAttentionLabel').textContent=high?high+' high-priority items right now':'No high-priority review flags';
+  if($('#missionReviewCount'))$('#missionReviewCount').textContent=reviewQueue.length;
+  if($('#missionProspectCount'))$('#missionProspectCount').textContent=ungraded;
+  $('[data-ops-action]').forEach(b=>b.onclick=()=>{
+    const key=b.dataset.opsAction;
+    if(key==='review'){page('review');$('#reviewPriority').value='2';reviewPage=0;renderReviewQueue()}
+    if(key==='prospects'){page('prospects');$('#prospectIncludeGraded').checked=false;renderProspectLab()}
+    if(key==='injuries'){page('players');$('#playerAdminInjury').value='CONCERN';playerPage=0;renderPlayers()}
+    if(key==='buys')goRankings({market:'BUY'});
+  });
+}
 function renderCommandDashboard(){
   if(!$('#pageDashboard'))return;
   if($('#metricPlayers'))$('#metricPlayers').textContent=board.length||'—';
   if($('#metricInjuries'))$('#metricInjuries').textContent=board.filter(x=>!healthy(x.injury_status)).length;
   if($('#metricRookies'))$('#metricRookies').textContent=rookiesCount;
   if($('#metricProspects'))$('#metricProspects').textContent=prospectsCount;
-  renderMarketSignal();renderBoardCore();renderDashboardHealth();renderDashboardReview();renderMarketEdges();renderActivityStream();bindDashboardActions();
+  renderMarketSignal();renderBoardCore();renderDashboardHealth();renderDashboardReview();renderMarketEdges();renderActivityStream();renderOpsActionCenter();bindDashboardActions();
 }
 function updateAdminClock(){
   const d=new Date(),time=$('#adminClock'),date=$('#adminDate');if(time)time.textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});if(date)date.textContent=d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
