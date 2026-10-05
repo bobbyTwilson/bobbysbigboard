@@ -503,8 +503,15 @@
     system.querySelectorAll('[data-bbb-tab]').forEach(b=>b.setAttribute('aria-selected',String(b===btn)));
     system.querySelectorAll('[data-bbb-panel]').forEach(p=>p.hidden=p!==panel);
     system.dataset.active=key;
-    if(window.matchMedia&&window.matchMedia('(max-width:700px)').matches){
-      requestAnimationFrame(()=>btn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'}));
+
+    // Never use scrollIntoView here. On mobile it can move the entire page
+    // vertically every time the async profile compositor re-runs.
+    const bar=btn.closest('.bbb-tabs-bar');
+    if(bar&&window.matchMedia&&window.matchMedia('(max-width:700px)').matches){
+      requestAnimationFrame(()=>{
+        const left=btn.offsetLeft-(bar.clientWidth-btn.offsetWidth)/2;
+        bar.scrollTo({left:Math.max(0,left),behavior:focus?'smooth':'auto'});
+      });
     }
     if(focus)btn.focus({preventScroll:true});
   }
@@ -620,20 +627,17 @@
     buildSystem(content,grid,player,data);
   }
 
-  function schedule(pathSlug){
-    const times=[0,100,260,650,1200,2000];
-    times.forEach(ms=>setTimeout(()=>apply(pathSlug),ms));
-  }
-
   ensureStyles();
   if(typeof profileRender==='function'){
     const base=profileRender;
     profileRender=async function(pathSlug){
       const result=await base(pathSlug);
-      schedule(pathSlug);
+      // Build the tab system before the final profile render gate releases the page.
+      // The old six delayed rebuilds were causing visible mobile layout/scroll jumps.
+      await apply(pathSlug);
       return result;
     };
   }
   const current=typeof profileNameFromPath==='function'?profileNameFromPath():'';
-  if(current)schedule(current);
+  if(current)setTimeout(()=>apply(current),0);
 })();
