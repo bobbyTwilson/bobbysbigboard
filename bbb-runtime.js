@@ -145,7 +145,6 @@ function profileShowSite(){profileView?.classList.add('hide');if(typeof bbbView=
 function profileCard(title,kicker,body,full=false){return '<section class="profile-card'+(full?' full':'')+'"><div class="profile-card-kicker">'+kicker+'</div><h2>'+title+'</h2>'+body+'</section>';}
 async function profileRender(slug){
   profileHideOtherViews();
-  window.scrollTo({top:0,left:0,behavior:'auto'});
   const mount=document.querySelector('#profileMount');mount.innerHTML='<div class="profile-loading shell">Loading player profile…</div>';
   let tries=0,p=null;while(!p&&tries<25){p=profileFind(slug);if(p)break;await new Promise(r=>setTimeout(r,120));tries++;}
   if(!p){mount.innerHTML='<div class="profile-missing shell"><div class="profile-kicker">BBB PLAYER DATABASE</div><h1>Player not found.</h1><p>This profile is not available on the current board.</p><a class="btn btn-primary" href="#rankings">Back to rankings</a></div>';return;}
@@ -162,10 +161,18 @@ async function profileRender(slug){
   if(rookie)cards.push(profileCard('Class standing.','Rookie Board',profileRows([['BBB Rookie Rank','#'+rookie.rank],['Position',rookie.pos],['Team',rookie.team],['Age',rookie.age],['Tier',rookie.tier?('Tier '+rookie.tier):'—'],['Market Rookie Rank',rookie.market!=null?'#'+rookie.market:'—'],['BBB vs Market',rookie.gap==null?'—':profileDiff(rookie.gap)+' spots']])+(rookie.notes?'<div class="profile-note">'+rookie.notes+'</div>':''),!dynasty&&!grade));
   if(grade){const top=grade.traits.slice(0,5),traitHtml='<div class="profile-trait-head"><div><div class="profile-card-kicker">Film Grade Profile</div><h2 style="margin-bottom:0">Top qualities.</h2></div><div class="profile-grade"><span>Overall Prospect Grade</span><strong>'+ (Number.isInteger(grade.grade)?grade.grade:grade.grade.toFixed(1)) +'</strong></div></div><div class="trait-list">'+top.map(t=>'<div class="trait-item"><div class="trait-name">'+t.name+'</div><div class="trait-track"><div class="trait-fill" style="width:'+t.pct.toFixed(1)+'%"></div></div><div class="trait-score">'+t.value+' / '+t.max+'</div></div>').join('')+'</div><div class="profile-prospect-meta"><span>'+profileFmt(grade.year)+' Draft Class</span><span>'+grade.pos+' Prospect</span>'+(grade.comp?'<span>Pro Comp: '+grade.comp+'</span>':'')+'</div>';cards.push('<section class="profile-card full">'+traitHtml+'</section>');}
   mount.innerHTML='<section class="profile-hero"><div class="shell"><a class="profile-back" href="#rankings">← BACK TO THE BOARD</a><div class="profile-kicker">BBB PLAYER DATABASE</div><h1 class="profile-title">'+name.replace(/\s+([^\s]+)$/,' <span>$1</span>')+'</h1><div class="profile-meta">'+meta+'</div></div></section><section class="profile-statbar"><div class="shell profile-statgrid" style="--profile-stats:'+Math.max(1,stats.length)+'">'+stats.map(x=>'<div class="profile-stat"><span>'+x[0]+'</span><strong>'+x[1]+'</strong></div>').join('')+'</div></section><section class="profile-content"><div class="shell profile-grid">'+cards.join('')+'</div></section>';
-  window.scrollTo({top:0,left:0,behavior:'auto'});
-  requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'})));
+
 }
-function profileRoute(force=false){const slug=profileNameFromPath();if(slug){window.scrollTo({top:0,left:0,behavior:'auto'});profileRender(slug);return;}profileShowSite();if(force&&location.hash&&typeof bbbView==='function')bbbView();}
+function profileRoute(force=false){
+  const slug=profileNameFromPath();
+  if(slug){
+    window.scrollTo({top:0,left:0,behavior:'auto'});
+    profileRender(slug);
+    return;
+  }
+  profileShowSite();
+  if(force&&location.hash&&typeof bbbView==='function')bbbView();
+}
 function profileBindRows(){
   document.querySelectorAll('#rankingsBody tr[data-r]').forEach(row=>{const p=players.find(x=>x.rank===+row.dataset.r);if(p)row.onclick=()=>profileGo(p.name);});
   document.querySelectorAll('#rookieBody tr[data-rookie-r]').forEach(row=>{const p=rookies.find(x=>x.rank===+row.dataset.rookieR);if(p)row.onclick=()=>profileGo(p.name);});
