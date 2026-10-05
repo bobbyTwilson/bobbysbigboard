@@ -390,19 +390,36 @@ document.addEventListener('DOMContentLoaded',()=>{
   $$('[data-page-jump]').forEach(b=>b.onclick=()=>page(b.dataset.pageJump));
   const globalSearch=$('#adminGlobalSearch');
   if(globalSearch){
-    globalSearch.addEventListener('keydown',e=>{
-      if(e.key!=='Enter')return;
-      const q=globalSearch.value.trim();page('rankings');
-      if($('#rankSearch')){$('#rankSearch').value=q;rankPage=0;renderRankings()}
-    });
+    globalSearch.addEventListener('focus',()=>{const seed=globalSearch.value;globalSearch.blur();openCommandPalette(seed)});
+    globalSearch.addEventListener('click',()=>openCommandPalette(globalSearch.value));
   }
+  $('#missionCommand')?.addEventListener('click',()=>openCommandPalette());
+  $('[data-quick-page]').forEach(b=>b.onclick=()=>page(b.dataset.quickPage));
+  $('#commandBackdrop')?.addEventListener('click',closeCommandPalette);
+  $('#commandPaletteInput')?.addEventListener('input',()=>{commandIndex=0;renderCommandPalette()});
+  $('#commandPaletteResults')?.addEventListener('mousemove',e=>{
+    const b=e.target.closest('[data-command-index]');if(!b)return;const next=Number(b.dataset.commandIndex);if(next!==commandIndex){commandIndex=next;renderCommandPalette()}
+  });
+  $('#commandPaletteResults')?.addEventListener('click',e=>{
+    const b=e.target.closest('[data-command-index]');if(!b)return;commandIndex=Number(b.dataset.commandIndex);executeActiveCommand()
+  });
   document.addEventListener('keydown',e=>{
-    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'&&globalSearch){e.preventDefault();globalSearch.focus()}
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCommandPalette();return}
+    if(!$('#commandPalette')?.classList.contains('hide')){
+      if(e.key==='Escape'){e.preventDefault();closeCommandPalette();return}
+      if(e.key==='ArrowDown'){e.preventDefault();const items=commandItems($('#commandPaletteInput')?.value||'');commandIndex=Math.min(Math.max(0,items.length-1),commandIndex+1);renderCommandPalette();return}
+      if(e.key==='ArrowUp'){e.preventDefault();commandIndex=Math.max(0,commandIndex-1);renderCommandPalette();return}
+      if(e.key==='Enter'){e.preventDefault();executeActiveCommand();return}
+    }
   });
   $$('[data-refresh]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await loadAll()}finally{b.disabled=false}});
   ['#rankSearch','#rankPos','#rankMarket'].forEach(s=>$(s).addEventListener(s==='#rankSearch'?'input':'change',()=>{rankPage=0;renderRankings()}));
   $('#rankClear').onclick=()=>{$('#rankSearch').value='';$('#rankPos').value='ALL';$('#rankMarket').value='ALL';rankPage=0;renderRankings()};
   $('#rankPrev').onclick=()=>{rankPage=Math.max(0,rankPage-1);renderRankings()};$('#rankNext').onclick=()=>{rankPage++;renderRankings()};
+  $('#rankBody')?.addEventListener('click',e=>{
+    if(e.target.closest('button,input,a'))return;
+    const row=e.target.closest('[data-rank-player]');if(row)selectRankPlayer(row.dataset.rankPlayer);
+  });
   ['#playerAdminSearch','#playerAdminPos','#playerAdminInjury'].forEach(s=>$(s).addEventListener(s==='#playerAdminSearch'?'input':'change',()=>{playerPage=0;renderPlayers()}));
   ['#prospectSearch','#prospectYear','#prospectPos','#prospectResearch'].forEach(sel=>$(sel)?.addEventListener(sel==='#prospectSearch'?'input':'change',renderProspectLab));
   $('#prospectIncludeGraded')?.addEventListener('change',renderProspectLab);
