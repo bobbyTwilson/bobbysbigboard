@@ -31,20 +31,9 @@
   // directly shared player URL before the rest of the app initializes.
   clearPlayerHash();
 
-  // Re-run the profile router after each live dataset completes. This removes
-  // the desktop-vs-mobile timing difference on slower in-app browsers.
-  ['load','loadRookies','loadProspects'].forEach(name=>{
-    const original=window[name];
-    if(typeof original!=='function'||original.__bbbDeepLinkWrapped)return;
-    const wrapped=async function(){
-      const result=await original.apply(this,arguments);
-      if(isPlayerPath())setTimeout(rerouteProfile,0);
-      return result;
-    };
-    wrapped.__bbbDeepLinkWrapped=true;
-    window[name]=wrapped;
-  });
-
+  // Do not rerun the entire profile after each dataset finishes. The profile
+  // renderer already waits for live player data; repeated reroutes were
+  // rebuilding the page several times on phones and fighting user scroll.
   const init=()=>{
     keepProfileVisible();
     rerouteProfile();
@@ -62,6 +51,6 @@
   else init();
 
   window.addEventListener('pageshow',()=>{if(isPlayerPath())keepProfileVisible()});
-  window.addEventListener('hashchange',()=>{if(isPlayerPath())rerouteProfile()});
+  window.addEventListener('hashchange',()=>{if(isPlayerPath())keepProfileVisible()});
   window.addEventListener('popstate',()=>{if(isPlayerPath())rerouteProfile()});
 })();
