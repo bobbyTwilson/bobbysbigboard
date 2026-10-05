@@ -1677,6 +1677,44 @@ body:after{
   #prospectDrawer .prospect-trait-grid{grid-template-columns:1fr!important}
 }
 </style>
+
+<style id="bbb-prospect-report-v3">
+.prospect-card{cursor:pointer}
+.prospect-card:after{
+  content:"OPEN SCOUTING REPORT";position:absolute;left:13px;bottom:10px;
+  color:rgba(121,255,183,.0);font-size:5.5px;font-weight:950;letter-spacing:.11em;transition:color .15s ease;
+}
+.prospect-card:hover:after{color:rgba(121,255,183,.55)}
+.prospect-card-actions{margin-bottom:18px}
+.prospect-report-view{display:block!important}
+.prospect-report-view.hide{display:none!important}
+.prospect-report-top{display:grid;grid-template-columns:220px minmax(0,1fr) 180px;gap:9px;margin-bottom:14px}
+.prospect-report-top>div{
+  min-height:112px;padding:14px;border:1px solid rgba(57,255,155,.10);border-radius:12px;
+  background:linear-gradient(145deg,rgba(7,28,17,.9),rgba(3,13,9,.92));
+}
+.prospect-report-top span{display:block;color:#557461;font-size:6px;font-weight:950;letter-spacing:.11em}
+.prospect-report-score strong{display:block;margin-top:7px;color:#7dffb8;font-size:36px;line-height:1}
+.prospect-report-score small,.prospect-report-class small{display:block;margin-top:8px;color:#60826d;font-size:7px}
+.prospect-report-comp strong,.prospect-report-class strong{display:block;margin-top:9px;color:#e8fff1;font-size:17px;line-height:1.2}
+.prospect-report-class strong{color:#8ff5ba;font-size:24px}
+.prospect-report-section{margin-top:10px;padding:14px;border:1px solid rgba(57,255,155,.08);border-radius:12px;background:rgba(4,17,11,.60)}
+.prospect-report-section h3{margin:4px 0 9px;color:#effff7;font-size:16px}
+.prospect-report-section .prospect-summary{margin:0!important;border-left-color:rgba(57,255,155,.38)}
+.prospect-rec-traits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.prospect-rec-trait{display:flex;justify-content:space-between;gap:8px;padding:8px;border:1px solid rgba(57,255,155,.07);border-radius:8px;background:rgba(2,12,8,.55)}
+.prospect-rec-trait span{color:#6d8b79;font-size:7px}
+.prospect-rec-trait strong{color:#baffd5;font-size:8px}
+.prospect-notes{color:#87a190;font-size:8px;line-height:1.65}
+.prospect-source-links{display:flex;flex-wrap:wrap;gap:7px}
+.prospect-source-links a{display:inline-flex;align-items:center;min-height:28px;padding:0 9px;border:1px solid rgba(57,255,155,.12);border-radius:999px;background:rgba(3,18,11,.75);color:#83efb1;font-size:7px;text-decoration:none}
+.prospect-source-links a:hover{border-color:rgba(57,255,155,.32);background:rgba(0,105,59,.12)}
+.prospect-report-actions{display:flex;justify-content:flex-end;margin-top:14px}
+.prospect-report-actions .save-btn{min-width:190px}
+.prospect-grade-back{margin-bottom:10px}
+@media(max-width:900px){.prospect-report-top{grid-template-columns:1fr 1fr}.prospect-report-class{grid-column:1/-1}.prospect-rec-traits{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.prospect-report-top{grid-template-columns:1fr}.prospect-report-class{grid-column:auto}.prospect-rec-traits{grid-template-columns:1fr}.prospect-report-actions .save-btn{width:100%}}
+</style>
 </head>
 <body>
   <section id="loginView" class="login-wrap">
@@ -1880,13 +1918,43 @@ body:after{
       <div><div class="eyebrow">PROSPECT LAB · FINAL GRADE</div><h2 id="prospectDrawerTitle">Prospect</h2><div id="prospectDrawerMeta" class="prospect-drawer-meta"></div></div>
       <button id="prospectDrawerClose" class="close-btn">×</button>
     </div>
-    <form id="prospectGradeForm" class="drawer-body">
+    <div id="prospectReportView" class="drawer-body prospect-report-view">
       <input id="prospectKey" type="hidden">
-      <div class="prospect-recommendation">
-        <div><span>BBB RECOMMENDED GRADE</span><strong id="prospectRecGrade">Pending</strong></div>
-        <div><span>PRO COMP IDEA</span><strong id="prospectRecComp">Research pending</strong></div>
+      <div class="prospect-report-top">
+        <div class="prospect-report-score"><span>BBB RECOMMENDED GRADE</span><strong id="prospectRecGrade">Pending</strong><small id="prospectResearchState">Research pending</small></div>
+        <div class="prospect-report-comp"><span>RECOMMENDED PRO COMP</span><strong id="prospectRecComp">Research pending</strong></div>
+        <div class="prospect-report-class"><span>DRAFT CLASS</span><strong id="prospectClassLabel">—</strong><small id="prospectClassAudit">Class checked</small></div>
       </div>
-      <div id="prospectSummary" class="prospect-summary">Research notes have not been loaded for this prospect yet.</div>
+      <section class="prospect-report-section">
+        <div class="panel-kicker">SCOUTING BREAKDOWN</div>
+        <h3>What the profile says right now</h3>
+        <div id="prospectSummary" class="prospect-summary">Research notes have not been loaded for this prospect yet.</div>
+      </section>
+      <section class="prospect-report-section">
+        <div class="panel-kicker">RECOMMENDED TRAIT CARD</div>
+        <h3>Where I’d start the grade</h3>
+        <div id="prospectRecommendationTraits" class="prospect-rec-traits"></div>
+      </section>
+      <section class="prospect-report-section">
+        <div class="panel-kicker">WHY THIS GRADE</div>
+        <h3>Research notes</h3>
+        <div id="prospectRecommendationNotes" class="prospect-notes">No recommendation notes yet.</div>
+      </section>
+      <section class="prospect-report-section">
+        <div class="panel-kicker">SOURCE TRAIL</div>
+        <h3>Scouting sources</h3>
+        <div id="prospectSourceLinks" class="prospect-source-links"></div>
+      </section>
+      <div class="prospect-report-actions">
+        <button id="prospectStartGrade" class="save-btn" type="button">GRADE THIS PLAYER</button>
+      </div>
+    </div>
+    <form id="prospectGradeForm" class="drawer-body hide">
+      <div class="prospect-grade-back"><button id="prospectBackToReport" class="small-btn" type="button">← SCOUTING REPORT</button></div>
+      <div class="prospect-recommendation">
+        <div><span>BBB RECOMMENDED GRADE</span><strong id="prospectGradeRecGrade">Pending</strong></div>
+        <div><span>PRO COMP IDEA</span><strong id="prospectGradeRecComp">Research pending</strong></div>
+      </div>
       <div class="prospect-grade-head">
         <div><div class="panel-kicker">YOUR TRAIT CARD</div><h3>Build the grade</h3><p>Trait scores total to the final BBB prospect grade.</p></div>
         <button id="prospectApplyRec" class="small-btn" type="button">USE RECOMMENDATION</button>
@@ -1924,6 +1992,6 @@ body:after{
     </form>
   </aside>
 
-  <script src="/admin.js?v=prospect-lab-20261005f"></script>
+  <script src="/admin.js?v=prospect-report-20261005a"></script>
 </body>
 </html>
