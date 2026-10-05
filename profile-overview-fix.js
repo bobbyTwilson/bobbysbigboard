@@ -204,6 +204,7 @@ function bbbInjectRankingHistoryStyles(){
   const style=document.createElement('style');
   style.id='bbb-ranking-history-styles';
   style.textContent=`
+    #profileView,#profileMount,#profileMount .profile-grid{overflow-anchor:none}
     .bbb-ranking-card{overflow:hidden}
     .bbb-rank-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:18px}
     .bbb-rank-summary>div{padding:14px;border:1px solid #1c392d;background:#09120e;border-radius:11px}
