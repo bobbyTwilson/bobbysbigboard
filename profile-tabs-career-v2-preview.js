@@ -619,10 +619,19 @@
 
     if(isMobile){
       const notesBtn=system.querySelector('[data-bbb-tab="notes"]');
-      if(notesBtn)notesBtn.textContent='Rankings';
+      if(notesBtn)notesBtn.textContent='Rank History';
+
+      // The scouting/player overview belongs with the snapshot on mobile.
+      // moveExistingCards initially collects it with the legacy notes content,
+      // so pull it into the dedicated Overview panel here.
+      const scoutingOverview=notesPanel.querySelector('.bbb-overview-card')
+        ||document.querySelector('#profileMount .bbb-overview-card');
+      if(scoutingOverview&&overview&&!overview.contains(scoutingOverview)){
+        overview.appendChild(scoutingOverview);
+      }
 
       const snapshot=document.querySelector('#profileMount .bbb-profile-atglance');
-      if(snapshot&&overview&&!overview.contains(snapshot))overview.appendChild(snapshot);
+      if(snapshot&&overview&&!overview.contains(snapshot))overview.insertBefore(snapshot,overview.firstChild);
 
       const season=document.querySelector('#profileMount .bbb-fantasy-season-strip');
       if(season&&!statsPanel.contains(season))statsPanel.insertBefore(season,statsPanel.firstChild);
