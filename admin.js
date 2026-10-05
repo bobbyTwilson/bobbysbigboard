@@ -195,7 +195,7 @@ function renderOpsActionCenter(){
   if($('#missionProspectCount'))$('#missionProspectCount').textContent=ungraded;
   $('[data-ops-action]').forEach(b=>b.onclick=()=>{
     const key=b.dataset.opsAction;
-    if(key==='review'){page('review');$('#reviewPriority').value='2';reviewPage=0;renderReviewQueue()}
+    if(key==='review'){page('review');$('#reviewPriority').value='ALL';reviewPage=0;renderReviewQueue()}
     if(key==='prospects'){page('prospects');$('#prospectIncludeGraded').checked=false;renderProspectLab()}
     if(key==='injuries'){page('players');$('#playerAdminInjury').value='CONCERN';playerPage=0;renderPlayers()}
     if(key==='buys')goRankings({market:'BUY'});
@@ -250,7 +250,7 @@ function renderRankLens(){
     '<div class="rank-lens-stat"><span>MARKET</span><strong>'+(x.market?'#'+x.market:'UR')+'</strong></div>'+
     '<div class="rank-lens-stat"><span>EDGE</span><strong class="'+(Number(x.gap)>0?'green':Number(x.gap)<0?'red':'')+'">'+gap+'</strong></div>'+
     '<div class="rank-lens-stat"><span>STATUS</span><strong class="'+(healthy(x.injury_status)?'green':'red')+'">'+esc(x.injury_status||'Healthy')+'</strong></div>'+
-    '<div class="rank-lens-actions"><button type="button" data-lens-edit="'+esc(x.player_key)+'">EDIT DATA</button><a href="/player/'+encodeURIComponent(x.player_key)+'" target="_blank">PROFILE ↗</a><button type="button" data-lens-step="-1" '+(x.rank<=1?'disabled':'')+'>MOVE +1</button><button type="button" data-lens-step="1" '+(x.rank>=board.length?'disabled':'')+'>MOVE -1</button></div>'+
+    '<div class="rank-lens-actions"><button type="button" data-lens-edit="'+esc(x.player_key)+'">EDIT DATA</button><a href="/player/'+encodeURIComponent(x.player_key)+'" target="_blank">PROFILE ↗</a><button type="button" data-lens-step="-1" '+(x.rank<=1?'disabled':'')+'>UP 1</button><button type="button" data-lens-step="1" '+(x.rank>=board.length?'disabled':'')+' >DOWN 1</button></div>'+
   '</div>';
   $('[data-lens-edit]')?.addEventListener('click',()=>openEditor(x.player_key));
   $('[data-lens-step]').forEach(b=>b.onclick=()=>quickMoveSelected(Number(b.dataset.lensStep)));
