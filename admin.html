@@ -1721,6 +1721,101 @@ body:after{
 .research-state.baseline{color:#79b99a!important}
 .research-state.baseline i{background:#4d9971!important;box-shadow:0 0 6px rgba(77,153,113,.55)!important}
 </style>
+
+<style id="bbb-admin-ops-v5">
+.admin-mission-bar{
+  position:sticky;top:76px;z-index:18;height:48px;margin-top:0;
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;
+  border-left:1px solid rgba(57,255,155,.10);border-right:1px solid rgba(57,255,155,.10);border-bottom:1px solid rgba(57,255,155,.10);
+  background:rgba(2,10,6,.88);backdrop-filter:blur(16px);
+}
+.mission-context{display:flex;align-items:center;gap:9px;padding-left:12px}
+.mission-context small{display:block;color:#456653;font-size:5.5px;font-weight:950;letter-spacing:.13em}
+.mission-context strong{display:block;color:#bfffd8;font-size:9px;margin-top:1px}
+.mission-dot{width:7px;height:7px;border-radius:50%;background:var(--cy-green);box-shadow:0 0 12px var(--cy-green)}
+.mission-shortcuts{display:flex;justify-content:center;gap:6px}
+.mission-shortcuts button{
+  min-height:29px;display:inline-flex;align-items:center;gap:6px;padding:0 9px;
+  border:1px solid rgba(57,255,155,.10);border-radius:8px;background:rgba(5,22,14,.62);color:#6e927e;
+  font-size:6.5px;font-weight:950;letter-spacing:.04em;
+}
+.mission-shortcuts button:hover{border-color:rgba(57,255,155,.28);color:#caffdc;background:rgba(0,110,61,.10)}
+.mission-shortcuts button span{color:#63e79d;font-size:10px}
+.mission-shortcuts kbd{padding:2px 4px;border:1px solid rgba(57,255,155,.10);border-radius:4px;color:#526d5d;background:#06100b;font-size:5px}
+.mission-status{display:flex;align-items:center;gap:10px;padding-right:12px;color:#58705f;font-size:6px;font-weight:900}
+.mission-status span{display:flex;align-items:center;gap:5px}.mission-status i{width:5px;height:5px;border-radius:50%;background:#34d98a}.mission-status b{color:#9feec0}
+
+.ops-action-center{
+  margin-bottom:11px;padding:13px;border:1px solid rgba(57,255,155,.12);border-radius:15px;
+  background:
+    radial-gradient(circle at 90% -30%,rgba(57,255,155,.10),transparent 35%),
+    linear-gradient(145deg,rgba(6,22,14,.92),rgba(3,12,8,.94));
+  box-shadow:var(--cy-shadow);
+}
+.ops-action-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:10px}
+.ops-action-head h2{margin:3px 0 0;color:#f2fff8;font-size:15px}
+.ops-action-head>span{color:#506f5d;font-size:6px;font-weight:900;letter-spacing:.08em}
+.ops-action-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.ops-action{
+  position:relative;overflow:hidden;min-height:84px;padding:11px;border:1px solid rgba(57,255,155,.085);border-radius:10px;
+  background:rgba(2,13,8,.74);text-align:left;color:inherit;cursor:pointer;
+}
+.ops-action:before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--action-accent,#39ff9b);opacity:.7}
+.ops-action:hover{transform:translateY(-1px);border-color:rgba(57,255,155,.22);background:rgba(5,25,15,.86)}
+.ops-action-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ops-action-icon{width:27px;height:27px;border:1px solid rgba(57,255,155,.12);border-radius:8px;display:grid;place-items:center;color:#7cf6ae;background:rgba(57,255,155,.06);font-size:11px}
+.ops-action-count{font-size:19px;font-weight:1000;color:#ecfff4}
+.ops-action strong{display:block;margin-top:9px;color:#a8cbb7;font-size:7px}
+.ops-action small{display:block;margin-top:2px;color:#4f6a59;font-size:5.8px;line-height:1.35}
+
+.rank-lens{
+  margin-bottom:10px;border:1px solid rgba(57,255,155,.11);border-radius:14px;overflow:hidden;
+  background:linear-gradient(145deg,rgba(6,22,14,.92),rgba(3,12,8,.94));
+}
+.rank-lens-empty{min-height:86px;display:flex;align-items:center;gap:12px;padding:12px 14px}
+.rank-lens-orb{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(57,255,155,.18);background:radial-gradient(circle,rgba(57,255,155,.13),rgba(57,255,155,.02));color:#77f1aa;font-size:21px;box-shadow:0 0 22px rgba(57,255,155,.06)}
+.rank-lens-empty strong{display:block;color:#eafff3;font-size:11px}.rank-lens-empty span{display:block;max-width:660px;margin-top:3px;color:#607c69;font-size:7px;line-height:1.45}
+.rank-lens-player{display:grid;grid-template-columns:auto minmax(170px,1.2fr) repeat(4,minmax(90px,.55fr)) auto;align-items:center;gap:10px;padding:12px}
+.rank-lens-rank{width:62px;height:62px;border-radius:15px;display:grid;place-items:center;align-content:center;border:1px solid rgba(57,255,155,.20);background:rgba(0,105,59,.12)}
+.rank-lens-rank span{font-size:6px;color:#5e7c69}.rank-lens-rank strong{font-size:21px;color:#8affbd}
+.rank-lens-id strong{display:block;font-size:15px;color:#fff}.rank-lens-id span{display:block;margin-top:3px;color:#5d7b67;font-size:7px}.rank-lens-id p{margin:6px 0 0;color:#789381;font-size:7px;line-height:1.45;max-width:500px}
+.rank-lens-stat{padding:8px;border-left:1px solid rgba(57,255,155,.07)}.rank-lens-stat span{display:block;color:#4f6d59;font-size:5.5px;font-weight:950;letter-spacing:.08em}.rank-lens-stat strong{display:block;margin-top:4px;color:#c8ffe0;font-size:11px}
+.rank-lens-actions{display:grid;gap:5px;min-width:96px}.rank-lens-actions button,.rank-lens-actions a{min-height:28px;display:grid;place-items:center;padding:0 8px;border:1px solid rgba(57,255,155,.12);border-radius:7px;background:rgba(4,20,13,.75);color:#8adfae;font-size:6px;font-weight:950;text-decoration:none}
+.rank-lens-actions button:hover,.rank-lens-actions a:hover{border-color:rgba(57,255,155,.32);color:white}
+
+.rank-table tbody tr[data-rank-player]{cursor:pointer}.rank-table tbody tr.rank-selected td{background:rgba(57,255,155,.055)!important}.rank-table tbody tr.rank-selected td:first-child{box-shadow:inset 2px 0 0 var(--cy-green)}
+.command-backdrop{position:fixed;inset:0;z-index:200;background:rgba(0,4,2,.72);backdrop-filter:blur(8px)}
+.command-palette{
+  position:fixed;z-index:201;left:50%;top:13vh;transform:translateX(-50%);
+  width:min(760px,calc(100vw - 24px));max-height:min(680px,74vh);overflow:hidden;
+  border:1px solid rgba(57,255,155,.24);border-radius:18px;
+  background:radial-gradient(circle at 90% 0,rgba(57,255,155,.10),transparent 30%),linear-gradient(180deg,rgba(5,20,13,.99),rgba(2,9,6,.99));
+  box-shadow:0 50px 160px rgba(0,0,0,.78),0 0 70px rgba(57,255,155,.09);
+}
+.command-palette-head{height:58px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid rgba(57,255,155,.10)}
+.command-palette-head>span{color:#61eea0;font-size:18px}.command-palette-head input{min-width:0;flex:1;border:0;outline:0;background:transparent;color:#effff7;font-size:13px}.command-palette-head input::placeholder{color:#526e5c}
+.command-palette-head kbd{padding:4px 7px;border:1px solid rgba(57,255,155,.11);border-radius:6px;color:#627e6c;background:#06110b;font-size:6px}
+.command-hints{display:flex;gap:12px;padding:7px 14px;border-bottom:1px solid rgba(57,255,155,.06);color:#455d4f;font-size:5.5px;font-weight:900}
+.command-results{max-height:540px;overflow:auto;padding:8px}
+.command-group-title{padding:7px 8px;color:#446953;font-size:5.5px;font-weight:950;letter-spacing:.14em}
+.command-result{
+  width:100%;display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:9px;align-items:center;min-height:48px;padding:6px 8px;
+  border:1px solid transparent;border-radius:9px;background:transparent;color:inherit;text-align:left;
+}
+.command-result:hover,.command-result.active{border-color:rgba(57,255,155,.13);background:rgba(57,255,155,.045)}
+.command-result-icon{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;border:1px solid rgba(57,255,155,.11);background:rgba(57,255,155,.055);color:#79efae;font-size:10px}
+.command-result strong{display:block;color:#eafff3;font-size:8px}.command-result small{display:block;margin-top:2px;color:#55705f;font-size:6px}.command-result-tag{color:#5a7a66;font-size:5.5px;font-weight:950;letter-spacing:.08em}
+@media(max-width:1100px){
+  .mission-status{display:none}.admin-mission-bar{grid-template-columns:auto 1fr}.mission-shortcuts{justify-content:end;padding-right:8px}
+  .rank-lens-player{grid-template-columns:auto 1fr repeat(2,minmax(80px,.5fr));}.rank-lens-stat:nth-of-type(n+5){display:none}
+}
+@media(max-width:700px){
+  .admin-mission-bar{top:60px;height:44px;grid-template-columns:1fr}.mission-context{display:none}.mission-shortcuts{justify-content:space-around;padding:0 5px}.mission-shortcuts button{flex:1;justify-content:center;padding:0 5px}.mission-shortcuts kbd{display:none}
+  .ops-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ops-action{min-height:74px}
+  .rank-lens-player{grid-template-columns:auto 1fr auto}.rank-lens-stat{display:none!important}.rank-lens-id p{display:none}.rank-lens-actions{min-width:70px}
+  .command-palette{top:7vh;max-height:84vh}
+}
+</style>
 </head>
 <body>
   <section id="loginView" class="login-wrap">
@@ -1754,6 +1849,22 @@ body:after{
         <a class="ghost" href="/" target="_blank">View Site ↗</a><button id="signOut" class="ghost">Sign Out</button>
       </div>
     </div></header>
+    <div class="shell admin-mission-bar">
+      <div class="mission-context">
+        <span class="mission-dot"></span>
+        <div><small>ACTIVE WORKSPACE</small><strong id="missionPageTitle">Dashboard</strong></div>
+      </div>
+      <div class="mission-shortcuts">
+        <button type="button" data-quick-page="rankings"><span>⌁</span> Board</button>
+        <button type="button" data-quick-page="prospects"><span>✦</span> Prospects</button>
+        <button type="button" data-quick-page="review"><span>◈</span> Review</button>
+        <button type="button" id="missionCommand"><span>⌕</span> Command <kbd>Ctrl K</kbd></button>
+      </div>
+      <div class="mission-status">
+        <span><i></i><b id="missionReviewCount">—</b> reviews</span>
+        <span><i></i><b id="missionProspectCount">—</b> prospects</span>
+      </div>
+    </div>
     <div class="shell admin-layout">
       <aside class="sidebar">
         <div class="side-card">
@@ -1793,6 +1904,14 @@ body:after{
             <div class="metric cyber-metric"><div class="metric-icon">◇</div><div><span>Rookies</span><strong id="metricRookies">—</strong><small>ROOKIE BOARD ENTRIES</small></div><div class="mini-radar"></div></div>
             <div class="metric cyber-metric"><div class="metric-icon">⌁</div><div><span>Prospect Grades</span><strong id="metricProspects">—</strong><small>SCOUTING DATABASE</small></div><div class="mini-bars alt"><i></i><i></i><i></i><i></i><i></i></div></div>
           </div>
+
+          <section class="ops-action-center">
+            <div class="ops-action-head">
+              <div><div class="panel-kicker">TODAY'S CONTROL PANEL</div><h2>What needs your attention?</h2></div>
+              <span id="opsAttentionLabel">Live board priorities</span>
+            </div>
+            <div id="opsActionGrid" class="ops-action-grid"></div>
+          </section>
 
           <div class="command-grid">
             <section class="panel signal-panel">
@@ -1838,6 +1957,12 @@ body:after{
 
         <section id="pageRankings" class="admin-page hide">
           <div class="page-head"><div><div class="eyebrow">THE BOARD FORGE</div><h1>Rankings Manager</h1><p>Move a player to a new rank and BBB safely shifts the board around them.</p></div><button class="refresh-btn" data-refresh>Refresh Board</button></div>
+          <section id="rankLens" class="rank-lens">
+            <div class="rank-lens-empty">
+              <div class="rank-lens-orb">⌁</div>
+              <div><div class="panel-kicker">BOARD LENS</div><strong>Select a player</strong><span>Click any player row to inspect rank, market gap, health and quick actions without leaving the board.</span></div>
+            </div>
+          </section>
           <section class="panel">
             <div class="toolbar"><input id="rankSearch" class="input" placeholder="Search player, team, college…"><select id="rankPos" class="select"><option value="ALL">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select><select id="rankMarket" class="select"><option value="ALL">All market views</option><option value="BUY">BBB Buys</option><option value="FADE">BBB Fades</option><option value="MARKET">Near market</option></select><button id="rankClear" class="small-btn">Clear</button></div>
             <div class="rank-scroll"><table class="rank-table"><thead><tr><th>Rank</th><th>Player</th><th>Pos</th><th>Team</th><th>Market</th><th>Gap</th><th>Move To</th><th></th></tr></thead><tbody id="rankBody"></tbody></table></div>
@@ -1918,6 +2043,20 @@ body:after{
   </section>
 
   
+
+  <div id="commandBackdrop" class="command-backdrop hide"></div>
+  <section id="commandPalette" class="command-palette hide" role="dialog" aria-modal="true" aria-label="Admin command palette">
+    <div class="command-palette-head">
+      <span>⌕</span>
+      <input id="commandPaletteInput" autocomplete="off" placeholder="Jump to a page, player, prospect, or action…">
+      <kbd>ESC</kbd>
+    </div>
+    <div class="command-hints">
+      <span>↑↓ navigate</span><span>Enter open</span><span>Ctrl K command</span>
+    </div>
+    <div id="commandPaletteResults" class="command-results"></div>
+  </section>
+
   <div id="prospectDrawerBackdrop" class="drawer-backdrop hide"></div>
   <aside id="prospectDrawer" class="drawer prospect-drawer hide">
     <div class="drawer-head">
@@ -1998,6 +2137,6 @@ body:after{
     </form>
   </aside>
 
-  <script src="/admin.js?v=prospect-research-20261005a"></script>
+  <script src="/admin.js?v=admin-ops-v5a"></script>
 </body>
 </html>
