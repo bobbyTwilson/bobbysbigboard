@@ -108,9 +108,10 @@
   }
 
   function placeConsensus(system){
-    const notesPanel=system?.querySelector('[data-bbb-panel="notes"]');
+    const mobile=!!(window.matchMedia&&window.matchMedia('(max-width:700px)').matches);
+    const target=system?.querySelector(mobile?'[data-bbb-panel="overview"]':'[data-bbb-panel="notes"]');
     const consensus=document.querySelector('#profileView .bbb-compact-consensus');
-    if(notesPanel&&consensus&&!notesPanel.contains(consensus))notesPanel.appendChild(consensus);
+    if(target&&consensus&&!target.contains(consensus))target.appendChild(consensus);
   }
 
   function applyLabels(system){
