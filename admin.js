@@ -34,7 +34,41 @@ async function loadProfiles(){const rows=await rest('site_profiles?select=player
 async function loadReviewQueue(){reviewQueue=await rpc('admin_get_review_queue',{p_limit:500})||[]}
 async function loadDataHealth(){dataHealth=await rpc('admin_get_data_health',{})||{}}
 async function loadCounts(){const [r,p]=await Promise.all([rest('site_rookies?select=player_key'),rest('site_prospects?select=player_key')]);rookiesCount=r?.length??0;prospectsCount=p?.length??0;if($('#metricPlayers'))$('#metricPlayers').textContent=board.length;if($('#metricRookies'))$('#metricRookies').textContent=rookiesCount;if($('#metricProspects'))$('#metricProspects').textContent=prospectsCount;if($('#metricInjuries'))$('#metricInjuries').textContent=board.filter(x=>!healthy(x.injury_status)).length}
-function activitySummary(a){const old=a.old_row||{},neu=a.new_row||{};if(a.table_name==='dynasty_rankings'&&old.overall_rank!==neu.overall_rank)return `Rank ${old.overall_rank??'—'} → ${neu.overall_rank??'—'}`;if(a.table_name==='players')return neu.name||old.name||a.row_key;if(a.table_name==='player_profiles')return `Profile ${a.operation.toLowerCase()}`;return a.row_key||'Row changed'}
+function activityPlayerName(a){
+  const key=a?.row_key||a?.new_row?.player_key||a?.old_row?.player_key||'';
+  const direct=a?.new_row?.name||a?.old_row?.name;
+  if(direct)return direct;
+  const fromBoard=board.find(x=>x.player_key===key)?.name;
+  if(fromBoard)return fromBoard;
+  const fromProfile=profileMap.get(key)?.name;
+  if(fromProfile)return fromProfile;
+  return String(key||'System').split('-').map(x=>x?x[0].toUpperCase()+x.slice(1):'').join(' ');
+}
+function activitySummary(a){
+  const old=a.old_row||{},neu=a.new_row||{};
+  if(a.table_name==='dynasty_rankings'){
+    const oldRank=old.overall_rank, newRank=neu.overall_rank;
+    if(oldRank!=null||newRank!=null){
+      if(oldRank!==newRank)return `Overall #${oldRank??'—'} → #${newRank??'—'}`;
+      const oldPos=old.position_rank,newPos=neu.position_rank;
+      if(oldPos!==newPos)return `Position #${oldPos??'—'} → #${newPos??'—'}`;
+      const oldGap=old.bbb_vs_fp,newGap=neu.bbb_vs_fp;
+      if(oldGap!==newGap)return `Market gap ${oldGap??'—'} → ${newGap??'—'}`;
+    }
+    return 'Ranking record updated';
+  }
+  if(a.table_name==='player_profiles'){
+    if(old.injury_status!==neu.injury_status)return `Injury: ${old.injury_status||'—'} → ${neu.injury_status||'—'}`;
+    if(old.latest_weekly_update!==neu.latest_weekly_update)return 'Weekly update refreshed';
+    if(old.overall_breakdown!==neu.overall_breakdown)return 'Player overview updated';
+    return `Profile ${String(a.operation||'updated').toLowerCase()}`;
+  }
+  if(a.table_name==='players'){
+    if(old.team!==neu.team)return `Team: ${old.team||'FA'} → ${neu.team||'FA'}`;
+    return `Player ${String(a.operation||'updated').toLowerCase()}`;
+  }
+  return String(a.operation||'Updated').toLowerCase().replace(/^./,c=>c.toUpperCase());
+}
 function dashboardTimeAgo(value){
   const ms=Date.now()-new Date(value).getTime();
   if(!Number.isFinite(ms))return'—';
@@ -46,7 +80,10 @@ function dashboardTimeAgo(value){
 }
 function renderActivityStream(){
   const el=$('#activityList');if(!el)return;
-  el.innerHTML=adminActivity.length?adminActivity.slice(0,8).map(a=>`<div class="activity-row"><span class="activity-time">${dashboardTimeAgo(a.changed_at)}</span><span class="activity-table">${esc(String(a.table_name||'system').replaceAll('_',' '))}</span><span class="activity-key">${esc(activitySummary(a))}</span></div>`).join(''):'<div class="empty">No recent changes yet.</div>';
+  el.innerHTML=adminActivity.length?adminActivity.slice(0,8).map(a=>{
+    const name=activityPlayerName(a);
+    return `<button type="button" class="activity-row" data-activity-player="${esc(a.row_key||'')}"><span class="activity-time">${dashboardTimeAgo(a.changed_at)}</span><span class="activity-table" title="${esc(name)}">${esc(name)}</span><span class="activity-key">${esc(activitySummary(a))}</span></button>`;
+  }).join(''):'<div class="empty">No recent changes yet.</div>';
 }
 function boardHealthChecks(){
   const h=dataHealth||{};
@@ -127,11 +164,16 @@ function bindDashboardActions(){
   $$('[data-market-jump]').forEach(b=>b.onclick=()=>goRankings({market:b.dataset.marketJump}));
   $$('[data-edge-player]').forEach(b=>b.onclick=()=>{const p=board.find(x=>x.player_key===b.dataset.edgePlayer);goRankings({q:p?.name||''})});
   $$('[data-review-open]').forEach(b=>b.onclick=()=>{const x=reviewQueue.find(v=>v.player_key===b.dataset.reviewOpen);goReview({q:x?.name||''})});
-  $$('[data-health-target]').forEach(b=>b.onclick=()=>{
+  $('[data-health-target]').forEach(b=>b.onclick=()=>{
     const target=b.dataset.healthTarget,kind=b.dataset.healthKind||'';
     if(target==='review')goReview({kind});
     else if(target==='players')page('players');
     else goRankings();
+  });
+  $('[data-activity-player]').forEach(b=>b.onclick=()=>{
+    const key=b.dataset.activityPlayer;
+    const p=board.find(x=>x.player_key===key);
+    if(p)goRankings({q:p.name});
   });
 }
 function renderCommandDashboard(){
