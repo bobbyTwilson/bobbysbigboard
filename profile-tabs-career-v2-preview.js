@@ -190,8 +190,29 @@
         #profileView .bbb-similar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       }
       @media(max-width:640px){
-        #profileView .${SYSTEM_CLASS}{margin-left:-1px;margin-right:-1px}
-        #profileView .bbb-tabs-bar{border-radius:10px;gap:1px;padding:3px}
+        #profileView .${SYSTEM_CLASS}{margin:0!important;width:100%;max-width:100%}
+        #profileView .bbb-tabs-bar{
+          position:sticky;top:104px;z-index:45;
+          width:100%;max-width:100%;border-radius:10px;gap:3px;padding:4px;
+          background:rgba(5,16,11,.97);backdrop-filter:blur(14px);
+          box-shadow:0 8px 22px rgba(0,0,0,.22)
+        }
+        #profileView .bbb-tabs-btn{min-height:38px;padding:0 12px;font-size:7px}
+        #profileView .bbb-tabs-btn[aria-selected="true"]{box-shadow:inset 0 0 0 1px #286e4d}
+        #profileView .bbb-tabs-panel{width:100%;max-width:100%;min-width:0}
+        #profileView .bbb-tabs-panel>.profile-card{padding:12px!important;border-radius:11px!important}
+        #profileView .bbb-tabs-panel>.profile-card h2{font-size:20px!important}
+        #profileView [data-bbb-panel="overview"] .bbb-profile-atglance{margin:0!important;padding:11px!important;border-radius:11px!important}
+        #profileView [data-bbb-panel="overview"] .bbb-redesign-section-head{margin-bottom:8px!important}
+        #profileView [data-bbb-panel="overview"] .bbb-redesign-section-head p{display:none!important}
+        #profileView [data-bbb-panel="overview"] .bbb-redesign-snapshot-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+        #profileView [data-bbb-panel="overview"] .bbb-redesign-metric{min-height:64px!important;padding:8px!important}
+        #profileView [data-bbb-panel="overview"] .bbb-redesign-metric>strong{font-size:17px!important}
+        #profileView [data-bbb-panel="overview"] .bbb-redesign-metric.primary>strong{font-size:21px!important}
+        #profileView [data-bbb-panel="overview"] .bbb-redesign-metric.movement{grid-column:1/-1!important}
+        #profileView [data-bbb-panel="overview"] .bbb-redesign-latest p{font-size:9px!important;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+        #profileView [data-bbb-panel="overview"] .bbb-compact-consensus-moves{display:none!important}
+        #profileView [data-bbb-panel="stats"] .bbb-fantasy-season-strip{margin:0 0 8px!important;padding:10px!important}
         #profileView .bbb-tabs-btn{min-height:40px;padding:0 13px;font-size:7px}
         #profileView .bbb-tabs-btn[data-mobile-label]{font-size:0!important}
         #profileView .bbb-tabs-btn[data-mobile-label]::after{
@@ -553,7 +574,8 @@
 
   function buildSystem(content,grid,player,data){
     const grade=typeof profileFindGrade==='function'?profileFindGrade(player?.name||''):null;
-    const tabKeys=['stats','gamelog','news','notes',...(grade?['prospect']:[]),'career','similar'];
+    const isMobile=!!(window.matchMedia&&window.matchMedia('(max-width:700px)').matches);
+    const tabKeys=[...(isMobile?['overview']:[]),'stats','gamelog','news','notes',...(grade?['prospect']:[]),'career','similar'];
     let system=content.querySelector('.'+SYSTEM_CLASS);
     if(!system){
       system=document.createElement('section');
@@ -582,6 +604,7 @@
     const career=ensurePanel(system,'career');
     const similar=ensurePanel(system,'similar');
     const prospect=grade?ensurePanel(system,'prospect'):null;
+    const overview=isMobile?ensurePanel(system,'overview'):null;
     if(!news.dataset.built){news.innerHTML=newsCard(data.updates);news.dataset.built='1';}
     if(prospect&&!prospect.dataset.built){prospect.innerHTML=prospectCard(grade);prospect.dataset.built='1';}
     if(!career.dataset.built){career.innerHTML=careerCard(player,data.stats,data.weekly);career.dataset.built='1';}
@@ -594,13 +617,31 @@
 
     grid.classList.add('bbb-tabs-grid-managed');
 
-    if(trend){
+    if(isMobile){
+      const notesBtn=system.querySelector('[data-bbb-tab="notes"]');
+      if(notesBtn)notesBtn.textContent='Rankings';
+
+      const snapshot=document.querySelector('#profileMount .bbb-profile-atglance');
+      if(snapshot&&overview&&!overview.contains(snapshot))overview.appendChild(snapshot);
+
+      const season=document.querySelector('#profileMount .bbb-fantasy-season-strip');
+      if(season&&!statsPanel.contains(season))statsPanel.insertBefore(season,statsPanel.firstChild);
+
+      if(trend&&overview){
+        compressConsensus(trend,data.mover,player);
+        if(!overview.contains(trend))overview.appendChild(trend);
+      }
+
+      if(overview&&!overview.children.length){
+        overview.innerHTML='<section class="bbb-tab-placeholder"><div class="profile-card-kicker">OVERVIEW</div><h2>Player snapshot.</h2><p>Current BBB rank, market context, health and movement will appear here.</p></section>';
+      }
+    }else if(trend){
       compressConsensus(trend,data.mover,player);
       content.appendChild(trend);
     }
 
-    if(!system.dataset.active){
-      const preferred=data.stats.length?'stats':notesPanel.children.length?'notes':'career';
+    if(!system.dataset.active||isMobile){
+      const preferred=isMobile?'overview':data.stats.length?'stats':notesPanel.children.length?'notes':'career';
       setActive(system,preferred);
     }else setActive(system,system.dataset.active);
 
@@ -608,8 +649,8 @@
     if(jump&&!jump.dataset.tabsBound){
       jump.dataset.tabsBound='1';
       jump.addEventListener('click',e=>{
-        e.preventDefault();setActive(system,'gamelog');
-        system.scrollIntoView({behavior:'smooth',block:'start'});
+        e.preventDefault();
+        setActive(system,'gamelog');
       });
     }
   }
