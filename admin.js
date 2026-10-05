@@ -301,14 +301,16 @@ document.addEventListener('DOMContentLoaded',()=>{
   ['#prospectSearch','#prospectYear','#prospectPos','#prospectResearch'].forEach(sel=>$(sel)?.addEventListener(sel==='#prospectSearch'?'input':'change',renderProspectLab));
   $('#prospectIncludeGraded')?.addEventListener('change',renderProspectLab);
   $('#prospectLabGrid')?.addEventListener('click',e=>{
-    const btn=e.target.closest('[data-grade-prospect]');
-    if(!btn)return;
-    e.preventDefault();
-    openProspectGrader(btn.dataset.gradeProspect);
+    const gradeBtn=e.target.closest('[data-grade-prospect]');
+    if(gradeBtn){e.preventDefault();e.stopPropagation();startProspectGrade(gradeBtn.dataset.gradeProspect);return}
+    const card=e.target.closest('[data-open-prospect]');
+    if(card){e.preventDefault();openProspectReport(card.dataset.openProspect)}
   });
   $('#prospectDrawerClose')?.addEventListener('click',closeProspectGrader);
   $('#prospectDrawerBackdrop')?.addEventListener('click',closeProspectGrader);
   $('#prospectApplyRec')?.addEventListener('click',applyProspectRec);
+  $('#prospectStartGrade')?.addEventListener('click',()=>startProspectGrade($('#prospectStartGrade').dataset.playerKey));
+  $('#prospectBackToReport')?.addEventListener('click',()=>openProspectReport($('#prospectKey').value));
   $('#prospectGradeForm')?.addEventListener('submit',saveProspectGrade);
   ['#reviewSearch','#reviewPriority','#reviewKind'].forEach(s=>$(s).addEventListener(s==='#reviewSearch'?'input':'change',()=>{reviewPage=0;renderReviewQueue()}));
   $('#reviewClear').onclick=()=>{$('#reviewSearch').value='';$('#reviewPriority').value='ALL';$('#reviewKind').value='ALL';reviewPage=0;renderReviewQueue()};
