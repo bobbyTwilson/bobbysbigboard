@@ -57,7 +57,7 @@ for(const marker of ['Opportunity Feed V1','BBB_OPPORTUNITY_DAYS','OPPORTUNITY �
 for(const marker of ['homepage structure polish','bbbHomeReorder','bbbUpdatesHome','bbbMoversHome','Opportunity Feed ↑↓']){
   if(!homeStructure.includes(marker))throw new Error(`Build smoke check failed: homepage structure polish missing ${marker}`);
 }
-for(const marker of ['__BBB_PLAYER_DEEP_LINK__','clearPlayerHash','loadRookies','loadProspects','pageshow']){
+for(const marker of ['__BBB_PLAYER_DEEP_LINK__','clearPlayerHash','rerouteProfile','profileRoute','pageshow']){
   if(!deepLinkGuard.includes(marker))throw new Error(`Build smoke check failed: player deep-link guard missing ${marker}`);
 }
 new Function(watchlist);
