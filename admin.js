@@ -1,7 +1,7 @@
 const SUPA='https://twbduhmibbotregdxlla.supabase.co';
 const KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
 const STORE='bbb_admin_session_v1';
-let session=null,board=[],profileMap=new Map(),reviewQueue=[],dataHealth={},rankPage=0,playerPage=0,reviewPage=0;
+let session=null,board=[],profileMap=new Map(),reviewQueue=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0;
 const PAGE=50;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -27,15 +27,96 @@ async function loadAll(){
   const failed=jobs.filter(x=>x.status==='rejected');
   if(failed.length)console.error('BBB Admin data load warning',failed.map(x=>x.reason));
   try{await loadCounts()}catch(e){console.error('BBB Admin count load warning',e)}
-  renderRankings();renderPlayers();renderReviewQueue();renderDataHealth()
+  renderRankings();renderPlayers();renderReviewQueue();renderDataHealth();renderCommandDashboard()
 }
 async function loadBoard(){board=await rest('site_dynasty?select=rank,player_key,name,pos,pr,team,age,draft,market,gap,view,injury_status,injury_note,injury_updated,college,overview&order=rank.asc')||[]}
 async function loadProfiles(){const rows=await rest('site_profiles?select=player_key,name,pos,team,age,draft_year,college,overall_breakdown,injury_status,injury_note,injury_updated&order=name.asc')||[];profileMap=new Map(rows.map(x=>[x.player_key,x]))}
 async function loadReviewQueue(){reviewQueue=await rpc('admin_get_review_queue',{p_limit:500})||[]}
 async function loadDataHealth(){dataHealth=await rpc('admin_get_data_health',{})||{}}
-async function loadCounts(){const [r,p]=await Promise.all([rest('site_rookies?select=player_key'),rest('site_prospects?select=player_key')]);$('#metricPlayers').textContent=board.length;$('#metricRookies').textContent=r?.length??'—';$('#metricProspects').textContent=p?.length??'—';$('#metricInjuries').textContent=board.filter(x=>!healthy(x.injury_status)).length}
+async function loadCounts(){const [r,p]=await Promise.all([rest('site_rookies?select=player_key'),rest('site_prospects?select=player_key')]);rookiesCount=r?.length??0;prospectsCount=p?.length??0;if($('#metricPlayers'))$('#metricPlayers').textContent=board.length;if($('#metricRookies'))$('#metricRookies').textContent=rookiesCount;if($('#metricProspects'))$('#metricProspects').textContent=prospectsCount;if($('#metricInjuries'))$('#metricInjuries').textContent=board.filter(x=>!healthy(x.injury_status)).length}
 function activitySummary(a){const old=a.old_row||{},neu=a.new_row||{};if(a.table_name==='dynasty_rankings'&&old.overall_rank!==neu.overall_rank)return `Rank ${old.overall_rank??'—'} → ${neu.overall_rank??'—'}`;if(a.table_name==='players')return neu.name||old.name||a.row_key;if(a.table_name==='player_profiles')return `Profile ${a.operation.toLowerCase()}`;return a.row_key||'Row changed'}
-async function loadActivity(){try{const rows=await rpc('admin_recent_activity',{p_limit:20})||[];$('#activityList').innerHTML=rows.length?rows.map(a=>`<div class="activity-row"><span>${new Date(a.changed_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span><span class="activity-table">${esc(a.table_name)}</span><span class="activity-op">${esc(a.operation)}</span><span class="activity-key">${esc(activitySummary(a))}</span></div>`).join(''):'<div class="empty">No recent changes yet.</div>'}catch(e){$('#activityList').innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
+function dashboardTimeAgo(value){
+  const ms=Date.now()-new Date(value).getTime();
+  if(!Number.isFinite(ms))return'—';
+  const m=Math.max(0,Math.floor(ms/60000));
+  if(m<1)return'now';
+  if(m<60)return m+'m';
+  const h=Math.floor(m/60);if(h<24)return h+'h';
+  return Math.floor(h/24)+'d';
+}
+function renderActivityStream(){
+  const el=$('#activityList');if(!el)return;
+  el.innerHTML=adminActivity.length?adminActivity.slice(0,8).map(a=>`<div class="activity-row"><span class="activity-time">${dashboardTimeAgo(a.changed_at)}</span><span class="activity-table">${esc(String(a.table_name||'system').replaceAll('_',' '))}</span><span class="activity-key">${esc(activitySummary(a))}</span></div>`).join(''):'<div class="empty">No recent changes yet.</div>';
+}
+function boardHealthChecks(){
+  const h=dataHealth||{};
+  return [
+    ['Rank slots',Number(h.ranked_players)===500&&Number(h.unique_rank_slots)===500],
+    ['Player breakdowns',Number(h.missing_breakdowns)===0],
+    ['Source coverage',Number(h.missing_breakdown_sources)===0],
+    ['Team synchronization',Number(h.team_mismatches)===0],
+    ['Injury synchronization',Number(h.injury_status_mismatches)===0],
+    ['Ranking history',Number(h.duplicate_ranking_history_groups)===0]
+  ];
+}
+function renderMarketSignal(){
+  const el=$('#marketSignalChart');if(!el)return;
+  const points=board.slice(0,42).map(x=>Number(x.gap)).map(x=>Number.isFinite(x)?x:0);
+  if(!points.length){el.innerHTML='<div class="empty">No market signal yet.</div>';return}
+  const w=620,h=150,pad=8,max=Math.max(8,...points.map(x=>Math.abs(x))),mid=h/2;
+  const coords=points.map((v,i)=>[pad+i*((w-pad*2)/Math.max(1,points.length-1)),mid-(v/max)*(mid-18)]);
+  const line=coords.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=line+` L ${coords.at(-1)[0].toFixed(1)} ${mid} L ${coords[0][0].toFixed(1)} ${mid} Z`;
+  const buys=board.filter(x=>marketKind(x)==='BUY').length,fades=board.filter(x=>marketKind(x)==='FADE').length;
+  el.innerHTML=`<svg class="signal-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-label="BBB market edge signal">
+    <defs><linearGradient id="signalArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#39ff9b" stop-opacity=".22"/><stop offset="100%" stop-color="#39ff9b" stop-opacity="0"/></linearGradient></defs>
+    ${[.2,.4,.6,.8].map(y=>`<line class="signal-gridline" x1="0" x2="${w}" y1="${(h*y).toFixed(1)}" y2="${(h*y).toFixed(1)}"/>`).join('')}
+    <line class="signal-zero" x1="0" x2="${w}" y1="${mid}" y2="${mid}"/>
+    <path class="signal-area" d="${area}"/><path class="signal-line" d="${line}"/>
+    ${coords.filter((_,i)=>i%7===0||i===coords.length-1).map(p=>`<circle class="signal-point" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.2"/>`).join('')}
+  </svg><div class="signal-axis"><span>#1</span><span>#10</span><span>#20</span><span>#30</span><span>#42</span></div><div class="signal-summary"><span>BBB Buys <b>${buys}</b></span><span>BBB Fades <b>${fades}</b></span><span>Signal range <b>±${Math.round(max)}</b></span></div>`;
+}
+function renderBoardCore(){
+  const towerEl=$('#positionTowers'),legend=$('#positionLegend');if(!towerEl||!legend)return;
+  const positions=['QB','RB','WR','TE'];
+  const counts=Object.fromEntries(positions.map(pos=>[pos,board.filter(x=>x.pos===pos).length]));
+  const max=Math.max(1,...Object.values(counts));
+  towerEl.innerHTML=positions.map(pos=>{const count=counts[pos]||0;const height=82+Math.round((count/max)*185);return `<div class="position-tower" style="--tower-h:${height}px"><span class="tower-value">${count}</span><div class="tower-cap"></div><div class="tower-beam"></div><span class="tower-label">${pos}</span></div>`}).join('');
+  legend.innerHTML=positions.map(pos=>`<div><span>${pos} PLAYERS</span><strong>${counts[pos]||0}</strong></div>`).join('');
+  if($('#dashBoardTotal'))$('#dashBoardTotal').textContent=board.length||'—';
+}
+function renderDashboardHealth(){
+  const gauge=$('#dashHealthGauge'),scoreEl=$('#dashHealthScore'),list=$('#dashHealthList');if(!gauge||!scoreEl||!list)return;
+  const checks=boardHealthChecks(),passed=checks.filter(x=>x[1]).length,score=Math.round(passed/checks.length*100);
+  gauge.style.setProperty('--score',(score*3.6)+'deg');scoreEl.textContent=score+'%';
+  list.innerHTML=checks.map(([label,ok])=>`<div class="health-line ${ok?'':'bad'}"><i>${ok?'✓':'!'}</i><span>${esc(label)}</span></div>`).join('');
+}
+function renderDashboardReview(){
+  if($('#dashReviewCount'))$('#dashReviewCount').textContent=reviewQueue.length;
+  const el=$('#dashReviewPreview');if(!el)return;
+  const rows=[...reviewQueue].sort((a,b)=>Number(a.queue_priority)-Number(b.queue_priority)||Number(a.overall_rank||999)-Number(b.overall_rank||999)).slice(0,5);
+  el.innerHTML=rows.length?rows.map(x=>`<div class="review-mini"><span class="review-mini-priority p${x.queue_priority||3}"></span><span class="review-mini-rank">#${x.overall_rank??'—'}</span><div><strong>${esc(x.name)}</strong><small>${esc(x.position||'')} · ${esc(x.team||'FA')} · ${esc(x.attention_reason||'Review needed')}</small></div><span class="review-mini-age">${reviewAge(x.hours_since_verified)}</span></div>`).join(''):'<div class="empty">Watchtower clear.</div>';
+}
+function renderMarketEdges(){
+  const el=$('#dashMarketEdges');if(!el)return;
+  const buys=board.filter(x=>marketKind(x)==='BUY'&&Number.isFinite(Number(x.gap))).sort((a,b)=>Number(b.gap)-Number(a.gap)).slice(0,5);
+  const fades=board.filter(x=>marketKind(x)==='FADE'&&Number.isFinite(Number(x.gap))).sort((a,b)=>Number(a.gap)-Number(b.gap)).slice(0,5);
+  const max=Math.max(1,...[...buys,...fades].map(x=>Math.abs(Number(x.gap))));
+  const column=(title,list,kind)=>`<div class="edge-column ${kind}"><div class="edge-title"><span>${title}</span><b>${list.length}</b></div><div class="edge-list">${list.map(x=>{const g=Number(x.gap)||0;return `<div class="edge-row"><span class="edge-rank">#${x.rank}</span><div class="edge-player"><strong>${esc(x.name)}</strong><small>${esc(x.pos)} · ${esc(x.team||'FA')} · Market ${x.market?'#'+x.market:'UR'}</small></div><span class="edge-gap ${kind}">${g>0?'+':''}${g}</span><div class="edge-track"><i style="width:${Math.max(8,Math.round(Math.abs(g)/max*100))}%"></i></div></div>`}).join('')||'<div class="empty">No signals.</div>'}</div></div>`;
+  el.innerHTML=column('BBB ABOVE MARKET',buys,'buy')+column('BBB BELOW MARKET',fades,'fade');
+}
+function renderCommandDashboard(){
+  if(!$('#pageDashboard'))return;
+  if($('#metricPlayers'))$('#metricPlayers').textContent=board.length||'—';
+  if($('#metricInjuries'))$('#metricInjuries').textContent=board.filter(x=>!healthy(x.injury_status)).length;
+  if($('#metricRookies'))$('#metricRookies').textContent=rookiesCount;
+  if($('#metricProspects'))$('#metricProspects').textContent=prospectsCount;
+  renderMarketSignal();renderBoardCore();renderDashboardHealth();renderDashboardReview();renderMarketEdges();renderActivityStream();
+}
+function updateAdminClock(){
+  const d=new Date(),time=$('#adminClock'),date=$('#adminDate');if(time)time.textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});if(date)date.textContent=d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
+}
+async function loadActivity(){try{adminActivity=await rpc('admin_recent_activity',{p_limit:20})||[];renderActivityStream()}catch(e){adminActivity=[];if($('#activityList'))$('#activityList').innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
 function marketKind(x){const s=String(x.view||'').toUpperCase();if(s.includes('BUY'))return'BUY';if(s.includes('FADE'))return'FADE';return'MARKET'}
 function filteredRank(){const q=$('#rankSearch').value.trim().toLowerCase(),pos=$('#rankPos').value,m=$('#rankMarket').value;return board.filter(x=>(pos==='ALL'||x.pos===pos)&&(m==='ALL'||marketKind(x)===m)&&(!q||`${x.name} ${x.team} ${x.college||''}`.toLowerCase().includes(q)))}
 function renderRankings(){const list=filteredRank();const max=Math.max(0,Math.ceil(list.length/PAGE)-1);rankPage=Math.min(rankPage,max);const rows=list.slice(rankPage*PAGE,(rankPage+1)*PAGE);$('#rankBody').innerHTML=rows.map(x=>`<tr><td class="rank-number">${x.rank}</td><td class="player-name">${esc(x.name)}</td><td><span class="pos">${esc(x.pos)}</span></td><td>${esc(x.team||'—')}</td><td>${x.market?`#${x.market}`:'UR'}</td><td class="${x.gap>0?'green':x.gap<0?'red':''}">${x.gap==null?'—':(x.gap>0?'+':'')+x.gap}</td><td><div class="move-wrap"><input class="rank-input" type="number" min="1" max="${board.length}" value="${x.rank}" data-move-input="${esc(x.player_key)}"><button class="move-btn" data-move="${esc(x.player_key)}">MOVE</button></div></td><td><button class="edit-btn" data-edit="${esc(x.player_key)}">EDIT</button></td></tr>`).join('')||'<tr><td colspan="8" class="empty">No players match.</td></tr>';$('#rankCount').textContent=`${list.length?rankPage*PAGE+1:0}–${Math.min((rankPage+1)*PAGE,list.length)} of ${list.length}`;$('#rankPrev').disabled=rankPage===0;$('#rankNext').disabled=rankPage>=max;bindRows()}
@@ -50,13 +131,13 @@ function filteredReview(){const q=$('#reviewSearch')?.value.trim().toLowerCase()
 function renderReviewQueue(){if(!$('#reviewBody'))return;const list=filteredReview();const max=Math.max(0,Math.ceil(list.length/PAGE)-1);reviewPage=Math.min(reviewPage,max);const rows=list.slice(reviewPage*PAGE,(reviewPage+1)*PAGE);$('#reviewBody').innerHTML=rows.map(x=>`<tr><td><span class="queue-priority queue-p${x.queue_priority}">${reviewPriorityLabel(x.queue_priority)}</span></td><td class="rank-number">${x.overall_rank??'—'}</td><td class="player-name">${esc(x.name)}<div class="review-status">${esc(x.position||'')} · ${esc(x.team||'FA')}</div>${x.ranking_review_needed?'<span class="review-rank-flag">RANKING REVIEW</span>':''}</td><td class="${healthy(x.injury_status)?'green':'red'}">${esc(x.injury_status||'Healthy')}</td><td>${reviewAge(x.hours_since_verified)}<div class="review-status">Target ${x.freshness_target_hours||'—'}h</div></td><td class="queue-reason">${esc(x.attention_reason||'Review needed')}</td><td class="queue-update">${esc(clip(x.latest_update_text,190))}${reviewSource(x)}</td><td><div class="queue-actions"><button class="queue-action verify" data-review-verify="${esc(x.player_key)}">MARK VERIFIED</button><button class="queue-action ${x.ranking_review_needed?'resolve':'rank'}" data-review-rank="${esc(x.player_key)}">${x.ranking_review_needed?'RESOLVE RANK':'FLAG RANK'}</button><button class="queue-action" data-edit="${esc(x.player_key)}">EDIT</button><a class="queue-action" href="/player/${encodeURIComponent(x.player_key)}" target="_blank">PROFILE ↗</a></div></td></tr>`).join('')||'<tr><td colspan="8" class="empty">Queue is clear for these filters.</td></tr>';$('#reviewCount').textContent=`${list.length?reviewPage*PAGE+1:0}–${Math.min((reviewPage+1)*PAGE,list.length)} of ${list.length}`;$('#reviewPrev').disabled=reviewPage===0;$('#reviewNext').disabled=reviewPage>=max;const high=reviewQueue.filter(x=>Number(x.queue_priority)<=2).length,normal=reviewQueue.filter(x=>Number(x.queue_priority)===3).length,ranks=reviewQueue.filter(x=>x.ranking_review_needed).length;$('#metricReviewHigh').textContent=high;$('#metricReviewNormal').textContent=normal;$('#metricRankReviews').textContent=ranks;$('#reviewNavCount').textContent=reviewQueue.length;bindRows();bindReviewRows()}
 function renderDataHealth(){if(!$('#healthGrid'))return;const h=dataHealth||{};const integrity=Number(h.ranked_players)===500&&Number(h.unique_rank_slots)===500;const checks=[['Rank Slots',integrity?`${h.unique_rank_slots}/500`:`${h.unique_rank_slots||0}/${h.ranked_players||0}`,integrity],['Breakdowns',Number(h.missing_breakdowns)===0?'Complete':`${h.missing_breakdowns} missing`,Number(h.missing_breakdowns)===0],['Sources',Number(h.missing_breakdown_sources)===0?'Complete':`${h.missing_breakdown_sources} missing`,Number(h.missing_breakdown_sources)===0],['Team Sync',Number(h.team_mismatches)===0?'Clean':`${h.team_mismatches} issues`,Number(h.team_mismatches)===0],['Injury Sync',Number(h.injury_status_mismatches)===0?'Clean':`${h.injury_status_mismatches} issues`,Number(h.injury_status_mismatches)===0],['Rank History',Number(h.duplicate_ranking_history_groups)===0?'Clean':`${h.duplicate_ranking_history_groups} dupes`,Number(h.duplicate_ranking_history_groups)===0]];$('#healthGrid').innerHTML=checks.map(([label,value,ok])=>`<div class="health-chip ${ok?'health-ok':'health-bad'}"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join('');$('#metricBoardHealth').textContent=checks.every(x=>x[2])?'CLEAN':'CHECK'}
 function bindReviewRows(){$('[data-review-verify]').forEach(b=>b.onclick=()=>markReviewVerified(b.dataset.reviewVerify,b));$('[data-review-rank]').forEach(b=>b.onclick=()=>toggleRankingReview(b.dataset.reviewRank,b))}
-async function refreshReviewOnly(){await Promise.all([loadReviewQueue(),loadDataHealth(),loadActivity()]);renderReviewQueue();renderDataHealth()}
+async function refreshReviewOnly(){await Promise.all([loadReviewQueue(),loadDataHealth(),loadActivity()]);renderReviewQueue();renderDataHealth();renderCommandDashboard()}
 async function markReviewVerified(key,btn){const x=reviewQueue.find(v=>v.player_key===key);if(!x)return;const old=btn.textContent;btn.disabled=true;btn.textContent='…';try{await rpc('admin_mark_player_verified',{p_player_key:key});await refreshReviewOnly()}catch(e){alert(e.message);btn.disabled=false;btn.textContent=old}}
 async function toggleRankingReview(key,btn){const x=reviewQueue.find(v=>v.player_key===key);if(!x)return;const old=btn.textContent;btn.disabled=true;btn.textContent='…';try{if(x.ranking_review_needed){await rpc('admin_set_ranking_review',{p_player_key:key,p_needed:false,p_reason:null,p_priority:1})}else{const reason=prompt(`Why should ${x.name} get a ranking review?`,x.attention_reason||'Manual ranking review');if(reason===null){btn.disabled=false;btn.textContent=old;return}await rpc('admin_set_ranking_review',{p_player_key:key,p_needed:true,p_reason:reason,p_priority:2})}await refreshReviewOnly()}catch(e){alert(e.message);btn.disabled=false;btn.textContent=old}}
-async function movePlayer(key){const x=board.find(p=>p.player_key===key);const input=$(`[data-move-input="${CSS.escape(key)}"]`);const nr=Number(input?.value);if(!x||!Number.isInteger(nr)||nr<1||nr>board.length)return alert(`Enter a rank from 1 to ${board.length}.`);if(nr===x.rank)return;const btn=$(`[data-move="${CSS.escape(key)}"]`);const old=btn.textContent;btn.disabled=true;btn.textContent='…';try{const result=await rpc('admin_move_dynasty_player',{p_player_key:key,p_new_rank:nr});await Promise.all([loadBoard(),loadActivity()]);renderRankings();renderPlayers();$('#metricInjuries').textContent=board.filter(v=>!healthy(v.injury_status)).length;alert(`${x.name} moved from #${x.rank} to #${nr}. ${result?.affected??''} board rows updated.`)}catch(e){alert(e.message)}finally{btn.disabled=false;btn.textContent=old}}
+async function movePlayer(key){const x=board.find(p=>p.player_key===key);const input=$(`[data-move-input="${CSS.escape(key)}"]`);const nr=Number(input?.value);if(!x||!Number.isInteger(nr)||nr<1||nr>board.length)return alert(`Enter a rank from 1 to ${board.length}.`);if(nr===x.rank)return;const btn=$(`[data-move="${CSS.escape(key)}"]`);const old=btn.textContent;btn.disabled=true;btn.textContent='…';try{const result=await rpc('admin_move_dynasty_player',{p_player_key:key,p_new_rank:nr});await Promise.all([loadBoard(),loadActivity()]);renderRankings();renderPlayers();if($('#metricInjuries'))$('#metricInjuries').textContent=board.filter(v=>!healthy(v.injury_status)).length;renderCommandDashboard();alert(`${x.name} moved from #${x.rank} to #${nr}. ${result?.affected??''} board rows updated.`)}catch(e){alert(e.message)}finally{btn.disabled=false;btn.textContent=old}}
 function openEditor(key){const b=board.find(x=>x.player_key===key),p=profileMap.get(key)||{};if(!b)return;$('#editKey').value=key;$('#drawerTitle').textContent=b.name;$('#editName').value=b.name||'';$('#editPosition').value=b.pos||'WR';$('#editTeam').value=b.team||'';$('#editAge').value=b.age??'';$('#editDraft').value=b.draft??'';$('#editCollege').value=b.college||'';$('#editInjury').value=p.injury_status||b.injury_status||'Healthy';$('#editInjuryDate').value=(p.injury_updated||b.injury_updated||'').slice(0,10);$('#editInjuryNote').value=p.injury_note||b.injury_note||'';$('#editOverview').value=p.overall_breakdown||b.overview||'';$('#profileLink').href=`/player/${encodeURIComponent(key)}`;$('#saveStatus').textContent='';$('#drawerBackdrop').classList.remove('hide');$('#playerDrawer').classList.remove('hide')}
 function closeEditor(){$('#drawerBackdrop').classList.add('hide');$('#playerDrawer').classList.add('hide')}
-async function savePlayer(e){e.preventDefault();const key=$('#editKey').value;if(!key)return;const save=$('#savePlayer');save.disabled=true;$('#saveStatus').textContent='Saving…';const identity={name:$('#editName').value.trim(),position:$('#editPosition').value,team:$('#editTeam').value.trim(),age:n($('#editAge').value),draft_year:n($('#editDraft').value),college:$('#editCollege').value.trim()||null};const profile={player_key:key,overall_breakdown:$('#editOverview').value.trim(),breakdown_basis:'BBB Admin',breakdown_updated:new Date().toISOString().slice(0,10),injury_status:$('#editInjury').value.trim()||'Healthy',injury_note:$('#editInjuryNote').value.trim(),injury_updated:$('#editInjuryDate').value||new Date().toISOString().slice(0,10),review_status:'Reviewed'};try{await rest(`players?player_key=eq.${encodeURIComponent(key)}`,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(identity)});await rest(`player_profiles?on_conflict=player_key`,{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(profile)});$('#saveStatus').textContent='Saved ✓';await Promise.all([loadBoard(),loadProfiles(),loadActivity()]);renderRankings();renderPlayers();$('#metricInjuries').textContent=board.filter(v=>!healthy(v.injury_status)).length;$('#drawerTitle').textContent=identity.name}catch(err){$('#saveStatus').textContent=err.message;$('#saveStatus').style.color='#ef8585'}finally{save.disabled=false}}
+async function savePlayer(e){e.preventDefault();const key=$('#editKey').value;if(!key)return;const save=$('#savePlayer');save.disabled=true;$('#saveStatus').textContent='Saving…';const identity={name:$('#editName').value.trim(),position:$('#editPosition').value,team:$('#editTeam').value.trim(),age:n($('#editAge').value),draft_year:n($('#editDraft').value),college:$('#editCollege').value.trim()||null};const profile={player_key:key,overall_breakdown:$('#editOverview').value.trim(),breakdown_basis:'BBB Admin',breakdown_updated:new Date().toISOString().slice(0,10),injury_status:$('#editInjury').value.trim()||'Healthy',injury_note:$('#editInjuryNote').value.trim(),injury_updated:$('#editInjuryDate').value||new Date().toISOString().slice(0,10),review_status:'Reviewed'};try{await rest(`players?player_key=eq.${encodeURIComponent(key)}`,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(identity)});await rest(`player_profiles?on_conflict=player_key`,{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(profile)});$('#saveStatus').textContent='Saved ✓';await Promise.all([loadBoard(),loadProfiles(),loadActivity()]);renderRankings();renderPlayers();if($('#metricInjuries'))$('#metricInjuries').textContent=board.filter(v=>!healthy(v.injury_status)).length;renderCommandDashboard();$('#drawerTitle').textContent=identity.name}catch(err){$('#saveStatus').textContent=err.message;$('#saveStatus').style.color='#ef8585'}finally{save.disabled=false}}
 function page(name){
   $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
   $$('.admin-page').forEach(p=>p.classList.add('hide'));
@@ -66,13 +147,27 @@ function page(name){
   if(name==='rankings')renderRankings();
   if(name==='players')renderPlayers();
   if(name==='review'){renderReviewQueue();renderDataHealth()}
+  if(name==='dashboard')renderCommandDashboard()
 }
 document.addEventListener('DOMContentLoaded',()=>{
-  $$('.auth-tabs').forEach(x=>x.remove());
+  updateAdminClock();setInterval(updateAdminClock,30000);
+  $('.auth-tabs').forEach(x=>x.remove());
   $('#authForm').onsubmit=async e=>{e.preventDefault();const btn=$('#authSubmit');btn.disabled=true;msg('');try{const email=$('#authEmail').value.trim().toLowerCase(),password=$('#authPassword').value;const admin=await signIn(email,password);showApp(admin);await loadAll()}catch(err){msg(err.message)}finally{btn.disabled=false}};
   $('#signOut').onclick=()=>{clearSession();location.reload()};
-  $$('.nav-btn').forEach(b=>b.onclick=()=>page(b.dataset.page));
-  $$('[data-refresh]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await loadAll()}finally{b.disabled=false}});
+  $('.nav-btn').forEach(b=>b.onclick=()=>page(b.dataset.page));
+  $('[data-page-jump]').forEach(b=>b.onclick=()=>page(b.dataset.pageJump));
+  const globalSearch=$('#adminGlobalSearch');
+  if(globalSearch){
+    globalSearch.addEventListener('keydown',e=>{
+      if(e.key!=='Enter')return;
+      const q=globalSearch.value.trim();page('rankings');
+      if($('#rankSearch')){$('#rankSearch').value=q;rankPage=0;renderRankings()}
+    });
+  }
+  document.addEventListener('keydown',e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'&&globalSearch){e.preventDefault();globalSearch.focus()}
+  });
+  $('[data-refresh]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await loadAll()}finally{b.disabled=false}});
   ['#rankSearch','#rankPos','#rankMarket'].forEach(s=>$(s).addEventListener(s==='#rankSearch'?'input':'change',()=>{rankPage=0;renderRankings()}));
   $('#rankClear').onclick=()=>{$('#rankSearch').value='';$('#rankPos').value='ALL';$('#rankMarket').value='ALL';rankPage=0;renderRankings()};
   $('#rankPrev').onclick=()=>{rankPage=Math.max(0,rankPage-1);renderRankings()};$('#rankNext').onclick=()=>{rankPage++;renderRankings()};
