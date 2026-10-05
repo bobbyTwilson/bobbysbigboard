@@ -213,7 +213,6 @@ function renderProspectLab(){
  $('#prospectUngraded').textContent=ungraded.length;$('#prospect2027').textContent=prospectLab.filter(x=>+x.class_year===2027).length;$('#prospect2028').textContent=prospectLab.filter(x=>+x.class_year===2028).length;$('#prospectResearched').textContent=prospectLab.filter(prospectReady).length;$('#prospectNavCount').textContent=ungraded.length||'04';
  const list=filteredProspects();
  grid.innerHTML=list.length?list.map(x=>`<article class="prospect-card">${x.graded?'<span class="prospect-graded">GRADED</span>':''}<div class="prospect-card-head"><span class="prospect-pos">${esc(x.position)}</span><div class="prospect-name"><strong>${esc(x.name)}</strong><span>${esc(x.school||'School TBD')}</span></div><span class="prospect-class">${x.class_year}</span></div><div class="prospect-card-summary">${esc(x.summary||'Research profile pending. This player is in your scouting queue and ready for a BBB grading pass.')}</div><div class="prospect-card-rec"><div><span>RECOMMENDED GRADE</span><strong class="${x.recommended_overall_grade==null?'pending':''}">${x.recommended_overall_grade==null?'PENDING':Number(x.recommended_overall_grade).toFixed(1)}</strong></div><div><span>PRO COMP IDEA</span><strong class="${x.recommended_pro_comp?'':'pending'}">${esc(x.recommended_pro_comp||'PENDING')}</strong></div></div><div class="prospect-card-actions"><span class="research-state ${prospectReady(x)?'ready':''}"><i></i>${prospectReady(x)?'RESEARCH READY':'RESEARCH PENDING'}</span><button class="small-btn grade-prospect-btn" data-grade-prospect="${esc(x.player_key)}">${x.graded?'EDIT GRADE':'GRADE PLAYER'}</button></div></article>`).join(''):'<div class="empty">No prospects match these filters.</div>';
- $$('[data-grade-prospect]').forEach(b=>b.onclick=()=>openProspectGrader(b.dataset.gradeProspect));
 }
 function prospectTotal(){const t=$('[data-prospect-trait]').reduce((a,i)=>a+(+i.value||0),0);$('#prospectGradeTotal').textContent=t.toFixed(1);return +t.toFixed(1)}
 function openProspectGrader(key){
@@ -282,6 +281,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   ['#playerAdminSearch','#playerAdminPos','#playerAdminInjury'].forEach(s=>$(s).addEventListener(s==='#playerAdminSearch'?'input':'change',()=>{playerPage=0;renderPlayers()}));
   ['#prospectSearch','#prospectYear','#prospectPos','#prospectResearch'].forEach(sel=>$(sel)?.addEventListener(sel==='#prospectSearch'?'input':'change',renderProspectLab));
   $('#prospectIncludeGraded')?.addEventListener('change',renderProspectLab);
+  $('#prospectLabGrid')?.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-grade-prospect]');
+    if(!btn)return;
+    e.preventDefault();
+    openProspectGrader(btn.dataset.gradeProspect);
+  });
   $('#prospectDrawerClose')?.addEventListener('click',closeProspectGrader);
   $('#prospectDrawerBackdrop')?.addEventListener('click',closeProspectGrader);
   $('#prospectApplyRec')?.addEventListener('click',applyProspectRec);
