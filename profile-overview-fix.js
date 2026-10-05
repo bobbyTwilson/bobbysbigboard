@@ -204,7 +204,12 @@ function bbbInjectRankingHistoryStyles(){
   const style=document.createElement('style');
   style.id='bbb-ranking-history-styles';
   style.textContent=`
-    #profileView,#profileMount,#profileMount .profile-grid{overflow-anchor:none}
+    html.bbb-profile-route-active,html.bbb-profile-route-active body{overflow-anchor:none!important;-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important}
+    html.bbb-profile-route-active #profileView,html.bbb-profile-route-active #profileMount,html.bbb-profile-route-active #profileMount *{overflow-anchor:none!important}
+        #profileView,#profileMount,#profileMount .profile-grid{overflow-anchor:none}
+    @media(max-width:640px){
+      #rankingsBody tr[data-r],#rookieBody tr[data-rookie-r],#prospectBody tr,#profileView a,#profileView button,#profileView [role="button"]{touch-action:manipulation}
+    }
     .bbb-ranking-card{overflow:hidden}
     .bbb-rank-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:18px}
     .bbb-rank-summary>div{padding:14px;border:1px solid #1c392d;background:#09120e;border-radius:11px}
