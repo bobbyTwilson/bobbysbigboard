@@ -655,13 +655,34 @@
     }
   }
 
+  function resolveProfileGrid(content){
+    if(!content)return null;
+    let grid=content.querySelector(':scope > .profile-grid');
+    if(grid)return grid;
+
+    // The base profile sometimes renders the content shell itself as the grid.
+    // Normalize that shape immediately so the tab compositor does not have to
+    // wait for the compatibility shim on a later animation frame.
+    if(content.classList.contains('profile-grid')){
+      grid=document.createElement('div');
+      grid.className='profile-grid bbb-tabs-v2-inner-grid';
+      [...content.children].forEach(child=>{
+        if(!child.classList?.contains(SYSTEM_CLASS))grid.appendChild(child);
+      });
+      content.classList.remove('profile-grid');
+      content.appendChild(grid);
+      return grid;
+    }
+    return null;
+  }
+
   async function apply(pathSlug){
     const run=++token;
     ensureStyles();
     const player=currentPlayer(pathSlug);if(!player)return;
     const key=playerKey(player,pathSlug);if(!key)return;
     const content=document.querySelector('#profileMount .profile-content>.shell');
-    const grid=content?.querySelector('.profile-grid');
+    const grid=resolveProfileGrid(content);
     if(!content||!grid)return;
     const data=await loadData(key).catch(()=>({stats:[],weekly:[],mover:null,updates:[]}));
     if(run!==token)return;
