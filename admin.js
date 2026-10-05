@@ -165,13 +165,13 @@ function bindDashboardActions(){
   $$('[data-market-jump]').forEach(b=>b.onclick=()=>goRankings({market:b.dataset.marketJump}));
   $$('[data-edge-player]').forEach(b=>b.onclick=()=>{const p=board.find(x=>x.player_key===b.dataset.edgePlayer);goRankings({q:p?.name||''})});
   $$('[data-review-open]').forEach(b=>b.onclick=()=>{const x=reviewQueue.find(v=>v.player_key===b.dataset.reviewOpen);goReview({q:x?.name||''})});
-  $('[data-health-target]').forEach(b=>b.onclick=()=>{
+  $$('[data-health-target]').forEach(b=>b.onclick=()=>{
     const target=b.dataset.healthTarget,kind=b.dataset.healthKind||'';
     if(target==='review')goReview({kind});
     else if(target==='players')page('players');
     else goRankings();
   });
-  $('[data-activity-player]').forEach(b=>b.onclick=()=>{
+  $$('[data-activity-player]').forEach(b=>b.onclick=()=>{
     const key=b.dataset.activityPlayer;
     const p=board.find(x=>x.player_key===key);
     if(p)goRankings({q:p.name});
@@ -213,7 +213,7 @@ function renderProspectLab(){
  $('#prospectUngraded').textContent=ungraded.length;$('#prospect2027').textContent=prospectLab.filter(x=>+x.class_year===2027).length;$('#prospect2028').textContent=prospectLab.filter(x=>+x.class_year===2028).length;$('#prospectResearched').textContent=prospectLab.filter(prospectReady).length;$('#prospectNavCount').textContent=ungraded.length||'04';
  const list=filteredProspects();
  grid.innerHTML=list.length?list.map(x=>`<article class="prospect-card">${x.graded?'<span class="prospect-graded">GRADED</span>':''}<div class="prospect-card-head"><span class="prospect-pos">${esc(x.position)}</span><div class="prospect-name"><strong>${esc(x.name)}</strong><span>${esc(x.school||'School TBD')}</span></div><span class="prospect-class">${x.class_year}</span></div><div class="prospect-card-summary">${esc(x.summary||'Research profile pending. This player is in your scouting queue and ready for a BBB grading pass.')}</div><div class="prospect-card-rec"><div><span>RECOMMENDED GRADE</span><strong class="${x.recommended_overall_grade==null?'pending':''}">${x.recommended_overall_grade==null?'PENDING':Number(x.recommended_overall_grade).toFixed(1)}</strong></div><div><span>PRO COMP IDEA</span><strong class="${x.recommended_pro_comp?'':'pending'}">${esc(x.recommended_pro_comp||'PENDING')}</strong></div></div><div class="prospect-card-actions"><span class="research-state ${prospectReady(x)?'ready':''}"><i></i>${prospectReady(x)?'RESEARCH READY':'RESEARCH PENDING'}</span><button class="small-btn grade-prospect-btn" data-grade-prospect="${esc(x.player_key)}">${x.graded?'EDIT GRADE':'GRADE PLAYER'}</button></div></article>`).join(''):'<div class="empty">No prospects match these filters.</div>';
- $('[data-grade-prospect]').forEach(b=>b.onclick=()=>openProspectGrader(b.dataset.gradeProspect));
+ $$('[data-grade-prospect]').forEach(b=>b.onclick=()=>openProspectGrader(b.dataset.gradeProspect));
 }
 function prospectTotal(){const t=$('[data-prospect-trait]').reduce((a,i)=>a+(+i.value||0),0);$('#prospectGradeTotal').textContent=t.toFixed(1);return +t.toFixed(1)}
 function openProspectGrader(key){
@@ -221,12 +221,12 @@ function openProspectGrader(key){
  $('#prospectKey').value=key;$('#prospectDrawerTitle').textContent=x.name;$('#prospectDrawerMeta').textContent=`${x.position} · ${x.school||'School TBD'} · ${x.class_year} NFL Draft Class`;$('#prospectRecGrade').textContent=x.recommended_overall_grade==null?'Pending':(+x.recommended_overall_grade).toFixed(1);$('#prospectRecComp').textContent=x.recommended_pro_comp||'Research pending';$('#prospectSummary').textContent=x.summary||x.recommendation_notes||'Research notes have not been loaded for this prospect yet.';$('#prospectFinalComp').value=x.pro_comp||x.recommended_pro_comp||'';
  const current=x.traits||{},rec=x.recommended_traits||{};
  $('#prospectTraitGrid').innerHTML=(PROSPECT_TRAITS[x.position]||[]).map(([label,max])=>`<div class="prospect-trait"><label>${esc(label)} <small>/ ${max}</small></label><span class="trait-rec">REC ${rec[label]??'—'}</span><input class="input trait-input" type="number" min="0" max="${max}" step="0.5" data-prospect-trait="${esc(label)}" value="${current[label]??''}"></div>`).join('');
- $('#prospectApplyRec').disabled=!Object.keys(rec).length;$('#prospectApplyRec').dataset.playerKey=key;$('[data-prospect-trait]').forEach(i=>i.oninput=prospectTotal);prospectTotal();$('#prospectSaveStatus').textContent='';$('#prospectDrawerBackdrop').classList.remove('hide');$('#prospectDrawer').classList.remove('hide');
+ $$('#prospectApplyRec').disabled=!Object.keys(rec).length;$$('#prospectApplyRec').dataset.playerKey=key;$$('[data-prospect-trait]').forEach(i=>i.oninput=prospectTotal);prospectTotal();$$('#prospectSaveStatus').textContent='';$$('#prospectDrawerBackdrop').classList.remove('hide');$$('#prospectDrawer').classList.remove('hide');
 }
 function closeProspectGrader(){$('#prospectDrawerBackdrop').classList.add('hide');$('#prospectDrawer').classList.add('hide')}
-function applyProspectRec(){const x=prospectLab.find(v=>v.player_key===$('#prospectApplyRec').dataset.playerKey);if(!x)return;$('[data-prospect-trait]').forEach(i=>{if(x.recommended_traits?.[i.dataset.prospectTrait]!=null)i.value=x.recommended_traits[i.dataset.prospectTrait]});if(x.recommended_pro_comp)$('#prospectFinalComp').value=x.recommended_pro_comp;prospectTotal()}
+function applyProspectRec(){const x=prospectLab.find(v=>v.player_key===$$('#prospectApplyRec').dataset.playerKey);if(!x)return;$$('[data-prospect-trait]').forEach(i=>{if(x.recommended_traits?.[i.dataset.prospectTrait]!=null)i.value=x.recommended_traits[i.dataset.prospectTrait]});if(x.recommended_pro_comp)$$('#prospectFinalComp').value=x.recommended_pro_comp;prospectTotal()}
 async function saveProspectGrade(e){
- e.preventDefault();const x=prospectLab.find(v=>v.player_key===$('#prospectKey').value);if(!x)return;const traits={};$('[data-prospect-trait]').forEach(i=>{if(i.value!=='')traits[i.dataset.prospectTrait]=String(+i.value)});if(Object.keys(traits).length!==(PROSPECT_TRAITS[x.position]||[]).length)return alert('Finish every trait grade first.');
+ e.preventDefault();const x=prospectLab.find(v=>v.player_key===$$('#prospectKey').value);if(!x)return;const traits={};$$('[data-prospect-trait]').forEach(i=>{if(i.value!=='')traits[i.dataset.prospectTrait]=String(+i.value)});if(Object.keys(traits).length!==(PROSPECT_TRAITS[x.position]||[]).length)return alert('Finish every trait grade first.');
  const btn=$('#saveProspectGrade');btn.disabled=true;$('#prospectSaveStatus').textContent='Saving grade…';
  try{await rpc('admin_grade_prospect',{p_player_key:x.player_key,p_name:x.name,p_position:x.position,p_school:x.school||null,p_class_year:+x.class_year,p_overall_grade:prospectTotal(),p_pro_comp:$('#prospectFinalComp').value.trim()||null,p_traits:traits});await Promise.all([loadProspectLab(),loadCounts()]);renderProspectLab();$('#prospectSaveStatus').textContent='Grade locked ✓';setTimeout(closeProspectGrader,300)}catch(err){$('#prospectSaveStatus').textContent=err.message}finally{btn.disabled=false}
 }
@@ -280,6 +280,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#rankClear').onclick=()=>{$('#rankSearch').value='';$('#rankPos').value='ALL';$('#rankMarket').value='ALL';rankPage=0;renderRankings()};
   $('#rankPrev').onclick=()=>{rankPage=Math.max(0,rankPage-1);renderRankings()};$('#rankNext').onclick=()=>{rankPage++;renderRankings()};
   ['#playerAdminSearch','#playerAdminPos','#playerAdminInjury'].forEach(s=>$(s).addEventListener(s==='#playerAdminSearch'?'input':'change',()=>{playerPage=0;renderPlayers()}));
+  ['#prospectSearch','#prospectYear','#prospectPos','#prospectResearch'].forEach(sel=>$(sel)?.addEventListener(sel==='#prospectSearch'?'input':'change',renderProspectLab));
+  $('#prospectIncludeGraded')?.addEventListener('change',renderProspectLab);
+  $('#prospectDrawerClose')?.addEventListener('click',closeProspectGrader);
+  $('#prospectDrawerBackdrop')?.addEventListener('click',closeProspectGrader);
+  $('#prospectApplyRec')?.addEventListener('click',applyProspectRec);
+  $('#prospectGradeForm')?.addEventListener('submit',saveProspectGrade);
   ['#reviewSearch','#reviewPriority','#reviewKind'].forEach(s=>$(s).addEventListener(s==='#reviewSearch'?'input':'change',()=>{reviewPage=0;renderReviewQueue()}));
   $('#reviewClear').onclick=()=>{$('#reviewSearch').value='';$('#reviewPriority').value='ALL';$('#reviewKind').value='ALL';reviewPage=0;renderReviewQueue()};
   $('#reviewPrev').onclick=()=>{reviewPage=Math.max(0,reviewPage-1);renderReviewQueue()};$('#reviewNext').onclick=()=>{reviewPage++;renderReviewQueue()};
