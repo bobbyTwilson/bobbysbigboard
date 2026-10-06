@@ -500,8 +500,17 @@ function researchPrimaryLabel(row){
 function activeResearchOwner(){
   return $('.research-owner-tab.active')?.dataset.researchOwner||'BOBBY';
 }
+function researchIssueCompatible(owner,issue){
+  if(!issue||issue==='ALL'||owner==='ALL')return true;
+  if(owner==='BOBBY')return ['GRADE','RANK'].includes(issue);
+  if(owner==='SYSTEM')return ['RESEARCH','CLASS','STATS','STALE'].includes(issue);
+  if(owner==='FYI')return ['MARKET'].includes(issue);
+  return true;
+}
 function setResearchOwner(owner){
-  $$('.research-owner-tab').forEach(b=>b.classList.toggle('active',b.dataset.researchOwner===owner));
+  $('.research-owner-tab').forEach(b=>b.classList.toggle('active',b.dataset.researchOwner===owner));
+  const issue=$('#researchIssue');
+  if(issue&&!researchIssueCompatible(owner,issue.value))issue.value='ALL';
   renderResearchQueue();
 }
 function filteredResearchRows(ownerOverride){
@@ -541,8 +550,9 @@ function researchCardHtml(x){
 function researchLaneHtml(owner,rows){
   const meta=researchOwnerMeta(owner);
   const laneRows=rows.filter(x=>researchOwner(x)===owner);
+  const totalOwner=researchQueue.filter(x=>researchOwner(x)===owner).length;
   return '<section class="research-lane owner-'+owner.toLowerCase()+'"><div class="research-lane-head"><div class="research-lane-title"><span class="research-lane-icon">'+esc(meta.icon)+'</span><div><h3>'+esc(meta.title)+'</h3><p>'+esc(meta.desc)+'</p></div></div><span class="research-lane-count">'+laneRows.length+' ITEM'+(laneRows.length===1?'':'S')+'</span></div>'+
-    (laneRows.length?'<div class="research-lane-grid">'+laneRows.map(researchCardHtml).join('')+'</div>':'<div class="research-lane-empty"><strong>Nothing in this lane.</strong><span>No items match the current filters.</span></div>')+
+    (laneRows.length?'<div class="research-lane-grid">'+laneRows.map(researchCardHtml).join('')+'</div>':'<div class="research-lane-empty"><strong>No '+esc(meta.title)+' items match these filters.</strong><span>'+totalOwner+' exist overall. Clear search, player type, priority or draft class to see them.</span></div>')+
   '</section>';
 }
 function renderResearchQueue(){
@@ -557,14 +567,18 @@ function renderResearchQueue(){
   if($('#researchSystemCount'))$('#researchSystemCount').textContent=systems.length;
   if($('#researchFyiCount'))$('#researchFyiCount').textContent=fyis.length;
   if($('#researchProspects'))$('#researchProspects').textContent=grades.length;
-  if($('#researchTabBobby'))$('#researchTabBobby').textContent=bobbies.length;
-  if($('#researchTabSystem'))$('#researchTabSystem').textContent=systems.length;
-  if($('#researchTabFyi'))$('#researchTabFyi').textContent=fyis.length;
-  if($('#researchTabAll'))$('#researchTabAll').textContent=researchQueue.length;
   if($('#researchNavCount'))$('#researchNavCount').textContent=bobbies.length||'05';
 
   const owner=activeResearchOwner();
   const rows=filteredResearchRows(owner);
+  const tabBobby=filteredResearchRows('BOBBY').length;
+  const tabSystem=filteredResearchRows('SYSTEM').length;
+  const tabFyi=filteredResearchRows('FYI').length;
+  const tabAll=filteredResearchRows('ALL').length;
+  if($('#researchTabBobby'))$('#researchTabBobby').textContent=tabBobby;
+  if($('#researchTabSystem'))$('#researchTabSystem').textContent=tabSystem;
+  if($('#researchTabFyi'))$('#researchTabFyi').textContent=tabFyi;
+  if($('#researchTabAll'))$('#researchTabAll').textContent=tabAll;
   if($('#researchQueueCount'))$('#researchQueueCount').textContent=rows.length+' matching · '+bobbies.length+' need Bobby · '+systems.length+' system · '+fyis.length+' FYI';
   if($('#researchQueueHint'))$('#researchQueueHint').textContent=owner==='BOBBY'?'Showing only decisions that require your judgment':owner==='SYSTEM'?'Background cleanup — no Bobby decision required':owner==='FYI'?'Informational signals only':'All three ownership lanes';
 
