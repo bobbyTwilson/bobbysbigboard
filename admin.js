@@ -21,7 +21,18 @@ function sessionFromAuth(x){if(!x?.access_token)return null;return {...x,expires
 async function signIn(email,password){const x=await jsonFetch(`${SUPA}/auth/v1/token?grant_type=password`,{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})});saveSession(sessionFromAuth(x));const admin=await checkAdmin();if(!admin){clearSession();throw new Error('This account is authenticated but is not approved for BBB Admin.')}return admin}
 function showLogin(){ $('#loginView').classList.remove('hide');$('#appView').classList.add('hide') }
 function showApp(admin){$('#loginView').classList.add('hide');$('#appView').classList.remove('hide');$('#adminRole').textContent=`${String(admin.role||'admin').toUpperCase()} ACCESS`}
-async function boot(){let raw=localStorage.getItem(STORE);if(raw)try{session=JSON.parse(raw)}catch{}if(!session){showLogin();return}if(session.expires_at&&Date.now()/1000>session.expires_at-60&&!await refreshSession()){showLogin();return}try{const admin=await checkAdmin();if(!admin){clearSession();showLogin();return}showApp(admin);await loadAll()}catch(e){console.error(e);clearSession();showLogin()}}
+function nextPaint(){return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))}
+async function enterAdmin(admin){
+  showApp(admin);
+  page('dashboard');
+  await nextPaint();
+  await loadAll();
+  page('dashboard');
+  await nextPaint();
+  renderCommandDashboard();
+  window.dispatchEvent(new Event('resize'));
+}
+async function boot(){let raw=localStorage.getItem(STORE);if(raw)try{session=JSON.parse(raw)}catch{}if(!session){showLogin();return}if(session.expires_at&&Date.now()/1000>session.expires_at-60&&!await refreshSession()){showLogin();return}try{const admin=await checkAdmin();if(!admin){clearSession();showLogin();return}await enterAdmin(admin)}catch(e){console.error(e);clearSession();showLogin()}}
 async function loadAll(){
   const jobs=await Promise.allSettled([loadBoard(),loadProfiles(),loadActivity(),loadReviewQueue(),loadProspectLab(),loadDataHealth()]);
   const failed=jobs.filter(x=>x.status==='rejected');
@@ -384,7 +395,7 @@ function page(name){
 document.addEventListener('DOMContentLoaded',()=>{
   updateAdminClock();setInterval(updateAdminClock,30000);
   $$('.auth-tabs').forEach(x=>x.remove());
-  $('#authForm').onsubmit=async e=>{e.preventDefault();const btn=$('#authSubmit');btn.disabled=true;msg('');try{const email=$('#authEmail').value.trim().toLowerCase(),password=$('#authPassword').value;const admin=await signIn(email,password);showApp(admin);await loadAll()}catch(err){msg(err.message)}finally{btn.disabled=false}};
+  $('#authForm').onsubmit=async e=>{e.preventDefault();const btn=$('#authSubmit');btn.disabled=true;msg('');try{const email=$('#authEmail').value.trim().toLowerCase(),password=$('#authPassword').value;const admin=await signIn(email,password);await enterAdmin(admin)}catch(err){msg(err.message)}finally{btn.disabled=false}};
   $('#signOut').onclick=()=>{clearSession();location.reload()};
   $$('.nav-btn').forEach(b=>b.onclick=()=>page(b.dataset.page));
   $$('[data-page-jump]').forEach(b=>b.onclick=()=>page(b.dataset.pageJump));
