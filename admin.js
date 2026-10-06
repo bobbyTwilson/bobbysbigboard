@@ -501,7 +501,7 @@ function activeResearchOwner(){
   return $('.research-owner-tab.active')?.dataset.researchOwner||'BOBBY';
 }
 function setResearchOwner(owner){
-  $$('.research-owner-tab').forEach(b=>b.classList.toggle('active',b.dataset.researchOwner===owner));
+  $$$('.research-owner-tab').forEach(b=>b.classList.toggle('active',b.dataset.researchOwner===owner));
   renderResearchQueue();
 }
 function filteredResearchRows(ownerOverride){
@@ -696,9 +696,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#prospectBackToReport')?.addEventListener('click',()=>openProspectReport($('#prospectKey').value));
   $('#prospectGradeForm')?.addEventListener('submit',saveProspectGrade);
   ['#researchSearch','#researchScope','#researchIssue','#researchPriority','#researchClass'].forEach(s=>$(s)?.addEventListener(s==='#researchSearch'?'input':'change',renderResearchQueue));
-  $('.research-owner-tab').forEach(b=>b.addEventListener('click',()=>setResearchOwner(b.dataset.researchOwner)));
-  $('[data-research-owner-jump]').forEach(b=>b.addEventListener('click',()=>setResearchOwner(b.dataset.researchOwnerJump)));
-  $('[data-research-issue-jump]').forEach(b=>b.addEventListener('click',()=>{setResearchOwner('BOBBY');if($('#researchIssue'))$('#researchIssue').value=b.dataset.researchIssueJump||'ALL';renderResearchQueue()}));
+  $$('.research-owner-tab').forEach(b=>b.addEventListener('click',()=>setResearchOwner(b.dataset.researchOwner)));
+  $$('[data-research-owner-jump]').forEach(b=>b.addEventListener('click',()=>setResearchOwner(b.dataset.researchOwnerJump)));
+  $$('[data-research-issue-jump]').forEach(b=>b.addEventListener('click',()=>{setResearchOwner('BOBBY');if($('#researchIssue'))$('#researchIssue').value=b.dataset.researchIssueJump||'ALL';renderResearchQueue()}));
   $('#researchClear')?.addEventListener('click',()=>{$('#researchSearch').value='';$('#researchScope').value='ALL';$('#researchIssue').value='ALL';$('#researchPriority').value='ALL';$('#researchClass').value='ALL';setResearchOwner('BOBBY')});
   $('#researchRefresh')?.addEventListener('click',async e=>{const b=e.currentTarget;b.disabled=true;try{researchLoaded=false;await loadResearchQueue(true)}finally{b.disabled=false}});
   ['#reviewSearch','#reviewPriority','#reviewKind'].forEach(s=>$(s).addEventListener(s==='#reviewSearch'?'input':'change',()=>{reviewPage=0;renderReviewQueue()}));
