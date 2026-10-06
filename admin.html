@@ -2138,5 +2138,453 @@ body:after{
   </aside>
 
   <script src="/admin.js?v=admin-ops-v5b"></script>
+
+  <style id="bbb-player-workspace-v1">
+    body.pw-open{overflow:hidden}
+    #bbbPlayerWorkspaceBackdrop{position:fixed;inset:0;z-index:149;background:rgba(1,3,8,.82);backdrop-filter:blur(12px) saturate(125%)}
+    #bbbPlayerWorkspace{position:fixed;z-index:150;left:18px;right:18px;top:18px;bottom:18px;max-width:1540px;margin:auto;border:1px solid rgba(167,124,255,.24);border-radius:22px;overflow:hidden;background:#06080d;box-shadow:0 55px 180px rgba(0,0,0,.78),0 0 80px rgba(121,78,224,.10)}
+    #bbbPlayerWorkspace.hide,#bbbPlayerWorkspaceBackdrop.hide{display:none!important}
+    .pw-shell{height:100%;display:grid;grid-template-rows:auto auto minmax(0,1fr);position:relative;background:radial-gradient(circle at 12% -12%,rgba(118,71,237,.18),transparent 34%),radial-gradient(circle at 94% 0,rgba(88,234,255,.10),transparent 26%),linear-gradient(180deg,#080a12,#05070b)}
+    .pw-shell:before{content:"";pointer-events:none;position:absolute;inset:0;opacity:.26;background-image:linear-gradient(rgba(167,124,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(167,124,255,.025) 1px,transparent 1px);background-size:32px 32px}
+    .pw-head{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;padding:22px 24px 18px;border-bottom:1px solid rgba(167,124,255,.10);background:linear-gradient(180deg,rgba(13,15,25,.94),rgba(8,10,16,.86))}
+    .pw-identity{display:flex;align-items:center;gap:16px;min-width:0}
+    .pw-rank-orb{width:68px;height:68px;flex:none;border-radius:18px;display:grid;place-items:center;border:1px solid rgba(167,124,255,.26);background:linear-gradient(145deg,rgba(113,67,220,.30),rgba(39,24,76,.68));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 28px rgba(118,71,237,.13)}
+    .pw-rank-orb span{display:block;color:#8e82ab;font-size:6px;font-weight:1000;letter-spacing:.16em;text-align:center}
+    .pw-rank-orb strong{display:block;margin-top:3px;color:#f5f0ff;font-size:24px;line-height:1;text-align:center}
+    .pw-title{min-width:0}.pw-title-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .pw-kicker{color:#7b6a9f;font-size:7px;font-weight:1000;letter-spacing:.16em}
+    .pw-status{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid rgba(91,231,155,.14);border-radius:999px;background:rgba(33,127,78,.08);color:#7de5aa;font-size:6px;font-weight:1000;letter-spacing:.08em}
+    .pw-status.bad{border-color:rgba(255,120,137,.18);background:rgba(169,47,66,.09);color:#ff96a4}
+    .pw-status i{width:5px;height:5px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+    .pw-title h2{margin:5px 0 4px;color:#f8f6ff;font-size:30px;line-height:1;letter-spacing:-.045em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pw-title p{margin:0;color:#7e7a8c;font-size:8px;line-height:1.45}
+    .pw-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+    .pw-action{min-height:36px;border:1px solid rgba(167,124,255,.16);border-radius:9px;background:rgba(16,17,28,.84);color:#bdb5d0;padding:8px 11px;font-size:7px;font-weight:1000;letter-spacing:.05em;cursor:pointer}
+    .pw-action:hover{border-color:rgba(167,124,255,.38);color:#fff;background:rgba(88,54,154,.20)}
+    .pw-action.primary{border-color:rgba(57,255,155,.24);background:linear-gradient(145deg,rgba(21,113,70,.28),rgba(10,50,33,.34));color:#8df2b7}
+    .pw-action.cyan{border-color:rgba(88,234,255,.20);color:#88eafa}
+    .pw-action.danger{border-color:rgba(255,116,137,.20);color:#ff9cab}
+    .pw-action:disabled{opacity:.45;cursor:not-allowed}
+    .pw-close{width:38px;height:38px;border-radius:10px;border:1px solid rgba(167,124,255,.16);background:#0c0d16;color:#8e88a1;font-size:20px;cursor:pointer}
+    .pw-close:hover{color:#fff;border-color:rgba(167,124,255,.4)}
+    .pw-tabs{position:relative;z-index:2;display:flex;gap:3px;padding:8px 20px;border-bottom:1px solid rgba(167,124,255,.09);background:rgba(6,8,13,.94);overflow-x:auto}
+    .pw-tab{flex:none;border:0;border-radius:8px;background:transparent;color:#646071;padding:9px 12px;font-size:7px;font-weight:1000;letter-spacing:.08em;cursor:pointer}
+    .pw-tab:hover{color:#bdb4d0;background:rgba(167,124,255,.05)}
+    .pw-tab.active{color:#f1ebff;background:linear-gradient(145deg,rgba(112,67,219,.24),rgba(57,35,104,.16));box-shadow:inset 0 0 0 1px rgba(167,124,255,.15)}
+    .pw-body{position:relative;z-index:1;overflow:auto;padding:18px 20px 28px}
+    .pw-loading{min-height:330px;display:grid;place-items:center;color:#716c7e;font-size:9px}
+    .pw-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.75fr);gap:14px}
+    .pw-stack{display:grid;gap:14px;align-content:start}
+    .pw-panel{border:1px solid rgba(167,124,255,.10);border-radius:14px;background:linear-gradient(160deg,rgba(12,14,22,.91),rgba(7,9,14,.92));overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
+    .pw-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:13px 14px;border-bottom:1px solid rgba(167,124,255,.08)}
+    .pw-panel-head span{display:block;color:#665b82;font-size:6px;font-weight:1000;letter-spacing:.12em}
+    .pw-panel-head h3{margin:4px 0 0;color:#e9e5f2;font-size:13px;letter-spacing:-.02em}
+    .pw-panel-body{padding:14px}
+    .pw-copy{margin:0;color:#92909b;font-size:9px;line-height:1.72;white-space:pre-line}
+    .pw-copy.strong{color:#b8b3c2}
+    .pw-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px}
+    .pw-metric{min-height:90px;padding:12px;border:1px solid rgba(167,124,255,.09);border-radius:12px;background:linear-gradient(145deg,rgba(18,20,31,.87),rgba(8,10,16,.86))}
+    .pw-metric span{display:block;color:#666174;font-size:6px;font-weight:1000;letter-spacing:.11em}
+    .pw-metric strong{display:block;margin-top:8px;color:#efebf7;font-size:24px;line-height:1}
+    .pw-metric small{display:block;margin-top:6px;color:#5e5b67;font-size:6px;line-height:1.35}
+    .pw-metric.good strong{color:#68e59d}.pw-metric.bad strong{color:#ff8799}.pw-metric.cyan strong{color:#73dff0}.pw-metric.violet strong{color:#ad91ff}
+    .pw-signal{padding:12px;border-left:2px solid rgba(88,234,255,.40);background:rgba(18,53,62,.10);border-radius:0 9px 9px 0}
+    .pw-signal span{display:block;color:#4e7981;font-size:6px;font-weight:1000;letter-spacing:.1em}
+    .pw-signal p{margin:6px 0 0;color:#9cb5b8;font-size:8px;line-height:1.58}
+    .pw-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:rgba(167,124,255,.07);border:1px solid rgba(167,124,255,.07);border-radius:11px;overflow:hidden}
+    .pw-info{padding:10px 11px;background:#090b11}
+    .pw-info span{display:block;color:#5f5a6b;font-size:6px;font-weight:1000;letter-spacing:.09em}
+    .pw-info strong{display:block;margin-top:4px;color:#b7b2c1;font-size:9px;line-height:1.35}
+    .pw-review-box{padding:12px;border:1px solid rgba(255,197,97,.13);border-radius:11px;background:rgba(91,66,20,.08)}
+    .pw-review-box strong{display:block;color:#e1bf79;font-size:8px}.pw-review-box p{margin:6px 0 0;color:#8f816a;font-size:7px;line-height:1.55}
+    .pw-inline-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+    .pw-rank-control{display:grid;grid-template-columns:minmax(120px,180px) auto auto;gap:8px;align-items:end}
+    .pw-field label{display:block;margin-bottom:5px;color:#625d70;font-size:6px;font-weight:1000;letter-spacing:.09em}
+    .pw-input{width:100%;border:1px solid rgba(167,124,255,.16);border-radius:9px;background:#07090e;color:#f0edf5;padding:9px 10px;font-size:9px;outline:none}
+    .pw-input:focus{border-color:rgba(167,124,255,.42);box-shadow:0 0 0 3px rgba(118,71,237,.07)}
+    .pw-status-line{min-height:14px;margin-top:8px;color:#6f6b79;font-size:7px}
+    .pw-history{display:grid;gap:5px}
+    .pw-history-row{display:grid;grid-template-columns:88px 80px 90px minmax(0,1fr);gap:10px;align-items:center;padding:8px 9px;border:1px solid rgba(167,124,255,.06);border-radius:8px;background:rgba(8,10,16,.68);font-size:7px}
+    .pw-history-row span{color:#676371}.pw-history-row strong{color:#bdb7c8}.pw-history-row .good{color:#67dc99}.pw-history-row .bad{color:#ff8799}
+    .pw-traits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+    .pw-trait{padding:10px;border:1px solid rgba(57,255,155,.08);border-radius:10px;background:rgba(5,17,12,.48)}
+    .pw-trait-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.pw-trait-head span{color:#698074;font-size:7px;font-weight:900}.pw-trait-head strong{color:#c8f5da;font-size:9px}
+    .pw-trait-track{height:3px;margin-top:8px;border-radius:999px;background:#101b15;overflow:hidden}.pw-trait-track i{display:block;height:100%;background:linear-gradient(90deg,#2f9b66,#69e49d);border-radius:999px}
+    .pw-trait-meta{display:flex;justify-content:space-between;margin-top:6px;color:#506057;font-size:6px}
+    .pw-source-list{display:flex;flex-wrap:wrap;gap:6px}.pw-source{display:inline-flex;padding:6px 8px;border:1px solid rgba(88,234,255,.12);border-radius:7px;color:#77cad9;text-decoration:none;font-size:6px;font-weight:1000}.pw-source:hover{border-color:rgba(88,234,255,.32);color:#b9f5ff}
+    .pw-table-wrap{overflow:auto}.pw-table{width:100%;border-collapse:collapse;min-width:720px}.pw-table th{text-align:left;padding:8px 9px;color:#5f596d;font-size:6px;letter-spacing:.09em;border-bottom:1px solid rgba(167,124,255,.08)}.pw-table td{padding:9px;color:#aaa5b3;font-size:7px;border-bottom:1px solid rgba(167,124,255,.055)}.pw-table td strong{color:#e3deeb}
+    .pw-feed{display:grid;gap:7px}.pw-feed-item{padding:11px;border:1px solid rgba(167,124,255,.07);border-radius:10px;background:rgba(8,10,16,.70)}.pw-feed-top{display:flex;justify-content:space-between;gap:10px}.pw-feed-top strong{color:#bdb7c8;font-size:7px}.pw-feed-top span{color:#5f5b67;font-size:6px}.pw-feed-item p{margin:7px 0 0;color:#85818d;font-size:8px;line-height:1.55}.pw-feed-item small{display:block;margin-top:7px;color:#655f72;font-size:6px}
+    .pw-complete-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px}.pw-complete-head strong{color:#ece8f3;font-size:30px}.pw-complete-head span{color:#686373;font-size:7px}
+    .pw-complete-bar{height:6px;border-radius:999px;background:#12131b;overflow:hidden;margin-bottom:14px}.pw-complete-bar i{display:block;height:100%;background:linear-gradient(90deg,#7148db,#58eaff,#55df94);border-radius:999px}
+    .pw-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.pw-check{display:flex;align-items:center;gap:8px;padding:8px 9px;border:1px solid rgba(167,124,255,.06);border-radius:8px;color:#777381;font-size:7px}.pw-check i{width:7px;height:7px;border-radius:50%;background:#514c5a}.pw-check.ok{color:#9ab8a6}.pw-check.ok i{background:#52db92;box-shadow:0 0 8px rgba(82,219,146,.45)}
+    .pw-empty{padding:28px;text-align:center;color:#686473;font-size:9px}.pw-empty strong{display:block;margin-bottom:7px;color:#a9a3b4;font-size:12px}
+    #rankBody .player-name,#playerAdminBody .player-name,#reviewBody .player-name,.rank-lens-id strong{cursor:pointer;transition:color .15s ease,text-shadow .15s ease}
+    #rankBody .player-name:hover,#playerAdminBody .player-name:hover,#reviewBody .player-name:hover,.rank-lens-id strong:hover{color:#cdbdff!important;text-shadow:0 0 14px rgba(167,124,255,.18)}
+    @media(max-width:1050px){.pw-grid{grid-template-columns:1fr}.pw-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:720px){
+      #bbbPlayerWorkspace{inset:0;left:0;right:0;top:0;bottom:0;border-radius:0;border:0}
+      .pw-head{grid-template-columns:1fr;padding:15px 14px 12px}.pw-head-actions{justify-content:flex-start}.pw-rank-orb{width:56px;height:56px;border-radius:14px}.pw-title h2{font-size:24px}.pw-title p{font-size:7px}
+      .pw-tabs{padding:7px 10px}.pw-body{padding:12px 10px 22px}.pw-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.pw-metric{min-height:78px;padding:10px}.pw-metric strong{font-size:20px}
+      .pw-info-grid,.pw-checks,.pw-traits{grid-template-columns:1fr}.pw-rank-control{grid-template-columns:1fr}.pw-history-row{grid-template-columns:80px 70px minmax(0,1fr)}.pw-history-row span:nth-child(3){display:none}
+    }
+  </style>
+
+  <script id="bbb-player-workspace-v1">
+  (function(){
+    var pwKey=null;
+    var pwTab="overview";
+    var pwCache=new Map();
+    var pwLoading=false;
+
+    function pwQ(sel){return document.querySelector(sel)}
+    function pwBoard(key){return board.find(function(x){return x.player_key===key})||null}
+    function pwProfile(key){return profileMap.get(key)||null}
+    function pwProspect(key){return prospectLab.find(function(x){return x.player_key===key})||null}
+    function pwReview(key){return reviewQueue.find(function(x){return x.player_key===key})||null}
+    function pwNum(v,fallback){return v==null||v===""?(fallback==null?"—":fallback):v}
+    function pwDate(v){if(!v)return "—";var d=new Date(v);if(!Number.isFinite(d.getTime()))return String(v);return d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}
+    function pwPct(v){var n=Number(v);return Number.isFinite(n)?Math.max(0,Math.min(100,n)):0}
+    function pwClip(v,n){var s=String(v||"").trim();return s.length>n?s.slice(0,n-1)+"…":s}
+    function pwSafeUrl(v){try{var u=new URL(String(v));return u.protocol==="http:"||u.protocol==="https:"?u.href:"#"}catch(e){return "#"}}
+    function pwSettled(x,fallback){return x&&x.status==="fulfilled"?(x.value||fallback):fallback}
+
+    function pwEnsure(){
+      if(pwQ("#bbbPlayerWorkspace"))return;
+      var back=document.createElement("div");
+      back.id="bbbPlayerWorkspaceBackdrop";back.className="hide";
+      var shell=document.createElement("section");
+      shell.id="bbbPlayerWorkspace";shell.className="hide";
+      shell.setAttribute("role","dialog");shell.setAttribute("aria-modal","true");shell.setAttribute("aria-label","BBB Player Workspace");
+      shell.innerHTML='<div class="pw-shell"><header class="pw-head"><div id="pwIdentity" class="pw-identity"></div><div id="pwHeadActions" class="pw-head-actions"></div></header><nav id="pwTabs" class="pw-tabs"></nav><main id="pwBody" class="pw-body"></main></div>';
+      document.body.appendChild(back);document.body.appendChild(shell);
+      back.addEventListener("click",pwClose);
+      shell.addEventListener("click",pwHandleWorkspaceClick);
+    }
+
+    function pwIdentityData(key,detail){
+      var b=(detail&&detail.board)||pwBoard(key);
+      var p=(detail&&detail.profile)||pwProfile(key);
+      var x=pwProspect(key);
+      return {
+        board:b,profile:p,prospect:x,review:pwReview(key),
+        name:(b&&b.name)||(p&&p.name)||(x&&x.name)||key,
+        pos:(b&&b.pos)||(p&&p.pos)||(x&&x.position)||"—",
+        team:(b&&b.team)||(p&&p.team)||"",
+        college:(b&&b.college)||(p&&p.college)||(x&&x.school)||"",
+        age:(b&&b.age)||(p&&p.age)||null,
+        draft:(b&&b.draft)||(p&&p.draft_year)||(x&&x.class_year)||null,
+        status:(p&&p.injury_status)||(b&&b.injury_status)||"Healthy"
+      };
+    }
+
+    async function pwLoadDetail(key,force){
+      if(!force&&pwCache.has(key))return pwCache.get(key);
+      var enc=encodeURIComponent(key);
+      var jobs=await Promise.allSettled([
+        rest("site_dynasty?player_key=eq."+enc+"&select=*"),
+        rest("site_profiles?player_key=eq."+enc+"&select=*"),
+        rest("player_profiles?player_key=eq."+enc+"&select=player_key,breakdown_basis,breakdown_updated,breakdown_sources,review_status,last_verified_at,ranking_review_needed,ranking_review_reason,ranking_review_priority,ranking_review_triggered_at"),
+        rest("player_updates?player_key=eq."+enc+"&select=id,update_date,update_type,update_text,injury_status,source_1,source_2,rank_impact,notes,review_status,created_at&order=update_date.desc,created_at.desc&limit=12"),
+        rest("player_season_stats?player_key=eq."+enc+"&select=season,team,games,completions,attempts,passing_yards,passing_tds,interceptions,carries,rushing_yards,rushing_tds,targets,receptions,receiving_yards,receiving_tds,fantasy_points_ppr,position_finish,updated_at&order=season.desc&limit=12"),
+        rest("dynasty_ranking_history?player_key=eq."+enc+"&select=snapshot_date,overall_rank,position_rank,fp_sf_rank,bbb_vs_fp,market_view,bbb_trade_value,snapshot_kind,created_at&order=snapshot_date.desc,created_at.desc&limit=18")
+      ]);
+      var d={
+        board:(pwSettled(jobs[0],[])[0]||pwBoard(key)),
+        profile:(pwSettled(jobs[1],[])[0]||pwProfile(key)),
+        rawProfile:(pwSettled(jobs[2],[])[0]||null),
+        updates:pwSettled(jobs[3],[]),
+        stats:pwSettled(jobs[4],[]),
+        history:pwSettled(jobs[5],[])
+      };
+      pwCache.set(key,d);return d;
+    }
+
+    function pwTabsHtml(){
+      var tabs=[["overview","OVERVIEW"],["dynasty","DYNASTY"],["scouting","SCOUTING"],["stats","STATS"],["activity","ACTIVITY"],["data","DATA"]];
+      return tabs.map(function(t){return '<button type="button" class="pw-tab '+(pwTab===t[0]?"active":"")+'" data-pw-tab="'+t[0]+'">'+t[1]+'</button>'}).join("");
+    }
+
+    function pwMetric(label,value,sub,kind){
+      return '<div class="pw-metric '+(kind||"")+'"><span>'+esc(label)+'</span><strong>'+esc(pwNum(value))+'</strong><small>'+esc(sub||"")+'</small></div>';
+    }
+
+    function pwPanel(kicker,title,body,extra){
+      return '<section class="pw-panel"><div class="pw-panel-head"><div><span>'+esc(kicker)+'</span><h3>'+esc(title)+'</h3></div>'+(extra||"")+'</div><div class="pw-panel-body">'+body+'</div></section>';
+    }
+
+    function pwHeader(detail){
+      var d=pwIdentityData(pwKey,detail),b=d.board,x=d.prospect;
+      var orb=b?("#"+b.rank):(x?String(x.class_year||"PRO"):"PLAYER");
+      var orbLabel=b?"BBB RANK":(x?"DRAFT CLASS":"PLAYER");
+      var meta=[];
+      meta.push(d.pos);
+      if(b)meta.push(d.team||"FA");
+      if(d.college)meta.push(d.college);
+      if(d.age)meta.push("Age "+d.age);
+      if(x&&!b)meta.push((x.class_year||"—")+" NFL Draft");
+      var healthyNow=healthy(d.status);
+      pwQ("#pwIdentity").innerHTML='<div class="pw-rank-orb"><div><span>'+esc(orbLabel)+'</span><strong>'+esc(orb)+'</strong></div></div><div class="pw-title"><div class="pw-title-top"><span class="pw-kicker">'+(b?"DYNASTY PLAYER WORKSPACE":(x?"PROSPECT PLAYER WORKSPACE":"PLAYER WORKSPACE"))+'</span><span class="pw-status '+(healthyNow?"":"bad")+'"><i></i>'+esc(d.status||"Healthy")+'</span></div><h2>'+esc(d.name)+'</h2><p>'+esc(meta.join(" · "))+'</p></div>';
+      var actions=[];
+      actions.push('<button type="button" class="pw-action cyan" data-pw-action="refresh">REFRESH DATA</button>');
+      if(b)actions.push('<button type="button" class="pw-action" data-pw-action="edit">EDIT CORE DATA</button>');
+      if(x)actions.push('<button type="button" class="pw-action" data-pw-action="report">SCOUTING REPORT</button>');
+      if(x)actions.push('<button type="button" class="pw-action primary" data-pw-action="grade">'+(x.graded?"EDIT GRADE":"GRADE PLAYER")+'</button>');
+      if(b||pwProfile(pwKey))actions.push('<a class="pw-action" href="/player/'+encodeURIComponent(pwKey)+'" target="_blank">PUBLIC PROFILE ↗</a>');
+      actions.push('<button type="button" class="pw-close" data-pw-action="close" aria-label="Close player workspace">×</button>');
+      pwQ("#pwHeadActions").innerHTML=actions.join("");
+      pwQ("#pwTabs").innerHTML=pwTabsHtml();
+    }
+
+    function pwOverview(detail){
+      var d=pwIdentityData(pwKey,detail),b=d.board,p=d.profile,x=d.prospect,r=d.review,raw=detail.rawProfile||{};
+      var desc=(x&&x.summary)||(p&&p.overall_breakdown)||(b&&b.overview)||"No long-form player overview has been written yet.";
+      var latest=(b&&b.latest_update)||(p&&p.latest_weekly_update)||(detail.updates[0]&&detail.updates[0].update_text)||"No recent player signal is loaded.";
+      var metrics="";
+      if(b){
+        var gap=b.gap==null?"—":((Number(b.gap)>0?"+":"")+b.gap);
+        metrics+=pwMetric("BBB OVERALL","#"+b.rank,"Current Superflex dynasty rank","violet");
+        metrics+=pwMetric("POSITION",b.pr?"#"+b.pr:"—",d.pos+" positional rank","");
+        metrics+=pwMetric("MARKET",b.market?"#"+b.market:"UR","FantasyPros SF market rank","cyan");
+        metrics+=pwMetric("BBB EDGE",gap,b.view||"Market posture",Number(b.gap)>0?"good":Number(b.gap)<0?"bad":"");
+      }else if(x){
+        metrics+=pwMetric("CLASS",x.class_year||"—","NFL Draft class","violet");
+        metrics+=pwMetric("REC GRADE",x.recommended_overall_grade==null?"PENDING":Number(x.recommended_overall_grade).toFixed(1),"Research recommendation","good");
+        metrics+=pwMetric("BBB GRADE",x.overall_grade==null?"UNGRADED":Number(x.overall_grade).toFixed(1),x.graded?"Finalized":"Awaiting your grade","cyan");
+        metrics+=pwMetric("CONFIDENCE",(x.research_confidence||"UNRATED").toUpperCase(),(x.research_depth||"pending")+" research","");
+      }
+      var info=[];
+      info.push(["TEAM",d.team||"—"]);
+      info.push([x&&!b?"SCHOOL":"COLLEGE",d.college||"—"]);
+      info.push(["AGE",d.age||"—"]);
+      info.push([x&&!b?"DRAFT CLASS":"DRAFT YEAR",d.draft||"—"]);
+      if(b&&b.draft_round)info.push(["DRAFT CAPITAL","Round "+b.draft_round+(b.draft_pick?" · Pick "+b.draft_pick:"")]);
+      if(b&&b.draft_team)info.push(["DRAFTED BY",b.draft_team]);
+      info.push(["PROFILE REVIEW",(raw.review_status||p&&p.review_status||"—")]);
+      info.push(["LAST VERIFIED",pwDate(raw.last_verified_at)]);
+      var infoHtml='<div class="pw-info-grid">'+info.map(function(v){return '<div class="pw-info"><span>'+esc(v[0])+'</span><strong>'+esc(v[1])+'</strong></div>'}).join("")+'</div>';
+      var reviewHtml="";
+      if(r||raw.ranking_review_needed){
+        var reason=(r&&r.attention_reason)||raw.ranking_review_reason||"Player is currently flagged for review.";
+        reviewHtml='<div class="pw-review-box"><strong>'+((raw.ranking_review_needed||(r&&r.ranking_review_needed))?"RANKING REVIEW ACTIVE":"PLAYER REVIEW ACTIVE")+'</strong><p>'+esc(reason)+'</p><div class="pw-inline-actions">'+(r?'<button type="button" class="pw-action primary" data-pw-action="verify">MARK VERIFIED</button><button type="button" class="pw-action" data-pw-action="rankreview">'+(r.ranking_review_needed?"RESOLVE RANK REVIEW":"FLAG RANK REVIEW")+'</button>':"")+'</div></div>';
+      }
+      var left=pwPanel("PLAYER INTELLIGENCE","Current BBB read",'<p class="pw-copy strong">'+esc(desc)+'</p><div style="height:12px"></div><div class="pw-signal"><span>LATEST SIGNAL</span><p>'+esc(latest)+'</p></div>');
+      var right=pwPanel("IDENTITY + CONTROL","Player record",infoHtml+(reviewHtml?'<div style="height:10px"></div>'+reviewHtml:""));
+      return '<div class="pw-metrics">'+metrics+'</div><div class="pw-grid"><div class="pw-stack">'+left+'</div><div class="pw-stack">'+right+'</div></div>';
+    }
+
+    function pwDynasty(detail){
+      var b=detail.board||pwBoard(pwKey);
+      if(!b)return '<div class="pw-empty"><strong>Not on the dynasty board yet.</strong>This player does not currently have a Top 500 dynasty ranking, so there is no rank workflow to manage here.</div>';
+      var gap=b.gap==null?"—":((Number(b.gap)>0?"+":"")+b.gap);
+      var metrics=pwMetric("BBB RANK","#"+b.rank,"Current board slot","violet")+pwMetric("POS RANK",b.pr?"#"+b.pr:"—","Within "+b.pos,"")+pwMetric("MARKET",b.market?"#"+b.market:"UR","Current consensus reference","cyan")+pwMetric("EDGE",gap,b.view||"BBB vs market",Number(b.gap)>0?"good":Number(b.gap)<0?"bad":"");
+      var move='<div class="pw-rank-control"><div class="pw-field"><label>MOVE TO OVERALL RANK</label><input id="pwRankInput" class="pw-input" type="number" min="1" max="'+board.length+'" value="'+esc(b.rank)+'"></div><button type="button" class="pw-action primary" data-pw-action="move">MOVE PLAYER</button><a class="pw-action" href="/player/'+encodeURIComponent(pwKey)+'" target="_blank">PROFILE ↗</a></div><div id="pwMoveStatus" class="pw-status-line">Rank changes use the same protected BBB rank-move function as Rankings Manager.</div>';
+      var history=(detail.history||[]).slice(0,14);
+      var historyHtml=history.length?'<div class="pw-history">'+history.map(function(h){
+        var edge=h.bbb_vs_fp==null?"—":((Number(h.bbb_vs_fp)>0?"+":"")+h.bbb_vs_fp);
+        return '<div class="pw-history-row"><span>'+esc(pwDate(h.snapshot_date))+'</span><strong>#'+esc(pwNum(h.overall_rank))+'</strong><span>'+(h.fp_sf_rank?"Market #"+esc(h.fp_sf_rank):"Market UR")+'</span><span class="'+(Number(h.bbb_vs_fp)>0?"good":Number(h.bbb_vs_fp)<0?"bad":"")+'">'+esc(edge)+' · '+esc(h.market_view||h.snapshot_kind||"snapshot")+'</span></div>';
+      }).join("")+'</div>':'<div class="pw-empty">No ranking history snapshots found.</div>';
+      return '<div class="pw-metrics">'+metrics+'</div><div class="pw-grid"><div class="pw-stack">'+pwPanel("RANK CONTROL","Move this player",move)+pwPanel("RANKING HISTORY","Recent board snapshots",historyHtml)+'</div><div class="pw-stack">'+pwPanel("MARKET POSITION","How BBB sees the player",'<div class="pw-info-grid"><div class="pw-info"><span>TIER</span><strong>'+esc(b.tier||"—")+'</strong></div><div class="pw-info"><span>MARKET VIEW</span><strong>'+esc(b.view||"—")+'</strong></div><div class="pw-info"><span>FP STATUS</span><strong>'+esc(b.fp_status||"—")+'</strong></div><div class="pw-info"><span>BOARD SIZE</span><strong>'+esc(board.length)+'</strong></div></div>')+'</div></div>';
+    }
+
+    function pwTraitOrder(x){
+      var rec=x&&x.recommended_traits||{},fin=x&&x.traits||{},keys=[];
+      try{var schema=PROSPECT_TRAITS&&PROSPECT_TRAITS[x.position]||[];schema.forEach(function(v){if(!keys.includes(v[0]))keys.push(v[0])})}catch(e){}
+      Object.keys(rec).concat(Object.keys(fin)).forEach(function(k){if(!keys.includes(k))keys.push(k)});
+      return keys;
+    }
+
+    function pwScouting(detail){
+      var x=pwProspect(pwKey),p=detail.profile||pwProfile(pwKey);
+      if(!x){
+        var basis=(p&&p.breakdown_basis)||detail.rawProfile&&detail.rawProfile.breakdown_basis||"BBB profile";
+        var sources=(detail.rawProfile&&detail.rawProfile.breakdown_sources)||(p&&p.breakdown_sources)||"No source trail loaded.";
+        return '<div class="pw-grid"><div class="pw-stack">'+pwPanel("PLAYER EVALUATION","Current scouting / profile breakdown",'<p class="pw-copy strong">'+esc((p&&p.overall_breakdown)||"No scouting-style overview has been written for this player yet.")+'</p>')+'</div><div class="pw-stack">'+pwPanel("EVALUATION META","How this read was built",'<div class="pw-info-grid"><div class="pw-info"><span>BASIS</span><strong>'+esc(basis)+'</strong></div><div class="pw-info"><span>UPDATED</span><strong>'+esc(pwDate(p&&p.breakdown_updated))+'</strong></div></div><div style="height:10px"></div><p class="pw-copy">'+esc(sources)+'</p>')+'</div></div>';
+      }
+      var rec=x.recommended_overall_grade==null?"Pending":Number(x.recommended_overall_grade).toFixed(1);
+      var final=x.overall_grade==null?"Ungraded":Number(x.overall_grade).toFixed(1);
+      var metrics=pwMetric("REC GRADE",rec,"Research starting point","good")+pwMetric("BBB GRADE",final,x.graded?"Locked final grade":"Awaiting your grade","violet")+pwMetric("PRO COMP",x.pro_comp||x.recommended_pro_comp||"PENDING","Current comp direction","cyan")+pwMetric("RESEARCH",(x.research_depth||"PENDING").toUpperCase(),(x.research_confidence||"unrated")+" confidence","");
+      var order=pwTraitOrder(x),schema={};
+      try{(PROSPECT_TRAITS[x.position]||[]).forEach(function(v){schema[v[0]]=v[1]})}catch(e){}
+      var traits=order.length?'<div class="pw-traits">'+order.map(function(k){
+        var r=x.recommended_traits&&x.recommended_traits[k],f=x.traits&&x.traits[k],max=schema[k]||10,val=f!=null?Number(f):r!=null?Number(r):0;
+        var pct=max?pwPct(val/max*100):0;
+        return '<div class="pw-trait"><div class="pw-trait-head"><span>'+esc(k)+'</span><strong>'+esc(f!=null?f:(r!=null?r:"—"))+' / '+esc(max)+'</strong></div><div class="pw-trait-track"><i style="width:'+pct+'%"></i></div><div class="pw-trait-meta"><span>REC '+esc(r==null?"—":r)+'</span><span>FINAL '+esc(f==null?"—":f)+'</span></div></div>';
+      }).join("")+'</div>':'<div class="pw-empty">Trait recommendations have not been researched yet.</div>';
+      var sources=Array.isArray(x.source_urls)?x.source_urls:[];
+      var sourceHtml=sources.length?'<div class="pw-source-list">'+sources.map(function(u,i){return '<a class="pw-source" target="_blank" rel="noopener" href="'+esc(pwSafeUrl(u))+'">SOURCE '+(i+1)+' ↗</a>'}).join("")+'</div>':'<div class="pw-empty">No source trail loaded yet.</div>';
+      var audit='<div class="pw-info-grid"><div class="pw-info"><span>DRAFT CLASS</span><strong>'+esc(x.class_year||"—")+'</strong></div><div class="pw-info"><span>CLASS VERIFIED</span><strong>'+esc(x.class_verified_at?pwDate(x.class_verified_at):"PENDING")+'</strong></div><div class="pw-info"><span>RESEARCH DEPTH</span><strong>'+esc((x.research_depth||"pending").toUpperCase())+'</strong></div><div class="pw-info"><span>CONFIDENCE</span><strong>'+esc((x.research_confidence||"unrated").toUpperCase())+'</strong></div></div><div style="height:10px"></div><p class="pw-copy">'+esc(x.class_verification_note||"Draft-class verification note is still pending.")+'</p>';
+      var notes='<p class="pw-copy strong">'+esc(x.summary||"Research summary pending.")+'</p><div style="height:10px"></div><div class="pw-signal"><span>RESEARCH NOTES</span><p>'+esc(x.recommendation_notes||"No additional recommendation notes yet.")+'</p></div><div class="pw-inline-actions"><button type="button" class="pw-action" data-pw-action="report">OPEN FULL SCOUTING REPORT</button><button type="button" class="pw-action primary" data-pw-action="grade">'+(x.graded?"EDIT FINAL GRADE":"GRADE PLAYER")+'</button></div>';
+      return '<div class="pw-metrics">'+metrics+'</div><div class="pw-grid"><div class="pw-stack">'+pwPanel("SCOUTING REPORT","Research summary",notes)+pwPanel("TRAIT CARD","Recommended vs final",traits)+'</div><div class="pw-stack">'+pwPanel("CLASS AUDIT","Eligibility + research state",audit)+pwPanel("SOURCE TRAIL","Research links",sourceHtml)+'</div></div>';
+    }
+
+    function pwStatCols(pos,row){
+      if(pos==="QB")return [pwNum(row.completions)+"/"+pwNum(row.attempts),pwNum(row.passing_yards),pwNum(row.passing_tds),pwNum(row.interceptions),pwNum(row.rushing_yards),pwNum(row.rushing_tds)];
+      if(pos==="RB")return [pwNum(row.carries),pwNum(row.rushing_yards),pwNum(row.rushing_tds),pwNum(row.targets),pwNum(row.receptions),pwNum(row.receiving_yards)];
+      return [pwNum(row.targets),pwNum(row.receptions),pwNum(row.receiving_yards),pwNum(row.receiving_tds),pwNum(row.fantasy_points_ppr),row.position_finish?"#"+row.position_finish:"—"];
+    }
+    function pwStats(detail){
+      var d=pwIdentityData(pwKey,detail),rows=detail.stats||[];
+      if(!rows.length)return '<div class="pw-empty"><strong>No NFL season stats loaded.</strong>'+(d.prospect&&!d.board?"That is expected for a pre-NFL prospect.":"This player does not currently have a season-stat record in BBB.")+'</div>';
+      var head=d.pos==="QB"?["CMP/ATT","PASS YDS","PASS TD","INT","RUSH YDS","RUSH TD"]:d.pos==="RB"?["CAR","RUSH YDS","RUSH TD","TGT","REC","REC YDS"]:["TGT","REC","REC YDS","REC TD","PPR","POS FIN"];
+      var table='<div class="pw-table-wrap"><table class="pw-table"><thead><tr><th>SEASON</th><th>TEAM</th><th>G</th>'+head.map(function(h){return "<th>"+esc(h)+"</th>"}).join("")+'</tr></thead><tbody>'+rows.map(function(r){var vals=pwStatCols(d.pos,r);return '<tr><td><strong>'+esc(r.season)+'</strong></td><td>'+esc(r.team||"—")+'</td><td>'+esc(pwNum(r.games))+'</td>'+vals.map(function(v){return "<td>"+esc(v)+"</td>"}).join("")+'</tr>'}).join("")+'</tbody></table></div>';
+      var latest=rows[0],m=pwStatCols(d.pos,latest);
+      var metrics=pwMetric("SEASON",latest.season||"—","Latest loaded season","violet")+pwMetric("GAMES",latest.games||"—","Games in dataset","")+pwMetric(head[0],m[0],"Latest season","cyan")+pwMetric(head[1],m[1],"Latest season","good");
+      return '<div class="pw-metrics">'+metrics+'</div>'+pwPanel("NFL PRODUCTION","Season history",table);
+    }
+
+    function pwActivity(detail){
+      var updates=detail.updates||[],hist=detail.history||[],audit=adminActivity.filter(function(a){return a.row_key===pwKey}).slice(0,8);
+      var updateHtml=updates.length?'<div class="pw-feed">'+updates.map(function(u){return '<div class="pw-feed-item"><div class="pw-feed-top"><strong>'+esc((u.update_type||"PLAYER UPDATE").toUpperCase())+'</strong><span>'+esc(pwDate(u.update_date||u.created_at))+'</span></div><p>'+esc(u.update_text||u.notes||"Update recorded.")+'</p><small>'+esc(u.rank_impact||u.injury_status||u.review_status||"")+'</small></div>'}).join("")+'</div>':'<div class="pw-empty">No player updates found.</div>';
+      var histHtml=hist.length?'<div class="pw-feed">'+hist.slice(0,10).map(function(h){return '<div class="pw-feed-item"><div class="pw-feed-top"><strong>RANK SNAPSHOT · #'+esc(pwNum(h.overall_rank))+'</strong><span>'+esc(pwDate(h.snapshot_date))+'</span></div><p>'+(h.fp_sf_rank?"Market #"+esc(h.fp_sf_rank):"Market unranked")+' · '+esc(h.market_view||h.snapshot_kind||"snapshot")+'</p></div>'}).join("")+'</div>':'<div class="pw-empty">No rank snapshots found.</div>';
+      var auditHtml=audit.length?'<div class="pw-feed">'+audit.map(function(a){return '<div class="pw-feed-item"><div class="pw-feed-top"><strong>'+esc(activitySummary(a))+'</strong><span>'+esc(dashboardTimeAgo(a.changed_at))+'</span></div><p>'+esc(a.table_name||"BBB Admin")+'</p></div>'}).join("")+'</div>':'<div class="pw-empty">No recent admin changes for this player in the current activity window.</div>';
+      return '<div class="pw-grid"><div class="pw-stack">'+pwPanel("PLAYER UPDATES","News + review trail",updateHtml)+pwPanel("ADMIN AUDIT","Recent BBB admin changes",auditHtml)+'</div><div class="pw-stack">'+pwPanel("RANK HISTORY","Recent snapshots",histHtml)+'</div></div>';
+    }
+
+    function pwCompleteness(detail){
+      var d=pwIdentityData(pwKey,detail),b=d.board,p=d.profile,x=d.prospect,raw=detail.rawProfile||{},stats=detail.stats||[];
+      var checks=[
+        ["Player identity",!!d.name&&!!d.pos],
+        [x&&!b?"School":"College",!!d.college],
+        [x&&!b?"Draft class":"Draft metadata",!!d.draft],
+        ["Profile breakdown",!!((p&&p.overall_breakdown)||(x&&x.summary))],
+        ["Latest update",!!((b&&b.latest_update)||(p&&p.latest_weekly_update)||(detail.updates&&detail.updates.length))],
+        ["Stats history",!!stats.length],
+        ["Injury / status",!!d.status],
+        ["Last verified",!!raw.last_verified_at]
+      ];
+      if(b){checks.push(["Market rank",b.market!=null]);checks.push(["Position rank",b.pr!=null])}
+      if(x){checks.push(["Scouting research",prospectReady(x)]);checks.push(["Class verified",!!x.class_verified_at]);checks.push(["Final grade",!!x.graded])}
+      var ok=checks.filter(function(v){return v[1]}).length,pct=Math.round(ok/checks.length*100);
+      return {checks:checks,pct:pct};
+    }
+
+    function pwData(detail){
+      var d=pwIdentityData(pwKey,detail),b=d.board,p=d.profile,x=d.prospect,c=pwCompleteness(detail);
+      var checks='<div class="pw-complete-head"><div><span>PLAYER RECORD COMPLETENESS</span><strong>'+c.pct+'%</strong></div><span>'+c.checks.filter(function(v){return v[1]}).length+' / '+c.checks.length+' checks complete</span></div><div class="pw-complete-bar"><i style="width:'+c.pct+'%"></i></div><div class="pw-checks">'+c.checks.map(function(v){return '<div class="pw-check '+(v[1]?"ok":"")+'"><i></i>'+esc(v[0])+'</div>'}).join("")+'</div>';
+      var raw='<div class="pw-info-grid"><div class="pw-info"><span>PLAYER KEY</span><strong>'+esc(pwKey)+'</strong></div><div class="pw-info"><span>POSITION</span><strong>'+esc(d.pos)+'</strong></div><div class="pw-info"><span>TEAM</span><strong>'+esc(d.team||"—")+'</strong></div><div class="pw-info"><span>COLLEGE / SCHOOL</span><strong>'+esc(d.college||"—")+'</strong></div><div class="pw-info"><span>AGE</span><strong>'+esc(d.age||"—")+'</strong></div><div class="pw-info"><span>DRAFT / CLASS</span><strong>'+esc(d.draft||"—")+'</strong></div><div class="pw-info"><span>BBB RANK</span><strong>'+esc(b?"#"+b.rank:"—")+'</strong></div><div class="pw-info"><span>PROSPECT GRADE</span><strong>'+esc(x&&x.overall_grade!=null?Number(x.overall_grade).toFixed(1):"—")+'</strong></div></div>';
+      var actions='<div class="pw-inline-actions">'+(b?'<button type="button" class="pw-action primary" data-pw-action="edit">EDIT CORE PLAYER DATA</button>':"")+(x?'<button type="button" class="pw-action" data-pw-action="report">OPEN SCOUTING REPORT</button>':"")+'<button type="button" class="pw-action cyan" data-pw-action="refresh">REFRESH THIS RECORD</button></div>';
+      return '<div class="pw-grid"><div class="pw-stack">'+pwPanel("DATA HEALTH","What is complete vs missing",checks)+'</div><div class="pw-stack">'+pwPanel("RECORD","Canonical BBB identifiers",raw+actions)+'</div></div>';
+    }
+
+    function pwRender(){
+      pwEnsure();
+      var detail=pwCache.get(pwKey)||{board:pwBoard(pwKey),profile:pwProfile(pwKey),rawProfile:null,updates:[],stats:[],history:[]};
+      pwHeader(detail);
+      var body=pwQ("#pwBody");
+      if(pwLoading&&!pwCache.has(pwKey)){body.innerHTML='<div class="pw-loading">Loading the full BBB player record…</div>';return}
+      if(pwTab==="dynasty")body.innerHTML=pwDynasty(detail);
+      else if(pwTab==="scouting")body.innerHTML=pwScouting(detail);
+      else if(pwTab==="stats")body.innerHTML=pwStats(detail);
+      else if(pwTab==="activity")body.innerHTML=pwActivity(detail);
+      else if(pwTab==="data")body.innerHTML=pwData(detail);
+      else body.innerHTML=pwOverview(detail);
+    }
+
+    async function pwOpen(key,tab){
+      if(!key)return;
+      pwEnsure();pwKey=key;pwTab=tab||"overview";
+      pwQ("#bbbPlayerWorkspaceBackdrop").classList.remove("hide");
+      pwQ("#bbbPlayerWorkspace").classList.remove("hide");
+      document.body.classList.add("pw-open");
+      pwLoading=true;pwRender();
+      try{await pwLoadDetail(key,false)}catch(e){console.error("BBB Player Workspace load failed",e)}
+      finally{pwLoading=false;if(pwKey===key)pwRender()}
+    }
+    function pwClose(){
+      var shell=pwQ("#bbbPlayerWorkspace"),back=pwQ("#bbbPlayerWorkspaceBackdrop");
+      if(shell)shell.classList.add("hide");if(back)back.classList.add("hide");document.body.classList.remove("pw-open");
+    }
+
+    async function pwRefresh(){
+      if(!pwKey)return;pwCache.delete(pwKey);pwLoading=true;pwRender();
+      try{await pwLoadDetail(pwKey,true)}catch(e){alert(e.message)}
+      finally{pwLoading=false;pwRender()}
+    }
+
+    async function pwMoveRank(btn){
+      var b=pwBoard(pwKey),input=pwQ("#pwRankInput"),status=pwQ("#pwMoveStatus"),nr=Number(input&&input.value);
+      if(!b||!Number.isInteger(nr)||nr<1||nr>board.length){if(status)status.textContent="Enter a valid rank from 1 to "+board.length+".";return}
+      if(nr===b.rank){if(status)status.textContent="Player is already ranked #"+nr+".";return}
+      btn.disabled=true;if(status)status.textContent="Moving "+b.name+"…";
+      try{
+        await rpc("admin_move_dynasty_player",{p_player_key:pwKey,p_new_rank:nr});
+        await Promise.all([loadBoard(),loadActivity()]);
+        pwCache.delete(pwKey);
+        renderRankings();renderPlayers();renderCommandDashboard();
+        await pwLoadDetail(pwKey,true);
+        if(status)status.textContent=b.name+" moved from #"+b.rank+" to #"+nr+".";
+        pwRender();
+      }catch(e){if(status)status.textContent=e.message}
+      finally{btn.disabled=false}
+    }
+
+    async function pwVerify(btn){
+      var r=pwReview(pwKey);if(!r)return;
+      await markReviewVerified(pwKey,btn);pwCache.delete(pwKey);await pwLoadDetail(pwKey,true);pwRender();
+    }
+    async function pwRankReview(btn){
+      var r=pwReview(pwKey);if(!r)return;
+      await toggleRankingReview(pwKey,btn);pwCache.delete(pwKey);await pwLoadDetail(pwKey,true);pwRender();
+    }
+
+    function pwHandleWorkspaceClick(e){
+      var tab=e.target.closest("[data-pw-tab]");
+      if(tab){pwTab=tab.dataset.pwTab;pwRender();return}
+      var a=e.target.closest("[data-pw-action]");if(!a)return;
+      var action=a.dataset.pwAction;
+      if(action==="close"){pwClose();return}
+      if(action==="refresh"){pwRefresh();return}
+      if(action==="move"){pwMoveRank(a);return}
+      if(action==="edit"){var k=pwKey;pwClose();openEditor(k);return}
+      if(action==="report"){var kr=pwKey;pwClose();openProspectReport(kr);return}
+      if(action==="grade"){var kg=pwKey;pwClose();startProspectGrade(kg);return}
+      if(action==="verify"){pwVerify(a);return}
+      if(action==="rankreview"){pwRankReview(a);return}
+    }
+
+    function pwInferTableKey(target){
+      var cell=target.closest(".player-name");if(!cell)return null;
+      var row=cell.closest("tr");if(!row)return null;
+      if(row.closest("#rankBody"))return row.dataset.rankPlayer||null;
+      if(row.closest("#playerAdminBody")||row.closest("#reviewBody")){var b=row.querySelector("[data-edit]");return b&&b.dataset.edit||null}
+      return null;
+    }
+
+    document.addEventListener("click",function(e){
+      var grade=e.target.closest("[data-grade-prospect]");if(grade)return;
+      var card=e.target.closest("#prospectLabGrid [data-open-prospect]");
+      if(card){e.preventDefault();e.stopImmediatePropagation();pwOpen(card.dataset.openProspect,"scouting");return}
+      var key=pwInferTableKey(e.target);
+      if(key){e.preventDefault();e.stopImmediatePropagation();pwOpen(key,"overview");return}
+      var activity=e.target.closest("[data-activity-player]");
+      if(activity&&activity.dataset.activityPlayer){e.preventDefault();e.stopImmediatePropagation();pwOpen(activity.dataset.activityPlayer,"activity");return}
+      var lens=e.target.closest("#rankLens .rank-lens-id");
+      if(lens&&selectedRankKey){e.preventDefault();e.stopImmediatePropagation();pwOpen(selectedRankKey,"overview");return}
+    },true);
+
+    document.addEventListener("keydown",function(e){
+      var shell=pwQ("#bbbPlayerWorkspace");
+      if(e.key==="Escape"&&shell&&!shell.classList.contains("hide")){e.preventDefault();e.stopImmediatePropagation();pwClose()}
+    },true);
+
+    var pwOriginalExecuteCommand=executeCommandItem;
+    executeCommandItem=function(item){
+      if(item&&(item.type==="player"||item.type==="prospect")){
+        closeCommandPalette();pwOpen(item.id,item.type==="prospect"?"scouting":"overview");return;
+      }
+      return pwOriginalExecuteCommand(item);
+    };
+
+    var pwOriginalSavePlayer=savePlayer;
+    savePlayer=async function(e){var k=pwQ("#editKey")&&pwQ("#editKey").value;await pwOriginalSavePlayer(e);if(k)pwCache.delete(k)};
+
+    var pwOriginalSaveProspect=saveProspectGrade;
+    saveProspectGrade=async function(e){var k=pwQ("#prospectKey")&&pwQ("#prospectKey").value;await pwOriginalSaveProspect(e);if(k)pwCache.delete(k)};
+
+    window.openBBBPlayerWorkspace=pwOpen;
+    window.closeBBBPlayerWorkspace=pwClose;
+    pwEnsure();
+  })();
+  </script>
 </body>
 </html>
