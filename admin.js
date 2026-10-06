@@ -1,7 +1,7 @@
 const SUPA='https://twbduhmibbotregdxlla.supabase.co';
 const KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
 const STORE='bbb_admin_session_v1';
-let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0;
+let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false;
 const PAGE=50;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -367,11 +367,155 @@ async function movePlayer(key){const x=board.find(p=>p.player_key===key);const i
 function openEditor(key){const b=board.find(x=>x.player_key===key),p=profileMap.get(key)||{};if(!b)return;$('#editKey').value=key;$('#drawerTitle').textContent=b.name;$('#editName').value=b.name||'';$('#editPosition').value=b.pos||'WR';$('#editTeam').value=b.team||'';$('#editAge').value=b.age??'';$('#editDraft').value=b.draft??'';$('#editCollege').value=b.college||'';$('#editInjury').value=p.injury_status||b.injury_status||'Healthy';$('#editInjuryDate').value=(p.injury_updated||b.injury_updated||'').slice(0,10);$('#editInjuryNote').value=p.injury_note||b.injury_note||'';$('#editOverview').value=p.overall_breakdown||b.overview||'';$('#profileLink').href=`/player/${encodeURIComponent(key)}`;$('#saveStatus').textContent='';$('#drawerBackdrop').classList.remove('hide');$('#playerDrawer').classList.remove('hide')}
 function closeEditor(){$('#drawerBackdrop').classList.add('hide');$('#playerDrawer').classList.add('hide')}
 async function savePlayer(e){e.preventDefault();const key=$('#editKey').value;if(!key)return;const save=$('#savePlayer');save.disabled=true;$('#saveStatus').textContent='Saving…';const identity={name:$('#editName').value.trim(),position:$('#editPosition').value,team:$('#editTeam').value.trim(),age:n($('#editAge').value),draft_year:n($('#editDraft').value),college:$('#editCollege').value.trim()||null};const profile={player_key:key,overall_breakdown:$('#editOverview').value.trim(),breakdown_basis:'BBB Admin',breakdown_updated:new Date().toISOString().slice(0,10),injury_status:$('#editInjury').value.trim()||'Healthy',injury_note:$('#editInjuryNote').value.trim(),injury_updated:$('#editInjuryDate').value||new Date().toISOString().slice(0,10),review_status:'Reviewed'};try{await rest(`players?player_key=eq.${encodeURIComponent(key)}`,{method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(identity)});await rest(`player_profiles?on_conflict=player_key`,{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(profile)});$('#saveStatus').textContent='Saved ✓';await Promise.all([loadBoard(),loadProfiles(),loadActivity()]);renderRankings();renderPlayers();if($('#metricInjuries'))$('#metricInjuries').textContent=board.filter(v=>!healthy(v.injury_status)).length;renderCommandDashboard();$('#drawerTitle').textContent=identity.name}catch(err){$('#saveStatus').textContent=err.message;$('#saveStatus').style.color='#ef8585'}finally{save.disabled=false}}
+
+function researchHours(ts){if(!ts)return Infinity;const t=new Date(ts).getTime();return Number.isFinite(t)?Math.max(0,(Date.now()-t)/36e5):Infinity}
+function researchAgeLabel(hours){
+  if(!Number.isFinite(hours))return 'Never verified';
+  if(hours<1)return 'Verified <1h ago';
+  if(hours<24)return 'Verified '+Math.floor(hours)+'h ago';
+  return 'Verified '+Math.floor(hours/24)+'d ago';
+}
+function researchPriorityLabel(p){return p===1?'P1 · CRITICAL':p===2?'P2 · HIGH':'P3 · NORMAL'}
+function researchHasIssue(row,code){return row.issues.some(x=>x.code===code)}
+function buildResearchRows(dynastyRows,rawProfiles,statsRows){
+  const rawMap=new Map((rawProfiles||[]).map(x=>[x.player_key,x]));
+  const statsSet=new Set((statsRows||[]).map(x=>x.player_key));
+  const dynasty=(dynastyRows||[]).map(x=>{
+    const raw=rawMap.get(x.player_key)||{};
+    const issues=[];let deduct=0,urgency=0;
+    const add=(code,label,severity,points,boost)=>{issues.push({code,label,severity:severity||''});deduct+=points||0;urgency+=boost||0};
+    if(!x.college)add('RESEARCH','Missing college','hot',12,20);
+    if(x.draft==null||x.draft==='')add('RESEARCH','Missing draft data','hot',10,20);
+    if(!x.overview)add('RESEARCH','Missing player overview','hot',18,25);
+    if(!x.latest_update)add('RESEARCH','No current player update','warn',16,22);
+    if(!statsSet.has(x.player_key))add('STATS','No 2026 stat row','warn',10,10);
+    if(x.market==null||x.market==='')add('MARKET','Market rank unavailable','',6,4);
+    const age=researchHours(raw.last_verified_at);
+    if(!Number.isFinite(age)||age>=72)add('STALE',Number.isFinite(age)?'Stale '+Math.floor(age/24)+'d':'Never verified','warn',14,18);
+    if(raw.ranking_review_needed)add('RANK','Ranking review flagged','hot',0,55);
+    if(!healthy(x.injury_status))add('RESEARCH','Active availability flag','warn',0,12);
+    if(Number(x.rank)<=50)urgency+=10;else if(Number(x.rank)<=100)urgency+=6;else if(Number(x.rank)<=250)urgency+=3;
+    const priority=urgency>=50?1:urgency>=25?2:3;
+    const completeness=Math.max(0,Math.min(100,100-deduct));
+    let workspaceTab='data';
+    if(issues.some(i=>i.code==='RANK'))workspaceTab='dynasty';
+    else if(issues.some(i=>i.code==='STATS'))workspaceTab='stats';
+    else if(issues.some(i=>i.code==='STALE'))workspaceTab='activity';
+    return {
+      kind:'DYNASTY',player_key:x.player_key,name:x.name,position:x.pos,team:x.team||'FA',school:x.college||'College —',
+      class_year:null,rank:Number(x.rank)||null,priority,urgency,completeness,issues,workspaceTab,
+      verifiedHours:age,context:'#'+(x.rank||'—')+' · '+(x.pos||'—')+' · '+(x.team||'FA'),
+      graded:true
+    };
+  }).filter(x=>x.issues.length);
+
+  const prospects=(prospectLab||[]).map(x=>{
+    const issues=[];let deduct=0,urgency=0;
+    const add=(code,label,severity,points,boost)=>{issues.push({code,label,severity:severity||''});deduct+=points||0;urgency+=boost||0};
+    if(!prospectReady(x))add('RESEARCH','Research profile incomplete','hot',18,45);
+    if(!x.summary)add('RESEARCH','Missing scouting summary','hot',18,25);
+    if(x.recommended_overall_grade==null)add('RESEARCH','Missing recommended grade','hot',15,25);
+    if(!x.recommended_pro_comp)add('RESEARCH','Missing pro comp','warn',12,15);
+    const sources=Array.isArray(x.source_urls)?x.source_urls:[];
+    if(!sources.length)add('RESEARCH','No research sources','warn',12,12);
+    if(!x.class_verified_at)add('CLASS','Draft class unverified','hot',16,50);
+    if(!x.graded)add('GRADE','Needs BBB grade','warn',15,20);
+    if(Number(x.class_year)===2027)urgency+=10;else urgency+=4;
+    const priority=urgency>=50?1:urgency>=25?2:3;
+    const completeness=Math.max(0,Math.min(100,100-deduct));
+    return {
+      kind:'PROSPECT',player_key:x.player_key,name:x.name,position:x.position,team:'',school:x.school||'School TBD',
+      class_year:Number(x.class_year)||null,rank:null,priority,urgency,completeness,issues,workspaceTab:'scouting',
+      verifiedHours:Infinity,context:(x.class_year||'—')+' NFL Draft · '+(x.position||'—')+' · '+(x.school||'School TBD'),
+      graded:!!x.graded
+    };
+  }).filter(x=>x.issues.length);
+
+  return dynasty.concat(prospects).sort((a,b)=>a.priority-b.priority||a.completeness-b.completeness||b.urgency-a.urgency||(a.rank||9999)-(b.rank||9999)||a.name.localeCompare(b.name));
+}
+async function loadResearchQueue(force){
+  if(researchLoading)return;
+  if(researchLoaded&&!force){renderResearchQueue();return}
+  researchLoading=true;
+  const state=$('#researchLoadState');
+  if(state){state.textContent='SCANNING…';state.classList.remove('good')}
+  const grid=$('#researchQueueGrid');
+  if(grid&&!researchLoaded)grid.innerHTML='<div class="research-loading"><span></span><strong>Scanning BBB player data…</strong><small>Building completeness and urgency scores.</small></div>';
+  try{
+    const jobs=await Promise.allSettled([
+      rest('site_dynasty?select=rank,player_key,name,pos,pr,team,age,draft,market,gap,view,fp_status,injury_status,injury_note,injury_updated,college,overview,latest_update,weekly_update_date&order=rank.asc'),
+      rest('player_profiles?select=player_key,last_verified_at,review_status,ranking_review_needed,ranking_review_reason,ranking_review_priority'),
+      rest('player_season_stats?select=player_key,season,games,team,updated_at&season=eq.2026')
+    ]);
+    const failed=jobs.filter(x=>x.status==='rejected');
+    if(failed.length)throw failed[0].reason;
+    researchQueue=buildResearchRows(jobs[0].value||[],jobs[1].value||[],jobs[2].value||[]);
+    researchLoaded=true;
+    renderResearchQueue();
+    if(state){state.textContent='LIVE · '+researchQueue.length+' ITEMS';state.classList.add('good')}
+  }catch(e){
+    console.error('BBB Research Queue load failed',e);
+    if(state){state.textContent='LOAD ERROR';state.classList.remove('good')}
+    if(grid)grid.innerHTML='<div class="research-empty"><strong>Research Queue could not load.</strong><span>'+esc(e.message||'Unknown error')+'</span></div>';
+  }finally{researchLoading=false}
+}
+function filteredResearchRows(){
+  const q=String($('#researchSearch')?.value||'').trim().toLowerCase();
+  const scope=$('#researchScope')?.value||'ALL',issue=$('#researchIssue')?.value||'ALL',priority=$('#researchPriority')?.value||'ALL',year=$('#researchClass')?.value||'ALL';
+  return researchQueue.filter(x=>{
+    if(scope!=='ALL'&&x.kind!==scope)return false;
+    if(issue!=='ALL'&&!researchHasIssue(x,issue))return false;
+    if(priority!=='ALL'&&String(x.priority)!==priority)return false;
+    if(year!=='ALL'&&String(x.class_year)!==year)return false;
+    if(q){
+      const hay=(x.name+' '+x.position+' '+x.team+' '+x.school+' '+x.context+' '+x.issues.map(i=>i.label).join(' ')).toLowerCase();
+      if(!hay.includes(q))return false;
+    }
+    return true;
+  });
+}
+function renderResearchQueue(){
+  const grid=$('#researchQueueGrid');if(!grid)return;
+  if(!researchLoaded){if(!researchLoading)loadResearchQueue(false);return}
+  const rows=filteredResearchRows();
+  if($('#researchNeedsAction'))$('#researchNeedsAction').textContent=researchQueue.length;
+  if($('#researchCritical'))$('#researchCritical').textContent=researchQueue.filter(x=>x.priority===1).length;
+  if($('#researchProspects'))$('#researchProspects').textContent=researchQueue.filter(x=>x.kind==='PROSPECT'&&researchHasIssue(x,'GRADE')).length;
+  if($('#researchStale'))$('#researchStale').textContent=researchQueue.filter(x=>researchHasIssue(x,'STALE')).length;
+  if($('#researchNavCount'))$('#researchNavCount').textContent=researchQueue.length||'05';
+  if($('#researchQueueCount'))$('#researchQueueCount').textContent=rows.length+' of '+researchQueue.length+' items';
+  grid.innerHTML=rows.length?rows.map(x=>{
+    const issueHtml=x.issues.slice(0,5).map(i=>'<span class="research-issue '+esc(i.severity)+'">'+esc(i.label)+'</span>').join('')+(x.issues.length>5?'<span class="research-issue">+'+(x.issues.length-5)+' more</span>':'');
+    const verify=x.kind==='DYNASTY'&&researchHasIssue(x,'STALE')?'<button type="button" class="research-verify" data-research-verify="'+esc(x.player_key)+'">MARK VERIFIED</button>':'';
+    const buttonLabel=x.kind==='PROSPECT'?'SCOUT / GRADE':'OPEN WORKSPACE';
+    const meta=x.kind==='PROSPECT'?(x.class_year+' · '+x.school):(x.context);
+    return '<article class="research-card p'+x.priority+'">'+
+      '<div class="research-card-head"><span class="research-kind">'+esc(x.kind==='PROSPECT'?'PRO':x.position)+'</span><div class="research-player"><strong>'+esc(x.name)+'</strong><span>'+esc(meta)+'</span></div><div class="research-priority"><b>'+researchPriorityLabel(x.priority)+'</b><span>urgency '+x.urgency+'</span></div></div>'+
+      '<div class="research-score-row"><div class="research-score"><strong>'+x.completeness+'</strong><span>% COMPLETE</span></div><div><div class="research-complete-bar"><i style="width:'+x.completeness+'%"></i></div><div class="research-complete-label"><span>Data completeness</span><span>'+x.issues.length+' issue'+(x.issues.length===1?'':'s')+'</span></div></div></div>'+
+      '<div class="research-issues">'+issueHtml+'</div>'+
+      '<div class="research-card-foot"><span class="research-context">'+esc(x.kind==='DYNASTY'?researchAgeLabel(x.verifiedHours):(x.graded?'BBB grade saved':'Awaiting Bobby grade'))+'</span><div class="research-actions">'+verify+'<button type="button" class="research-open primary" data-research-open="'+esc(x.player_key)+'" data-research-tab="'+esc(x.workspaceTab)+'">'+buttonLabel+'</button></div></div>'+
+    '</article>';
+  }).join(''):'<div class="research-empty"><strong>Queue clear for these filters.</strong><span>No players match the current research view.</span></div>';
+  $('[data-research-open]').forEach(b=>b.onclick=()=>{if(window.openBBBPlayerWorkspace)window.openBBBPlayerWorkspace(b.dataset.researchOpen,b.dataset.researchTab||'data')});
+  $('[data-research-verify]').forEach(b=>b.onclick=()=>markResearchVerified(b.dataset.researchVerify,b));
+}
+async function markResearchVerified(key,btn){
+  const old=btn.textContent;btn.disabled=true;btn.textContent='VERIFYING…';
+  try{
+    await rpc('admin_mark_player_verified',{p_player_key:key});
+    researchLoaded=false;
+    await Promise.allSettled([loadResearchQueue(true),loadReviewQueue()]);
+    renderReviewQueue();
+    queueDashboardPaint();
+  }catch(e){alert(e.message);btn.disabled=false;btn.textContent=old}
+}
+
 const ADMIN_COMMANDS=[
   {id:'dashboard',icon:'⌂',label:'Dashboard',sub:'Return to Dynasty Command Center',tag:'PAGE'},
   {id:'rankings',icon:'▥',label:'Rankings Manager',sub:'Move and inspect the Top 500',tag:'PAGE'},
   {id:'players',icon:'◎',label:'Player Editor',sub:'Edit identity, injury and profile data',tag:'PAGE'},
   {id:'prospects',icon:'✦',label:'Prospect Lab',sub:'Research and grade 2027 / 2028 prospects',tag:'PAGE'},
+  {id:'research',icon:'⌬',label:'Research Queue',sub:'Work player completeness, class audits and missing data',tag:'PAGE'},
   {id:'review',icon:'◈',label:'Review Queue',sub:'Work freshness, sources and ranking flags',tag:'PAGE'},
   {id:'injuries',icon:'＋',label:'Show injury concerns',sub:'Open Player Editor filtered to active injuries',tag:'ACTION'},
   {id:'buys',icon:'↗',label:'Show BBB buys',sub:'Open rankings where BBB is above market',tag:'ACTION'},
@@ -412,10 +556,11 @@ function page(name){
   const target=$(`#page${name[0].toUpperCase()+name.slice(1)}`);
   if(!target)return;
   target.classList.remove('hide');
-  const titles={dashboard:'Dashboard',rankings:'Rankings Manager',players:'Player Editor',prospects:'Prospect Lab',review:'Review Queue'};if($('#missionPageTitle'))$('#missionPageTitle').textContent=titles[name]||name;
+  const titles={dashboard:'Dashboard',rankings:'Rankings Manager',players:'Player Editor',prospects:'Prospect Lab',research:'Research Queue',review:'Review Queue'};if($('#missionPageTitle'))$('#missionPageTitle').textContent=titles[name]||name;
   if(name==='rankings')renderRankings();
   if(name==='players')renderPlayers();
   if(name==='prospects')renderProspectLab();
+  if(name==='research'){renderResearchQueue();if(!researchLoaded&&!researchLoading)void loadResearchQueue(false)}
   if(name==='review'){renderReviewQueue();renderDataHealth()}
   if(name==='dashboard')renderCommandDashboard()
 }
@@ -473,6 +618,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#prospectStartGrade')?.addEventListener('click',()=>startProspectGrade($('#prospectStartGrade').dataset.playerKey));
   $('#prospectBackToReport')?.addEventListener('click',()=>openProspectReport($('#prospectKey').value));
   $('#prospectGradeForm')?.addEventListener('submit',saveProspectGrade);
+  ['#researchSearch','#researchScope','#researchIssue','#researchPriority','#researchClass'].forEach(s=>$(s)?.addEventListener(s==='#researchSearch'?'input':'change',renderResearchQueue));
+  $('#researchClear')?.addEventListener('click',()=>{$('#researchSearch').value='';$('#researchScope').value='ALL';$('#researchIssue').value='ALL';$('#researchPriority').value='ALL';$('#researchClass').value='ALL';renderResearchQueue()});
+  $('#researchRefresh')?.addEventListener('click',async e=>{const b=e.currentTarget;b.disabled=true;try{researchLoaded=false;await loadResearchQueue(true)}finally{b.disabled=false}});
   ['#reviewSearch','#reviewPriority','#reviewKind'].forEach(s=>$(s).addEventListener(s==='#reviewSearch'?'input':'change',()=>{reviewPage=0;renderReviewQueue()}));
   $('#reviewClear').onclick=()=>{$('#reviewSearch').value='';$('#reviewPriority').value='ALL';$('#reviewKind').value='ALL';reviewPage=0;renderReviewQueue()};
   $('#reviewPrev').onclick=()=>{reviewPage=Math.max(0,reviewPage-1);renderReviewQueue()};$('#reviewNext').onclick=()=>{reviewPage++;renderReviewQueue()};
