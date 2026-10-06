@@ -24,9 +24,6 @@ function showApp(admin){$('#loginView').classList.add('hide');$('#appView').clas
 function nextPaint(){return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))}
 async function enterAdmin(admin){
   showApp(admin);
-  $('.admin-page').forEach(p=>p.classList.add('hide'));
-  $('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page==='dashboard'));
-  if($('#missionPageTitle'))$('#missionPageTitle').textContent='Dashboard';
   await nextPaint();
   await loadAll();
   page('dashboard');
