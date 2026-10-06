@@ -22,13 +22,25 @@ async function signIn(email,password){const x=await jsonFetch(`${SUPA}/auth/v1/t
 function showLogin(){ $('#loginView').classList.remove('hide');$('#appView').classList.add('hide') }
 function showApp(admin){$('#loginView').classList.add('hide');$('#appView').classList.remove('hide');$('#adminRole').textContent=`${String(admin.role||'admin').toUpperCase()} ACCESS`}
 function nextPaint(){return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))}
+async function settleDashboardPaint(){
+  const dash=$('#pageDashboard');
+  if(!dash)return;
+  dash.style.animation='none';
+  dash.style.opacity='1';
+  dash.style.transform='none';
+  dash.style.willChange='auto';
+  void dash.getBoundingClientRect();
+  renderCommandDashboard();
+  await nextPaint();
+  void dash.offsetHeight;
+  renderCommandDashboard();
+}
 async function enterAdmin(admin){
   showApp(admin);
   await nextPaint();
   await loadAll();
   page('dashboard');
-  await nextPaint();
-  renderCommandDashboard();
+  await settleDashboardPaint();
   window.dispatchEvent(new Event('resize'));
 }
 async function boot(){let raw=localStorage.getItem(STORE);if(raw)try{session=JSON.parse(raw)}catch{}if(!session){showLogin();return}if(session.expires_at&&Date.now()/1000>session.expires_at-60&&!await refreshSession()){showLogin();return}try{const admin=await checkAdmin();if(!admin){clearSession();showLogin();return}await enterAdmin(admin)}catch(e){console.error(e);clearSession();showLogin()}}
