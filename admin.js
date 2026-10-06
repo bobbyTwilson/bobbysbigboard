@@ -630,7 +630,7 @@ function executeActiveCommand(){const items=commandItems($('#commandPaletteInput
 function page(name){
   activeAdminPage=name;
   document.documentElement.dataset.adminPage=name;
-  $('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+  $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
   $$('.admin-page').forEach(p=>p.classList.add('hide'));
   const target=$(`#page${name[0].toUpperCase()+name.slice(1)}`);
   if(!target)return;
