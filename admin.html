@@ -2215,7 +2215,7 @@ body:after{
     </form>
   </aside>
 
-  <script src="/admin.js?v=research-queue-v13"></script>
+  <script src="/admin.js?v=research-queue-fix-v14"></script>
 
   <style id="bbb-player-workspace-v1">
     body.pw-open{overflow:hidden}
@@ -3025,7 +3025,20 @@ body:after{
 .research-radar:before,.research-radar:after{content:"";position:absolute;background:rgba(57,255,155,.12)}
 .research-radar:before{width:1px;height:100%}.research-radar:after{width:100%;height:1px}
 .research-radar span{position:relative;z-index:2;color:#9affc5;font-size:10px;font-weight:1000;letter-spacing:.13em}
-.research-radar i{position:absolute;inset:50% 50% auto auto;width:50%;height:1px;transform-origin:left center;background:linear-gradient(90deg,rgba(57,255,155,.72),transparent);box-shadow:0 0 9px rgba(57,255,155,.35);animation:researchSweep 4s linear infinite}
+.research-radar i{
+  position:absolute;inset:9px;border-radius:50%;
+  background:conic-gradient(from 0deg,rgba(57,255,155,.26) 0deg,rgba(57,255,155,.09) 28deg,transparent 62deg 360deg);
+  border:1px solid rgba(57,255,155,.04);
+  transform-origin:50% 50%;
+  animation:researchSweep 4s linear infinite;
+  pointer-events:none;
+}
+.research-radar i:after{
+  content:"";position:absolute;left:50%;top:50%;width:42%;height:1px;
+  background:linear-gradient(90deg,rgba(120,255,188,.82),transparent);
+  box-shadow:0 0 9px rgba(57,255,155,.32);
+  transform-origin:left center;
+}
 @keyframes researchSweep{to{transform:rotate(360deg)}}
 
 .research-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
