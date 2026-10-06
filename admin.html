@@ -1873,7 +1873,8 @@ body:after{
           <button class="nav-btn" data-page="rankings">Rankings Manager <span>02</span></button>
           <button class="nav-btn" data-page="players">Player Editor <span>03</span></button>
           <button class="nav-btn" data-page="prospects">Prospect Lab <span id="prospectNavCount">04</span></button>
-          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">05</span></button>
+          <button class="nav-btn" data-page="research">Research Queue <span id="researchNavCount">05</span></button>
+          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">06</span></button>
         </div>
         <div class="side-note"><strong>SECURE COMMAND LINK</strong><span>Every write is audited. The board moves only when you command it.</span></div>
       </aside>
@@ -2018,6 +2019,83 @@ body:after{
             <div id="prospectLabGrid" class="prospect-grid"><div class="empty">Loading prospect lab…</div></div>
           </section>
         </section>
+
+
+<section id="pageResearch" class="admin-page hide">
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">INTELLIGENCE BACKLOG · PLAYER DATA</div>
+      <h1>Research Queue</h1>
+      <p>Find the players and prospects that need research, verification, grading, stat coverage, or a deeper data pass.</p>
+    </div>
+    <button id="researchRefresh" class="refresh-btn" type="button">Refresh Research</button>
+  </div>
+
+  <section class="research-hero">
+    <div class="research-hero-copy">
+      <div class="panel-kicker">BBB INTELLIGENCE ENGINE</div>
+      <h2>Know exactly what needs work next.</h2>
+      <p>This queue scores completeness and urgency without touching your rankings. Open any player to jump straight into the Player Workspace and fix the missing piece.</p>
+      <div class="research-hero-pills">
+        <span>DYNASTY DATA</span><span>PROSPECT RESEARCH</span><span>CLASS AUDIT</span><span>GRADE BACKLOG</span>
+      </div>
+    </div>
+    <div class="research-radar" aria-hidden="true"><span>SCAN</span><i></i></div>
+  </section>
+
+  <div class="metric-grid research-kpis">
+    <div class="metric cyber-metric"><div class="metric-icon">!</div><div><span>Needs Action</span><strong id="researchNeedsAction">—</strong><small>OPEN ITEMS</small></div></div>
+    <div class="metric cyber-metric"><div class="metric-icon">▲</div><div><span>Priority One</span><strong id="researchCritical">—</strong><small>HANDLE FIRST</small></div></div>
+    <div class="metric cyber-metric"><div class="metric-icon">✦</div><div><span>Prospects Ungraded</span><strong id="researchProspects">—</strong><small>SCOUTING BACKLOG</small></div></div>
+    <div class="metric cyber-metric"><div class="metric-icon">◷</div><div><span>Stale 72h+</span><strong id="researchStale">—</strong><small>NEEDS FRESH EYES</small></div></div>
+  </div>
+
+  <section class="panel research-control-panel">
+    <div class="panel-head">
+      <div><div class="panel-kicker">QUEUE CONTROL</div><h2>Research Workbench</h2><span>Filter the backlog by player type, issue, priority, or draft class</span></div>
+      <span id="researchLoadState" class="hud-badge good">READY</span>
+    </div>
+    <div class="research-toolbar">
+      <input id="researchSearch" class="input" placeholder="Search player, team, school, issue…">
+      <select id="researchScope" class="select">
+        <option value="ALL">All players</option>
+        <option value="DYNASTY">Dynasty only</option>
+        <option value="PROSPECT">Prospects only</option>
+      </select>
+      <select id="researchIssue" class="select">
+        <option value="ALL">All issues</option>
+        <option value="RESEARCH">Needs research</option>
+        <option value="GRADE">Needs BBB grade</option>
+        <option value="CLASS">Draft class audit</option>
+        <option value="STATS">Missing current stats</option>
+        <option value="MARKET">Missing market coverage</option>
+        <option value="STALE">Stale verification</option>
+        <option value="RANK">Ranking review flag</option>
+      </select>
+      <select id="researchPriority" class="select">
+        <option value="ALL">All priorities</option>
+        <option value="1">Priority 1</option>
+        <option value="2">Priority 2</option>
+        <option value="3">Priority 3</option>
+      </select>
+      <select id="researchClass" class="select">
+        <option value="ALL">All draft classes</option>
+        <option value="2027">2027</option>
+        <option value="2028">2028</option>
+      </select>
+      <button id="researchClear" class="small-btn" type="button">Clear</button>
+    </div>
+    <div class="research-sortline">
+      <span id="researchQueueCount">Loading research queue…</span>
+      <span>Sorted by urgency → completeness → board relevance</span>
+    </div>
+    <div id="researchQueueGrid" class="research-grid">
+      <div class="research-loading"><span></span><strong>Scanning BBB player data…</strong><small>This loads only when you open Research Queue.</small></div>
+    </div>
+  </section>
+
+  <div class="danger-note"><strong>Ranking safety:</strong> Research Queue can identify missing or stale information and send you to the right workspace tab. It never changes a player’s dynasty rank by itself.</div>
+</section>
 
 <section id="pageReview" class="admin-page hide">
           <div class="page-head"><div><div class="eyebrow">THE WATCHTOWER</div><h1>Review Queue</h1><p>Players that need a freshness check, source review, or manual ranking decision.</p></div><button class="refresh-btn" data-refresh>Refresh Queue</button></div>
@@ -2924,5 +3002,105 @@ body:after{
   will-change:auto!important;
 }
 </style>
+
+<style id="bbb-research-queue-v1">
+.nav-btn[data-page="research"]:before{content:"⌬"!important}
+
+.research-hero{
+  position:relative;overflow:hidden;min-height:176px;margin-bottom:11px;padding:24px 26px;
+  border:1px solid rgba(57,255,155,.14);border-radius:18px;
+  background:
+    radial-gradient(circle at 82% 38%,rgba(57,255,155,.13),transparent 25%),
+    radial-gradient(circle at 92% 70%,rgba(88,234,255,.06),transparent 20%),
+    linear-gradient(125deg,rgba(5,24,15,.96),rgba(2,11,7,.97));
+  box-shadow:0 24px 70px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.018);
+}
+.research-hero:after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,#39ff9b,#58eaff,transparent);opacity:.5}
+.research-hero-copy{position:relative;z-index:2;max-width:850px}
+.research-hero h2{margin:6px 0 8px;color:#f2fff8;font-size:31px;letter-spacing:-.04em}
+.research-hero p{max-width:760px;margin:0;color:#789686;font-size:12px;line-height:1.6}
+.research-hero-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px}
+.research-hero-pills span{display:inline-flex;min-height:27px;align-items:center;padding:0 9px;border:1px solid rgba(57,255,155,.11);border-radius:999px;background:rgba(4,20,13,.66);color:#6ca184;font-size:9px;font-weight:950;letter-spacing:.09em}
+.research-radar{position:absolute;right:5%;top:50%;width:132px;height:132px;transform:translateY(-50%);display:grid;place-items:center;border:1px solid rgba(57,255,155,.18);border-radius:50%;background:repeating-radial-gradient(circle,transparent 0 20px,rgba(57,255,155,.05) 21px 22px);box-shadow:0 0 36px rgba(57,255,155,.06),inset 0 0 28px rgba(57,255,155,.03)}
+.research-radar:before,.research-radar:after{content:"";position:absolute;background:rgba(57,255,155,.12)}
+.research-radar:before{width:1px;height:100%}.research-radar:after{width:100%;height:1px}
+.research-radar span{position:relative;z-index:2;color:#9affc5;font-size:10px;font-weight:1000;letter-spacing:.13em}
+.research-radar i{position:absolute;inset:50% 50% auto auto;width:50%;height:1px;transform-origin:left center;background:linear-gradient(90deg,rgba(57,255,155,.72),transparent);box-shadow:0 0 9px rgba(57,255,155,.35);animation:researchSweep 4s linear infinite}
+@keyframes researchSweep{to{transform:rotate(360deg)}}
+
+.research-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.research-control-panel{overflow:visible!important}
+.research-toolbar{display:grid;grid-template-columns:minmax(240px,1.4fr) repeat(4,minmax(130px,.72fr)) auto;gap:8px;padding:13px 14px;border-bottom:1px solid rgba(57,255,155,.08)}
+.research-sortline{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(57,255,155,.06);color:#62816f;font-size:10px}
+.research-sortline span:first-child{color:#8cd9ad;font-weight:900}
+.research-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:12px}
+.research-card{
+  position:relative;overflow:hidden;min-width:0;border:1px solid rgba(57,255,155,.10);border-radius:13px;
+  background:linear-gradient(145deg,rgba(7,24,15,.93),rgba(3,12,8,.94));
+  transition:border-color .15s ease,transform .15s ease,background .15s ease;
+}
+.research-card:hover{transform:translateY(-1px);border-color:rgba(57,255,155,.23);background:linear-gradient(145deg,rgba(8,30,18,.96),rgba(3,13,8,.96))}
+.research-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#39ff9b;opacity:.42}
+.research-card.p1:before{background:#ff7080;opacity:.86}.research-card.p2:before{background:#ffc861;opacity:.72}
+.research-card-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:13px 14px 10px}
+.research-kind{min-width:48px;height:44px;border:1px solid rgba(88,234,255,.15);border-radius:10px;display:grid;place-items:center;background:rgba(8,46,47,.18);color:#8ce7ee;font-size:10px;font-weight:1000;letter-spacing:.06em}
+.research-player{min-width:0}
+.research-player strong{display:block;color:#f0fff7;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.research-player span{display:block;margin-top:3px;color:#668473;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.research-priority{text-align:right}
+.research-priority b{display:inline-flex;padding:4px 7px;border:1px solid rgba(57,255,155,.14);border-radius:999px;background:rgba(0,107,59,.12);color:#85eeb2;font-size:9px}
+.research-card.p1 .research-priority b{border-color:rgba(255,112,128,.22);background:rgba(121,34,46,.13);color:#ff9aa5}
+.research-card.p2 .research-priority b{border-color:rgba(255,200,97,.20);background:rgba(111,78,24,.13);color:#f2ca78}
+.research-priority span{display:block;margin-top:4px;color:#587263;font-size:9px}
+.research-score-row{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;align-items:center;padding:0 14px 11px}
+.research-score{display:flex;align-items:baseline;gap:3px}
+.research-score strong{font-size:28px;letter-spacing:-.05em;color:#8df1b7}
+.research-score span{color:#587765;font-size:9px;font-weight:900}
+.research-complete-bar{height:7px;border-radius:999px;background:#0b1911;overflow:hidden;border:1px solid rgba(57,255,155,.05)}
+.research-complete-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#148d53,#58eaff,#55df94)}
+.research-complete-label{display:flex;justify-content:space-between;margin-top:5px;color:#5d7768;font-size:9px}
+.research-issues{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 11px}
+.research-issue{display:inline-flex;align-items:center;gap:5px;min-height:25px;padding:0 8px;border:1px solid rgba(57,255,155,.09);border-radius:999px;background:rgba(4,18,11,.64);color:#779786;font-size:9px;font-weight:900}
+.research-issue:before{content:"";width:5px;height:5px;border-radius:50%;background:#65dfa0;box-shadow:0 0 7px rgba(57,255,155,.35)}
+.research-issue.warn{border-color:rgba(255,200,97,.12);color:#bca26c}.research-issue.warn:before{background:#ffc861}
+.research-issue.hot{border-color:rgba(255,112,128,.14);color:#c78990}.research-issue.hot:before{background:#ff7080}
+.research-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-top:1px solid rgba(57,255,155,.06);background:rgba(2,10,6,.44)}
+.research-context{min-width:0;color:#63806f;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.research-actions{display:flex;gap:6px;flex:none}
+.research-open,.research-verify{border:1px solid rgba(57,255,155,.16);background:rgba(6,25,15,.82);color:#9ed8b8;border-radius:8px;padding:8px 10px;font-size:9px;font-weight:950}
+.research-open:hover,.research-verify:hover{border-color:rgba(57,255,155,.38);color:#f0fff6}
+.research-open.primary{background:linear-gradient(135deg,rgba(22,123,72,.28),rgba(6,46,27,.42));color:#8ef0b6}
+.research-loading{grid-column:1/-1;min-height:220px;display:grid;place-items:center;align-content:center;gap:8px;color:#6f8d7b;text-align:center}
+.research-loading span{width:34px;height:34px;border:2px solid rgba(57,255,155,.12);border-top-color:#39ff9b;border-radius:50%;animation:researchSpin .8s linear infinite}
+.research-loading strong{color:#a4c7b3;font-size:13px}.research-loading small{font-size:10px}
+@keyframes researchSpin{to{transform:rotate(360deg)}}
+.research-empty{grid-column:1/-1;padding:48px 18px;text-align:center;color:#688171}.research-empty strong{display:block;color:#b6d8c3;font-size:15px;margin-bottom:5px}
+
+@media(max-width:1300px){
+  .research-toolbar{grid-template-columns:1fr 1fr 1fr}
+  .research-toolbar #researchSearch{grid-column:1/-1}
+}
+@media(max-width:980px){
+  .research-grid{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .research-hero{min-height:160px;padding:18px 15px}
+  .research-hero h2{font-size:25px;max-width:78%}
+  .research-hero p{font-size:10px;max-width:76%}
+  .research-radar{right:-38px;width:112px;height:112px;opacity:.64}
+  .research-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .research-toolbar{grid-template-columns:1fr 1fr;padding:10px}
+  .research-toolbar #researchSearch{grid-column:1/-1}
+  .research-sortline{font-size:9px;align-items:flex-start;flex-direction:column}
+  .research-grid{padding:8px}
+  .research-card-head{grid-template-columns:auto minmax(0,1fr)}
+  .research-priority{grid-column:1/-1;text-align:left;display:flex;align-items:center;gap:7px}
+  .research-priority span{margin:0}
+  .research-score-row{grid-template-columns:82px minmax(0,1fr)}
+  .research-card-foot{align-items:flex-start;flex-direction:column}
+  .research-actions{width:100%}.research-open,.research-verify{flex:1}
+}
+</style>
+
 </body>
 </html>
