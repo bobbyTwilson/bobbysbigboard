@@ -646,6 +646,47 @@ function page(name){
 function bindControlGroup(name,fn){
   try{fn()}catch(e){console.error('BBB Admin '+name+' controls failed',e)}
 }
+function adminClickRouter(e){
+  const nav=e.target.closest&&e.target.closest('.nav-btn[data-page]');
+  if(nav){
+    e.preventDefault();
+    page(nav.dataset.page);
+    return;
+  }
+  const jump=e.target.closest&&e.target.closest('[data-page-jump]');
+  if(jump){
+    e.preventDefault();
+    page(jump.dataset.pageJump);
+    return;
+  }
+  const quick=e.target.closest&&e.target.closest('[data-quick-page]');
+  if(quick){
+    e.preventDefault();
+    page(quick.dataset.quickPage);
+    return;
+  }
+  const owner=e.target.closest&&e.target.closest('.research-owner-tab[data-research-owner]');
+  if(owner){
+    e.preventDefault();
+    setResearchOwner(owner.dataset.researchOwner);
+    return;
+  }
+  const ownerJump=e.target.closest&&e.target.closest('[data-research-owner-jump]');
+  if(ownerJump){
+    e.preventDefault();
+    setResearchOwner(ownerJump.dataset.researchOwnerJump);
+    return;
+  }
+  const issueJump=e.target.closest&&e.target.closest('[data-research-issue-jump]');
+  if(issueJump){
+    e.preventDefault();
+    setResearchOwner('BOBBY');
+    if($('#researchIssue'))$('#researchIssue').value=issueJump.dataset.researchIssueJump||'ALL';
+    renderResearchQueue();
+  }
+}
+document.addEventListener('click',adminClickRouter,true);
+
 document.addEventListener('DOMContentLoaded',()=>{
   updateAdminClock();setInterval(updateAdminClock,30000);
 
@@ -656,15 +697,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 
   bindControlGroup('navigation and command',()=>{
-    $$('.nav-btn').forEach(b=>b.onclick=()=>page(b.dataset.page));
-    $$('[data-page-jump]').forEach(b=>b.onclick=()=>page(b.dataset.pageJump));
     const globalSearch=$('#adminGlobalSearch');
     if(globalSearch){
       globalSearch.addEventListener('focus',()=>{const seed=globalSearch.value;globalSearch.blur();openCommandPalette(seed)});
       globalSearch.addEventListener('click',()=>openCommandPalette(globalSearch.value));
     }
     $('#missionCommand')?.addEventListener('click',()=>openCommandPalette());
-    $$('[data-quick-page]').forEach(b=>b.onclick=()=>page(b.dataset.quickPage));
     $('#commandBackdrop')?.addEventListener('click',closeCommandPalette);
     $('#commandPaletteInput')?.addEventListener('input',()=>{commandIndex=0;renderCommandPalette()});
     $('#commandPaletteResults')?.addEventListener('mousemove',e=>{
@@ -728,9 +766,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   bindControlGroup('research queue',()=>{
     ['#researchSearch','#researchScope','#researchIssue','#researchPriority','#researchClass'].forEach(s=>$(s)?.addEventListener(s==='#researchSearch'?'input':'change',renderResearchQueue));
-    $$('.research-owner-tab').forEach(b=>b.addEventListener('click',()=>setResearchOwner(b.dataset.researchOwner)));
-    $$('[data-research-owner-jump]').forEach(b=>b.addEventListener('click',()=>setResearchOwner(b.dataset.researchOwnerJump)));
-    $$('[data-research-issue-jump]').forEach(b=>b.addEventListener('click',()=>{setResearchOwner('BOBBY');if($('#researchIssue'))$('#researchIssue').value=b.dataset.researchIssueJump||'ALL';renderResearchQueue()}));
     $('#researchClear')?.addEventListener('click',()=>{$('#researchSearch').value='';$('#researchScope').value='ALL';$('#researchIssue').value='ALL';$('#researchPriority').value='ALL';$('#researchClass').value='ALL';setResearchOwner('BOBBY')});
     $('#researchRefresh')?.addEventListener('click',async e=>{const b=e.currentTarget;b.disabled=true;try{researchLoaded=false;await loadResearchQueue(true)}finally{b.disabled=false}});
   });
