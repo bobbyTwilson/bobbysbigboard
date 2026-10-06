@@ -2026,7 +2026,7 @@ body:after{
     <div>
       <div class="eyebrow">INTELLIGENCE BACKLOG · PLAYER DATA</div>
       <h1>Research Queue</h1>
-      <p>Find the players and prospects that need research, verification, grading, stat coverage, or a deeper data pass.</p>
+      <p>Your decisions separated from system cleanup and informational data signals.</p>
     </div>
     <button id="researchRefresh" class="refresh-btn" type="button">Refresh Research</button>
   </div>
@@ -2034,26 +2034,32 @@ body:after{
   <section class="research-hero">
     <div class="research-hero-copy">
       <div class="panel-kicker">BBB INTELLIGENCE ENGINE</div>
-      <h2>Know exactly what needs work next.</h2>
-      <p>This queue scores completeness and urgency without touching your rankings. Open any player to jump straight into the Player Workspace and fix the missing piece.</p>
+      <h2>Only show Bobby what Bobby actually needs to decide.</h2>
+      <p>The queue now separates judgment calls from background data work. Grades, class conflicts and ranking reviews come to you. Stats, stale checks and missing research stay in the system lane.</p>
       <div class="research-hero-pills">
-        <span>DYNASTY DATA</span><span>PROSPECT RESEARCH</span><span>CLASS AUDIT</span><span>GRADE BACKLOG</span>
+        <span>YOUR DECISIONS</span><span>SYSTEM TASKS</span><span>FYI SIGNALS</span><span>NO AUTO RANK MOVES</span>
       </div>
     </div>
     <div class="research-radar" aria-hidden="true"><span>SCAN</span><i></i></div>
   </section>
 
   <div class="metric-grid research-kpis">
-    <div class="metric cyber-metric"><div class="metric-icon">!</div><div><span>Needs Action</span><strong id="researchNeedsAction">—</strong><small>OPEN ITEMS</small></div></div>
-    <div class="metric cyber-metric"><div class="metric-icon">▲</div><div><span>Priority One</span><strong id="researchCritical">—</strong><small>HANDLE FIRST</small></div></div>
-    <div class="metric cyber-metric"><div class="metric-icon">✦</div><div><span>Prospects Ungraded</span><strong id="researchProspects">—</strong><small>SCOUTING BACKLOG</small></div></div>
-    <div class="metric cyber-metric"><div class="metric-icon">◷</div><div><span>Stale 72h+</span><strong id="researchStale">—</strong><small>NEEDS FRESH EYES</small></div></div>
+    <button class="metric cyber-metric research-kpi-btn" type="button" data-research-owner-jump="BOBBY"><div class="metric-icon">★</div><div><span>Bobby Action Required</span><strong id="researchBobbyCount">—</strong><small>YOUR DECISIONS</small></div></button>
+    <button class="metric cyber-metric research-kpi-btn" type="button" data-research-owner-jump="SYSTEM"><div class="metric-icon">⚙</div><div><span>System Work Queue</span><strong id="researchSystemCount">—</strong><small>NO MANUAL WORK</small></div></button>
+    <button class="metric cyber-metric research-kpi-btn" type="button" data-research-issue-jump="GRADE"><div class="metric-icon">✦</div><div><span>Awaiting BBB Grade</span><strong id="researchProspects">—</strong><small>SCOUTING DECISIONS</small></div></button>
+    <button class="metric cyber-metric research-kpi-btn" type="button" data-research-owner-jump="FYI"><div class="metric-icon">◎</div><div><span>FYI / Data Health</span><strong id="researchFyiCount">—</strong><small>NO ACTION REQUIRED</small></div></button>
   </div>
 
   <section class="panel research-control-panel">
     <div class="panel-head">
-      <div><div class="panel-kicker">QUEUE CONTROL</div><h2>Research Workbench</h2><span>Filter the backlog by player type, issue, priority, or draft class</span></div>
+      <div><div class="panel-kicker">QUEUE CONTROL</div><h2>Research Workbench</h2><span>Start with your lane. Everything else is background intelligence.</span></div>
       <span id="researchLoadState" class="hud-badge good">READY</span>
+    </div>
+    <div class="research-owner-tabs" role="tablist" aria-label="Research queue ownership">
+      <button type="button" class="research-owner-tab active" data-research-owner="BOBBY"><span>★</span><strong>Bobby Action</strong><small id="researchTabBobby">—</small></button>
+      <button type="button" class="research-owner-tab" data-research-owner="SYSTEM"><span>⚙</span><strong>System Work</strong><small id="researchTabSystem">—</small></button>
+      <button type="button" class="research-owner-tab" data-research-owner="FYI"><span>◎</span><strong>FYI</strong><small id="researchTabFyi">—</small></button>
+      <button type="button" class="research-owner-tab" data-research-owner="ALL"><span>⌘</span><strong>All Lanes</strong><small id="researchTabAll">—</small></button>
     </div>
     <div class="research-toolbar">
       <input id="researchSearch" class="input" placeholder="Search player, team, school, issue…">
@@ -2064,13 +2070,13 @@ body:after{
       </select>
       <select id="researchIssue" class="select">
         <option value="ALL">All issues</option>
-        <option value="RESEARCH">Needs research</option>
         <option value="GRADE">Needs BBB grade</option>
-        <option value="CLASS">Draft class audit</option>
-        <option value="STATS">Missing current stats</option>
-        <option value="MARKET">Missing market coverage</option>
-        <option value="STALE">Stale verification</option>
-        <option value="RANK">Ranking review flag</option>
+        <option value="CLASS">Draft class decision</option>
+        <option value="RANK">Ranking review decision</option>
+        <option value="RESEARCH">System research</option>
+        <option value="STATS">System stats refresh</option>
+        <option value="STALE">System freshness check</option>
+        <option value="MARKET">Market coverage FYI</option>
       </select>
       <select id="researchPriority" class="select">
         <option value="ALL">All priorities</option>
@@ -2087,14 +2093,14 @@ body:after{
     </div>
     <div class="research-sortline">
       <span id="researchQueueCount">Loading research queue…</span>
-      <span>Sorted by urgency → completeness → board relevance</span>
+      <span id="researchQueueHint">Showing decisions that require your judgment</span>
     </div>
-    <div id="researchQueueGrid" class="research-grid">
+    <div id="researchQueueGrid" class="research-lanes">
       <div class="research-loading"><span></span><strong>Scanning BBB player data…</strong><small>This loads only when you open Research Queue.</small></div>
     </div>
   </section>
 
-  <div class="danger-note"><strong>Ranking safety:</strong> Research Queue can identify missing or stale information and send you to the right workspace tab. It never changes a player’s dynasty rank by itself.</div>
+  <div class="danger-note"><strong>Ranking safety:</strong> Research Queue can explain why a ranking deserves review, but it never moves a player. Every dynasty rank change still requires your command.</div>
 </section>
 
 <section id="pageReview" class="admin-page hide">
@@ -3113,6 +3119,46 @@ body:after{
   .research-card-foot{align-items:flex-start;flex-direction:column}
   .research-actions{width:100%}.research-open,.research-verify{flex:1}
 }
+</style>
+
+
+<style id="bbb-research-ownership-v2">
+.research-kpi-btn{appearance:none;width:100%;text-align:left;cursor:pointer}
+.research-kpi-btn:hover{border-color:rgba(57,255,155,.28)!important;transform:translateY(-1px)}
+.research-owner-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:12px 14px 0}
+.research-owner-tab{
+  min-height:56px;display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;padding:10px 12px;
+  border:1px solid rgba(57,255,155,.10);border-radius:11px;background:rgba(4,15,10,.74);color:#73907f;text-align:left
+}
+.research-owner-tab span{width:30px;height:30px;display:grid;place-items:center;border:1px solid rgba(57,255,155,.12);border-radius:9px;background:rgba(57,255,155,.035);color:#6bcf98;font-size:12px}
+.research-owner-tab strong{font-size:11px;color:#a8c6b4}
+.research-owner-tab small{font-size:10px;color:#668675;font-weight:950}
+.research-owner-tab:hover{border-color:rgba(57,255,155,.24);color:#dff9e9}
+.research-owner-tab.active{border-color:rgba(57,255,155,.28);background:linear-gradient(145deg,rgba(24,104,65,.22),rgba(5,28,17,.72));box-shadow:inset 0 0 0 1px rgba(57,255,155,.05),0 0 22px rgba(57,255,155,.035)}
+.research-owner-tab.active strong{color:#effff6}.research-owner-tab.active span{background:rgba(57,255,155,.13);color:#9affc5}
+.research-lanes{display:grid;gap:12px;padding:12px}
+.research-lane{border:1px solid rgba(57,255,155,.075);border-radius:14px;overflow:hidden;background:rgba(2,10,6,.42)}
+.research-lane-head{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:13px 14px;border-bottom:1px solid rgba(57,255,155,.065);background:rgba(6,20,13,.72)}
+.research-lane-title{display:flex;align-items:center;gap:10px}
+.research-lane-icon{width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(57,255,155,.14);border-radius:10px;background:rgba(57,255,155,.045);color:#75e9a8;font-size:13px}
+.research-lane-head h3{margin:0;color:#effff6;font-size:14px}.research-lane-head p{margin:3px 0 0;color:#668372;font-size:9px}
+.research-lane-count{padding:5px 8px;border:1px solid rgba(57,255,155,.11);border-radius:999px;color:#83cda2;font-size:9px;font-weight:950}
+.research-lane-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:10px}
+.research-card.owner-bobby{border-color:rgba(84,255,159,.15)}
+.research-card.owner-system{border-color:rgba(88,234,255,.10)}
+.research-card.owner-fyi{border-color:rgba(255,200,97,.09)}
+.research-owner-chip{display:inline-flex;align-items:center;gap:5px;margin-bottom:5px;padding:3px 6px;border-radius:999px;font-size:8px;font-weight:1000;letter-spacing:.08em;border:1px solid rgba(57,255,155,.11);color:#84d9a8;background:rgba(57,255,155,.04)}
+.owner-system .research-owner-chip{border-color:rgba(88,234,255,.12);color:#7cced6;background:rgba(88,234,255,.035)}
+.owner-fyi .research-owner-chip{border-color:rgba(255,200,97,.11);color:#c9aa6b;background:rgba(255,200,97,.03)}
+.research-instruction{margin:0 14px 11px;padding:10px 11px;border:1px solid rgba(57,255,155,.08);border-radius:9px;background:rgba(2,10,6,.55)}
+.research-instruction span{display:block;margin-bottom:4px;color:#65a480;font-size:8px;font-weight:1000;letter-spacing:.1em}
+.research-instruction strong{display:block;color:#cbe0d3;font-size:11px;line-height:1.45}
+.owner-system .research-instruction span{color:#63aeb5}.owner-fyi .research-instruction span{color:#a78f60}
+.research-no-action{display:inline-flex;align-items:center;min-height:31px;padding:0 10px;border:1px solid rgba(57,255,155,.07);border-radius:8px;color:#607b6b;font-size:9px;font-weight:900;background:rgba(3,12,8,.5)}
+.research-lane-empty{padding:24px;text-align:center;color:#637c6e;font-size:10px}
+.research-lane-empty strong{display:block;color:#9fc3ae;font-size:12px;margin-bottom:4px}
+@media(max-width:1050px){.research-owner-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.research-lane-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.research-owner-tabs{grid-template-columns:1fr 1fr;padding:9px}.research-owner-tab{grid-template-columns:auto 1fr;min-height:50px}.research-owner-tab small{grid-column:2}.research-lane-grid{padding:7px}.research-lane-head{align-items:flex-start}.research-lane-head p{max-width:230px}}
 </style>
 
 </body>
