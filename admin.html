@@ -2221,7 +2221,7 @@ body:after{
     </form>
   </aside>
 
-  <script src="/admin.js?v=admin-nav-stable-v17"></script>
+  <script src="/admin.js?v=admin-click-router-v18"></script>
 
   <style id="bbb-player-workspace-v1">
     body.pw-open{overflow:hidden}
@@ -3159,6 +3159,22 @@ body:after{
 .research-lane-empty strong{display:block;color:#9fc3ae;font-size:12px;margin-bottom:4px}
 @media(max-width:1050px){.research-owner-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.research-lane-grid{grid-template-columns:1fr}}
 @media(max-width:650px){.research-owner-tabs{grid-template-columns:1fr 1fr;padding:9px}.research-owner-tab{grid-template-columns:auto 1fr;min-height:50px}.research-owner-tab small{grid-column:2}.research-lane-grid{padding:7px}.research-lane-head{align-items:flex-start}.research-lane-head p{max-width:230px}}
+</style>
+
+
+<style id="bbb-admin-click-shield-v18">
+/* Keep the Command Deck above normal page content and below all modal layers. */
+.sidebar{z-index:30!important}
+.side-card,.nav-btn{pointer-events:auto!important}
+.side-card:before,.side-card:after,.nav-btn:before,.nav-btn:after{pointer-events:none!important}
+.content,.admin-page{position:relative;z-index:1}
+.command-backdrop,.drawer-backdrop,#bbbPlayerWorkspaceBackdrop{pointer-events:auto}
+.command-backdrop.hide,.drawer-backdrop.hide,#bbbPlayerWorkspaceBackdrop.hide{display:none!important;pointer-events:none!important}
+@media(max-width:980px){
+  .sidebar{z-index:90!important}
+  .drawer-backdrop{z-index:140!important}
+  .drawer{z-index:141!important}
+}
 </style>
 
 </body>
