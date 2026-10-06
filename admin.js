@@ -44,11 +44,27 @@ async function enterAdmin(admin){
   window.dispatchEvent(new Event('resize'));
 }
 async function boot(){let raw=localStorage.getItem(STORE);if(raw)try{session=JSON.parse(raw)}catch{}if(!session){showLogin();return}if(session.expires_at&&Date.now()/1000>session.expires_at-60&&!await refreshSession()){showLogin();return}try{const admin=await checkAdmin();if(!admin){clearSession();showLogin();return}await enterAdmin(admin)}catch(e){console.error(e);clearSession();showLogin()}}
+let dashboardPaintQueued=false;
+function queueDashboardPaint(){
+  if(dashboardPaintQueued)return;
+  dashboardPaintQueued=true;
+  requestAnimationFrame(()=>{
+    dashboardPaintQueued=false;
+    renderCommandDashboard();
+  });
+}
 async function loadAll(){
-  const jobs=await Promise.allSettled([loadBoard(),loadProfiles(),loadActivity(),loadReviewQueue(),loadProspectLab(),loadDataHealth()]);
+  const jobs=await Promise.allSettled([
+    loadBoard().then(()=>{renderRankings();renderPlayers();queueDashboardPaint()}),
+    loadProfiles().then(()=>{renderPlayers();queueDashboardPaint()}),
+    loadActivity().then(()=>queueDashboardPaint()),
+    loadReviewQueue().then(()=>{renderReviewQueue();queueDashboardPaint()}),
+    loadProspectLab().then(()=>{renderProspectLab();queueDashboardPaint()}),
+    loadDataHealth().then(()=>{renderDataHealth();queueDashboardPaint()}),
+    loadCounts().then(()=>queueDashboardPaint())
+  ]);
   const failed=jobs.filter(x=>x.status==='rejected');
   if(failed.length)console.error('BBB Admin data load warning',failed.map(x=>x.reason));
-  try{await loadCounts()}catch(e){console.error('BBB Admin count load warning',e)}
   renderRankings();renderPlayers();renderReviewQueue();renderProspectLab();renderDataHealth();renderCommandDashboard()
 }
 async function loadBoard(){board=await rest('site_dynasty?select=rank,player_key,name,pos,pr,team,age,draft,market,gap,view,injury_status,injury_note,injury_updated,college,overview&order=rank.asc')||[]}
@@ -56,7 +72,7 @@ async function loadProfiles(){const rows=await rest('site_profiles?select=player
 async function loadReviewQueue(){reviewQueue=await rpc('admin_get_review_queue',{p_limit:500})||[]}
 async function loadProspectLab(){prospectLab=await rpc('admin_get_prospect_lab',{p_year:null,p_include_graded:true})||[]}
 async function loadDataHealth(){dataHealth=await rpc('admin_get_data_health',{})||{}}
-async function loadCounts(){const [r,p]=await Promise.all([rest('site_rookies?select=player_key'),rest('site_prospects?select=player_key')]);rookiesCount=r?.length??0;prospectsCount=p?.length??0;if($('#metricPlayers'))$('#metricPlayers').textContent=board.length;if($('#metricRookies'))$('#metricRookies').textContent=rookiesCount;if($('#metricProspects'))$('#metricProspects').textContent=prospectsCount;if($('#metricInjuries'))$('#metricInjuries').textContent=board.filter(x=>!healthy(x.injury_status)).length}
+async function loadCounts(){const [r,p]=await Promise.all([rest('site_rookies?select=player_key'),rest('site_prospects?select=player_key')]);rookiesCount=r?.length??0;prospectsCount=p?.length??0}
 function activityPlayerName(a){
   const key=a?.row_key||a?.new_row?.player_key||a?.old_row?.player_key||'';
   const direct=a?.new_row?.name||a?.old_row?.name;
