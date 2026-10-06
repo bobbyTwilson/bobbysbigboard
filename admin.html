@@ -2061,7 +2061,7 @@ body:after{
   <aside id="prospectDrawer" class="drawer prospect-drawer hide">
     <div class="drawer-head">
       <div><div class="eyebrow">PROSPECT LAB · FINAL GRADE</div><h2 id="prospectDrawerTitle">Prospect</h2><div id="prospectDrawerMeta" class="prospect-drawer-meta"></div></div>
-      <button id="prospectDrawerClose" class="close-btn">×</button>
+      <button id="prospectDrawerClose" class="close-btn" type="button" aria-label="Close prospect workspace">×</button>
     </div>
     <div id="prospectReportView" class="drawer-body prospect-report-view">
       <input id="prospectKey" type="hidden">
@@ -2586,5 +2586,334 @@ body:after{
     pwEnsure();
   })();
   </script>
+
+<style id="bbb-admin-green-readability-v6">
+/* BBB Admin V6 — unify the command center in the green BBB language and raise the readability floor. */
+:root{
+  --bbb-green:#39ff9b;
+  --bbb-green-soft:#79eeb0;
+  --bbb-green-dim:#315f49;
+  --bbb-cyan:#58eaff;
+  --bbb-ink:#030907;
+  --bbb-panel:#07110d;
+  --bbb-panel-2:#09150f;
+  --bbb-line:rgba(57,255,155,.13);
+}
+
+/* Remove the leftover purple shell language without redesigning the dashboard. */
+.sidebar,.side-card{
+  border-color:rgba(57,255,155,.12)!important;
+  background:linear-gradient(180deg,rgba(4,14,9,.94),rgba(3,9,6,.97))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02),0 0 42px rgba(28,186,105,.035)!important;
+}
+.brand-copy span{color:#719783!important}
+.nav-overline{color:#557963!important}
+.nav-btn{
+  color:#73907f!important;
+  background:transparent!important;
+}
+.nav-btn:before{
+  border-color:rgba(57,255,155,.14)!important;
+  background:rgba(5,24,15,.72)!important;
+  color:#6ba586!important;
+  box-shadow:inset 0 0 12px rgba(57,255,155,.035)!important;
+}
+.nav-btn:hover{
+  color:#d8f7e5!important;
+  background:rgba(57,255,155,.055)!important;
+}
+.nav-btn.active{
+  color:#f2fff8!important;
+  background:linear-gradient(90deg,rgba(34,173,103,.20),rgba(9,48,29,.09))!important;
+  box-shadow:inset 0 0 0 1px rgba(57,255,155,.12),0 0 30px rgba(57,255,155,.045)!important;
+}
+.nav-btn.active:before{
+  color:#03130b!important;
+  background:linear-gradient(145deg,#63efa5,#24ab69)!important;
+  border-color:rgba(145,255,198,.55)!important;
+  box-shadow:0 0 18px rgba(57,255,155,.20),inset 0 1px 0 rgba(255,255,255,.22)!important;
+}
+.nav-btn span:last-child{
+  color:#688a77!important;
+  border-color:rgba(57,255,155,.10)!important;
+  background:rgba(57,255,155,.025)!important;
+}
+.nav-btn.active span:last-child{color:#98e7b9!important;border-color:rgba(57,255,155,.18)!important}
+.side-note{
+  border-color:rgba(57,255,155,.10)!important;
+  background:linear-gradient(145deg,rgba(5,18,11,.86),rgba(4,12,8,.90))!important;
+}
+.side-note strong{color:#8be9b5!important}
+.side-note strong:before{background:var(--bbb-green)!important;box-shadow:0 0 9px rgba(57,255,155,.70)!important}
+.side-note span{color:#6f8e7c!important}
+
+.page-head .eyebrow{color:#67dca0!important}
+.page-head p{color:#789184!important}
+.refresh-btn{
+  border-color:rgba(57,255,155,.22)!important;
+  background:linear-gradient(135deg,rgba(25,126,78,.30),rgba(7,22,14,.92))!important;
+  color:#bdf6d4!important;
+  box-shadow:0 0 28px rgba(57,255,155,.055)!important;
+}
+.command-ribbon span{
+  border-color:rgba(57,255,155,.09)!important;
+  background:rgba(5,19,12,.67)!important;
+  color:#668a76!important;
+}
+.metric,.panel{
+  border-color:rgba(57,255,155,.10)!important;
+  background:linear-gradient(160deg,rgba(7,18,12,.94),rgba(4,10,7,.95))!important;
+}
+.metric span,.panel-head span{color:#648875!important}
+.panel-head{border-bottom-color:rgba(57,255,155,.09)!important}
+.rank-table th{
+  background:rgba(4,13,8,.98)!important;
+  color:#62836f!important;
+  border-bottom-color:rgba(57,255,155,.11)!important;
+}
+.rank-table td{border-bottom-color:rgba(57,255,155,.055)!important;color:#b3c8bb!important}
+.rank-table tr:hover td{background:rgba(57,255,155,.025)!important}
+.toolbar{border-bottom-color:rgba(57,255,155,.10)!important}
+.input,.select,.textarea,.rank-input{
+  border-color:rgba(57,255,155,.15)!important;
+  background:#030a06!important;
+}
+.input:focus,.select:focus,.textarea:focus,.rank-input:focus{
+  border-color:rgba(57,255,155,.40)!important;
+  box-shadow:0 0 0 3px rgba(57,255,155,.055)!important;
+}
+.small-btn,.edit-btn,.move-btn,.queue-action{
+  border-color:rgba(57,255,155,.16)!important;
+  background:rgba(6,24,15,.78)!important;
+  color:#a7d9bd!important;
+}
+.small-btn:hover,.edit-btn:hover,.move-btn:hover,.queue-action:hover{border-color:rgba(57,255,155,.38)!important;color:#f0fff6!important}
+
+/* Player Workspace: same green command-center family as the dashboard. */
+#bbbPlayerWorkspaceBackdrop{background:rgba(0,5,2,.80)!important;backdrop-filter:blur(12px) saturate(120%)!important}
+#bbbPlayerWorkspace{
+  border-color:rgba(57,255,155,.23)!important;
+  background:#020905!important;
+  box-shadow:0 55px 180px rgba(0,0,0,.80),0 0 80px rgba(57,255,155,.07)!important;
+}
+#bbbPlayerWorkspace .pw-shell{
+  background:
+    radial-gradient(circle at 12% -12%,rgba(57,255,155,.13),transparent 34%),
+    radial-gradient(circle at 94% 0,rgba(88,234,255,.07),transparent 25%),
+    linear-gradient(180deg,#06110b,#020805)!important;
+}
+#bbbPlayerWorkspace .pw-shell:before{
+  background-image:linear-gradient(rgba(57,255,155,.020) 1px,transparent 1px),linear-gradient(90deg,rgba(57,255,155,.020) 1px,transparent 1px)!important;
+}
+#bbbPlayerWorkspace .pw-head{
+  border-bottom-color:rgba(57,255,155,.10)!important;
+  background:linear-gradient(180deg,rgba(5,20,12,.96),rgba(3,12,8,.90))!important;
+}
+#bbbPlayerWorkspace .pw-rank-orb{
+  border-color:rgba(57,255,155,.25)!important;
+  background:linear-gradient(145deg,rgba(33,155,93,.28),rgba(6,47,27,.72))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 28px rgba(57,255,155,.10)!important;
+}
+#bbbPlayerWorkspace .pw-rank-orb span{color:#6fa386!important}
+#bbbPlayerWorkspace .pw-rank-orb strong{color:#effff6!important}
+#bbbPlayerWorkspace .pw-kicker{color:#5dba89!important}
+#bbbPlayerWorkspace .pw-title p{color:#789184!important}
+#bbbPlayerWorkspace .pw-action{
+  border-color:rgba(57,255,155,.15)!important;
+  background:rgba(5,20,12,.84)!important;
+  color:#a6cfb7!important;
+}
+#bbbPlayerWorkspace .pw-action:hover{
+  border-color:rgba(57,255,155,.36)!important;
+  color:#f3fff7!important;
+  background:rgba(24,104,65,.20)!important;
+}
+#bbbPlayerWorkspace .pw-action.primary{
+  border-color:rgba(57,255,155,.28)!important;
+  background:linear-gradient(145deg,rgba(30,138,84,.34),rgba(7,54,31,.42))!important;
+  color:#8ef0b6!important;
+}
+#bbbPlayerWorkspace .pw-close{
+  border-color:rgba(57,255,155,.16)!important;
+  background:#06120b!important;
+  color:#79ad91!important;
+}
+#bbbPlayerWorkspace .pw-close:hover{border-color:rgba(57,255,155,.40)!important;color:#ecfff4!important}
+#bbbPlayerWorkspace .pw-tabs{
+  border-bottom-color:rgba(57,255,155,.09)!important;
+  background:rgba(3,10,6,.95)!important;
+}
+#bbbPlayerWorkspace .pw-tab{color:#617c6d!important}
+#bbbPlayerWorkspace .pw-tab:hover{color:#a9d9bd!important;background:rgba(57,255,155,.045)!important}
+#bbbPlayerWorkspace .pw-tab.active{
+  color:#eafff2!important;
+  background:linear-gradient(145deg,rgba(38,151,91,.23),rgba(9,57,33,.18))!important;
+  box-shadow:inset 0 0 0 1px rgba(57,255,155,.14)!important;
+}
+#bbbPlayerWorkspace .pw-panel{
+  border-color:rgba(57,255,155,.09)!important;
+  background:linear-gradient(160deg,rgba(6,18,11,.93),rgba(3,10,6,.94))!important;
+}
+#bbbPlayerWorkspace .pw-panel-head{border-bottom-color:rgba(57,255,155,.075)!important}
+#bbbPlayerWorkspace .pw-panel-head span{color:#52775f!important}
+#bbbPlayerWorkspace .pw-metric{
+  border-color:rgba(57,255,155,.085)!important;
+  background:linear-gradient(145deg,rgba(7,23,14,.88),rgba(3,10,6,.88))!important;
+}
+#bbbPlayerWorkspace .pw-metric span{color:#5f7e6d!important}
+#bbbPlayerWorkspace .pw-metric small{color:#667b70!important}
+#bbbPlayerWorkspace .pw-metric.violet strong{color:#79eeb0!important}
+#bbbPlayerWorkspace .pw-info-grid{background:rgba(57,255,155,.065)!important;border-color:rgba(57,255,155,.065)!important}
+#bbbPlayerWorkspace .pw-info{background:#050d08!important}
+#bbbPlayerWorkspace .pw-info span{color:#5e7c6c!important}
+#bbbPlayerWorkspace .pw-info strong{color:#bad0c2!important}
+#bbbPlayerWorkspace .pw-input{border-color:rgba(57,255,155,.16)!important;background:#020804!important}
+#bbbPlayerWorkspace .pw-input:focus{border-color:rgba(57,255,155,.42)!important;box-shadow:0 0 0 3px rgba(57,255,155,.055)!important}
+#bbbPlayerWorkspace .pw-history-row,#bbbPlayerWorkspace .pw-feed-item{
+  border-color:rgba(57,255,155,.065)!important;
+  background:rgba(4,13,8,.72)!important;
+}
+#bbbPlayerWorkspace .pw-table th{color:#557762!important;border-bottom-color:rgba(57,255,155,.08)!important}
+#bbbPlayerWorkspace .pw-table td{border-bottom-color:rgba(57,255,155,.05)!important;color:#a9bdb0!important}
+#bbbPlayerWorkspace .pw-check{border-color:rgba(57,255,155,.06)!important;color:#74877b!important}
+#bbbPlayerWorkspace .pw-complete-bar{background:#0b1911!important}
+#bbbPlayerWorkspace .pw-complete-bar i{background:linear-gradient(90deg,#198d55,#58eaff,#55df94)!important}
+
+/* Readability floor — desktop and mobile. */
+.brand-copy span{font-size:10px!important}
+.admin-pill{font-size:11px!important}
+.nav-overline{font-size:10px!important}
+.nav-btn{font-size:11px!important}
+.nav-btn span:last-child{font-size:9px!important}
+.side-note strong{font-size:10px!important}
+.side-note span{font-size:11px!important;line-height:1.55!important}
+.eyebrow,.page-head .eyebrow{font-size:10px!important}
+.page-head p{font-size:12px!important;line-height:1.55!important}
+.refresh-btn{font-size:10px!important}
+.command-ribbon span{font-size:9px!important}
+.metric span{font-size:10px!important}
+.panel-head span{font-size:10px!important}
+.panel-head h2{font-size:16px!important}
+.field label{font-size:10px!important}
+.input,.select,.textarea{font-size:12px!important}
+.small-btn,.edit-btn,.move-btn,.queue-action{font-size:10px!important}
+.rank-input{font-size:11px!important}
+.rank-table th{font-size:10px!important}
+.rank-table td{font-size:12px!important}
+.player-name{font-size:13px!important}
+.pos{font-size:10px!important}
+.pager,.profile-link,.danger-note{font-size:10px!important}
+.queue-priority{font-size:9px!important}
+.queue-source,.review-status{font-size:10px!important}
+.review-rank-flag{font-size:9px!important}
+.health-chip span{font-size:9px!important}
+.panel-kicker{font-size:9px!important}
+.system-live b{font-size:10px!important}
+.system-live small,.admin-clock small{font-size:9px!important}
+.hero-telemetry span{font-size:9px!important}
+.cyber-metric small{font-size:9px!important}
+.hud-badge,.signal-axis,.position-legend span,.health-gauge span{font-size:9px!important}
+.signal-summary,.health-line,.review-mini-age,.cyber-activity .activity-time,.cyber-activity .activity-table,.cyber-activity .activity-key,.edge-rank,.edge-player strong,.edge-gap{font-size:10px!important}
+.health-line b,.review-mini small,.edge-player small{font-size:9px!important}
+.review-mini strong{font-size:11px!important}
+.edge-title{font-size:9px!important}
+.cyber-hero p,.prospect-hero p{font-size:11px!important;line-height:1.55!important}
+.prospect-toggle{font-size:10px!important}
+.prospect-pos{font-size:11px!important}
+.prospect-name span{font-size:10px!important}
+.prospect-class{font-size:9px!important}
+.prospect-card-summary{font-size:11px!important;line-height:1.55!important}
+.prospect-card-rec span{font-size:9px!important}
+.prospect-card-rec strong.pending{font-size:10px!important}
+.research-state{font-size:9px!important}
+.prospect-graded{font-size:9px!important}
+.prospect-drawer-meta{font-size:11px!important}
+.prospect-recommendation span{font-size:9px!important}
+.prospect-summary{font-size:11px!important}
+.prospect-grade-head p{font-size:10px!important}
+.prospect-trait label{font-size:10px!important}
+.prospect-trait .trait-rec{font-size:9px!important}
+.prospect-trait .trait-input{font-size:13px!important;min-height:42px!important}
+.prospect-total span{font-size:9px!important}
+.prospect-total small{font-size:10px!important}
+.prospect-notes,.prospect-source-links{font-size:11px!important;line-height:1.6!important}
+
+/* Player Workspace typography — deliberately larger than the old admin microtype. */
+#bbbPlayerWorkspace .pw-rank-orb span{font-size:9px!important}
+#bbbPlayerWorkspace .pw-kicker,#bbbPlayerWorkspace .pw-status{font-size:9px!important}
+#bbbPlayerWorkspace .pw-title p{font-size:11px!important}
+#bbbPlayerWorkspace .pw-action{font-size:10px!important}
+#bbbPlayerWorkspace .pw-tab{font-size:10px!important}
+#bbbPlayerWorkspace .pw-panel-head span{font-size:9px!important}
+#bbbPlayerWorkspace .pw-panel-head h3{font-size:15px!important}
+#bbbPlayerWorkspace .pw-copy{font-size:12px!important;line-height:1.68!important}
+#bbbPlayerWorkspace .pw-metric span{font-size:9px!important}
+#bbbPlayerWorkspace .pw-metric small{font-size:9px!important}
+#bbbPlayerWorkspace .pw-signal span{font-size:9px!important}
+#bbbPlayerWorkspace .pw-signal p{font-size:11px!important}
+#bbbPlayerWorkspace .pw-info span{font-size:9px!important}
+#bbbPlayerWorkspace .pw-info strong{font-size:12px!important}
+#bbbPlayerWorkspace .pw-review-box strong{font-size:11px!important}
+#bbbPlayerWorkspace .pw-review-box p{font-size:10px!important}
+#bbbPlayerWorkspace .pw-field label{font-size:9px!important}
+#bbbPlayerWorkspace .pw-input{font-size:12px!important}
+#bbbPlayerWorkspace .pw-status-line{font-size:10px!important}
+#bbbPlayerWorkspace .pw-history-row{font-size:10px!important}
+#bbbPlayerWorkspace .pw-trait-head span{font-size:10px!important}
+#bbbPlayerWorkspace .pw-trait-head strong{font-size:11px!important}
+#bbbPlayerWorkspace .pw-trait-meta{font-size:9px!important}
+#bbbPlayerWorkspace .pw-source{font-size:9px!important}
+#bbbPlayerWorkspace .pw-table th{font-size:9px!important}
+#bbbPlayerWorkspace .pw-table td{font-size:10px!important}
+#bbbPlayerWorkspace .pw-feed-top strong{font-size:10px!important}
+#bbbPlayerWorkspace .pw-feed-top span{font-size:9px!important}
+#bbbPlayerWorkspace .pw-feed-item p{font-size:11px!important}
+#bbbPlayerWorkspace .pw-feed-item small{font-size:9px!important}
+#bbbPlayerWorkspace .pw-complete-head span{font-size:10px!important}
+#bbbPlayerWorkspace .pw-check{font-size:10px!important}
+#bbbPlayerWorkspace .pw-empty{font-size:11px!important}
+#bbbPlayerWorkspace .pw-empty strong{font-size:14px!important}
+
+@media(max-width:720px){
+  .nav-btn{font-size:10px!important}
+  .page-head p{font-size:11px!important}
+  .metric span,.panel-head span{font-size:9px!important}
+  .rank-table td{font-size:11px!important}
+  #pageReview .review-table td,#pageRankings .rank-table td,#pagePlayers .rank-table td{font-size:11px!important}
+  #pageReview .queue-action{font-size:10px!important}
+  #pageReview .queue-priority{font-size:9px!important}
+  #bbbPlayerWorkspace .pw-title p{font-size:10px!important}
+}
+</style>
+
+<script id="bbb-admin-modal-hotfix-v6">
+(function(){
+  function forceCloseProspect(){
+    var backdrop=document.getElementById("prospectDrawerBackdrop");
+    var drawer=document.getElementById("prospectDrawer");
+    if(backdrop)backdrop.classList.add("hide");
+    if(drawer)drawer.classList.add("hide");
+  }
+  document.addEventListener("click",function(e){
+    var close=e.target.closest&&e.target.closest("#prospectDrawerClose");
+    if(!close)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if(typeof closeProspectGrader==="function")closeProspectGrader();
+    else forceCloseProspect();
+  },true);
+  document.addEventListener("keydown",function(e){
+    if(e.key!=="Escape")return;
+    var drawer=document.getElementById("prospectDrawer");
+    if(drawer&&!drawer.classList.contains("hide")){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if(typeof closeProspectGrader==="function")closeProspectGrader();
+      else forceCloseProspect();
+    }
+  },true);
+})();
+</script>
+
 </body>
 </html>
