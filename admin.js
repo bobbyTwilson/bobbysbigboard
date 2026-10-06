@@ -1,7 +1,7 @@
 const SUPA='https://twbduhmibbotregdxlla.supabase.co';
 const KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
 const STORE='bbb_admin_session_v1';
-let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false;
+let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,activeAdminPage='dashboard';
 const PAGE=50;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -37,10 +37,10 @@ async function settleDashboardPaint(){
 }
 async function enterAdmin(admin){
   showApp(admin);
+  activeAdminPage='dashboard';
   await nextPaint();
   await loadAll();
-  page('dashboard');
-  await settleDashboardPaint();
+  if(activeAdminPage==='dashboard')await settleDashboardPaint();
   window.dispatchEvent(new Event('resize'));
 }
 async function boot(){let raw=localStorage.getItem(STORE);if(raw)try{session=JSON.parse(raw)}catch{}if(!session){showLogin();return}if(session.expires_at&&Date.now()/1000>session.expires_at-60&&!await refreshSession()){showLogin();return}try{const admin=await checkAdmin();if(!admin){clearSession();showLogin();return}await enterAdmin(admin)}catch(e){console.error(e);clearSession();showLogin()}}
@@ -628,7 +628,9 @@ function executeCommandItem(item){
 }
 function executeActiveCommand(){const items=commandItems($('#commandPaletteInput')?.value||'');executeCommandItem(items[commandIndex])}
 function page(name){
-  $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+  activeAdminPage=name;
+  document.documentElement.dataset.adminPage=name;
+  $('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
   $$('.admin-page').forEach(p=>p.classList.add('hide'));
   const target=$(`#page${name[0].toUpperCase()+name.slice(1)}`);
   if(!target)return;
