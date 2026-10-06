@@ -24,7 +24,6 @@ function showApp(admin){$('#loginView').classList.add('hide');$('#appView').clas
 function nextPaint(){return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))}
 async function enterAdmin(admin){
   showApp(admin);
-  page('dashboard');
   await nextPaint();
   await loadAll();
   page('dashboard');
