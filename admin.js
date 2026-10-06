@@ -501,7 +501,7 @@ function activeResearchOwner(){
   return $('.research-owner-tab.active')?.dataset.researchOwner||'BOBBY';
 }
 function setResearchOwner(owner){
-  $$$('.research-owner-tab').forEach(b=>b.classList.toggle('active',b.dataset.researchOwner===owner));
+  $$('.research-owner-tab').forEach(b=>b.classList.toggle('active',b.dataset.researchOwner===owner));
   renderResearchQueue();
 }
 function filteredResearchRows(ownerOverride){
