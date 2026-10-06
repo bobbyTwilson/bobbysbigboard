@@ -641,71 +641,105 @@ function page(name){
   if(name==='review'){renderReviewQueue();renderDataHealth()}
   if(name==='dashboard')renderCommandDashboard()
 }
+function bindControlGroup(name,fn){
+  try{fn()}catch(e){console.error('BBB Admin '+name+' controls failed',e)}
+}
 document.addEventListener('DOMContentLoaded',()=>{
   updateAdminClock();setInterval(updateAdminClock,30000);
-  $$('.auth-tabs').forEach(x=>x.remove());
-  $('#authForm').onsubmit=async e=>{e.preventDefault();const btn=$('#authSubmit');btn.disabled=true;msg('');try{const email=$('#authEmail').value.trim().toLowerCase(),password=$('#authPassword').value;const admin=await signIn(email,password);await enterAdmin(admin)}catch(err){msg(err.message)}finally{btn.disabled=false}};
-  $('#signOut').onclick=()=>{clearSession();location.reload()};
-  $$('.nav-btn').forEach(b=>b.onclick=()=>page(b.dataset.page));
-  $$('[data-page-jump]').forEach(b=>b.onclick=()=>page(b.dataset.pageJump));
-  const globalSearch=$('#adminGlobalSearch');
-  if(globalSearch){
-    globalSearch.addEventListener('focus',()=>{const seed=globalSearch.value;globalSearch.blur();openCommandPalette(seed)});
-    globalSearch.addEventListener('click',()=>openCommandPalette(globalSearch.value));
-  }
-  $('#missionCommand')?.addEventListener('click',()=>openCommandPalette());
-  $$('[data-quick-page]').forEach(b=>b.onclick=()=>page(b.dataset.quickPage));
-  $('#commandBackdrop')?.addEventListener('click',closeCommandPalette);
-  $('#commandPaletteInput')?.addEventListener('input',()=>{commandIndex=0;renderCommandPalette()});
-  $('#commandPaletteResults')?.addEventListener('mousemove',e=>{
-    const b=e.target.closest('[data-command-index]');if(!b)return;const next=Number(b.dataset.commandIndex);if(next!==commandIndex){commandIndex=next;renderCommandPalette()}
+
+  bindControlGroup('auth',()=>{
+    $$('.auth-tabs').forEach(x=>x.remove());
+    $('#authForm').onsubmit=async e=>{e.preventDefault();const btn=$('#authSubmit');btn.disabled=true;msg('');try{const email=$('#authEmail').value.trim().toLowerCase(),password=$('#authPassword').value;const admin=await signIn(email,password);await enterAdmin(admin)}catch(err){msg(err.message)}finally{btn.disabled=false}};
+    $('#signOut').onclick=()=>{clearSession();location.reload()};
   });
-  $('#commandPaletteResults')?.addEventListener('click',e=>{
-    const b=e.target.closest('[data-command-index]');if(!b)return;commandIndex=Number(b.dataset.commandIndex);executeActiveCommand()
-  });
-  document.addEventListener('keydown',e=>{
-    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCommandPalette();return}
-    if(!$('#commandPalette')?.classList.contains('hide')){
-      if(e.key==='Escape'){e.preventDefault();closeCommandPalette();return}
-      if(e.key==='ArrowDown'){e.preventDefault();const items=commandItems($('#commandPaletteInput')?.value||'');commandIndex=Math.min(Math.max(0,items.length-1),commandIndex+1);renderCommandPalette();return}
-      if(e.key==='ArrowUp'){e.preventDefault();commandIndex=Math.max(0,commandIndex-1);renderCommandPalette();return}
-      if(e.key==='Enter'){e.preventDefault();executeActiveCommand();return}
+
+  bindControlGroup('navigation and command',()=>{
+    $$('.nav-btn').forEach(b=>b.onclick=()=>page(b.dataset.page));
+    $$('[data-page-jump]').forEach(b=>b.onclick=()=>page(b.dataset.pageJump));
+    const globalSearch=$('#adminGlobalSearch');
+    if(globalSearch){
+      globalSearch.addEventListener('focus',()=>{const seed=globalSearch.value;globalSearch.blur();openCommandPalette(seed)});
+      globalSearch.addEventListener('click',()=>openCommandPalette(globalSearch.value));
     }
+    $('#missionCommand')?.addEventListener('click',()=>openCommandPalette());
+    $$('[data-quick-page]').forEach(b=>b.onclick=()=>page(b.dataset.quickPage));
+    $('#commandBackdrop')?.addEventListener('click',closeCommandPalette);
+    $('#commandPaletteInput')?.addEventListener('input',()=>{commandIndex=0;renderCommandPalette()});
+    $('#commandPaletteResults')?.addEventListener('mousemove',e=>{
+      const b=e.target.closest('[data-command-index]');if(!b)return;const next=Number(b.dataset.commandIndex);if(next!==commandIndex){commandIndex=next;renderCommandPalette()}
+    });
+    $('#commandPaletteResults')?.addEventListener('click',e=>{
+      const b=e.target.closest('[data-command-index]');if(!b)return;commandIndex=Number(b.dataset.commandIndex);executeActiveCommand()
+    });
+    document.addEventListener('keydown',e=>{
+      if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCommandPalette();return}
+      if(!$('#commandPalette')?.classList.contains('hide')){
+        if(e.key==='Escape'){e.preventDefault();closeCommandPalette();return}
+        if(e.key==='ArrowDown'){e.preventDefault();const items=commandItems($('#commandPaletteInput')?.value||'');commandIndex=Math.min(Math.max(0,items.length-1),commandIndex+1);renderCommandPalette();return}
+        if(e.key==='ArrowUp'){e.preventDefault();commandIndex=Math.max(0,commandIndex-1);renderCommandPalette();return}
+        if(e.key==='Enter'){e.preventDefault();executeActiveCommand();return}
+      }
+    });
   });
-  $$('[data-refresh]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await loadAll()}finally{b.disabled=false}});
-  ['#rankSearch','#rankPos','#rankMarket'].forEach(s=>$(s).addEventListener(s==='#rankSearch'?'input':'change',()=>{rankPage=0;renderRankings()}));
-  $('#rankClear').onclick=()=>{$('#rankSearch').value='';$('#rankPos').value='ALL';$('#rankMarket').value='ALL';rankPage=0;renderRankings()};
-  $('#rankPrev').onclick=()=>{rankPage=Math.max(0,rankPage-1);renderRankings()};$('#rankNext').onclick=()=>{rankPage++;renderRankings()};
-  $('#rankBody')?.addEventListener('click',e=>{
-    if(e.target.closest('button,input,a'))return;
-    const row=e.target.closest('[data-rank-player]');if(row)selectRankPlayer(row.dataset.rankPlayer);
+
+  bindControlGroup('global refresh',()=>{
+    $$('[data-refresh]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await loadAll()}finally{b.disabled=false}});
   });
-  ['#playerAdminSearch','#playerAdminPos','#playerAdminInjury'].forEach(s=>$(s).addEventListener(s==='#playerAdminSearch'?'input':'change',()=>{playerPage=0;renderPlayers()}));
-  ['#prospectSearch','#prospectYear','#prospectPos','#prospectResearch'].forEach(sel=>$(sel)?.addEventListener(sel==='#prospectSearch'?'input':'change',renderProspectLab));
-  $('#prospectIncludeGraded')?.addEventListener('change',renderProspectLab);
-  $('#prospectLabGrid')?.addEventListener('click',e=>{
-    const gradeBtn=e.target.closest('[data-grade-prospect]');
-    if(gradeBtn){e.preventDefault();e.stopPropagation();startProspectGrade(gradeBtn.dataset.gradeProspect);return}
-    const card=e.target.closest('[data-open-prospect]');
-    if(card){e.preventDefault();openProspectReport(card.dataset.openProspect)}
+
+  bindControlGroup('rankings',()=>{
+    ['#rankSearch','#rankPos','#rankMarket'].forEach(s=>$(s)?.addEventListener(s==='#rankSearch'?'input':'change',()=>{rankPage=0;renderRankings()}));
+    $('#rankClear')?.addEventListener('click',()=>{$('#rankSearch').value='';$('#rankPos').value='ALL';$('#rankMarket').value='ALL';rankPage=0;renderRankings()});
+    $('#rankPrev')?.addEventListener('click',()=>{rankPage=Math.max(0,rankPage-1);renderRankings()});
+    $('#rankNext')?.addEventListener('click',()=>{rankPage++;renderRankings()});
+    $('#rankBody')?.addEventListener('click',e=>{
+      if(e.target.closest('button,input,a'))return;
+      const row=e.target.closest('[data-rank-player]');if(row)selectRankPlayer(row.dataset.rankPlayer);
+    });
   });
-  $('#prospectDrawerClose')?.addEventListener('click',closeProspectGrader);
-  $('#prospectDrawerBackdrop')?.addEventListener('click',closeProspectGrader);
-  $('#prospectApplyRec')?.addEventListener('click',applyProspectRec);
-  $('#prospectStartGrade')?.addEventListener('click',()=>startProspectGrade($('#prospectStartGrade').dataset.playerKey));
-  $('#prospectBackToReport')?.addEventListener('click',()=>openProspectReport($('#prospectKey').value));
-  $('#prospectGradeForm')?.addEventListener('submit',saveProspectGrade);
-  ['#researchSearch','#researchScope','#researchIssue','#researchPriority','#researchClass'].forEach(s=>$(s)?.addEventListener(s==='#researchSearch'?'input':'change',renderResearchQueue));
-  $$('.research-owner-tab').forEach(b=>b.addEventListener('click',()=>setResearchOwner(b.dataset.researchOwner)));
-  $$('[data-research-owner-jump]').forEach(b=>b.addEventListener('click',()=>setResearchOwner(b.dataset.researchOwnerJump)));
-  $$('[data-research-issue-jump]').forEach(b=>b.addEventListener('click',()=>{setResearchOwner('BOBBY');if($('#researchIssue'))$('#researchIssue').value=b.dataset.researchIssueJump||'ALL';renderResearchQueue()}));
-  $('#researchClear')?.addEventListener('click',()=>{$('#researchSearch').value='';$('#researchScope').value='ALL';$('#researchIssue').value='ALL';$('#researchPriority').value='ALL';$('#researchClass').value='ALL';setResearchOwner('BOBBY')});
-  $('#researchRefresh')?.addEventListener('click',async e=>{const b=e.currentTarget;b.disabled=true;try{researchLoaded=false;await loadResearchQueue(true)}finally{b.disabled=false}});
-  ['#reviewSearch','#reviewPriority','#reviewKind'].forEach(s=>$(s).addEventListener(s==='#reviewSearch'?'input':'change',()=>{reviewPage=0;renderReviewQueue()}));
-  $('#reviewClear').onclick=()=>{$('#reviewSearch').value='';$('#reviewPriority').value='ALL';$('#reviewKind').value='ALL';reviewPage=0;renderReviewQueue()};
-  $('#reviewPrev').onclick=()=>{reviewPage=Math.max(0,reviewPage-1);renderReviewQueue()};$('#reviewNext').onclick=()=>{reviewPage++;renderReviewQueue()};
-  $('#playerAdminClear').onclick=()=>{$('#playerAdminSearch').value='';$('#playerAdminPos').value='ALL';$('#playerAdminInjury').value='ALL';playerPage=0;renderPlayers()};
-  $('#playerAdminPrev').onclick=()=>{playerPage=Math.max(0,playerPage-1);renderPlayers()};$('#playerAdminNext').onclick=()=>{playerPage++;renderPlayers()};
-  $('#drawerClose').onclick=closeEditor;$('#drawerBackdrop').onclick=closeEditor;$('#playerForm').onsubmit=savePlayer;
+
+  bindControlGroup('player editor',()=>{
+    ['#playerAdminSearch','#playerAdminPos','#playerAdminInjury'].forEach(s=>$(s)?.addEventListener(s==='#playerAdminSearch'?'input':'change',()=>{playerPage=0;renderPlayers()}));
+    $('#playerAdminClear')?.addEventListener('click',()=>{$('#playerAdminSearch').value='';$('#playerAdminPos').value='ALL';$('#playerAdminInjury').value='ALL';playerPage=0;renderPlayers()});
+    $('#playerAdminPrev')?.addEventListener('click',()=>{playerPage=Math.max(0,playerPage-1);renderPlayers()});
+    $('#playerAdminNext')?.addEventListener('click',()=>{playerPage++;renderPlayers()});
+    $('#drawerClose')?.addEventListener('click',closeEditor);
+    $('#drawerBackdrop')?.addEventListener('click',closeEditor);
+    $('#playerForm')?.addEventListener('submit',savePlayer);
+  });
+
+  bindControlGroup('prospect lab',()=>{
+    ['#prospectSearch','#prospectYear','#prospectPos','#prospectResearch'].forEach(sel=>$(sel)?.addEventListener(sel==='#prospectSearch'?'input':'change',renderProspectLab));
+    $('#prospectIncludeGraded')?.addEventListener('change',renderProspectLab);
+    $('#prospectLabGrid')?.addEventListener('click',e=>{
+      const gradeBtn=e.target.closest('[data-grade-prospect]');
+      if(gradeBtn){e.preventDefault();e.stopPropagation();startProspectGrade(gradeBtn.dataset.gradeProspect);return}
+      const card=e.target.closest('[data-open-prospect]');
+      if(card){e.preventDefault();openProspectReport(card.dataset.openProspect)}
+    });
+    $('#prospectDrawerClose')?.addEventListener('click',closeProspectGrader);
+    $('#prospectDrawerBackdrop')?.addEventListener('click',closeProspectGrader);
+    $('#prospectApplyRec')?.addEventListener('click',applyProspectRec);
+    $('#prospectStartGrade')?.addEventListener('click',()=>startProspectGrade($('#prospectStartGrade').dataset.playerKey));
+    $('#prospectBackToReport')?.addEventListener('click',()=>openProspectReport($('#prospectKey').value));
+    $('#prospectGradeForm')?.addEventListener('submit',saveProspectGrade);
+  });
+
+  bindControlGroup('research queue',()=>{
+    ['#researchSearch','#researchScope','#researchIssue','#researchPriority','#researchClass'].forEach(s=>$(s)?.addEventListener(s==='#researchSearch'?'input':'change',renderResearchQueue));
+    $$('.research-owner-tab').forEach(b=>b.addEventListener('click',()=>setResearchOwner(b.dataset.researchOwner)));
+    $$('[data-research-owner-jump]').forEach(b=>b.addEventListener('click',()=>setResearchOwner(b.dataset.researchOwnerJump)));
+    $$('[data-research-issue-jump]').forEach(b=>b.addEventListener('click',()=>{setResearchOwner('BOBBY');if($('#researchIssue'))$('#researchIssue').value=b.dataset.researchIssueJump||'ALL';renderResearchQueue()}));
+    $('#researchClear')?.addEventListener('click',()=>{$('#researchSearch').value='';$('#researchScope').value='ALL';$('#researchIssue').value='ALL';$('#researchPriority').value='ALL';$('#researchClass').value='ALL';setResearchOwner('BOBBY')});
+    $('#researchRefresh')?.addEventListener('click',async e=>{const b=e.currentTarget;b.disabled=true;try{researchLoaded=false;await loadResearchQueue(true)}finally{b.disabled=false}});
+  });
+
+  bindControlGroup('review queue',()=>{
+    ['#reviewSearch','#reviewPriority','#reviewKind'].forEach(s=>$(s)?.addEventListener(s==='#reviewSearch'?'input':'change',()=>{reviewPage=0;renderReviewQueue()}));
+    $('#reviewClear')?.addEventListener('click',()=>{$('#reviewSearch').value='';$('#reviewPriority').value='ALL';$('#reviewKind').value='ALL';reviewPage=0;renderReviewQueue()});
+    $('#reviewPrev')?.addEventListener('click',()=>{reviewPage=Math.max(0,reviewPage-1);renderReviewQueue()});
+    $('#reviewNext')?.addEventListener('click',()=>{reviewPage++;renderReviewQueue()});
+  });
+
+  document.documentElement.dataset.adminControls='ready';
   boot();
 });
