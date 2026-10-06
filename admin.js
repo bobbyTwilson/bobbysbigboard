@@ -459,10 +459,57 @@ async function loadResearchQueue(force){
     if(grid)grid.innerHTML='<div class="research-empty"><strong>Research Queue could not load.</strong><span>'+esc(e.message||'Unknown error')+'</span></div>';
   }finally{researchLoading=false}
 }
-function filteredResearchRows(){
+function researchOwner(row){
+  const has=code=>researchHasIssue(row,code);
+  if(row.kind==='PROSPECT'&&(has('RESEARCH')||has('CLASS')))return 'SYSTEM';
+  if(has('RANK')||has('GRADE'))return 'BOBBY';
+  if(has('RESEARCH')||has('STATS')||has('STALE')||has('CLASS'))return 'SYSTEM';
+  return 'FYI';
+}
+function researchOwnerMeta(owner){
+  if(owner==='BOBBY')return {label:'YOUR DECISION',icon:'★',title:'Bobby Action Required',desc:'Only decisions that need your football judgment.'};
+  if(owner==='SYSTEM')return {label:'SYSTEM WORK',icon:'⚙',title:'System Work Queue',desc:'Data and research cleanup that should not require a Bobby decision.'};
+  return {label:'FYI',icon:'◎',title:'Data Health / FYI',desc:'Useful signals to know about, but nothing you need to act on right now.'};
+}
+function researchInstruction(row){
+  const has=code=>researchHasIssue(row,code);
+  if(researchOwner(row)==='BOBBY'){
+    if(has('RANK'))return 'Open Dynasty, review the latest context and market position, then decide whether the current BBB rank should move.';
+    if(has('GRADE'))return 'Review the scouting recommendation, adjust the traits or comp if needed, then lock in your final BBB grade.';
+    return 'Review the player context and make the final BBB decision.';
+  }
+  if(researchOwner(row)==='SYSTEM'){
+    if(row.kind==='PROSPECT'&&has('CLASS'))return 'Verify the draft class from current sources. Only escalate this to Bobby if the evidence conflicts or remains unclear.';
+    if(row.kind==='PROSPECT'&&has('RESEARCH'))return 'Finish or refresh the scouting recommendation, sources, comp and trait notes before this reaches Bobby for grading.';
+    if(has('STATS')&&has('STALE'))return 'Refresh the current-season stats and recheck the latest player status. Escalate only if something meaningful changed.';
+    if(has('STATS'))return 'Refresh the missing 2026 stat coverage. No manual football decision is needed.';
+    if(has('STALE'))return 'Recheck the latest player status/news and refresh verification. Escalate only if new information changes the player outlook.';
+    return 'Fill the missing profile or research data in the background. No Bobby decision is needed yet.';
+  }
+  if(has('MARKET'))return 'Market coverage is missing or unavailable. Keep this visible for data health, but it does not require a ranking decision by itself.';
+  return 'Informational data-health signal only. No action is required right now.';
+}
+function researchPrimaryLabel(row){
+  if(researchOwner(row)==='BOBBY'){
+    if(researchHasIssue(row,'RANK'))return 'REVIEW DYNASTY';
+    if(researchHasIssue(row,'GRADE'))return 'SCOUT / GRADE';
+    return 'OPEN WORKSPACE';
+  }
+  return researchOwner(row)==='SYSTEM'?'VIEW DATA':'VIEW DETAILS';
+}
+function activeResearchOwner(){
+  return $('.research-owner-tab.active')?.dataset.researchOwner||'BOBBY';
+}
+function setResearchOwner(owner){
+  $$('.research-owner-tab').forEach(b=>b.classList.toggle('active',b.dataset.researchOwner===owner));
+  renderResearchQueue();
+}
+function filteredResearchRows(ownerOverride){
   const q=String($('#researchSearch')?.value||'').trim().toLowerCase();
   const scope=$('#researchScope')?.value||'ALL',issue=$('#researchIssue')?.value||'ALL',priority=$('#researchPriority')?.value||'ALL',year=$('#researchClass')?.value||'ALL';
+  const owner=ownerOverride||activeResearchOwner();
   return researchQueue.filter(x=>{
+    if(owner!=='ALL'&&researchOwner(x)!==owner)return false;
     if(scope!=='ALL'&&x.kind!==scope)return false;
     if(issue!=='ALL'&&!researchHasIssue(x,issue))return false;
     if(priority!=='ALL'&&String(x.priority)!==priority)return false;
@@ -474,30 +521,60 @@ function filteredResearchRows(){
     return true;
   });
 }
+function researchCardHtml(x){
+  const owner=researchOwner(x),meta=researchOwnerMeta(owner);
+  const issueHtml=x.issues.slice(0,5).map(i=>'<span class="research-issue '+esc(i.severity)+'">'+esc(i.label)+'</span>').join('')+(x.issues.length>5?'<span class="research-issue">+'+(x.issues.length-5)+' more</span>':'');
+  const playerMeta=x.kind==='PROSPECT'?(x.class_year+' · '+x.school):x.context;
+  const context=x.kind==='DYNASTY'?researchAgeLabel(x.verifiedHours):(x.graded?'BBB grade saved':'Awaiting Bobby grade');
+  return '<article class="research-card p'+x.priority+' owner-'+owner.toLowerCase()+'">'+
+    '<div class="research-card-head"><span class="research-kind">'+esc(x.kind==='PROSPECT'?'PRO':x.position)+'</span><div class="research-player"><span class="research-owner-chip">'+esc(meta.icon+' '+meta.label)+'</span><strong>'+esc(x.name)+'</strong><span>'+esc(playerMeta)+'</span></div><div class="research-priority"><b>'+researchPriorityLabel(x.priority)+'</b><span>urgency '+x.urgency+'</span></div></div>'+
+    '<div class="research-score-row"><div class="research-score"><strong>'+x.completeness+'</strong><span>% COMPLETE</span></div><div><div class="research-complete-bar"><i style="width:'+x.completeness+'%"></i></div><div class="research-complete-label"><span>Data completeness</span><span>'+x.issues.length+' issue'+(x.issues.length===1?'':'s')+'</span></div></div></div>'+
+    '<div class="research-issues">'+issueHtml+'</div>'+
+    '<div class="research-instruction"><span>'+(owner==='BOBBY'?'WHAT YOU NEED TO DO':owner==='SYSTEM'?'SYSTEM WORK':'WHY THIS IS HERE')+'</span><strong>'+esc(researchInstruction(x))+'</strong></div>'+
+    '<div class="research-card-foot"><span class="research-context">'+esc(context)+'</span><div class="research-actions">'+
+      (owner==='BOBBY'
+        ?'<button type="button" class="research-open primary" data-research-open="'+esc(x.player_key)+'" data-research-tab="'+esc(x.workspaceTab)+'">'+researchPrimaryLabel(x)+'</button>'
+        :'<span class="research-no-action">'+(owner==='SYSTEM'?'NO BOBBY ACTION':'FYI ONLY')+'</span><button type="button" class="research-open" data-research-open="'+esc(x.player_key)+'" data-research-tab="'+esc(x.workspaceTab)+'">'+researchPrimaryLabel(x)+'</button>')+
+    '</div></div>'+
+  '</article>';
+}
+function researchLaneHtml(owner,rows){
+  const meta=researchOwnerMeta(owner);
+  const laneRows=rows.filter(x=>researchOwner(x)===owner);
+  return '<section class="research-lane owner-'+owner.toLowerCase()+'"><div class="research-lane-head"><div class="research-lane-title"><span class="research-lane-icon">'+esc(meta.icon)+'</span><div><h3>'+esc(meta.title)+'</h3><p>'+esc(meta.desc)+'</p></div></div><span class="research-lane-count">'+laneRows.length+' ITEM'+(laneRows.length===1?'':'S')+'</span></div>'+
+    (laneRows.length?'<div class="research-lane-grid">'+laneRows.map(researchCardHtml).join('')+'</div>':'<div class="research-lane-empty"><strong>Nothing in this lane.</strong><span>No items match the current filters.</span></div>')+
+  '</section>';
+}
 function renderResearchQueue(){
   const grid=$('#researchQueueGrid');if(!grid)return;
   if(!researchLoaded){if(!researchLoading)loadResearchQueue(false);return}
-  const rows=filteredResearchRows();
-  if($('#researchNeedsAction'))$('#researchNeedsAction').textContent=researchQueue.length;
-  if($('#researchCritical'))$('#researchCritical').textContent=researchQueue.filter(x=>x.priority===1).length;
-  if($('#researchProspects'))$('#researchProspects').textContent=researchQueue.filter(x=>x.kind==='PROSPECT'&&researchHasIssue(x,'GRADE')).length;
-  if($('#researchStale'))$('#researchStale').textContent=researchQueue.filter(x=>researchHasIssue(x,'STALE')).length;
-  if($('#researchNavCount'))$('#researchNavCount').textContent=researchQueue.length||'05';
-  if($('#researchQueueCount'))$('#researchQueueCount').textContent=rows.length+' of '+researchQueue.length+' items';
-  grid.innerHTML=rows.length?rows.map(x=>{
-    const issueHtml=x.issues.slice(0,5).map(i=>'<span class="research-issue '+esc(i.severity)+'">'+esc(i.label)+'</span>').join('')+(x.issues.length>5?'<span class="research-issue">+'+(x.issues.length-5)+' more</span>':'');
-    const verify=x.kind==='DYNASTY'&&researchHasIssue(x,'STALE')?'<button type="button" class="research-verify" data-research-verify="'+esc(x.player_key)+'">MARK VERIFIED</button>':'';
-    const buttonLabel=x.kind==='PROSPECT'?'SCOUT / GRADE':'OPEN WORKSPACE';
-    const meta=x.kind==='PROSPECT'?(x.class_year+' · '+x.school):(x.context);
-    return '<article class="research-card p'+x.priority+'">'+
-      '<div class="research-card-head"><span class="research-kind">'+esc(x.kind==='PROSPECT'?'PRO':x.position)+'</span><div class="research-player"><strong>'+esc(x.name)+'</strong><span>'+esc(meta)+'</span></div><div class="research-priority"><b>'+researchPriorityLabel(x.priority)+'</b><span>urgency '+x.urgency+'</span></div></div>'+
-      '<div class="research-score-row"><div class="research-score"><strong>'+x.completeness+'</strong><span>% COMPLETE</span></div><div><div class="research-complete-bar"><i style="width:'+x.completeness+'%"></i></div><div class="research-complete-label"><span>Data completeness</span><span>'+x.issues.length+' issue'+(x.issues.length===1?'':'s')+'</span></div></div></div>'+
-      '<div class="research-issues">'+issueHtml+'</div>'+
-      '<div class="research-card-foot"><span class="research-context">'+esc(x.kind==='DYNASTY'?researchAgeLabel(x.verifiedHours):(x.graded?'BBB grade saved':'Awaiting Bobby grade'))+'</span><div class="research-actions">'+verify+'<button type="button" class="research-open primary" data-research-open="'+esc(x.player_key)+'" data-research-tab="'+esc(x.workspaceTab)+'">'+buttonLabel+'</button></div></div>'+
-    '</article>';
-  }).join(''):'<div class="research-empty"><strong>Queue clear for these filters.</strong><span>No players match the current research view.</span></div>';
+  const bobbies=researchQueue.filter(x=>researchOwner(x)==='BOBBY');
+  const systems=researchQueue.filter(x=>researchOwner(x)==='SYSTEM');
+  const fyis=researchQueue.filter(x=>researchOwner(x)==='FYI');
+  const grades=researchQueue.filter(x=>researchOwner(x)==='BOBBY'&&researchHasIssue(x,'GRADE'));
+
+  if($('#researchBobbyCount'))$('#researchBobbyCount').textContent=bobbies.length;
+  if($('#researchSystemCount'))$('#researchSystemCount').textContent=systems.length;
+  if($('#researchFyiCount'))$('#researchFyiCount').textContent=fyis.length;
+  if($('#researchProspects'))$('#researchProspects').textContent=grades.length;
+  if($('#researchTabBobby'))$('#researchTabBobby').textContent=bobbies.length;
+  if($('#researchTabSystem'))$('#researchTabSystem').textContent=systems.length;
+  if($('#researchTabFyi'))$('#researchTabFyi').textContent=fyis.length;
+  if($('#researchTabAll'))$('#researchTabAll').textContent=researchQueue.length;
+  if($('#researchNavCount'))$('#researchNavCount').textContent=bobbies.length||'05';
+
+  const owner=activeResearchOwner();
+  const rows=filteredResearchRows(owner);
+  if($('#researchQueueCount'))$('#researchQueueCount').textContent=rows.length+' matching · '+bobbies.length+' need Bobby · '+systems.length+' system · '+fyis.length+' FYI';
+  if($('#researchQueueHint'))$('#researchQueueHint').textContent=owner==='BOBBY'?'Showing only decisions that require your judgment':owner==='SYSTEM'?'Background cleanup — no Bobby decision required':owner==='FYI'?'Informational signals only':'All three ownership lanes';
+
+  if(owner==='ALL'){
+    const filteredAll=filteredResearchRows('ALL');
+    grid.innerHTML=researchLaneHtml('BOBBY',filteredAll)+researchLaneHtml('SYSTEM',filteredAll)+researchLaneHtml('FYI',filteredAll);
+  }else{
+    grid.innerHTML=researchLaneHtml(owner,rows);
+  }
   $$('[data-research-open]').forEach(b=>b.onclick=()=>{if(window.openBBBPlayerWorkspace)window.openBBBPlayerWorkspace(b.dataset.researchOpen,b.dataset.researchTab||'data')});
-  $$('[data-research-verify]').forEach(b=>b.onclick=()=>markResearchVerified(b.dataset.researchVerify,b));
 }
 async function markResearchVerified(key,btn){
   const old=btn.textContent;btn.disabled=true;btn.textContent='VERIFYING…';
@@ -619,7 +696,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#prospectBackToReport')?.addEventListener('click',()=>openProspectReport($('#prospectKey').value));
   $('#prospectGradeForm')?.addEventListener('submit',saveProspectGrade);
   ['#researchSearch','#researchScope','#researchIssue','#researchPriority','#researchClass'].forEach(s=>$(s)?.addEventListener(s==='#researchSearch'?'input':'change',renderResearchQueue));
-  $('#researchClear')?.addEventListener('click',()=>{$('#researchSearch').value='';$('#researchScope').value='ALL';$('#researchIssue').value='ALL';$('#researchPriority').value='ALL';$('#researchClass').value='ALL';renderResearchQueue()});
+  $('.research-owner-tab').forEach(b=>b.addEventListener('click',()=>setResearchOwner(b.dataset.researchOwner)));
+  $('[data-research-owner-jump]').forEach(b=>b.addEventListener('click',()=>setResearchOwner(b.dataset.researchOwnerJump)));
+  $('[data-research-issue-jump]').forEach(b=>b.addEventListener('click',()=>{setResearchOwner('BOBBY');if($('#researchIssue'))$('#researchIssue').value=b.dataset.researchIssueJump||'ALL';renderResearchQueue()}));
+  $('#researchClear')?.addEventListener('click',()=>{$('#researchSearch').value='';$('#researchScope').value='ALL';$('#researchIssue').value='ALL';$('#researchPriority').value='ALL';$('#researchClass').value='ALL';setResearchOwner('BOBBY')});
   $('#researchRefresh')?.addEventListener('click',async e=>{const b=e.currentTarget;b.disabled=true;try{researchLoaded=false;await loadResearchQueue(true)}finally{b.disabled=false}});
   ['#reviewSearch','#reviewPriority','#reviewKind'].forEach(s=>$(s).addEventListener(s==='#reviewSearch'?'input':'change',()=>{reviewPage=0;renderReviewQueue()}));
   $('#reviewClear').onclick=()=>{$('#reviewSearch').value='';$('#reviewPriority').value='ALL';$('#reviewKind').value='ALL';reviewPage=0;renderReviewQueue()};
