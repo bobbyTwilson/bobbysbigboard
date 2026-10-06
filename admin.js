@@ -231,7 +231,7 @@ function renderOpsActionCenter(){
   if($('#opsAttentionLabel'))$('#opsAttentionLabel').textContent=high?high+' high-priority items right now':'No high-priority review flags';
   if($('#missionReviewCount'))$('#missionReviewCount').textContent=reviewQueue.length;
   if($('#missionProspectCount'))$('#missionProspectCount').textContent=ungraded;
-  $('[data-ops-action]').forEach(b=>b.onclick=()=>{
+  $$('[data-ops-action]').forEach(b=>b.onclick=()=>{
     const key=b.dataset.opsAction;
     if(key==='review'){page('review');$('#reviewPriority').value='ALL';reviewPage=0;renderReviewQueue()}
     if(key==='prospects'){page('prospects');$('#prospectIncludeGraded').checked=false;renderProspectLab()}
@@ -274,7 +274,7 @@ function renderRankings(){
 }
 function filteredPlayers(){const q=$('#playerAdminSearch').value.trim().toLowerCase(),pos=$('#playerAdminPos').value,inj=$('#playerAdminInjury').value;return board.filter(x=>(pos==='ALL'||x.pos===pos)&&(inj==='ALL'||(inj==='HEALTHY'?healthy(x.injury_status):!healthy(x.injury_status)))&&(!q||`${x.name} ${x.team} ${x.college||''}`.toLowerCase().includes(q)))}
 function renderPlayers(){const list=filteredPlayers();const max=Math.max(0,Math.ceil(list.length/PAGE)-1);playerPage=Math.min(playerPage,max);const rows=list.slice(playerPage*PAGE,(playerPage+1)*PAGE);$('#playerAdminBody').innerHTML=rows.map(x=>`<tr><td class="rank-number">${x.rank}</td><td class="player-name">${esc(x.name)}</td><td><span class="pos">${esc(x.pos)}</span></td><td>${esc(x.team||'—')}</td><td>${x.age??'—'}</td><td>${esc(x.college||'—')}</td><td class="${healthy(x.injury_status)?'green':'red'}">${esc(x.injury_status||'Healthy')}</td><td><button class="edit-btn" data-edit="${esc(x.player_key)}">EDIT</button></td></tr>`).join('')||'<tr><td colspan="8" class="empty">No players match.</td></tr>';$('#playerAdminCount').textContent=`${list.length?playerPage*PAGE+1:0}–${Math.min((playerPage+1)*PAGE,list.length)} of ${list.length}`;$('#playerAdminPrev').disabled=playerPage===0;$('#playerAdminNext').disabled=playerPage>=max;bindRows()}
-function bindRows(){$('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit));$('[data-move]').forEach(b=>b.onclick=()=>movePlayer(b.dataset.move))}
+function bindRows(){$$('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit));$$('[data-move]').forEach(b=>b.onclick=()=>movePlayer(b.dataset.move))}
 function selectRankPlayer(key){selectedRankKey=key;renderRankings()}
 function renderRankLens(){
   const el=$('#rankLens');if(!el)return;
@@ -291,7 +291,7 @@ function renderRankLens(){
     '<div class="rank-lens-actions"><button type="button" data-lens-edit="'+esc(x.player_key)+'">EDIT DATA</button><a href="/player/'+encodeURIComponent(x.player_key)+'" target="_blank">PROFILE ↗</a><button type="button" data-lens-step="-1" '+(x.rank<=1?'disabled':'')+'>UP 1</button><button type="button" data-lens-step="1" '+(x.rank>=board.length?'disabled':'')+' >DOWN 1</button></div>'+
   '</div>';
   $('[data-lens-edit]')?.addEventListener('click',()=>openEditor(x.player_key));
-  $('[data-lens-step]').forEach(b=>b.onclick=()=>quickMoveSelected(Number(b.dataset.lensStep)));
+  $$('[data-lens-step]').forEach(b=>b.onclick=()=>quickMoveSelected(Number(b.dataset.lensStep)));
 }
 async function quickMoveSelected(delta){
   const x=board.find(v=>v.player_key===selectedRankKey);if(!x)return;
@@ -496,8 +496,8 @@ function renderResearchQueue(){
       '<div class="research-card-foot"><span class="research-context">'+esc(x.kind==='DYNASTY'?researchAgeLabel(x.verifiedHours):(x.graded?'BBB grade saved':'Awaiting Bobby grade'))+'</span><div class="research-actions">'+verify+'<button type="button" class="research-open primary" data-research-open="'+esc(x.player_key)+'" data-research-tab="'+esc(x.workspaceTab)+'">'+buttonLabel+'</button></div></div>'+
     '</article>';
   }).join(''):'<div class="research-empty"><strong>Queue clear for these filters.</strong><span>No players match the current research view.</span></div>';
-  $('[data-research-open]').forEach(b=>b.onclick=()=>{if(window.openBBBPlayerWorkspace)window.openBBBPlayerWorkspace(b.dataset.researchOpen,b.dataset.researchTab||'data')});
-  $('[data-research-verify]').forEach(b=>b.onclick=()=>markResearchVerified(b.dataset.researchVerify,b));
+  $$('[data-research-open]').forEach(b=>b.onclick=()=>{if(window.openBBBPlayerWorkspace)window.openBBBPlayerWorkspace(b.dataset.researchOpen,b.dataset.researchTab||'data')});
+  $$('[data-research-verify]').forEach(b=>b.onclick=()=>markResearchVerified(b.dataset.researchVerify,b));
 }
 async function markResearchVerified(key,btn){
   const old=btn.textContent;btn.disabled=true;btn.textContent='VERIFYING…';
@@ -577,7 +577,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     globalSearch.addEventListener('click',()=>openCommandPalette(globalSearch.value));
   }
   $('#missionCommand')?.addEventListener('click',()=>openCommandPalette());
-  $('[data-quick-page]').forEach(b=>b.onclick=()=>page(b.dataset.quickPage));
+  $$('[data-quick-page]').forEach(b=>b.onclick=()=>page(b.dataset.quickPage));
   $('#commandBackdrop')?.addEventListener('click',closeCommandPalette);
   $('#commandPaletteInput')?.addEventListener('input',()=>{commandIndex=0;renderCommandPalette()});
   $('#commandPaletteResults')?.addEventListener('mousemove',e=>{
