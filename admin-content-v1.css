@@ -213,3 +213,7 @@
   .content-youtube-head{padding:14px}
   #contentViewOpportunities .content-toolbar{grid-template-columns:1fr!important}
 }
+
+.content-prospect-yt{margin-top:9px;padding:8px 9px;border:1px solid rgba(106,220,255,.075);border-radius:8px;background:rgba(106,220,255,.02)}
+.content-prospect-yt span{display:block;color:#637d84;font-size:6px;font-weight:1000;letter-spacing:.08em}
+.content-prospect-yt strong{display:block;margin-top:4px;color:#9eb8bd;font-size:7.5px;line-height:1.45;font-weight:800}
