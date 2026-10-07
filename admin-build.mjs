@@ -47,6 +47,10 @@ const exceptionCss=await readFile('admin-exceptions-v1.css','utf8');
 const exceptionJs=await readFile('admin-exceptions-v1.js','utf8');
 await writeFile(`${out}/static/admin-exceptions-v1.css`,exceptionCss);
 await writeFile(`${out}/static/admin-exceptions-v1.js`,exceptionJs);
+const uiPolishCss=await readFile('admin-ui-polish-v1.css','utf8');
+const uiPolishJs=await readFile('admin-ui-polish-v1.js','utf8');
+await writeFile(`${out}/static/admin-ui-polish-v1.css`,uiPolishCss);
+await writeFile(`${out}/static/admin-ui-polish-v1.js`,uiPolishJs);
 
 const config=JSON.parse(await readFile(`${out}/config.json`,'utf8'));
 config.routes=[
