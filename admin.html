@@ -2425,7 +2425,7 @@ body:after{
       var shell=document.createElement("section");
       shell.id="bbbPlayerWorkspace";shell.className="hide";
       shell.setAttribute("role","dialog");shell.setAttribute("aria-modal","true");shell.setAttribute("aria-label","BBB Player Workspace");
-      shell.innerHTML='<div class="pw-shell"><header class="pw-head"><div id="pwIdentity" class="pw-identity"></div><div id="pwPlayerArt" class="pw-player-art hide" aria-hidden="true"><img id="pwPlayerArtImg" alt=""></div><div id="pwHeadActions" class="pw-head-actions"></div></header><nav id="pwTabs" class="pw-tabs"></nav><main id="pwBody" class="pw-body"></main></div>';
+      shell.innerHTML='<div class="pw-shell"><header class="pw-head"><div id="pwPlayerArt" class="pw-player-art hide" aria-hidden="true"><img id="pwPlayerArtImg" alt=""></div><div id="pwIdentity" class="pw-identity"></div><div id="pwHeadActions" class="pw-head-actions"></div></header><nav id="pwTabs" class="pw-tabs"></nav><main id="pwBody" class="pw-body"></main></div>';
       document.body.appendChild(back);document.body.appendChild(shell);
       back.addEventListener("click",pwClose);
       shell.addEventListener("click",pwHandleWorkspaceClick);
@@ -2495,15 +2495,17 @@ body:after{
     }
 
     function pwRenderPlayerArt(detail){
-      var wrap=pwQ("#pwPlayerArt"),img=pwQ("#pwPlayerArtImg");
+      var wrap=pwQ("#pwPlayerArt"),img=pwQ("#pwPlayerArtImg"),head=pwQ(".pw-head");
       if(!wrap||!img)return;
       var espnId=detail&&detail.media&&detail.media.espn_id;
       if(!espnId){
         wrap.classList.add("hide");
+        if(head)head.classList.add("no-player-art");
         img.removeAttribute("src");
         return;
       }
       wrap.classList.remove("hide");
+      if(head)head.classList.remove("no-player-art");
       img.dataset.stage="nfl";
       img.onerror=function(){
         if(img.dataset.stage==="nfl"){
@@ -2512,6 +2514,7 @@ body:after{
           return;
         }
         wrap.classList.add("hide");
+        if(head)head.classList.add("no-player-art");
         img.onerror=null;
       };
       img.src=pwPlayerArtUrl(espnId,"nfl");
@@ -2529,8 +2532,9 @@ body:after{
       if(d.age)meta.push("Age "+d.age);
       if(x&&!b)meta.push((x.class_year||"—")+" NFL Draft");
       var healthyNow=healthy(d.status);
-      pwQ("#pwIdentity").innerHTML='<div class="pw-rank-orb"><div><span>'+esc(orbLabel)+'</span><strong>'+esc(orb)+'</strong></div></div><div class="pw-title"><div class="pw-title-top"><span class="pw-kicker">'+(b?"DYNASTY PLAYER WORKSPACE":(x?"PROSPECT PLAYER WORKSPACE":"PLAYER WORKSPACE"))+'</span><span class="pw-status '+(healthyNow?"":"bad")+'"><i></i>'+esc(d.status||"Healthy")+'</span></div><h2>'+esc(d.name)+'</h2><p>'+esc(meta.join(" · "))+'</p></div>';
+      pwQ("#pwIdentity").innerHTML='<div class="pw-title"><div class="pw-title-top"><span class="pw-kicker">'+(b?"DYNASTY PLAYER WORKSPACE":(x?"PROSPECT PLAYER WORKSPACE":"PLAYER WORKSPACE"))+'</span><span class="pw-status '+(healthyNow?"":"bad")+'"><i></i>'+esc(d.status||"Healthy")+'</span></div><h2>'+esc(d.name)+'</h2><p>'+esc(meta.join(" · "))+'</p></div>';
       var actions=[];
+      if(b||x)actions.push('<div class="pw-rank-inline"><span>'+esc(orbLabel)+'</span><strong>'+esc(orb)+'</strong></div>');
       actions.push('<button type="button" class="pw-action cyan" data-pw-action="refresh">REFRESH DATA</button>');
       if(b)actions.push('<button type="button" class="pw-action" data-pw-action="edit">EDIT CORE DATA</button>');
       if(x)actions.push('<button type="button" class="pw-action" data-pw-action="report">SCOUTING REPORT</button>');
@@ -3812,57 +3816,108 @@ body:after{
 </style>
 
 
-<style id="bbb-player-art-v30">
+<style id="bbb-player-art-v31">
 #bbbPlayerWorkspace .pw-head{
-  grid-template-columns:minmax(0,1fr) 118px auto!important;
-  gap:14px!important;
+  grid-template-columns:132px minmax(0,1fr) auto!important;
+  gap:18px!important;
+  min-height:148px;
+  padding-top:18px!important;
+  padding-bottom:14px!important;
+}
+#bbbPlayerWorkspace .pw-head.no-player-art{
+  grid-template-columns:minmax(0,1fr) auto!important;
+  min-height:0;
 }
 #bbbPlayerWorkspace .pw-player-art{
   position:relative;
   align-self:stretch;
-  min-height:88px;
-  overflow:hidden;
+  min-height:112px;
+  overflow:visible;
   pointer-events:none;
 }
 #bbbPlayerWorkspace .pw-player-art:before{
   content:"";
   position:absolute;
   left:50%;
-  bottom:-24px;
-  width:116px;
-  height:116px;
+  bottom:-18px;
+  width:150px;
+  height:150px;
   transform:translateX(-50%);
   border-radius:50%;
-  background:radial-gradient(circle,rgba(57,255,155,.17) 0%,rgba(57,255,155,.07) 42%,transparent 72%);
+  background:radial-gradient(circle,rgba(57,255,155,.18) 0%,rgba(57,255,155,.07) 44%,transparent 72%);
   filter:blur(.2px);
 }
 #bbbPlayerWorkspace .pw-player-art:after{
   content:"";
   position:absolute;
-  inset:auto 0 0;
-  height:30px;
-  background:linear-gradient(180deg,transparent,rgba(3,12,8,.96));
+  left:-10px;
+  right:-10px;
+  bottom:-15px;
+  height:38px;
+  background:linear-gradient(180deg,transparent,rgba(3,12,8,.97));
   z-index:2;
 }
 #bbbPlayerWorkspace .pw-player-art img{
   position:absolute;
   z-index:1;
   left:50%;
-  bottom:-17px;
+  bottom:-13px;
   width:auto;
-  height:126px;
-  max-width:146px;
+  height:150px;
+  max-width:168px;
   transform:translateX(-50%);
   object-fit:contain;
-  filter:drop-shadow(0 10px 14px rgba(0,0,0,.36));
+  filter:drop-shadow(0 12px 18px rgba(0,0,0,.42));
 }
 #bbbPlayerWorkspace .pw-player-art.hide{display:none!important}
+#bbbPlayerWorkspace .pw-identity{
+  gap:0!important;
+  align-self:center;
+}
+#bbbPlayerWorkspace .pw-rank-orb{display:none!important}
+#bbbPlayerWorkspace .pw-head-actions{
+  align-self:center;
+}
+#bbbPlayerWorkspace .pw-rank-inline{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  justify-content:center;
+  min-width:64px;
+  margin-right:4px;
+  padding-right:11px;
+  border-right:1px solid rgba(57,255,155,.13);
+  line-height:1;
+}
+#bbbPlayerWorkspace .pw-rank-inline span{
+  color:#5eaa7c;
+  font-size:6px;
+  font-weight:1000;
+  letter-spacing:.14em;
+  white-space:nowrap;
+}
+#bbbPlayerWorkspace .pw-rank-inline strong{
+  display:block;
+  margin-top:4px;
+  color:#f4fff8;
+  font-size:22px;
+  font-weight:1000;
+  letter-spacing:-.04em;
+}
 @media(max-width:1120px){
-  #bbbPlayerWorkspace .pw-head{grid-template-columns:minmax(0,1fr) auto!important}
+  #bbbPlayerWorkspace .pw-head{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    min-height:0;
+  }
   #bbbPlayerWorkspace .pw-player-art{display:none!important}
 }
 @media(max-width:720px){
   #bbbPlayerWorkspace .pw-head{grid-template-columns:1fr!important}
+  #bbbPlayerWorkspace .pw-rank-inline{
+    align-items:flex-start;
+    margin-right:6px;
+    padding-right:10px;
+  }
 }
 </style>
 
