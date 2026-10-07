@@ -454,13 +454,133 @@ async function saveProspectGrade(e){
 function reviewPriorityLabel(p){return Number(p)===1?'Critical':Number(p)===2?'High':'Normal'}
 function reviewAge(h){const x=Number(h);if(!Number.isFinite(x))return'—';if(x<1)return'<1h ago';if(x<48)return`${Math.round(x)}h ago`;return`${Math.round(x/24)}d ago`}
 function reviewSource(x){const src=x.source_1||x.source_2;if(!src)return'';if(/^https?:\/\//i.test(src))return `<a class="queue-source" href="${esc(src)}" target="_blank" rel="noopener">Source ↗</a>`;return `<div class="review-status">Source: ${esc(src)}</div>`}
+
+function reviewVerificationNeeded(x){
+  const hours=Number(x?.hours_since_verified);
+  const target=Number(x?.freshness_target_hours);
+  const stale=Number.isFinite(hours)&&Number.isFinite(target)&&hours>target;
+  return stale||x?.latest_update_review_status==='needs_review';
+}
+function reviewActionHtml(x){
+  const needsVerify=reviewVerificationNeeded(x);
+  const verify=needsVerify
+    ?'<button class="queue-action verify" data-review-verify="'+esc(x.player_key)+'">'+(x.ranking_review_needed?'VERIFY DATA':'MARK VERIFIED')+'</button>'
+    :'<span class="queue-action verified-state">DATA VERIFIED ✓</span>';
+  const rank='<button class="queue-action '+(x.ranking_review_needed?'resolve':'rank')+'" data-review-rank="'+esc(x.player_key)+'">'+(x.ranking_review_needed?'RESOLVE RANK':'FLAG RANK')+'</button>';
+  const edit='<button class="queue-action" data-edit="'+esc(x.player_key)+'">EDIT</button>';
+  const profile='<a class="queue-action" href="/player/'+encodeURIComponent(x.player_key)+'" target="_blank">PROFILE ↗</a>';
+  return verify+rank+edit+profile;
+}
+function showReviewActionNotice(message,warn=false){
+  const el=$('#reviewActionNotice');if(!el)return;
+  const token=String(Date.now());
+  el.dataset.token=token;
+  el.textContent=message;
+  el.classList.remove('hide','warn');
+  if(warn)el.classList.add('warn');
+  setTimeout(()=>{if(el.dataset.token===token)el.classList.add('hide')},6500);
+}
+
 function filteredReview(){const q=$('#reviewSearch')?.value.trim().toLowerCase()||'',priority=$('#reviewPriority')?.value||'ALL',kind=$('#reviewKind')?.value||'ALL';return reviewQueue.filter(x=>{if(priority!=='ALL'&&String(x.queue_priority)!==priority)return false;const hay=`${x.name} ${x.team||''} ${x.injury_status||''} ${x.attention_reason||''} ${x.latest_update_text||''}`.toLowerCase();if(q&&!hay.includes(q))return false;if(kind==='RANK'&&!x.ranking_review_needed)return false;if(kind==='INJURY'&&healthy(x.injury_status))return false;if(kind==='SOURCE'&&x.latest_update_review_status!=='needs_review'&&!String(x.attention_reason||'').toLowerCase().includes('source'))return false;if(kind==='STALE'&&!String(x.attention_reason||'').toLowerCase().includes('stale'))return false;return true})}
-function renderReviewQueue(){if(!$('#reviewBody'))return;const list=filteredReview();const max=Math.max(0,Math.ceil(list.length/PAGE)-1);reviewPage=Math.min(reviewPage,max);const rows=list.slice(reviewPage*PAGE,(reviewPage+1)*PAGE);$('#reviewBody').innerHTML=rows.map(x=>`<tr><td><span class="queue-priority queue-p${x.queue_priority}">${reviewPriorityLabel(x.queue_priority)}</span></td><td class="rank-number">${x.overall_rank??'—'}</td><td class="player-name">${esc(x.name)}<div class="review-status">${esc(x.position||'')} · ${esc(x.team||'FA')}</div>${x.ranking_review_needed?'<span class="review-rank-flag">RANKING REVIEW</span>':''}</td><td class="${healthy(x.injury_status)?'green':'red'}">${esc(x.injury_status||'Healthy')}</td><td>${reviewAge(x.hours_since_verified)}<div class="review-status">Target ${x.freshness_target_hours||'—'}h</div></td><td class="queue-reason">${esc(x.attention_reason||'Review needed')}</td><td class="queue-update">${esc(clip(x.latest_update_text,190))}${reviewSource(x)}</td><td><div class="queue-actions"><button class="queue-action verify" data-review-verify="${esc(x.player_key)}">MARK VERIFIED</button><button class="queue-action ${x.ranking_review_needed?'resolve':'rank'}" data-review-rank="${esc(x.player_key)}">${x.ranking_review_needed?'RESOLVE RANK':'FLAG RANK'}</button><button class="queue-action" data-edit="${esc(x.player_key)}">EDIT</button><a class="queue-action" href="/player/${encodeURIComponent(x.player_key)}" target="_blank">PROFILE ↗</a></div></td></tr>`).join('')||'<tr><td colspan="8" class="empty">Queue is clear for these filters.</td></tr>';$('#reviewCount').textContent=`${list.length?reviewPage*PAGE+1:0}–${Math.min((reviewPage+1)*PAGE,list.length)} of ${list.length}`;$('#reviewPrev').disabled=reviewPage===0;$('#reviewNext').disabled=reviewPage>=max;const high=reviewQueue.filter(x=>Number(x.queue_priority)<=2).length,normal=reviewQueue.filter(x=>Number(x.queue_priority)===3).length,ranks=reviewQueue.filter(x=>x.ranking_review_needed).length;$('#metricReviewHigh').textContent=high;$('#metricReviewNormal').textContent=normal;$('#metricRankReviews').textContent=ranks;$('#reviewNavCount').textContent=reviewQueue.length;bindRows();bindReviewRows()}
+function renderReviewQueue(){
+  if(!$('#reviewBody'))return;
+  const list=filteredReview();
+  const max=Math.max(0,Math.ceil(list.length/PAGE)-1);
+  reviewPage=Math.min(reviewPage,max);
+  const rows=list.slice(reviewPage*PAGE,(reviewPage+1)*PAGE);
+  $('#reviewBody').innerHTML=rows.map(x=>
+    '<tr>'+
+      '<td><span class="queue-priority queue-p'+x.queue_priority+'">'+reviewPriorityLabel(x.queue_priority)+'</span></td>'+
+      '<td class="rank-number">'+(x.overall_rank??'—')+'</td>'+
+      '<td class="player-name">'+esc(x.name)+
+        '<div class="review-status">'+esc(x.position||'')+' · '+esc(x.team||'FA')+'</div>'+
+        (x.ranking_review_needed?'<span class="review-rank-flag">RANKING REVIEW</span>':'')+
+      '</td>'+
+      '<td class="'+(healthy(x.injury_status)?'green':'red')+'">'+esc(x.injury_status||'Healthy')+'</td>'+
+      '<td>'+reviewAge(x.hours_since_verified)+'<div class="review-status">Target '+(x.freshness_target_hours||'—')+'h</div></td>'+
+      '<td class="queue-reason">'+esc(x.attention_reason||'Review needed')+'</td>'+
+      '<td class="queue-update">'+esc(clip(x.latest_update_text,190))+reviewSource(x)+'</td>'+
+      '<td><div class="queue-actions">'+reviewActionHtml(x)+'</div></td>'+
+    '</tr>'
+  ).join('')||'<tr><td colspan="8" class="empty">Queue is clear for these filters.</td></tr>';
+
+  $('#reviewCount').textContent=(list.length?reviewPage*PAGE+1:0)+'–'+Math.min((reviewPage+1)*PAGE,list.length)+' of '+list.length;
+  $('#reviewPrev').disabled=reviewPage===0;
+  $('#reviewNext').disabled=reviewPage>=max;
+  const high=reviewQueue.filter(x=>Number(x.queue_priority)<=2).length;
+  const normal=reviewQueue.filter(x=>Number(x.queue_priority)===3).length;
+  const ranks=reviewQueue.filter(x=>x.ranking_review_needed).length;
+  $('#metricReviewHigh').textContent=high;
+  $('#metricReviewNormal').textContent=normal;
+  $('#metricRankReviews').textContent=ranks;
+  $('#reviewNavCount').textContent=reviewQueue.length;
+  bindRows();
+  bindReviewRows();
+}
 function renderDataHealth(){if(!$('#healthGrid'))return;const h=dataHealth||{};const integrity=Number(h.ranked_players)===500&&Number(h.unique_rank_slots)===500;const checks=[['Rank Slots',integrity?`${h.unique_rank_slots}/500`:`${h.unique_rank_slots||0}/${h.ranked_players||0}`,integrity],['Breakdowns',Number(h.missing_breakdowns)===0?'Complete':`${h.missing_breakdowns} missing`,Number(h.missing_breakdowns)===0],['Sources',Number(h.missing_breakdown_sources)===0?'Complete':`${h.missing_breakdown_sources} missing`,Number(h.missing_breakdown_sources)===0],['Team Sync',Number(h.team_mismatches)===0?'Clean':`${h.team_mismatches} issues`,Number(h.team_mismatches)===0],['Injury Sync',Number(h.injury_status_mismatches)===0?'Clean':`${h.injury_status_mismatches} issues`,Number(h.injury_status_mismatches)===0],['Rank History',Number(h.duplicate_ranking_history_groups)===0?'Clean':`${h.duplicate_ranking_history_groups} dupes`,Number(h.duplicate_ranking_history_groups)===0]];$('#healthGrid').innerHTML=checks.map(([label,value,ok])=>`<div class="health-chip ${ok?'health-ok':'health-bad'}"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join('');$('#metricBoardHealth').textContent=checks.every(x=>x[2])?'CLEAN':'CHECK'}
 function bindReviewRows(){$$('[data-review-verify]').forEach(b=>b.onclick=()=>markReviewVerified(b.dataset.reviewVerify,b));$$('[data-review-rank]').forEach(b=>b.onclick=()=>toggleRankingReview(b.dataset.reviewRank,b))}
-async function refreshReviewOnly(){await Promise.all([loadReviewQueue(),loadDataHealth(),loadActivity()]);renderReviewQueue();renderDataHealth();renderCommandDashboard()}
-async function markReviewVerified(key,btn){const x=reviewQueue.find(v=>v.player_key===key);if(!x)return;const old=btn.textContent;btn.disabled=true;btn.textContent='…';try{await rpc('admin_mark_player_verified',{p_player_key:key});await refreshReviewOnly()}catch(e){alert(e.message);btn.disabled=false;btn.textContent=old}}
-async function toggleRankingReview(key,btn){const x=reviewQueue.find(v=>v.player_key===key);if(!x)return;const old=btn.textContent;btn.disabled=true;btn.textContent='…';try{if(x.ranking_review_needed){await rpc('admin_set_ranking_review',{p_player_key:key,p_needed:false,p_reason:null,p_priority:1})}else{const reason=prompt(`Why should ${x.name} get a ranking review?`,x.attention_reason||'Manual ranking review');if(reason===null){btn.disabled=false;btn.textContent=old;return}await rpc('admin_set_ranking_review',{p_player_key:key,p_needed:true,p_reason:reason,p_priority:2})}await refreshReviewOnly()}catch(e){alert(e.message);btn.disabled=false;btn.textContent=old}}
+async function refreshReviewOnly(){
+  commandBrief=null;
+  await Promise.all([loadReviewQueue(),loadDataHealth(),loadActivity()]);
+  await loadCommandBrief(true);
+  renderReviewQueue();
+  renderDataHealth();
+  renderCommandDashboard();
+}
+async function markReviewVerified(key,btn){
+  const x=reviewQueue.find(v=>v.player_key===key);if(!x)return;
+  const old=btn.textContent;
+  btn.disabled=true;
+  btn.textContent='VERIFYING…';
+  try{
+    await rpc('admin_mark_player_verified',{p_player_key:key});
+    await refreshReviewOnly();
+    const remaining=reviewQueue.find(v=>v.player_key===key);
+    if(remaining){
+      showReviewActionNotice(
+        x.name+' data verified. Still needs attention: '+(remaining.attention_reason||'another review item remains.'),
+        true
+      );
+    }else{
+      showReviewActionNotice(x.name+' verified — Review Queue item cleared.');
+    }
+  }catch(e){
+    alert(e.message);
+    btn.disabled=false;
+    btn.textContent=old;
+  }
+}
+async function toggleRankingReview(key,btn){
+  const x=reviewQueue.find(v=>v.player_key===key);if(!x)return;
+  const old=btn.textContent;
+  btn.disabled=true;
+  btn.textContent='…';
+  try{
+    if(x.ranking_review_needed){
+      await rpc('admin_set_ranking_review',{p_player_key:key,p_needed:false,p_reason:null,p_priority:1});
+      await refreshReviewOnly();
+      const remaining=reviewQueue.find(v=>v.player_key===key);
+      if(remaining){
+        showReviewActionNotice(
+          x.name+' ranking review resolved. Still needs attention: '+(remaining.attention_reason||'another review item remains.'),
+          true
+        );
+      }else{
+        showReviewActionNotice(x.name+' ranking review resolved — Review Queue item cleared.');
+      }
+    }else{
+      const reason=prompt('Why should '+x.name+' get a ranking review?',x.attention_reason||'Manual ranking review');
+      if(reason===null){btn.disabled=false;btn.textContent=old;return}
+      await rpc('admin_set_ranking_review',{p_player_key:key,p_needed:true,p_reason:reason,p_priority:2});
+      await refreshReviewOnly();
+      showReviewActionNotice(x.name+' flagged for a ranking decision.',true);
+    }
+  }catch(e){
+    alert(e.message);
+    btn.disabled=false;
+    btn.textContent=old;
+  }
+}
 async function movePlayer(key){const x=board.find(p=>p.player_key===key);const input=$(`[data-move-input="${CSS.escape(key)}"]`);const nr=Number(input?.value);if(!x||!Number.isInteger(nr)||nr<1||nr>board.length)return alert(`Enter a rank from 1 to ${board.length}.`);if(nr===x.rank)return;const btn=$(`[data-move="${CSS.escape(key)}"]`);const old=btn.textContent;btn.disabled=true;btn.textContent='…';try{const result=await rpc('admin_move_dynasty_player',{p_player_key:key,p_new_rank:nr});await Promise.all([loadBoard(),loadActivity()]);renderRankings();renderPlayers();if($('#metricInjuries'))$('#metricInjuries').textContent=board.filter(v=>!healthy(v.injury_status)).length;renderCommandDashboard();alert(`${x.name} moved from #${x.rank} to #${nr}. ${result?.affected??''} board rows updated.`)}catch(e){alert(e.message)}finally{btn.disabled=false;btn.textContent=old}}
 function openEditor(key){const b=board.find(x=>x.player_key===key),p=profileMap.get(key)||{};if(!b)return;$('#editKey').value=key;$('#drawerTitle').textContent=b.name;$('#editName').value=b.name||'';$('#editPosition').value=b.pos||'WR';$('#editTeam').value=b.team||'';$('#editAge').value=b.age??'';$('#editDraft').value=b.draft??'';$('#editCollege').value=b.college||'';$('#editInjury').value=p.injury_status||b.injury_status||'Healthy';$('#editInjuryDate').value=(p.injury_updated||b.injury_updated||'').slice(0,10);$('#editInjuryNote').value=p.injury_note||b.injury_note||'';$('#editOverview').value=p.overall_breakdown||b.overview||'';$('#profileLink').href=`/player/${encodeURIComponent(key)}`;$('#saveStatus').textContent='';$('#drawerBackdrop').classList.remove('hide');$('#playerDrawer').classList.remove('hide')}
 function closeEditor(){$('#drawerBackdrop').classList.add('hide');$('#playerDrawer').classList.add('hide')}
