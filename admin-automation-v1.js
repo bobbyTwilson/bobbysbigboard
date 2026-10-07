@@ -1,6 +1,6 @@
 /* BBB Automation Control Center v1 */
 (function(){
-  let autoData=null,autoLoaded=false,autoLoading=false,autoHealth=null,jobMetrics=[];
+  let autoData=null,autoLoaded=false,autoLoading=false,autoHealth=null,jobMetrics=[],autoIntel=null;
 
   function arr(v){return Array.isArray(v)?v:[]}
   function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
@@ -170,6 +170,46 @@
       '<button class="small-btn" type="button" data-auto-jump="prospects">PROSPECT LAB</button></div>';
   }
 
+  function intelligencePlayer(x){
+    const gap=num(x.market_gap);
+    const line=[];
+    if(num(x.targets)>0)line.push(num(x.targets)+' targets');
+    if(num(x.carries)>0)line.push(num(x.carries)+' carries');
+    if(x.target_share!=null&&num(x.target_share)>0)line.push(Math.round(num(x.target_share)*100)+'% target share');
+    if(x.offense_snap_pct!=null&&num(x.offense_snap_pct)>0)line.push(Math.round(num(x.offense_snap_pct)*100)+'% snaps');
+    const compared=gap>0?'BBB '+gap+' spots higher':gap<0?'Market '+Math.abs(gap)+' spots higher':'Near market';
+    return '<article class="auto-intelligence-player">'+
+      '<div class="auto-intelligence-player-rank">#'+escv(x.overall_rank)+'</div>'+
+      '<div class="auto-intelligence-player-info"><strong>'+escv(x.name||x.player_key)+'</strong>'+
+      '<span>'+escv(x.position||'')+' · '+escv(x.team||'FA')+' · '+escv(compared)+'</span>'+
+      '<p>Week '+escv(x.week)+' · '+escv(line.join(' · '))+'</p></div>'+
+      '<button class="small-btn" type="button" data-auto-player="'+escv(x.player_key)+'">RESEARCH</button>'+
+      '</article>';
+  }
+  function renderIntelligence(){
+    const rows=$('#autoIntelPlayers'),cov=$('#autoIntelCoverage'),content=$('#autoIntelContent');
+    if(!rows)return;
+    if(!autoIntel){
+      rows.innerHTML='<div class="empty">The intelligence query is unavailable. Existing rankings and scouting data remain unchanged.</div>';
+      return;
+    }
+    const a=arr(autoIntel.ranking_watchlist),p=autoIntel.prospects||{},c=autoIntel.content||{};
+    if($('#autoIntelWeek'))$('#autoIntelWeek').textContent='2026 WEEK '+escv(autoIntel.latest_verified_week??'—')+' · FC '+escv(autoIntel.market_snapshot_date||'—');
+    rows.innerHTML=a.length?a.map(intelligencePlayer).join(''):
+      '<div class="empty">No strong market-gap + usage combinations met the current screening thresholds.</div>';
+    const ungraded=num(p.recommended_ungraded),conflicts=num(p.class_conflicts),unsourced=num(p.unreferenced_research);
+    if(cov)cov.innerHTML='<div class="auto-intelligence-label"><strong>PROSPECT COVERAGE</strong><span>SCOUTING AUDIT</span></div>'+
+      '<div class="auto-intel-big">'+escv(p.grades_submitted??'—')+' <small>player grades</small></div>'+
+      '<p>'+escv(p.scouting_recommendations??'—')+' researched profiles with recommendations.</p>'+
+      '<div class="auto-intel-detail">'+ungraded+' researched but ungraded · '+conflicts+' class disagreements · '+unsourced+' lacking source links</div>'+
+      '<button class="small-btn" type="button" data-auto-jump="prospects">OPEN PROSPECT LAB</button>';
+    if(content)content.innerHTML='<div class="auto-intelligence-label"><strong>CONTENT PIPELINE</strong><span>PRODUCTION AUDIT</span></div>'+
+      '<div class="auto-intel-big">'+escv(c.in_progress??'—')+' <small>in progress</small></div>'+
+      '<p>'+escv(c.published??'—')+' published video records currently tracked by BBB.</p>'+
+      '<div class="auto-intel-detail">Review breakout candidates and schedule the next film breakdown or Shorts.</div>'+
+      '<button class="small-btn" type="button" data-auto-jump="content">OPEN CONTENT INTELLIGENCE</button>';
+  }
+
   function renderGuards(){
     const g=autoData?.guards||{},host=$('#autoGuardGrid');if(!host)return;
     const guards=[
@@ -244,7 +284,7 @@
 
   function render(){
     if(!autoLoaded||!autoData)return;
-    renderSummary();renderReadiness();renderGuards();renderSources();renderJobs();renderRuns();renderLatestNews();bindActions();
+    renderSummary();renderReadiness();renderIntelligence();renderGuards();renderSources();renderJobs();renderRuns();renderLatestNews();bindActions();
   }
 
   async function load(force=false){
@@ -256,12 +296,14 @@
       const results=await Promise.allSettled([
         rpc('admin_get_automation_control_center',{}),
         rpc('admin_get_data_health',{}),
-        rpc('admin_get_job_run_health',{})
+        rpc('admin_get_job_run_health',{}),
+        rpc('admin_get_ops_intelligence',{})
       ]);
       if(results[0].status!=='fulfilled')throw results[0].reason;
       autoData=results[0].value||null;
       autoHealth=results[1].status==='fulfilled'?results[1].value:null;
       jobMetrics=results[2].status==='fulfilled'?arr(results[2].value?.jobs):[];
+      autoIntel=results[3].status==='fulfilled'?results[3].value:null;
       autoLoaded=true;render();
     }catch(e){
       console.error('Automation Control Center failed',e);
