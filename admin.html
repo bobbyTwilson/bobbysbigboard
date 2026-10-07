@@ -2534,8 +2534,19 @@ body:after{
       var infoHtml='<div class="pw-info-grid">'+info.map(function(v){return '<div class="pw-info"><span>'+esc(v[0])+'</span><strong>'+esc(v[1])+'</strong></div>'}).join("")+'</div>';
       var reviewHtml="";
       if(r||raw.ranking_review_needed){
+        var rankActive=!!(raw.ranking_review_needed||(r&&r.ranking_review_needed));
         var reason=(r&&r.attention_reason)||raw.ranking_review_reason||"Player is currently flagged for review.";
-        reviewHtml='<div class="pw-review-box"><strong>'+((raw.ranking_review_needed||(r&&r.ranking_review_needed))?"RANKING REVIEW ACTIVE":"PLAYER REVIEW ACTIVE")+'</strong><p>'+esc(reason)+'</p><div class="pw-inline-actions">'+(r?'<button type="button" class="pw-action primary" data-pw-action="verify">MARK VERIFIED</button><button type="button" class="pw-action" data-pw-action="rankreview">'+(r.ranking_review_needed?"RESOLVE RANK REVIEW":"FLAG RANK REVIEW")+'</button>':"")+'</div></div>';
+        var needsDataVerify=!!(r&&typeof reviewVerificationNeeded==="function"&&reviewVerificationNeeded(r));
+        var reviewActions="";
+        if(r){
+          if(needsDataVerify){
+            reviewActions+='<button type="button" class="pw-action'+(rankActive?"":" primary")+'" data-pw-action="verify">'+(rankActive?"VERIFY DATA":"MARK VERIFIED")+'</button>';
+          }else{
+            reviewActions+='<span class="pw-action verified-state">DATA VERIFIED ✓</span>';
+          }
+          reviewActions+='<button type="button" class="pw-action'+(rankActive?" primary":"")+'" data-pw-action="rankreview">'+(rankActive?"RESOLVE RANK REVIEW":"FLAG RANK REVIEW")+'</button>';
+        }
+        reviewHtml='<div class="pw-review-box"><strong>'+(rankActive?"RANKING REVIEW ACTIVE":"PLAYER REVIEW ACTIVE")+'</strong><p>'+esc(reason)+'</p><div class="pw-inline-actions">'+reviewActions+'</div></div>';
       }
       var left=pwPanel("PLAYER INTELLIGENCE","Current BBB read",'<p class="pw-copy strong">'+esc(desc)+'</p><div style="height:12px"></div><div class="pw-signal"><span>LATEST SIGNAL</span><p>'+esc(latest)+'</p></div>');
       var right=pwPanel("IDENTITY + CONTROL","Player record",infoHtml+(reviewHtml?'<div style="height:10px"></div>'+reviewHtml:""));
@@ -3337,6 +3348,12 @@ body:after{
 .review-action-notice.warn{border-color:rgba(255,200,97,.18);background:rgba(112,76,20,.12);color:#e3c580}
 .queue-action.verified-state{display:inline-grid;place-items:center;min-height:28px;padding:0 8px;border:1px solid rgba(57,255,155,.08);border-radius:7px;background:rgba(57,255,155,.035);color:#6fa989;font-size:7px;font-weight:950;white-space:nowrap;cursor:default}
 .queue-action.verify[data-review-verify]{border-color:rgba(88,234,255,.16);color:#8bdbe3}
+</style>
+
+
+<style id="bbb-player-workspace-review-v26">
+#bbbPlayerWorkspace .pw-action.verified-state{cursor:default;border-color:rgba(57,255,155,.09);background:rgba(57,255,155,.035);color:#79b793}
+#bbbPlayerWorkspace .pw-review-box .pw-action.primary[data-pw-action="rankreview"]{border-color:rgba(255,200,97,.25);background:rgba(123,83,22,.18);color:#f0cb79}
 </style>
 
 </body>
