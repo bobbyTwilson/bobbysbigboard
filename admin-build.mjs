@@ -31,6 +31,10 @@ await writeFile(`${out}/static/admin-injury-v1.css`,injuryCss);
 await writeFile(`${out}/static/admin-injury-v1.js`,injuryJs);
 const injuryV2Css=await readFile('admin-injury-v2.css','utf8');
 await writeFile(`${out}/static/admin-injury-v2.css`,injuryV2Css);
+const contentCss=await readFile('admin-content-v1.css','utf8');
+const contentJs=await readFile('admin-content-v1.js','utf8');
+await writeFile(`${out}/static/admin-content-v1.css`,contentCss);
+await writeFile(`${out}/static/admin-content-v1.js`,contentJs);
 
 const config=JSON.parse(await readFile(`${out}/config.json`,'utf8'));
 config.routes=[
