@@ -110,7 +110,7 @@
     el.innerHTML=list.length?list.map((x,i)=>{
       const trend=trendClass(x),st=statusGroup(x).toLowerCase();
       return '<button type="button" class="inj-priority-card '+st+'" data-inj-open="'+esc(x.player_key)+'">'+
-        '<span class="inj-priority-num">0'+(i+1)+'</span>'+
+
         art(x.espn_id,x.name)+
         '<span class="inj-priority-copy"><small>BBB #'+x.overall_rank+' · '+esc(x.position)+' · '+esc(x.team||'FA')+'</small><strong>'+esc(x.name)+'</strong><em>'+esc(x.current_status||'Injury watch')+'</em></span>'+
         '<span class="inj-trend '+trend+'">'+esc(x.trend||'UNCHANGED')+'</span>'+
