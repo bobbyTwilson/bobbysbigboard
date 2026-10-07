@@ -3816,10 +3816,10 @@ body:after{
 </style>
 
 
-<style id="bbb-player-art-v31">
+<style id="bbb-player-art-v32">
 #bbbPlayerWorkspace .pw-head{
-  grid-template-columns:132px minmax(0,1fr) auto!important;
-  gap:18px!important;
+  grid-template-columns:145px minmax(0,1fr) auto!important;
+  gap:16px!important;
   min-height:148px;
   padding-top:18px!important;
   padding-bottom:14px!important;
@@ -3839,40 +3839,33 @@ body:after{
   content:"";
   position:absolute;
   left:50%;
-  bottom:-18px;
-  width:150px;
-  height:150px;
+  bottom:-32px;
+  width:154px;
+  height:126px;
   transform:translateX(-50%);
   border-radius:50%;
-  background:radial-gradient(circle,rgba(57,255,155,.18) 0%,rgba(57,255,155,.07) 44%,transparent 72%);
-  filter:blur(.2px);
+  background:radial-gradient(ellipse,rgba(57,255,155,.12) 0%,rgba(57,255,155,.045) 48%,transparent 74%);
 }
 #bbbPlayerWorkspace .pw-player-art:after{
-  content:"";
-  position:absolute;
-  left:-10px;
-  right:-10px;
-  bottom:-15px;
-  height:38px;
-  background:linear-gradient(180deg,transparent,rgba(3,12,8,.97));
-  z-index:2;
+  display:none;
 }
 #bbbPlayerWorkspace .pw-player-art img{
   position:absolute;
   z-index:1;
   left:50%;
-  bottom:-13px;
+  bottom:-24px;
   width:auto;
-  height:150px;
-  max-width:168px;
+  height:158px;
+  max-width:178px;
   transform:translateX(-50%);
   object-fit:contain;
-  filter:drop-shadow(0 12px 18px rgba(0,0,0,.42));
+  filter:drop-shadow(0 10px 16px rgba(0,0,0,.38));
 }
 #bbbPlayerWorkspace .pw-player-art.hide{display:none!important}
 #bbbPlayerWorkspace .pw-identity{
   gap:0!important;
   align-self:center;
+  transform:translateY(-1px);
 }
 #bbbPlayerWorkspace .pw-rank-orb{display:none!important}
 #bbbPlayerWorkspace .pw-head-actions{
@@ -3883,9 +3876,9 @@ body:after{
   flex-direction:column;
   align-items:flex-end;
   justify-content:center;
-  min-width:64px;
+  min-width:66px;
   margin-right:4px;
-  padding-right:11px;
+  padding-right:12px;
   border-right:1px solid rgba(57,255,155,.13);
   line-height:1;
 }
@@ -3900,7 +3893,7 @@ body:after{
   display:block;
   margin-top:4px;
   color:#f4fff8;
-  font-size:22px;
+  font-size:24px;
   font-weight:1000;
   letter-spacing:-.04em;
 }
@@ -3910,6 +3903,7 @@ body:after{
     min-height:0;
   }
   #bbbPlayerWorkspace .pw-player-art{display:none!important}
+  #bbbPlayerWorkspace .pw-identity{transform:none}
 }
 @media(max-width:720px){
   #bbbPlayerWorkspace .pw-head{grid-template-columns:1fr!important}
