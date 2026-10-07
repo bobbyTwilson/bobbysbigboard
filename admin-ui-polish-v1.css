@@ -709,3 +709,132 @@
 /* Hide any retired decorative purple glows still emitted by old component CSS. */
 #pageReview .exception-card:before,
 #pageContent .content-card:before{filter:none!important}
+
+
+/* ===== UI COHESION V3 · shared Dashboard background + sidebar note ===== */
+
+/* Give every admin tab the same atmospheric shell as Dashboard instead of a flat green page. */
+#appView{
+  position:relative!important;
+  isolation:isolate!important;
+  min-height:100vh!important;
+  background:#030806!important;
+}
+#appView:before{
+  content:"";
+  position:fixed;
+  inset:70px 0 0;
+  z-index:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 82% 5%,rgba(57,255,155,.075),transparent 29%),
+    radial-gradient(circle at 70% 28%,rgba(88,234,255,.035),transparent 24%),
+    linear-gradient(118deg,transparent 56%,rgba(57,255,155,.022) 56.2%,transparent 56.45%),
+    linear-gradient(72deg,transparent 64%,rgba(88,234,255,.018) 64.2%,transparent 64.45%),
+    repeating-linear-gradient(90deg,transparent 0 63px,rgba(57,255,155,.013) 64px 65px),
+    linear-gradient(180deg,#040b08 0%,#030806 46%,#020604 100%);
+}
+#appView .topbar,
+#appView .admin-mission-bar,
+#appView .admin-layout{position:relative;z-index:1}
+#appView .content{position:relative;background:transparent!important}
+#appView .admin-page{background:transparent!important}
+
+/* Secure Command Link should read as a deliberate status card, not tiny inline copy. */
+#appView .side-note{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:34px minmax(0,1fr)!important;
+  gap:10px!important;
+  align-items:start!important;
+  min-height:92px!important;
+  margin-top:13px!important;
+  padding:14px!important;
+  border:1px solid rgba(83,232,160,.12)!important;
+  border-radius:14px!important;
+  background:
+    radial-gradient(circle at 10% 15%,rgba(57,255,155,.08),transparent 42%),
+    linear-gradient(145deg,rgba(5,18,12,.93),rgba(3,11,8,.95))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.018),0 14px 30px rgba(0,0,0,.15)!important;
+}
+#appView .side-note-icon{
+  width:34px;height:34px;display:grid;place-items:center;
+  border:1px solid rgba(57,255,155,.19);border-radius:10px;
+  background:rgba(57,255,155,.055);color:#7ce9aa;
+  box-shadow:0 0 18px rgba(57,255,155,.04);
+}
+#appView .side-note-icon svg{
+  width:18px;height:18px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;
+}
+#appView .side-note-copy{min-width:0}
+#appView .side-note strong{
+  display:block!important;
+  margin:1px 0 6px!important;
+  color:#8cf0b6!important;
+  font-size:10px!important;
+  line-height:1.2!important;
+  letter-spacing:.08em!important;
+}
+#appView .side-note strong:before{display:none!important}
+#appView .side-note span{
+  display:block!important;
+  color:#8fa59a!important;
+  font-size:10.5px!important;
+  line-height:1.55!important;
+}
+
+/* Remove all remaining decorative "01 / 02 / 03" rank numerals from overview cards. */
+#pageContent .content-now-num,
+#pageScanner .spotlight-number,
+#pageInjuries .inj-priority-num{display:none!important}
+
+/* Injury Center: same neutral dashboard surface; red remains a semantic accent only. */
+#pageInjuries .inj-hero{
+  border-color:rgba(255,113,135,.13)!important;
+  background:
+    linear-gradient(90deg,rgba(88,234,255,.014) 1px,transparent 1px),
+    linear-gradient(rgba(88,234,255,.011) 1px,transparent 1px),
+    radial-gradient(circle at 87% 40%,rgba(255,113,135,.075),transparent 24%),
+    radial-gradient(circle at 72% 17%,rgba(88,234,255,.045),transparent 24%),
+    linear-gradient(125deg,#06110d 0%,#050d0a 52%,#0d090b 100%)!important;
+}
+#pageInjuries .inj-hero:after{
+  background:linear-gradient(90deg,transparent,var(--ui-green),var(--ui-cyan),var(--ui-red),transparent)!important;
+  opacity:.48!important;
+}
+#pageInjuries .inj-hero-pills span{
+  border-color:rgba(255,113,135,.10)!important;
+  background:rgba(34,10,15,.20)!important;color:#b18f96!important;
+}
+#pageInjuries .inj-vitals{
+  border-color:rgba(255,113,135,.15)!important;
+  background:radial-gradient(circle,rgba(255,113,135,.075),rgba(5,14,11,.78) 66%)!important;
+}
+#pageInjuries .inj-kpi{
+  border-color:rgba(83,232,160,.085)!important;
+  background:linear-gradient(145deg,rgba(6,19,14,.95),rgba(3,10,8,.97))!important;
+}
+#pageInjuries .inj-priority{
+  border-color:rgba(255,113,135,.09)!important;
+  background:linear-gradient(145deg,rgba(6,17,14,.95),rgba(4,10,9,.97))!important;
+}
+#pageInjuries .inj-priority-card,
+#pageInjuries .inj-card{
+  background:linear-gradient(145deg,rgba(6,18,14,.96),rgba(4,10,9,.98))!important;
+}
+#pageInjuries .inj-card-body{background:rgba(3,10,8,.58)!important}
+#pageInjuries .inj-card-body>section{background:#05110d!important}
+
+/* Scanner: pull the remaining full-green fields back toward the dashboard's dark charcoal surface. */
+#pageScanner .scanner-spotlight,
+#pageScanner .scanner-panel,
+#pageScanner .scanner-card-v2{
+  backdrop-filter:blur(2px);
+}
+#pageScanner .scanner-card-v2{
+  background:linear-gradient(145deg,rgba(6,18,14,.96),rgba(4,10,10,.985))!important;
+}
+#pageScanner .scanner-stats-v2 .scanner-stat{
+  background:linear-gradient(180deg,#07130f,#05100d)!important;
+}
+#pageScanner .scanner-card-foot-v2{background:rgba(3,9,8,.70)!important}
