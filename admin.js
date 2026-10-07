@@ -2,7 +2,7 @@ const SUPA='https://twbduhmibbotregdxlla.supabase.co';
 const KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
 const STORE='bbb_admin_session_v1';
 const BRIEF_SEEN='bbb_admin_brief_seen_v1';
-let session=null,board=[],profileMap=new Map(),reviewQueue=[],rankingMoveQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,classAudit=[],classAuditLoaded=false,classAuditLoading=false,classAuditView='attention',prospectGradeOnly=false,commandBrief=null,commandBriefLoading=false,briefMode='ranking_decisions',activeAdminPage='dashboard';
+let session=null,board=[],profileMap=new Map(),reviewQueue=[],rankingMoveQueue=[],weeklyScanner=null,scannerLoaded=false,scannerLoading=false,prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,classAudit=[],classAuditLoaded=false,classAuditLoading=false,classAuditView='attention',prospectGradeOnly=false,commandBrief=null,commandBriefLoading=false,briefMode='ranking_decisions',activeAdminPage='dashboard';
 const PAGE=50;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -513,6 +513,183 @@ async function resolveRankingMove(id,action,btn,overrideRank){
   }catch(e){
     alert(e.message);
     if(btn){btn.disabled=false;btn.textContent=old}
+  }
+}
+
+
+function scannerPct(v,digits=1){
+  const n=Number(v);return Number.isFinite(n)?(n*100).toFixed(digits)+'%':'—';
+}
+function scannerNum(v,digits=1){
+  const n=Number(v);return Number.isFinite(n)?n.toFixed(digits):'—';
+}
+function scannerInt(v){
+  const n=Number(v);return Number.isFinite(n)?Math.round(n):'—';
+}
+function scannerDelta(v,kind='num'){
+  const n=Number(v);if(!Number.isFinite(n))return '—';
+  if(kind==='pct')return (n>0?'+':'')+(n*100).toFixed(1)+' pp';
+  return (n>0?'+':'')+n.toFixed(kind==='int'?0:1);
+}
+async function loadWeeklyScanner(force=false,week=null){
+  if(scannerLoading)return;
+  if(scannerLoaded&&!force&&weeklyScanner){renderWeeklyScanner();return}
+  scannerLoading=true;
+  if($('#scannerLoadState'))$('#scannerLoadState').textContent='SCANNING…';
+  try{
+    weeklyScanner=await rpc('admin_get_weekly_performance_scanner',{p_season:null,p_week:week==null?null:Number(week),p_limit:500})||null;
+    scannerLoaded=true;
+    populateScannerWeeks();
+    renderWeeklyScanner();
+  }catch(e){
+    console.error('BBB Weekly Performance Scanner failed',e);
+    const grid=$('#scannerGrid');
+    if(grid)grid.innerHTML='<div class="empty">'+esc(e.message||'Weekly scanner could not load.')+'</div>';
+  }finally{
+    scannerLoading=false;
+    if($('#scannerLoadState'))$('#scannerLoadState').textContent='LIVE DATA';
+  }
+}
+function populateScannerWeeks(){
+  const sel=$('#scannerWeek');if(!sel||!weeklyScanner)return;
+  const current=Number(weeklyScanner.week)||1;
+  const existing=Number(sel.value);
+  sel.innerHTML=Array.from({length:current},(_,i)=>current-i).map(w=>'<option value="'+w+'">Week '+w+'</option>').join('');
+  sel.value=existing&&existing<=current?String(existing):String(current);
+  if($('#scannerSeasonWeek'))$('#scannerSeasonWeek').textContent=weeklyScanner.season+' · WEEK '+weeklyScanner.week;
+  if($('#scannerNavCount'))$('#scannerNavCount').textContent='W'+weeklyScanner.week;
+}
+function scannerRows(){
+  return Array.isArray(weeklyScanner?.players)?weeklyScanner.players:[];
+}
+function scannerSignalClass(signal){
+  return String(signal||'steady').toLowerCase().replaceAll(' ','-');
+}
+function scannerIsSignal(x){
+  return ['BREAKOUT','RISING','FALLING','CONCERN'].includes(String(x.signal||''));
+}
+function filteredScanner(){
+  const q=($('#scannerSearch')?.value||'').trim().toLowerCase();
+  const pos=$('#scannerPos')?.value||'ALL';
+  const signal=$('#scannerSignal')?.value||'ALL';
+  const scope=$('#scannerScope')?.value||'SIGNALS';
+  return scannerRows().filter(x=>{
+    if(pos!=='ALL'&&x.position!==pos)return false;
+    if(signal!=='ALL'&&x.signal!==signal)return false;
+    if(scope==='SIGNALS'&&!scannerIsSignal(x))return false;
+    if(scope==='DATA'&&(x.source==null||x.source==='bbb_zero_fill'))return false;
+    const hay=(x.name+' '+(x.team||'')+' '+(x.position||'')+' '+(x.signal_reason||'')+' '+(x.college||'')).toLowerCase();
+    return !q||hay.includes(q);
+  });
+}
+function scannerStat(label,value,sub='',cls=''){
+  return '<div class="scanner-stat '+cls+'"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>';
+}
+function scannerPositionStats(x){
+  if(x.position==='QB'){
+    return [
+      scannerStat('PASS',''+scannerInt(x.completions)+' / '+scannerInt(x.attempts),scannerInt(x.passing_yards)+' yds · '+scannerInt(x.passing_tds)+' TD'),
+      scannerStat('RUSH',scannerInt(x.carries)+' att',scannerInt(x.rushing_yards)+' yds'),
+      scannerStat('PASS AIR YDS',scannerInt(x.passing_air_yards),'downfield volume'),
+      scannerStat('CPOE',scannerNum(x.passing_cpoe,1),'> 0 is above expectation',Number(x.passing_cpoe)>0?'good':Number(x.passing_cpoe)<0?'bad':''),
+      scannerStat('PASS EPA',scannerNum(x.passing_epa,1),'weekly efficiency',Number(x.passing_epa)>0?'good':Number(x.passing_epa)<0?'bad':''),
+      scannerStat('PACR',scannerNum(x.pacr,2),'pass air conversion'),
+      scannerStat('PPR',scannerNum(x.fantasy_points_ppr,1),'Δ '+scannerDelta(x.ppr_delta),Number(x.ppr_delta)>0?'good':Number(x.ppr_delta)<0?'bad':''),
+      scannerStat('WEEK FIN',x.weekly_position_finish?'#'+x.weekly_position_finish:'—','position finish')
+    ].join('');
+  }
+  if(x.position==='RB'){
+    return [
+      scannerStat('OPPORTUNITIES',scannerInt(x.opportunities),'Δ '+scannerDelta(x.opportunity_delta,'int'),Number(x.opportunity_delta)>0?'good':Number(x.opportunity_delta)<0?'bad':''),
+      scannerStat('TEAM OPP SHARE',scannerPct(x.opportunity_share),'rush attempts + targets'),
+      scannerStat('TOUCHES',scannerInt(x.touches),scannerInt(x.scrimmage_yards)+' scrim yds'),
+      scannerStat('TARGET SHARE',scannerPct(x.target_share),'Δ '+scannerDelta(x.target_share_delta,'pct'),Number(x.target_share_delta)>0?'good':Number(x.target_share_delta)<0?'bad':''),
+      scannerStat('YPC',scannerNum(x.yards_per_carry,2),scannerInt(x.carries)+' carries'),
+      scannerStat('YDS / TGT',scannerNum(x.yards_per_target,2),scannerInt(x.targets)+' targets'),
+      scannerStat('RUSH EPA',scannerNum(x.rushing_epa,1),'weekly rushing efficiency',Number(x.rushing_epa)>0?'good':Number(x.rushing_epa)<0?'bad':''),
+      scannerStat('REC EPA',scannerNum(x.receiving_epa,1),'weekly receiving efficiency',Number(x.receiving_epa)>0?'good':Number(x.receiving_epa)<0?'bad':'')
+    ].join('');
+  }
+  return [
+    scannerStat('TARGET SHARE',scannerPct(x.target_share),'Δ '+scannerDelta(x.target_share_delta,'pct'),Number(x.target_share_delta)>0?'good':Number(x.target_share_delta)<0?'bad':''),
+    scannerStat('AIR YARDS SHARE',scannerPct(x.air_yards_share),'Δ '+scannerDelta(x.air_yards_share_delta,'pct'),Number(x.air_yards_share_delta)>0?'good':Number(x.air_yards_share_delta)<0?'bad':''),
+    scannerStat('aDOT',scannerNum(x.adot,1),scannerInt(x.receiving_air_yards)+' air yds'),
+    scannerStat('WOPR',scannerNum(x.wopr,2),'weighted opportunity'),
+    scannerStat('RACR',scannerNum(x.racr,2),'air-yards conversion'),
+    scannerStat('YAC / REC',scannerNum(x.yac_per_reception,1),scannerInt(x.receiving_yards_after_catch)+' total YAC'),
+    scannerStat('YDS / TGT',scannerNum(x.yards_per_target,1),scannerInt(x.targets)+' targets'),
+    scannerStat('REC EPA',scannerNum(x.receiving_epa,1),scannerInt(x.receiving_first_downs)+' first downs',Number(x.receiving_epa)>0?'good':Number(x.receiving_epa)<0?'bad':'')
+  ].join('');
+}
+function scannerBoxScore(x){
+  if(x.source==null)return 'No Week '+weeklyScanner.week+' row';
+  if(x.source==='bbb_zero_fill')return 'No offensive stat line';
+  if(x.position==='QB')return scannerInt(x.completions)+'/'+scannerInt(x.attempts)+' · '+scannerInt(x.passing_yards)+' pass yds · '+scannerInt(x.passing_tds)+' pass TD · '+scannerInt(x.carries)+' rush';
+  if(x.position==='RB')return scannerInt(x.carries)+' car · '+scannerInt(x.rushing_yards)+' rush yds · '+scannerInt(x.targets)+' tgt · '+scannerInt(x.receiving_yards)+' rec yds';
+  return scannerInt(x.targets)+' tgt · '+scannerInt(x.receptions)+' rec · '+scannerInt(x.receiving_yards)+' yds · '+scannerInt(x.receiving_tds)+' TD';
+}
+function scannerQueued(x){
+  return rankingMoveQueue.some(q=>q.status==='pending'&&q.player_key===x.player_key);
+}
+function renderWeeklyScanner(){
+  const grid=$('#scannerGrid');if(!grid)return;
+  if(!scannerLoaded||!weeklyScanner){
+    if(!scannerLoading)void loadWeeklyScanner(false);
+    return;
+  }
+  const rows=scannerRows(),list=filteredScanner();
+  const breakout=rows.filter(x=>x.signal==='BREAKOUT').length;
+  const rising=rows.filter(x=>x.signal==='RISING').length;
+  const falling=rows.filter(x=>x.signal==='FALLING'||x.signal==='CONCERN').length;
+  const usage=rows.filter(x=>Math.abs(Number(x.target_share_delta)||0)>=.08||Math.abs(Number(x.opportunity_delta)||0)>=5).length;
+  if($('#scannerBreakout'))$('#scannerBreakout').textContent=breakout;
+  if($('#scannerRising'))$('#scannerRising').textContent=rising;
+  if($('#scannerConcern'))$('#scannerConcern').textContent=falling;
+  if($('#scannerUsage'))$('#scannerUsage').textContent=usage;
+  if($('#scannerCount'))$('#scannerCount').textContent=list.length+' players shown';
+  if($('#scannerRouteNote'))$('#scannerRouteNote').textContent=weeklyScanner.route_metrics_note||'Route metrics require a separate source.';
+  if($('#scannerSeasonWeek'))$('#scannerSeasonWeek').textContent=weeklyScanner.season+' · WEEK '+weeklyScanner.week;
+  if($('#scannerNavCount'))$('#scannerNavCount').textContent='W'+weeklyScanner.week;
+
+  grid.innerHTML=list.length?list.map(x=>{
+    const sig=scannerSignalClass(x.signal);
+    const queued=scannerQueued(x);
+    return '<article class="scanner-card '+sig+'">'+
+      '<div class="scanner-card-head">'+
+        '<div class="scanner-player"><span class="scanner-rank">#'+x.overall_rank+'</span><div><button type="button" data-scanner-open="'+esc(x.player_key)+'">'+esc(x.name)+'</button><span>'+esc(x.position)+' · '+esc(x.team||'FA')+' vs '+esc(x.opponent_team||'—')+'</span></div></div>'+
+        '<div class="scanner-head-right"><span class="scanner-signal '+sig+'">'+esc(x.signal)+'</span><strong>'+esc(scannerBoxScore(x))+'</strong></div>'+
+      '</div>'+
+      '<div class="scanner-reason"><span>WHY THE SCANNER FLAGGED IT</span><p>'+esc(x.signal_reason||'No major usage change detected.')+'</p><small>Prior data: '+(x.prior_week?'Week '+x.prior_week:'none')+' · PPR '+scannerNum(x.fantasy_points_ppr,1)+' ('+scannerDelta(x.ppr_delta)+')</small></div>'+
+      '<div class="scanner-stats">'+scannerPositionStats(x)+'</div>'+
+      '<div class="scanner-card-foot">'+
+        '<div class="scanner-market"><span>BBB #'+x.overall_rank+'</span><span>'+(x.fp_sf_rank?'Market #'+x.fp_sf_rank:'Market UR')+'</span><span class="'+(Number(x.bbb_vs_fp)>0?'good':Number(x.bbb_vs_fp)<0?'bad':'')+'">Edge '+(x.bbb_vs_fp==null?'—':(Number(x.bbb_vs_fp)>0?'+':'')+x.bbb_vs_fp)+'</span><span class="'+(healthy(x.injury_status)?'':'bad')+'">'+esc(x.injury_status||'Healthy')+'</span></div>'+
+        '<div class="scanner-actions"><button type="button" class="small-btn" data-scanner-open="'+esc(x.player_key)+'">OPEN PLAYER</button><button type="button" class="queue-action '+(queued?'verified-state':'')+'" data-scanner-queue="'+esc(x.player_key)+'" '+(queued?'disabled':'')+'>'+(queued?'QUEUED ✓':'QUEUE RANK REVIEW')+'</button></div>'+
+      '</div>'+
+    '</article>';
+  }).join(''):'<div class="move-queue-empty"><div class="move-empty-orb">◎</div><strong>No players match this scanner view.</strong><span>Try All Players, another position, or clear the signal filter.</span></div>';
+
+  $('[data-scanner-open]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.scannerOpen,'stats'));
+  $('[data-scanner-queue]').forEach(b=>b.onclick=()=>queueScannerReview(b.dataset.scannerQueue,b));
+}
+async function queueScannerReview(key,btn){
+  const x=scannerRows().find(v=>v.player_key===key);if(!x)return;
+  const reason='Week '+weeklyScanner.week+' '+String(x.signal||'weekly').toLowerCase()+' signal: '+(x.signal_reason||scannerBoxScore(x));
+  const priority=['BREAKOUT','FALLING'].includes(x.signal)?2:3;
+  const old=btn.textContent;btn.disabled=true;btn.textContent='QUEUING…';
+  try{
+    await rpc('admin_queue_ranking_move',{
+      p_player_key:key,
+      p_recommended_rank:null,
+      p_reason:reason,
+      p_priority:priority,
+      p_source:'weekly_scanner',
+      p_confidence:Math.abs(Number(x.signal_score)||0)>=5?'high':'medium',
+      p_trigger_update_id:null
+    });
+    await Promise.all([loadRankingMoveQueue(),loadReviewQueue()]);
+    renderWeeklyScanner();renderRankingMoveQueue();renderReviewQueue();renderCommandDashboard();
+  }catch(e){
+    alert(e.message);btn.disabled=false;btn.textContent=old;
   }
 }
 
@@ -1078,6 +1255,7 @@ async function resolveClassAudit(key,action,btn){
 const ADMIN_COMMANDS=[
   {id:'dashboard',icon:'⌂',label:'Dashboard',sub:'Return to Dynasty Command Center',tag:'PAGE'},
   {id:'moves',icon:'↕',label:'Ranking Move Queue',sub:'Approve, modify or reject rank recommendations',tag:'PAGE'},
+  {id:'scanner',icon:'⌁',label:'Weekly Performance Scanner',sub:'Advanced weekly usage, efficiency and role changes',tag:'PAGE'},
   {id:'rankings',icon:'▥',label:'Rankings Manager',sub:'Move and inspect the Top 500',tag:'PAGE'},
   {id:'players',icon:'◎',label:'Player Editor',sub:'Edit identity, injury and profile data',tag:'PAGE'},
   {id:'prospects',icon:'✦',label:'Prospect Lab',sub:'Research and grade 2027 / 2028 prospects',tag:'PAGE'},
@@ -1125,8 +1303,9 @@ function page(name){
   const target=$(`#page${name[0].toUpperCase()+name.slice(1)}`);
   if(!target)return;
   target.classList.remove('hide');
-  const titles={dashboard:'Dashboard',moves:'Ranking Move Queue',rankings:'Rankings Manager',players:'Player Editor',prospects:'Prospect Lab',research:'Research Queue',eligibility:'Draft Class Audit',review:'Review Queue'};if($('#missionPageTitle'))$('#missionPageTitle').textContent=titles[name]||name;
+  const titles={dashboard:'Dashboard',moves:'Ranking Move Queue',scanner:'Weekly Performance Scanner',rankings:'Rankings Manager',players:'Player Editor',prospects:'Prospect Lab',research:'Research Queue',eligibility:'Draft Class Audit',review:'Review Queue'};if($('#missionPageTitle'))$('#missionPageTitle').textContent=titles[name]||name;
   if(name==='moves')renderRankingMoveQueue();
+  if(name==='scanner'){renderWeeklyScanner();if(!scannerLoaded&&!scannerLoading)void loadWeeklyScanner(false)}
   if(name==='rankings')renderRankings();
   if(name==='players')renderPlayers();
   if(name==='prospects'){prospectGradeOnly=false;renderProspectLab()}
@@ -1372,6 +1551,22 @@ document.addEventListener('DOMContentLoaded',()=>{
     $('#classAuditRefresh')?.addEventListener('click',async e=>{
       const b=e.currentTarget;b.disabled=true;
       try{classAuditLoaded=false;await loadClassAudit(true)}finally{b.disabled=false}
+    });
+  });
+
+  bindControlGroup('weekly performance scanner',()=>{
+    ['#scannerSearch','#scannerPos','#scannerSignal','#scannerScope'].forEach(s=>$(s)?.addEventListener(s==='#scannerSearch'?'input':'change',renderWeeklyScanner));
+    $('#scannerWeek')?.addEventListener('change',e=>{scannerLoaded=false;void loadWeeklyScanner(true,Number(e.target.value))});
+    $('#scannerClear')?.addEventListener('click',()=>{
+      $('#scannerSearch').value='';
+      $('#scannerPos').value='ALL';
+      $('#scannerSignal').value='ALL';
+      $('#scannerScope').value='SIGNALS';
+      renderWeeklyScanner();
+    });
+    $('#scannerRefresh')?.addEventListener('click',async e=>{
+      const b=e.currentTarget;b.disabled=true;
+      try{scannerLoaded=false;await loadWeeklyScanner(true,Number($('#scannerWeek')?.value)||null)}finally{b.disabled=false}
     });
   });
 
