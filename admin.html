@@ -1212,7 +1212,7 @@ body:after{
   <link rel="stylesheet" href="/admin-injury-v2.css?v=2">
   <link rel="stylesheet" href="/admin-content-v1.css?v=4">
   <link rel="stylesheet" href="/admin-dashboard-v2.css?v=2">
-  <link rel="stylesheet" href="/admin-automation-v1.css?v=1">
+  <link rel="stylesheet" href="/admin-automation-v1.css?v=2">
   <link rel="stylesheet" href="/admin-exceptions-v1.css?v=2">
   <link rel="stylesheet" href="/admin-ui-polish-v1.css?v=5">
   <link rel="stylesheet" href="/admin-design-system-v2.css?v=5">
@@ -1793,6 +1793,17 @@ body:after{
             <div class="auto-kpi lock"><span>RANKING AUTOMATION</span><strong id="autoRankLock">MANUAL ONLY</strong><small>NO SCHEDULED RANK MOVES</small></div>
           </div>
 
+          <section class="auto-readiness-panel" aria-labelledby="autoReadinessTitle">
+            <div class="auto-section-head">
+              <div><span>OPERATIONS READINESS · LIVE CHECK</span><strong id="autoReadinessTitle">What's current, what's stale, and what needs attention</strong></div>
+              <small>Source checks and verified player news are tracked separately.</small>
+            </div>
+            <div id="autoReadinessGrid" class="auto-readiness-grid" aria-live="polite">
+              <div class="research-loading"><span></span><strong>Auditing data freshness…</strong></div>
+            </div>
+            <div id="autoReadinessActions" class="auto-readiness-actions"></div>
+          </section>
+
           <section class="auto-guard-panel">
             <div class="auto-section-head"><div><span>SAFETY RAILS</span><strong>Protections enforced before automation can create noise</strong></div><small>These are database-level controls, not just UI promises.</small></div>
             <div id="autoGuardGrid" class="auto-guard-grid"><div class="research-loading"><span></span><strong>Checking safeguards…</strong></div></div>
@@ -2226,7 +2237,7 @@ body:after{
   <script src="/admin-injury-v1.js?v=2"></script>
   <script src="/admin-content-v1.js?v=4"></script>
   <script src="/admin-dashboard-v2.js?v=3"></script>
-  <script src="/admin-automation-v1.js?v=1"></script>
+  <script src="/admin-automation-v1.js?v=2"></script>
   <script src="/admin-exceptions-v1.js?v=4"></script>
   <script src="/admin-ui-polish-v1.js?v=1"></script>
 
