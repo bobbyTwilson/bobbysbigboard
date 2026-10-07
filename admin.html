@@ -2201,6 +2201,7 @@ body:after{
             <div id="healthGrid" class="health-grid"><div class="empty">Loading health checks…</div></div>
           </section>
           <section class="panel">
+            <div id="reviewActionNotice" class="review-action-notice hide"></div>
             <div class="toolbar review-toolbar"><input id="reviewSearch" class="input" placeholder="Search player, reason, status…"><select id="reviewPriority" class="select"><option value="ALL">All priorities</option><option value="1">Critical</option><option value="2">High</option><option value="3">Normal</option></select><select id="reviewKind" class="select"><option value="ALL">All review reasons</option><option value="RANK">Ranking review</option><option value="INJURY">Injury / availability</option><option value="SOURCE">Needs source / review</option><option value="STALE">Freshness only</option></select><button id="reviewClear" class="small-btn">Clear</button></div>
             <div class="rank-scroll"><table class="rank-table review-table"><thead><tr><th>Priority</th><th>Rank</th><th>Player</th><th>Status</th><th>Last Verified</th><th>Why It Needs Attention</th><th>Latest Update</th><th>Actions</th></tr></thead><tbody id="reviewBody"></tbody></table></div>
             <div class="pager"><span id="reviewCount"></span><div class="pager-actions"><button id="reviewPrev" class="small-btn">Previous</button><button id="reviewNext" class="small-btn">Next</button></div></div>
