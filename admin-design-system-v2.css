@@ -884,3 +884,275 @@ body:before{
 #appView .approved{
   --state-accent:var(--bbb-green);
 }
+
+
+/* ===== DESIGN SYSTEM V2.2 · FULL BLUE/GREEN CONSISTENCY PASS ===== */
+
+/* Top shell / header */
+#appView .topbar{
+  border-bottom:1px solid rgba(89,200,255,.16)!important;
+  background:rgba(5,12,16,.96)!important;
+  box-shadow:0 10px 32px rgba(0,0,0,.18)!important;
+}
+#appView .brand-mark{
+  background:linear-gradient(145deg,#16a66d,#238fc2)!important;
+  box-shadow:0 0 22px rgba(89,200,255,.10)!important;
+}
+#appView .brand-copy span{color:#7f9aa6!important}
+#appView .command-search{
+  border-color:rgba(89,200,255,.18)!important;
+  background:rgba(7,16,21,.86)!important;
+}
+#appView .command-search:focus-within{
+  border-color:rgba(89,200,255,.38)!important;
+  box-shadow:0 0 0 3px rgba(89,200,255,.055)!important;
+}
+#appView .command-search input::placeholder{color:#708893!important}
+#appView .command-search kbd{
+  border-color:rgba(89,200,255,.17)!important;
+  background:#09151c!important;
+  color:#7ea9bb!important;
+}
+#appView .admin-pill,
+#appView .ghost{
+  border-color:rgba(89,200,255,.18)!important;
+  background:rgba(9,20,27,.82)!important;
+  color:#a5bdc8!important;
+}
+#appView .admin-pill:hover,
+#appView .ghost:hover{
+  border-color:rgba(89,200,255,.34)!important;
+  background:rgba(13,28,36,.94)!important;
+  color:#eefaff!important;
+}
+#appView .system-live{
+  border-color:rgba(89,200,255,.18)!important;
+  background:rgba(8,20,25,.88)!important;
+}
+#appView .system-live>b{color:#c8f6e4!important}
+#appView .admin-clock{
+  border-left-color:rgba(89,200,255,.12)!important;
+  border-right-color:rgba(89,200,255,.12)!important;
+}
+#appView .admin-clock small{color:#75919c!important}
+
+/* Sticky workspace context bar */
+#appView .admin-mission-bar{
+  border-left-color:rgba(89,200,255,.11)!important;
+  border-right-color:rgba(89,200,255,.11)!important;
+  border-bottom-color:rgba(89,200,255,.11)!important;
+  background:rgba(6,14,18,.94)!important;
+}
+#appView .mission-context small{color:#6f8c98!important}
+#appView .mission-context strong{color:#d7ebe3!important}
+#appView .mission-dot{
+  background:var(--bbb-cyan)!important;
+  box-shadow:0 0 12px rgba(99,230,210,.62)!important;
+}
+
+/* Command Deck shell + nav */
+#appView .sidebar .side-card{
+  border-color:rgba(89,200,255,.16)!important;
+  background:linear-gradient(180deg,rgba(9,19,25,.98),rgba(6,13,18,.99))!important;
+  box-shadow:0 16px 38px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.014)!important;
+}
+#appView .nav-overline{color:#6f8c98!important}
+#appView .nav-btn{
+  color:#93a8b1!important;
+}
+#appView .nav-btn:hover{
+  color:#f3fbff!important;
+  background:rgba(89,200,255,.045)!important;
+}
+#appView .nav-btn>span:last-child{
+  border-color:rgba(89,200,255,.10)!important;
+  background:rgba(89,200,255,.025)!important;
+  color:#79939e!important;
+}
+/* Every icon tile uses the same blue structural shell; semantic icon color remains. */
+#appView .nav-label svg{
+  border-color:rgba(89,200,255,.20)!important;
+  background:rgba(89,200,255,.045)!important;
+}
+#appView .nav-btn.active .nav-label svg{
+  border-color:rgba(89,200,255,.38)!important;
+  background:linear-gradient(145deg,rgba(89,200,255,.13),rgba(99,230,210,.075))!important;
+  box-shadow:0 0 18px rgba(89,200,255,.08)!important;
+}
+#appView .nav-btn.active{
+  background:linear-gradient(90deg,rgba(89,200,255,.10),rgba(99,230,210,.035),transparent)!important;
+}
+#appView .nav-btn.active:before{
+  background:linear-gradient(180deg,var(--bbb-blue),var(--bbb-cyan))!important;
+  box-shadow:0 0 13px rgba(89,200,255,.50)!important;
+}
+
+/* Secure Command Link — blue/cyan structure, green only for trust/secure signal. */
+#appView .side-note{
+  border:1px solid rgba(89,200,255,.18)!important;
+  background:
+    linear-gradient(145deg,rgba(11,23,30,.97),rgba(7,15,20,.99))!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.015)!important;
+}
+#appView .side-note:before{
+  content:""!important;
+  position:absolute!important;
+  left:0!important;top:13px!important;bottom:13px!important;
+  width:2px!important;border-radius:2px!important;
+  background:linear-gradient(180deg,var(--bbb-blue),var(--bbb-cyan))!important;
+  box-shadow:0 0 12px rgba(89,200,255,.30)!important;
+}
+#appView .side-note-icon{
+  border-color:rgba(89,200,255,.25)!important;
+  background:linear-gradient(145deg,rgba(89,200,255,.10),rgba(99,230,210,.06))!important;
+  color:#89efd5!important;
+  box-shadow:0 0 18px rgba(89,200,255,.06)!important;
+}
+#appView .side-note strong{
+  color:#bde9f7!important;
+  font-size:10.5px!important;
+}
+#appView .side-note span{
+  color:#9fb1b8!important;
+  font-size:10.5px!important;
+}
+
+/* Shared cards and rows that legacy CSS still paints green. */
+#appView .toolbar,
+#appView .activity-row,
+#appView .health-chip,
+#appView .ops-action,
+#appView .research-card,
+#appView .prospect-card,
+#appView .move-card,
+#appView .move-queue-card,
+#appView .queue-card{
+  border-color:rgba(89,200,255,.11)!important;
+}
+#appView .toolbar{
+  border-bottom-color:rgba(89,200,255,.10)!important;
+  background:rgba(8,17,23,.72)!important;
+}
+#appView .activity-row{
+  border-bottom-color:rgba(89,200,255,.07)!important;
+}
+#appView .activity-row:hover{
+  background:rgba(89,200,255,.025)!important;
+}
+#appView .health-chip,
+#appView .ops-action,
+#appView .research-card,
+#appView .prospect-card,
+#appView .move-card,
+#appView .move-queue-card,
+#appView .queue-card{
+  background:linear-gradient(145deg,rgba(11,21,27,.96),rgba(8,15,20,.985))!important;
+}
+
+/* Ranking Moves retains amber meaning, but the card shell follows the system. */
+#pageMoves .move-card,
+#pageMoves .move-queue-card,
+#pageMoves .move-target,
+#pageMoves .move-card-context{
+  border-color:rgba(89,200,255,.13)!important;
+  background:linear-gradient(145deg,rgba(11,21,27,.97),rgba(8,15,20,.99))!important;
+}
+#pageMoves .move-priority,
+#pageMoves .move-direction{
+  border-color:rgba(231,185,100,.20)!important;
+}
+
+/* Scanner internal pieces */
+#pageScanner .scanner-card-foot-v2,
+#pageScanner .scanner-card-main-v2,
+#pageScanner .scanner-spotlight,
+#pageScanner .scanner-stats-v2{
+  border-color:rgba(89,200,255,.09)!important;
+}
+#pageScanner .scanner-card-foot-v2{background:rgba(7,15,20,.82)!important}
+#pageScanner .scanner-rank-chip{
+  border-color:rgba(89,200,255,.16)!important;
+  background:rgba(89,200,255,.04)!important;
+  color:#9dbdca!important;
+}
+
+/* Injury center internals */
+#pageInjuries .inj-card-body,
+#pageInjuries .inj-card-body>section,
+#pageInjuries .inj-latest,
+#pageInjuries .inj-meta-row{
+  border-color:rgba(89,200,255,.08)!important;
+}
+#pageInjuries .inj-card-body{background:rgba(7,15,20,.74)!important}
+#pageInjuries .inj-card-body>section{background:#0a141a!important}
+
+/* Content internals */
+#pageContent .content-card-grid,
+#pageContent .content-card-foot,
+#pageContent .content-toolbar,
+#pageContent .content-view-tabs{
+  border-color:rgba(89,200,255,.09)!important;
+}
+#pageContent .content-card-grid{background:rgba(89,200,255,.035)!important}
+#pageContent .content-card-grid>section{background:#0a141a!important}
+#pageContent .content-card-foot{background:rgba(7,15,20,.82)!important}
+#pageContent .content-toolbar,
+#pageContent .content-view-tabs{background:rgba(8,17,23,.80)!important}
+
+/* Automation internals */
+#pageAutomations .auto-section,
+#pageAutomations .auto-source-card,
+#pageAutomations .auto-job-card,
+#pageAutomations .auto-run-row{
+  border-color:rgba(89,200,255,.12)!important;
+}
+
+/* Review / Exception internals */
+#pageReview .exception-manager-head,
+#pageReview .exception-toolbar,
+#pageReview .exception-sortline,
+#pageReview .exception-card header,
+#pageReview .exception-compare,
+#pageReview .exception-third-source,
+#pageReview .exception-context,
+#pageReview .exception-latest,
+#pageReview .exception-resolution,
+#pageReview .exception-card footer{
+  border-color:rgba(89,200,255,.08)!important;
+}
+#pageReview .exception-card footer{background:rgba(7,15,20,.82)!important}
+#pageReview .exception-compare{background:rgba(89,200,255,.035)!important}
+#pageReview .exception-compare>div{background:#0a141a!important}
+
+/* Player Workspace internals */
+#bbbPlayerWorkspace .pw-head,
+#bbbPlayerWorkspace .pw-tabs,
+#bbbPlayerWorkspace .pw-panel-head,
+#bbbPlayerWorkspace .pw-info-grid{
+  border-color:rgba(89,200,255,.10)!important;
+}
+#bbbPlayerWorkspace .pw-action,
+#bbbPlayerWorkspace .pw-close,
+#bbbPlayerWorkspace .pw-input{
+  border-color:rgba(89,200,255,.15)!important;
+  background:#0a151c!important;
+}
+#bbbPlayerWorkspace .pw-tab.active{
+  background:linear-gradient(145deg,rgba(89,200,255,.12),rgba(99,230,210,.06))!important;
+  box-shadow:inset 0 0 0 1px rgba(89,200,255,.13)!important;
+}
+
+/* Empty states / helper copy are blue-gray, not muddy green. */
+#appView .empty,
+#appView .auth-note,
+#appView .helper-text,
+#appView .sub-label{
+  color:#859ba5!important;
+}
+
+/* Primary brand green remains available for real positive/action states. */
+#appView .green,
+#appView .activity-table,
+#appView .rank-number{
+  color:#7ce7b1!important;
+}
