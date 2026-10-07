@@ -1,0 +1,389 @@
+/* BBB Admin UI Polish v1 · full command-center consistency pass */
+:root{
+  --ui-green:#45f59a;
+  --ui-mint:#84f2b8;
+  --ui-cyan:#62dff0;
+  --ui-blue:#78a9ff;
+  --ui-amber:#f3c66f;
+  --ui-red:#ff8294;
+  --ui-violet:#b89cff;
+  --ui-text:#eef8f3;
+  --ui-muted:#8ea69a;
+  --ui-line:rgba(83,232,160,.13);
+}
+
+/* ---------- top command bar ---------- */
+#appView .system-live{
+  min-width:118px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:0!important;
+  padding:7px 11px!important;
+  text-align:center!important;
+}
+#appView .system-live>i{display:none!important}
+#appView .system-live>b{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+  width:100%;
+  color:#8af3b9!important;
+  font-size:8px!important;
+  letter-spacing:.09em!important;
+  text-align:center!important;
+}
+#appView .system-live>b:before{
+  content:"";
+  width:7px;height:7px;flex:none;border-radius:50%;
+  background:var(--ui-green);
+  box-shadow:0 0 11px rgba(69,245,154,.7);
+  animation:bbbUiOnlinePulse 1.9s ease-in-out infinite;
+}
+@keyframes bbbUiOnlinePulse{0%,100%{opacity:.58}50%{opacity:1}}
+
+/* ---------- command deck: real, consistent icons ---------- */
+#appView .side-card{padding:9px!important}
+#appView .nav-overline{
+  padding:8px 10px 10px!important;
+  color:#668374!important;
+  font-size:8px!important;
+  letter-spacing:.17em!important;
+}
+#appView .nav-btn{
+  --nav-accent:var(--ui-green);
+  position:relative!important;
+  min-height:48px!important;
+  padding:0 10px!important;
+  gap:8px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  color:#91a69b!important;
+  font-size:10px!important;
+}
+#appView .nav-btn:before{
+  content:""!important;
+  position:absolute!important;
+  left:0!important;top:24%!important;bottom:24%!important;
+  width:2px!important;height:auto!important;
+  transform:none!important;border:0!important;border-radius:2px!important;
+  background:transparent!important;box-shadow:none!important;
+}
+#appView .nav-btn.active:before{
+  background:var(--nav-accent)!important;
+  box-shadow:0 0 12px var(--nav-accent)!important;
+}
+#appView .nav-label{
+  min-width:0;display:flex;align-items:center;gap:10px;
+  color:inherit;font-weight:900;
+}
+#appView .nav-label svg{
+  width:24px;height:24px;flex:none;padding:4px;
+  border:1px solid color-mix(in srgb,var(--nav-accent) 24%,transparent);
+  border-radius:7px;
+  background:color-mix(in srgb,var(--nav-accent) 6%,transparent);
+  color:var(--nav-accent);
+  stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none;
+}
+#appView .nav-btn:hover .nav-label svg{
+  border-color:color-mix(in srgb,var(--nav-accent) 42%,transparent);
+  background:color-mix(in srgb,var(--nav-accent) 10%,transparent);
+}
+#appView .nav-btn.active{
+  color:#f4fff9!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--nav-accent) 17%,transparent),rgba(255,255,255,.01))!important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--nav-accent) 11%,transparent)!important;
+}
+#appView .nav-btn.active .nav-label svg{
+  color:#fff;
+  border-color:color-mix(in srgb,var(--nav-accent) 50%,transparent);
+  background:color-mix(in srgb,var(--nav-accent) 22%,transparent);
+  box-shadow:0 0 18px color-mix(in srgb,var(--nav-accent) 16%,transparent);
+}
+#appView .nav-btn>span:last-child{
+  min-width:28px!important;padding:4px 6px!important;
+  border:1px solid rgba(255,255,255,.055)!important;border-radius:999px!important;
+  background:rgba(255,255,255,.018)!important;color:#688174!important;
+  font-size:8px!important;text-align:center;
+}
+#appView .nav-btn[data-page="dashboard"]{--nav-accent:var(--ui-green)}
+#appView .nav-btn[data-page="moves"]{--nav-accent:var(--ui-amber)}
+#appView .nav-btn[data-page="scanner"]{--nav-accent:var(--ui-cyan)}
+#appView .nav-btn[data-page="injuries"]{--nav-accent:var(--ui-red)}
+#appView .nav-btn[data-page="content"]{--nav-accent:var(--ui-violet)}
+#appView .nav-btn[data-page="automations"]{--nav-accent:var(--ui-blue)}
+#appView .nav-btn[data-page="rankings"]{--nav-accent:#5fe4a4}
+#appView .nav-btn[data-page="players"]{--nav-accent:#75c6ff}
+#appView .nav-btn[data-page="prospects"]{--nav-accent:#79edbd}
+#appView .nav-btn[data-page="research"]{--nav-accent:#e8bb69}
+#appView .nav-btn[data-page="eligibility"]{--nav-accent:#72d7e8}
+#appView .nav-btn[data-page="review"]{--nav-accent:#ff9e86}
+
+/* ---------- page color language ---------- */
+#pageMoves{--page-accent:var(--ui-amber)}
+#pageScanner{--page-accent:var(--ui-cyan)}
+#pageInjuries{--page-accent:var(--ui-red)}
+#pageContent{--page-accent:var(--ui-violet)}
+#pageAutomations{--page-accent:var(--ui-blue)}
+#pageRankings{--page-accent:#5fe4a4}
+#pagePlayers{--page-accent:#75c6ff}
+#pageProspects{--page-accent:#79edbd}
+#pageResearch{--page-accent:#e8bb69}
+#pageEligibility{--page-accent:#72d7e8}
+#pageReview{--page-accent:#ff9e86}
+
+#appView .admin-page:not(#pageDashboard)>.page-head{
+  border-color:color-mix(in srgb,var(--page-accent,var(--ui-green)) 18%,transparent)!important;
+  background:
+    radial-gradient(circle at 90% 10%,color-mix(in srgb,var(--page-accent,var(--ui-green)) 7%,transparent),transparent 26%),
+    linear-gradient(145deg,rgba(5,20,13,.88),rgba(3,11,8,.76))!important;
+}
+#appView .admin-page:not(#pageDashboard)>.page-head:before{
+  background:linear-gradient(180deg,var(--page-accent,var(--ui-green)),var(--ui-cyan),transparent)!important;
+  box-shadow:0 0 18px color-mix(in srgb,var(--page-accent,var(--ui-green)) 22%,transparent)!important;
+}
+#appView .admin-page:not(#pageDashboard)>.page-head:after{
+  color:color-mix(in srgb,var(--page-accent,var(--ui-green)) 7%,transparent)!important;
+}
+#appView .admin-page:not(#pageDashboard)>.page-head .eyebrow{
+  color:var(--page-accent,var(--ui-green))!important;
+}
+#appView .page-head p{font-size:11px!important;line-height:1.55!important;color:#83998e!important}
+#appView .page-head h1{color:#f5fff9!important}
+
+/* Kill broad legacy-purple chrome. Keep violet only where Content Intelligence intentionally uses it. */
+#appView .panel{
+  border-color:rgba(83,232,160,.115)!important;
+  background:linear-gradient(180deg,rgba(6,19,13,.93),rgba(3,10,7,.95))!important;
+}
+#appView .panel:before{
+  background:linear-gradient(90deg,transparent,rgba(69,245,154,.26),rgba(98,223,240,.11),transparent)!important;
+}
+#appView .panel-head{
+  border-bottom-color:rgba(83,232,160,.075)!important;
+  background:linear-gradient(90deg,rgba(69,245,154,.025),transparent 42%)!important;
+}
+#appView .panel-head h2{color:#effbf4!important}
+#appView .panel-head span{color:#71897d!important}
+#appView .input,#appView .select,#appView .textarea{
+  border-color:rgba(83,232,160,.14)!important;
+  background:rgba(2,10,7,.88)!important;color:#edf8f2!important;
+}
+#appView .input:focus,#appView .select:focus,#appView .textarea:focus{
+  border-color:rgba(69,245,154,.45)!important;
+  box-shadow:0 0 0 3px rgba(69,245,154,.05)!important;
+}
+#appView .small-btn,#appView .edit-btn,#appView .queue-action{
+  border-color:rgba(83,232,160,.15)!important;
+  background:rgba(5,20,13,.90)!important;color:#a2b8ad!important;
+}
+#appView .small-btn:hover,#appView .edit-btn:hover,#appView .queue-action:hover{
+  border-color:rgba(69,245,154,.38)!important;background:rgba(22,91,57,.13)!important;color:#f3fff8!important;
+}
+
+/* ---------- Dashboard cleanup ---------- */
+/* Nexus already replaces these older duplicate blocks. */
+#pageDashboard .dashboard-kpis{display:none!important}
+#pageDashboard .core-panel,
+#pageDashboard .review-preview-panel,
+#pageDashboard .activity-panel{display:none!important}
+
+#pageDashboard .command-grid{
+  display:grid!important;
+  grid-template-columns:minmax(330px,.8fr) minmax(420px,1.2fr)!important;
+  grid-template-areas:"signal health" "edge edge"!important;
+  gap:11px!important;
+  margin-top:12px;
+}
+#pageDashboard .signal-panel{grid-area:signal!important}
+#pageDashboard .health-panel{grid-area:health!important}
+#pageDashboard .edge-panel{grid-area:edge!important}
+
+/* Daily brief stays available but starts compact instead of dominating the page. */
+#pageDashboard .command-brief.ui-collapsed #commandBriefCards,
+#pageDashboard .command-brief.ui-collapsed .brief-detail-head,
+#pageDashboard .command-brief.ui-collapsed #commandBriefFeed{display:none!important}
+#pageDashboard .command-brief.ui-collapsed{margin-bottom:11px!important}
+#pageDashboard .command-brief.ui-collapsed .command-brief-head{border-bottom:0!important}
+#briefUiToggle{min-width:96px}
+
+/* Dashboard readability without changing its visual identity */
+#pageDashboard .nexus-head h2{font-size:22px!important}
+#pageDashboard .nexus-head p{font-size:11px!important;line-height:1.55!important;color:#879b90!important}
+#pageDashboard .nexus-head .panel-kicker{font-size:8px!important;color:#77a08a!important}
+#pageDashboard .nexus-kpi span{font-size:8px!important;color:#7b9386!important}
+#pageDashboard .nexus-kpi strong{font-size:25px!important}
+#pageDashboard .nexus-kpi small{font-size:8px!important;color:#6c8176!important}
+#pageDashboard .nexus-kpi-icon{width:38px!important;height:38px!important;font-size:16px!important}
+#pageDashboard .nexus-block-head span{font-size:8px!important;color:#789082!important}
+#pageDashboard .nexus-block-head strong{font-size:12px!important;color:#d4e5db!important}
+#pageDashboard .nexus-block-head small{font-size:8px!important;color:#708178!important}
+#pageDashboard .nexus-next-copy>span{font-size:8px!important;color:#7e9a88!important}
+#pageDashboard .nexus-next-copy h3{font-size:20px!important}
+#pageDashboard .nexus-next-copy p{font-size:10.5px!important;line-height:1.6!important;color:#97aa9f!important}
+#pageDashboard .nexus-next-score small{font-size:7px!important}
+#pageDashboard .nexus-next-score strong{font-size:14px!important}
+#pageDashboard .nexus-next-right button{font-size:8px!important}
+#pageDashboard .nexus-signal-card span{font-size:7.5px!important;color:#778f80!important}
+#pageDashboard .nexus-signal-card strong{font-size:13px!important}
+#pageDashboard .nexus-signal-card p{font-size:9px!important;line-height:1.5!important;color:#879b8f!important}
+#pageDashboard .nexus-signal-card small{font-size:8px!important;color:#708277!important}
+#pageDashboard .nexus-system span{font-size:7.5px!important;color:#768f7e!important}
+#pageDashboard .nexus-system small{font-size:8px!important;color:#738579!important}
+#pageDashboard .nexus-path-step span strong{font-size:9px!important}
+#pageDashboard .nexus-path-step span small{font-size:8px!important}
+#pageDashboard .nexus-path-step em{font-size:7px!important}
+
+/* ---------- Player Workspace: retire the purple legacy shell ---------- */
+#bbbPlayerWorkspace{
+  border-color:rgba(98,223,240,.20)!important;
+  background:#050a08!important;
+  box-shadow:0 55px 180px rgba(0,0,0,.78),0 0 70px rgba(69,245,154,.055)!important;
+}
+#bbbPlayerWorkspace .pw-shell{
+  background:
+    radial-gradient(circle at 10% -12%,rgba(69,245,154,.10),transparent 32%),
+    radial-gradient(circle at 94% 0,rgba(98,223,240,.08),transparent 26%),
+    linear-gradient(180deg,#07100c,#040906)!important;
+}
+#bbbPlayerWorkspace .pw-shell:before{
+  background-image:
+    linear-gradient(rgba(69,245,154,.022) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(69,245,154,.022) 1px,transparent 1px)!important;
+}
+#bbbPlayerWorkspace .pw-head{
+  border-bottom-color:rgba(83,232,160,.10)!important;
+  background:linear-gradient(180deg,rgba(8,22,15,.95),rgba(5,12,9,.88))!important;
+}
+#bbbPlayerWorkspace .pw-kicker{color:#71c995!important;font-size:8px!important}
+#bbbPlayerWorkspace .pw-title h2{color:#f5fff9!important}
+#bbbPlayerWorkspace .pw-title p{color:#91a59b!important;font-size:10px!important}
+#bbbPlayerWorkspace .pw-action{
+  border-color:rgba(83,232,160,.14)!important;
+  background:rgba(6,19,13,.88)!important;color:#a9bdb3!important;
+  font-size:8px!important;
+}
+#bbbPlayerWorkspace .pw-action:hover{
+  border-color:rgba(98,223,240,.28)!important;
+  background:rgba(13,52,45,.18)!important;color:#fff!important;
+}
+#bbbPlayerWorkspace .pw-close{
+  border-color:rgba(83,232,160,.14)!important;background:#07110c!important;color:#91a59b!important;
+}
+#bbbPlayerWorkspace .pw-close:hover{border-color:rgba(98,223,240,.32)!important;color:#fff!important}
+#bbbPlayerWorkspace .pw-tabs{
+  border-bottom-color:rgba(83,232,160,.09)!important;background:rgba(4,10,7,.95)!important;
+}
+#bbbPlayerWorkspace .pw-tab{color:#758a7f!important;font-size:8px!important}
+#bbbPlayerWorkspace .pw-tab:hover{color:#c9ded3!important;background:rgba(98,223,240,.04)!important}
+#bbbPlayerWorkspace .pw-tab.active{
+  color:#effff7!important;
+  background:linear-gradient(145deg,rgba(24,112,73,.22),rgba(15,64,55,.15))!important;
+  box-shadow:inset 0 0 0 1px rgba(98,223,240,.12)!important;
+}
+#bbbPlayerWorkspace .pw-panel{
+  border-color:rgba(83,232,160,.09)!important;
+  background:linear-gradient(160deg,rgba(7,18,13,.92),rgba(4,10,7,.93))!important;
+}
+#bbbPlayerWorkspace .pw-panel-head{border-bottom-color:rgba(83,232,160,.075)!important}
+#bbbPlayerWorkspace .pw-panel-head span{color:#6d927d!important;font-size:8px!important}
+#bbbPlayerWorkspace .pw-panel-head h3{color:#e8f6ee!important;font-size:14px!important}
+#bbbPlayerWorkspace .pw-copy{color:#a1b2a9!important;font-size:10px!important;line-height:1.68!important}
+#bbbPlayerWorkspace .pw-copy.strong{color:#c4d3ca!important}
+#bbbPlayerWorkspace .pw-metric{
+  border-color:rgba(83,232,160,.08)!important;
+  background:linear-gradient(145deg,rgba(8,23,15,.88),rgba(4,11,8,.88))!important;
+}
+#bbbPlayerWorkspace .pw-metric span{color:#708a7b!important;font-size:8px!important}
+#bbbPlayerWorkspace .pw-metric small{color:#74867d!important;font-size:8px!important}
+#bbbPlayerWorkspace .pw-metric.violet strong{color:#a8d8ff!important}
+#bbbPlayerWorkspace .pw-info-grid{
+  background:rgba(83,232,160,.055)!important;border-color:rgba(83,232,160,.055)!important;
+}
+#bbbPlayerWorkspace .pw-info{background:#07100c!important}
+#bbbPlayerWorkspace .pw-info span{color:#71877c!important;font-size:8px!important}
+#bbbPlayerWorkspace .pw-info strong{color:#c0d0c7!important;font-size:10px!important}
+#bbbPlayerWorkspace .pw-field label{color:#71877c!important;font-size:8px!important}
+#bbbPlayerWorkspace .pw-input{
+  border-color:rgba(83,232,160,.14)!important;background:#050c08!important;color:#eff9f3!important;font-size:10px!important;
+}
+#bbbPlayerWorkspace .pw-input:focus{
+  border-color:rgba(98,223,240,.32)!important;box-shadow:0 0 0 3px rgba(98,223,240,.05)!important;
+}
+#bbbPlayerWorkspace .pw-history-row,
+#bbbPlayerWorkspace .pw-feed-item,
+#bbbPlayerWorkspace .pw-check{
+  border-color:rgba(83,232,160,.055)!important;background:rgba(6,16,11,.70)!important;
+}
+#bbbPlayerWorkspace .pw-history-row{font-size:8px!important}
+#bbbPlayerWorkspace .pw-table th{
+  color:#70857a!important;font-size:8px!important;border-bottom-color:rgba(83,232,160,.07)!important;
+}
+#bbbPlayerWorkspace .pw-table td{
+  color:#a9b9b0!important;font-size:9px!important;border-bottom-color:rgba(83,232,160,.05)!important;
+}
+#bbbPlayerWorkspace .pw-feed-top strong{color:#c3d2ca!important;font-size:9px!important}
+#bbbPlayerWorkspace .pw-feed-top span{color:#74867d!important;font-size:8px!important}
+#bbbPlayerWorkspace .pw-feed-item p{color:#9fafA6!important;font-size:10px!important}
+#bbbPlayerWorkspace .pw-feed-item small{color:#74867d!important;font-size:8px!important}
+#bbbPlayerWorkspace .pw-complete-bar i{
+  background:linear-gradient(90deg,#27bd76,#62dff0,#78e6ad)!important;
+}
+#bbbPlayerWorkspace .pw-empty{color:#81948a!important;font-size:10px!important}
+#bbbPlayerWorkspace .pw-empty strong{color:#c5d4cc!important}
+#rankBody .player-name:hover,#playerAdminBody .player-name:hover,#reviewBody .player-name:hover,.rank-lens-id strong:hover{
+  color:#86efb5!important;text-shadow:0 0 12px rgba(69,245,154,.14)!important;
+}
+
+/* ---------- Cross-page readability ---------- */
+#pageMoves .move-card-reason p,#pageMoves .move-card-update p{font-size:12px!important}
+#pageMoves .move-card-context span,#pageMoves .move-priority,#pageMoves .move-direction{font-size:9px!important}
+#pageMoves .move-target label,#pageMoves .move-target small{font-size:9px!important}
+
+#pageScanner .scanner-hero p{font-size:12px!important}
+#pageScanner .scanner-hero-pills span{font-size:9px!important}
+#pageScanner .scanner-reason span{font-size:8px!important}
+#pageScanner .scanner-reason p{font-size:12px!important}
+#pageScanner .scanner-reason small{font-size:9px!important}
+#pageScanner .scanner-stat span{font-size:8px!important}
+#pageScanner .scanner-stat small{font-size:8px!important}
+#pageScanner .scanner-market span,#pageScanner .scanner-signal{font-size:9px!important}
+#pageScanner .scanner-delta{font-size:8px!important}
+
+#pageInjuries .inj-section-label{font-size:9px!important}
+#pageInjuries .inj-latest p{font-size:11px!important;line-height:1.55!important}
+#pageInjuries .inj-meta-row{font-size:9px!important}
+#pageInjuries .inj-watch-chip,#pageInjuries .inj-practice-pill{font-size:8px!important}
+
+#pageAutomations .auto-hero p{font-size:12px!important;line-height:1.6!important}
+#pageAutomations .auto-kpi span{font-size:8px!important}
+#pageAutomations .auto-kpi small{font-size:8px!important}
+#pageAutomations .auto-section-head span{font-size:8px!important}
+#pageAutomations .auto-section-head strong{font-size:13px!important}
+#pageAutomations .auto-source-card span,
+#pageAutomations .auto-job-card span{font-size:8px!important}
+#pageAutomations .auto-source-card small,
+#pageAutomations .auto-job-card small,
+#pageAutomations .auto-run-row small{font-size:8px!important;line-height:1.45!important}
+
+#pageReview .rank-table td,#pageRankings .rank-table td,#pagePlayers .rank-table td{font-size:10px!important}
+#pageReview .rank-table th,#pageRankings .rank-table th,#pagePlayers .rank-table th{font-size:8px!important}
+#pageReview .player-name,#pageRankings .player-name,#pagePlayers .player-name{font-size:12px!important}
+
+/* Desktop / responsive cleanup */
+@media(max-width:1250px){
+  #pageDashboard .command-grid{grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:900px){
+  #pageDashboard .command-grid{grid-template-columns:1fr!important;grid-template-areas:"signal" "health" "edge"!important}
+}
+@media(max-width:700px){
+  #appView .nav-btn{min-height:52px!important;padding:6px 4px!important}
+  #appView .nav-label{flex-direction:column;gap:3px;font-size:7px}
+  #appView .nav-label svg{width:23px;height:23px;padding:4px}
+  #appView .nav-btn:before{left:20%!important;right:20%!important;top:auto!important;bottom:0!important;width:auto!important;height:2px!important}
+  #appView .system-live{min-width:auto!important}
+  #appView .system-live>b{font-size:7px!important}
+}
