@@ -21,6 +21,10 @@ const scannerCss=await readFile('admin-scanner-v2.css','utf8');
 const scannerJs=await readFile('admin-scanner-v2.js','utf8');
 await writeFile(`${out}/static/admin-scanner-v2.css`,scannerCss);
 await writeFile(`${out}/static/admin-scanner-v2.js`,scannerJs);
+const scannerV3Css=await readFile('admin-scanner-v3.css','utf8');
+const scannerV3Js=await readFile('admin-scanner-v3.js','utf8');
+await writeFile(`${out}/static/admin-scanner-v3.css`,scannerV3Css);
+await writeFile(`${out}/static/admin-scanner-v3.js`,scannerV3Js);
 
 const config=JSON.parse(await readFile(`${out}/config.json`,'utf8'));
 config.routes=[
