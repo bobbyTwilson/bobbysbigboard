@@ -906,3 +906,92 @@ body::after,#appView::before,#appView::after{
     animation-duration:.01ms!important;transition-duration:.01ms!important;
   }
 }
+
+
+/* V3.1 · finish dense workflow labels that the original module CSS left tiny. */
+#appView :is(.health-chip,.health-line,.health-gauge,.cyber-activity,
+  .review-mini,.edge-player,.edge-gap,.edge-title) :is(span,small,b,i,em){
+  font-size:11px!important;color:var(--bbb-text-3)!important;line-height:1.45!important;
+}
+#appView .health-chip strong,#appView .review-mini strong,
+#appView .edge-player strong{font-size:13px!important;color:var(--bbb-text-2)!important}
+#appView .activity-row{font-size:12px!important;line-height:1.45!important}
+/* Ranking lens: scores and actions must be readable without zooming. */
+#appView :is(.rank-lens-empty,.rank-lens-rank,.rank-lens-id,
+  .rank-lens-stat,.rank-lens-actions) :is(span,small,p){
+  font-size:11px!important;color:var(--bbb-text-3)!important;line-height:1.4!important;
+}
+#appView .rank-lens-stat strong{font-size:15px!important;color:var(--bbb-text)!important}
+#appView .rank-lens-actions :is(button,a){font-size:12px!important;min-height:36px!important}
+#appView .rank-lens-id strong{font-size:15px!important;color:var(--bbb-text)!important}
+/* Prospect and Research workflows: strip microprint from grade and comp controls. */
+#appView #pageProspects :is(.prospect-hero,.prospect-card,.prospect-grade-head,
+  .prospect-report-top,.prospect-rec-trait,.prospect-total) :is(span,small,p),
+#appView #prospectDrawer :is(.prospect-summary,.prospect-drawer-meta,
+  .prospect-recommendation,.prospect-trait,.prospect-report-top,.prospect-rec-trait,
+  .prospect-total,.prospect-grade-head) :is(span,small,p,label){
+  font-size:12px!important;line-height:1.5!important;color:var(--bbb-text-3)!important;
+}
+#appView :is(.prospect-pos,.prospect-class,.prospect-graded,.research-state,
+  .prospect-toggle,.research-kind,.research-issue,.research-context){
+  font-size:11px!important;line-height:1.35!important;
+}
+#appView :is(.prospect-card-summary,.prospect-summary,.prospect-notes){
+  font-size:13px!important;line-height:1.58!important;color:var(--bbb-text-2)!important;
+}
+#appView .prospect-card-rec span,
+#appView .prospect-recommendation span{font-size:11px!important;color:var(--bbb-text-3)!important}
+#appView .prospect-card-rec strong{font-size:14px!important;color:var(--bbb-text)!important}
+#appView .prospect-card-rec strong.pending{font-size:12px!important}
+#appView .prospect-trait label{font-size:12px!important;color:var(--bbb-text-2)!important}
+#appView .prospect-trait .trait-rec{font-size:11px!important}
+#appView .prospect-hero p,#appView .research-hero p{
+  font-size:14px!important;color:var(--bbb-text-3)!important;line-height:1.55!important;
+}
+#appView .prospect-source-links a{font-size:12px!important}
+#appView :is(.research-sortline,.research-owner-tab,.research-lane-head,
+  .research-lane-count,.research-owner-chip,.research-instruction,
+  .research-score,.research-priority,.research-complete-label,
+  .research-no-action,.research-lane-empty,.research-loading)
+  :is(small,span,p,b){
+  font-size:11px!important;line-height:1.5!important;color:var(--bbb-text-3)!important;
+}
+#appView .research-player span{font-size:12px!important}
+#appView :is(.research-open,.research-verify){font-size:12px!important;min-height:38px!important}
+#appView #bbbPlayerWorkspace .pw-prospect-editor-head span,
+#appView #bbbPlayerWorkspace .pw-prospect-trait :is(span,small),
+#appView #bbbPlayerWorkspace :is(.pw-prospect-rec,.pw-prospect-savebar .pw-status-line,
+  .pw-prospect-grade-hero span,.pw-prospect-grade-hero small,
+  .pw-prospect-comp-field label,.pw-prospect-comp-field>small,
+  .pw-prospect-section-title span,.pw-prospect-section-title>small,
+  .pw-prospect-score-wrap b){
+  font-size:12px!important;line-height:1.5!important;color:var(--bbb-text-3)!important;
+}
+#appView #bbbPlayerWorkspace .pw-prospect-trait input{
+  font-size:14px!important;min-height:39px!important;
+}
+/* Review Queue / Exception Manager: data provenance and verdicts are real UI. */
+#appView #pageReview :is(.exception-manager-head,.exception-health-grid,.exception-score,
+  .exception-stat,.exception-source-banner,.exception-check,.exception-tab,
+  .exception-sortline,.exception-id-meta,.exception-card,
+  .exception-kind,.exception-compare,.exception-third-source,
+  .exception-context,.exception-latest,.exception-resolution)
+  :is(span,small,em){
+  font-size:11px!important;color:var(--bbb-text-3)!important;line-height:1.5!important;
+}
+#appView #pageReview :is(.exception-id p,.exception-source-banner p,
+  .exception-context p,.exception-latest p,.exception-third-source p){
+  font-size:13px!important;color:var(--bbb-text-2)!important;line-height:1.5!important;
+}
+#appView #pageReview :is(.exception-card footer button,.exception-empty button,
+  .exception-source-banner button){font-size:12px!important;min-height:36px!important}
+#appView #pageReview .exception-check strong{font-size:13px!important;color:var(--bbb-text-2)!important}
+#appView #pageReview .exception-latest a{font-size:12px!important;color:var(--bbb-cyan)!important}
+/* Keep prospect score/grade information above the surface in both drawers. */
+#appView :is(.prospect-card,.prospect-drawer,.research-card,.research-lane,
+  .rank-lens-card,.rank-lens-row,.review-mini){
+  border-color:var(--bbb-line)!important;
+}
+#appView :is(.prospect-card,.research-card,.rank-lens-card,.rank-lens-row){
+  background-color:#142125!important;
+}
