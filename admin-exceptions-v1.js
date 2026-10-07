@@ -1,6 +1,6 @@
-/* BBB Actionable Exception Manager v1 */
+/* BBB Actionable Exception Manager v2 · readable player-art pass */
 (function(){
-  let exceptionData=null,exceptionLoaded=false,exceptionLoading=false;
+  let exceptionData=null,exceptionLoaded=false,exceptionLoading=false,exceptionMedia=new Map();
   let exceptionView='ACTIONABLE',exceptionSearch='';
 
   function arr(v){return Array.isArray(v)?v:[]}
@@ -15,6 +15,26 @@
     return (h/24).toFixed(h<48?1:0)+'D';
   }
   function kindLabel(k){return k==='TEAM_MISMATCH'?'TEAM':'INJURY'}
+  function mediaId(key){return exceptionMedia.get(key)||null}
+  function initials(name){return String(name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'?'}
+  function playerArt(x){
+    const id=mediaId(x.player_key),name=x.name||'Player';
+    if(!id)return '<div class="exception-player-art fallback"><span>'+escv(initials(name))+'</span></div>';
+    return '<div class="exception-player-art"><img src="https://a.espncdn.com/i/headshots/nfl/players/full/'+encodeURIComponent(id)+'.png" data-exception-espn="'+escv(id)+'" data-exception-name="'+escv(name)+'" alt="" loading="lazy"></div>';
+  }
+  function hydratePlayerArt(){
+    $('.exception-player-art img').forEach(img=>{
+      img.onerror=function(){
+        if(img.dataset.fallbackDone==='1'){
+          const wrap=img.closest('.exception-player-art');
+          if(wrap){wrap.classList.add('fallback');wrap.innerHTML='<span>'+escv(initials(img.dataset.exceptionName||'?'))+'</span>'}
+          return;
+        }
+        img.dataset.fallbackDone='1';
+        img.src='https://a.espncdn.com/i/headshots/college-football/players/full/'+encodeURIComponent(img.dataset.exceptionEspn||'')+'.png';
+      };
+    });
+  }
   function sourceLinks(x){
     const out=[];
     if(/^https?:\/\//i.test(x.source_1||''))out.push('<a href="'+escv(x.source_1)+'" target="_blank" rel="noopener">PRIMARY SOURCE ↗</a>');
@@ -102,9 +122,9 @@
 
   function resolvedCard(x){
     return '<article class="exception-card resolved">'+
-      '<header><div class="exception-kind '+(x.kind==='TEAM_MISMATCH'?'team':'injury')+'">'+kindLabel(x.kind)+'</div><div class="exception-id"><span>BBB #'+escv(x.overall_rank??'UR')+' · '+escv(x.position||'')+' · '+escv(x.team||'FA')+'</span><h3>'+escv(x.name)+'</h3></div><em>RESOLVED</em></header>'+
-      '<div class="exception-compare"><div><span>BBB VALUE</span><strong>'+escv(x.bbb_value||'—')+'</strong></div><div><span>SOURCE SNAPSHOT</span><strong>'+escv(x.source_value||'—')+'</strong></div></div>'+
-      '<div class="exception-resolution"><span>'+escv(String(x.action||'RESOLVED').replaceAll('_',' '))+'</span><strong>'+escv(x.note||'Snapshot accepted until either side changes.')+'</strong><small>'+escv(stamp(x.resolved_at))+'</small></div>'+
+      '<header><div class="exception-player-main">'+playerArt(x)+'<div class="exception-id"><div class="exception-id-meta"><span class="exception-kind '+(x.kind==='TEAM_MISMATCH'?'team':'injury')+'">'+kindLabel(x.kind)+'</span><span>BBB #'+escv(x.overall_rank??'UR')+' · '+escv(x.position||'')+' · '+escv(x.team||'FA')+'</span></div><h3>'+escv(x.name)+'</h3></div></div><em class="resolved">RESOLVED</em></header>'+
+      '<div class="exception-compare"><div class="bbb"><span>BBB VALUE</span><strong>'+escv(x.bbb_value||'—')+'</strong><small>Current BBB snapshot</small></div><div class="source"><span>SOURCE SNAPSHOT</span><strong>'+escv(x.source_value||'—')+'</strong><small>Compared source value</small></div></div>'+
+      '<div class="exception-resolution"><span>'+escv(String(x.action||'RESOLVED').replaceAll('_',' '))+'</span><strong>'+escv(x.note||'Snapshot accepted until either side changes.')+'</strong><small>Resolved '+escv(stamp(x.resolved_at))+'</small></div>'+
       '<footer><button type="button" data-exception-player="'+escv(x.player_key)+'">OPEN PLAYER</button><button type="button" class="muted" data-exception-reopen="'+escv(x.player_key)+'" data-exception-kind="'+escv(x.kind)+'">REOPEN</button></footer>'+
     '</article>';
   }
@@ -114,13 +134,13 @@
     const links=sourceLinks(x);
     const team=x.kind==='TEAM_MISMATCH';
     return '<article class="exception-card '+statusClass(x)+'">'+
-      '<header><div class="exception-kind '+(team?'team':'injury')+'">'+kindLabel(x.kind)+'</div><div class="exception-id"><span>BBB #'+escv(x.overall_rank??'UR')+' · '+escv(x.position||'')+' · '+escv(x.team||'FA')+'</span><h3>'+escv(x.name)+'</h3></div><em class="'+(stale?'stale':'actionable')+'">'+(stale?'STALE SOURCE':'ACTION NEEDED')+'</em></header>'+
+      '<header><div class="exception-player-main">'+playerArt(x)+'<div class="exception-id"><div class="exception-id-meta"><span class="exception-kind '+(team?'team':'injury')+'">'+kindLabel(x.kind)+'</span><span>BBB #'+escv(x.overall_rank??'UR')+' · '+escv(x.position||'')+' · '+escv(x.team||'FA')+'</span></div><h3>'+escv(x.name)+'</h3><p>'+(team?'Team data disagreement':'Availability data disagreement')+'</p></div></div><em class="'+(stale?'stale':'actionable')+'">'+(stale?'STALE SOURCE':'ACTION NEEDED')+'</em></header>'+
       '<div class="exception-compare">'+
         '<div class="bbb"><span>BBB CURRENT</span><strong>'+escv(x.bbb_value||'—')+'</strong><small>Updated '+escv(stamp(x.bbb_updated_at))+'</small></div>'+
-        '<div class="source"><span>'+escv(x.source_label||'SOURCE')+'</span><strong>'+escv(x.source_value||'—')+'</strong><small>Refreshed '+escv(stamp(x.source_refreshed_at))+' · '+escv(age(x.source_age_hours))+' old</small></div>'+
+        '<div class="source"><span>'+escv(x.source_label||'SOURCE SNAPSHOT')+'</span><strong>'+escv(x.source_value||'—')+'</strong><small>Refreshed '+escv(stamp(x.source_refreshed_at))+' · '+escv(age(x.source_age_hours))+' old</small></div>'+
       '</div>'+
-      (x.structured_value?'<div class="exception-third-source"><span>WEEKLY ROSTER HISTORY</span><strong>'+escv(x.structured_value)+'</strong><p>'+escv(x.structured_note||'')+'</p></div>':'<div class="exception-context"><span>CONTEXT</span><p>'+escv(x.structured_note||'')+'</p></div>')+
-      (x.latest_update_text?'<div class="exception-latest"><span>LATEST BBB INTEL · '+escv(x.latest_update_date||'')+'</span><p>'+escv(x.latest_update_text)+'</p>'+links+'</div>':'')+
+      (x.structured_value?'<div class="exception-third-source"><div><span>WEEKLY ROSTER HISTORY</span><strong>'+escv(x.structured_value)+'</strong></div><p>'+escv(x.structured_note||'')+'</p></div>':'<div class="exception-context"><span>WHAT THIS MEANS</span><p>'+escv(x.structured_note||'')+'</p></div>')+
+      (x.latest_update_text?'<div class="exception-latest"><span>LATEST BBB INTEL · '+escv(x.latest_update_date||'')+'</span><p>'+escv(x.latest_update_text)+'</p><div class="exception-source-links">'+links+'</div></div>':'')+
       '<footer>'+
         '<button type="button" data-exception-player="'+escv(x.player_key)+'">OPEN PLAYER</button>'+
         (team?'<button type="button" data-exception-refresh-team="'+escv(x.player_key)+'">CHECK ROSTERS NOW</button>':'<button type="button" data-exception-injury="'+escv(x.player_key)+'">OPEN INJURY CENTER</button>')+
@@ -144,7 +164,7 @@
       bindActions();return;
     }
     host.innerHTML=list.map(x=>exceptionView==='RESOLVED'?resolvedCard(x):exceptionCard(x)).join('');
-    bindActions();
+    hydratePlayerArt();bindActions();
   }
 
   function render(){
@@ -158,7 +178,9 @@
     exceptionLoading=true;
     const state=$('#exceptionState');if(state){state.textContent='SCANNING…';state.classList.add('exception-pulsing')}
     try{
-      exceptionData=await rpc('admin_get_exception_manager',{p_include_resolved:false})||null;
+      const [data,media]=await Promise.all([rpc('admin_get_exception_manager',{p_include_resolved:false}),rpc('admin_get_exception_media',{})]);
+      exceptionData=data||null;
+      exceptionMedia=new Map(arr(media).filter(x=>x?.player_key&&x?.espn_id).map(x=>[x.player_key,String(x.espn_id)]));
       exceptionLoaded=true;render();
     }catch(e){
       console.error('BBB Exception Manager failed',e);
