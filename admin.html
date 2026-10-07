@@ -2425,7 +2425,7 @@ body:after{
       var shell=document.createElement("section");
       shell.id="bbbPlayerWorkspace";shell.className="hide";
       shell.setAttribute("role","dialog");shell.setAttribute("aria-modal","true");shell.setAttribute("aria-label","BBB Player Workspace");
-      shell.innerHTML='<div class="pw-shell"><header class="pw-head"><div id="pwIdentity" class="pw-identity"></div><div id="pwHeadActions" class="pw-head-actions"></div></header><nav id="pwTabs" class="pw-tabs"></nav><main id="pwBody" class="pw-body"></main></div>';
+      shell.innerHTML='<div class="pw-shell"><header class="pw-head"><div id="pwIdentity" class="pw-identity"></div><div id="pwPlayerArt" class="pw-player-art hide" aria-hidden="true"><img id="pwPlayerArtImg" alt=""></div><div id="pwHeadActions" class="pw-head-actions"></div></header><nav id="pwTabs" class="pw-tabs"></nav><main id="pwBody" class="pw-body"></main></div>';
       document.body.appendChild(back);document.body.appendChild(shell);
       back.addEventListener("click",pwClose);
       shell.addEventListener("click",pwHandleWorkspaceClick);
@@ -2457,7 +2457,8 @@ body:after{
         rest("player_updates?player_key=eq."+enc+"&select=id,update_date,update_type,update_text,injury_status,source_1,source_2,rank_impact,notes,review_status,created_at&order=update_date.desc,created_at.desc&limit=12"),
         rest("player_season_stats?player_key=eq."+enc+"&select=season,team,games,completions,attempts,passing_yards,passing_tds,interceptions,carries,rushing_yards,rushing_tds,targets,receptions,receiving_yards,receiving_tds,fantasy_points_ppr,position_finish,updated_at&order=season.desc&limit=12"),
         rest("dynasty_ranking_history?player_key=eq."+enc+"&select=snapshot_date,overall_rank,position_rank,fp_sf_rank,bbb_vs_fp,market_view,bbb_trade_value,snapshot_kind,created_at&order=snapshot_date.desc,created_at.desc&limit=18"),
-        rpc("admin_get_player_prospect_profile",{p_player_key:key})
+        rpc("admin_get_player_prospect_profile",{p_player_key:key}),
+        rpc("admin_get_player_media",{p_player_key:key})
       ]);
       var d={
         board:(pwSettled(jobs[0],[])[0]||pwBoard(key)),
@@ -2466,7 +2467,8 @@ body:after{
         updates:pwSettled(jobs[3],[]),
         stats:pwSettled(jobs[4],[]),
         history:pwSettled(jobs[5],[]),
-        prospectProfile:pwSettled(jobs[6],null)
+        prospectProfile:pwSettled(jobs[6],null),
+        media:pwSettled(jobs[7],null)
       };
       pwCache.set(key,d);return d;
     }
@@ -2488,8 +2490,36 @@ body:after{
       return '<section class="pw-panel"><div class="pw-panel-head"><div><span>'+esc(kicker)+'</span><h3>'+esc(title)+'</h3></div>'+(extra||"")+'</div><div class="pw-panel-body">'+body+'</div></section>';
     }
 
+    function pwPlayerArtUrl(espnId,sport){
+      return "https://a.espncdn.com/i/headshots/"+sport+"/players/full/"+encodeURIComponent(espnId)+".png";
+    }
+
+    function pwRenderPlayerArt(detail){
+      var wrap=pwQ("#pwPlayerArt"),img=pwQ("#pwPlayerArtImg");
+      if(!wrap||!img)return;
+      var espnId=detail&&detail.media&&detail.media.espn_id;
+      if(!espnId){
+        wrap.classList.add("hide");
+        img.removeAttribute("src");
+        return;
+      }
+      wrap.classList.remove("hide");
+      img.dataset.stage="nfl";
+      img.onerror=function(){
+        if(img.dataset.stage==="nfl"){
+          img.dataset.stage="college-football";
+          img.src=pwPlayerArtUrl(espnId,"college-football");
+          return;
+        }
+        wrap.classList.add("hide");
+        img.onerror=null;
+      };
+      img.src=pwPlayerArtUrl(espnId,"nfl");
+    }
+
     function pwHeader(detail){
       var d=pwIdentityData(pwKey,detail),b=d.board,x=d.prospect;
+      pwRenderPlayerArt(detail);
       var orb=b?("#"+b.rank):(x?String(x.class_year||"PRO"):"PLAYER");
       var orbLabel=b?"BBB RANK":(x?"DRAFT CLASS":"PLAYER");
       var meta=[];
@@ -3778,6 +3808,61 @@ body:after{
 @media(max-width:560px){
   #bbbPlayerWorkspace .pw-prospect-trait{grid-template-columns:1fr!important}
   #bbbPlayerWorkspace .pw-prospect-score-wrap{width:150px}
+}
+</style>
+
+
+<style id="bbb-player-art-v30">
+#bbbPlayerWorkspace .pw-head{
+  grid-template-columns:minmax(0,1fr) 118px auto!important;
+  gap:14px!important;
+}
+#bbbPlayerWorkspace .pw-player-art{
+  position:relative;
+  align-self:stretch;
+  min-height:88px;
+  overflow:hidden;
+  pointer-events:none;
+}
+#bbbPlayerWorkspace .pw-player-art:before{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-24px;
+  width:116px;
+  height:116px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(57,255,155,.17) 0%,rgba(57,255,155,.07) 42%,transparent 72%);
+  filter:blur(.2px);
+}
+#bbbPlayerWorkspace .pw-player-art:after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0;
+  height:30px;
+  background:linear-gradient(180deg,transparent,rgba(3,12,8,.96));
+  z-index:2;
+}
+#bbbPlayerWorkspace .pw-player-art img{
+  position:absolute;
+  z-index:1;
+  left:50%;
+  bottom:-17px;
+  width:auto;
+  height:126px;
+  max-width:146px;
+  transform:translateX(-50%);
+  object-fit:contain;
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,.36));
+}
+#bbbPlayerWorkspace .pw-player-art.hide{display:none!important}
+@media(max-width:1120px){
+  #bbbPlayerWorkspace .pw-head{grid-template-columns:minmax(0,1fr) auto!important}
+  #bbbPlayerWorkspace .pw-player-art{display:none!important}
+}
+@media(max-width:720px){
+  #bbbPlayerWorkspace .pw-head{grid-template-columns:1fr!important}
 }
 </style>
 
