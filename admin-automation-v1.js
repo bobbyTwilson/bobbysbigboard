@@ -1,6 +1,6 @@
 /* BBB Automation Control Center v1 */
 (function(){
-  let autoData=null,autoLoaded=false,autoLoading=false;
+  let autoData=null,autoLoaded=false,autoLoading=false,autoHealth=null,jobMetrics=[];
 
   function arr(v){return Array.isArray(v)?v:[]}
   function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
@@ -41,39 +41,43 @@
     };
     return map[job.jobname]||job.schedule||'—';
   }
-  function parseMonths(spec){
-    if(!spec||spec==='*')return null;
-    const out=new Set();
-    spec.split(',').forEach(part=>{
-      if(part.includes('-')){
-        const [a,b]=part.split('-').map(Number);
-        for(let i=a;i<=b;i++)out.add(i);
-      }else out.add(Number(part));
-    });
-    return out;
+  // pg_cron runs in UTC. Our production schedule has a DST-aware
+  // America/Chicago hour gate, so its next attempted UTC tick can be a no-write
+  // skip. Calculate the next REAL local refresh rather than displaying it.
+  const centralClock = new Intl.DateTimeFormat('en-US',{
+    timeZone:'America/Chicago',hour:'2-digit',hourCycle:'h23'
+  });
+  function centralHour(d){
+    const h=centralClock.formatToParts(d).find(x=>x.type==='hour');
+    return Number(h?.value);
   }
-  function cronNext(schedule){
-    if(!schedule)return null;
-    const parts=String(schedule).trim().split(/\s+/);
-    if(parts.length<5)return null;
-    const mins=parts[0].split(',').map(Number);
-    const hrs=parts[1].split(',').map(Number);
-    const months=parseMonths(parts[3]);
+  function nextActualRun(job){
+    if(!job?.active)return null;
+    const market=job.jobname==='bbb_daily_maintenance';
+    const parts=String(job.schedule||'').split(/\s+/);
+    const minute=Number(parts[0]);
+    if(!Number.isInteger(minute)||minute<0||minute>59)return null;
+    const targetHours=market?[11]:[7,11,15,19,23];
+    const candidateHours=market?[16,17]:[0,1,4,5,12,13,16,17,20,21];
     const now=new Date();
     let best=null;
-    for(let day=0;day<370;day++){
-      const base=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+day));
-      const month=base.getUTCMonth()+1;
-      if(months&&!months.has(month))continue;
-      for(const h of hrs)for(const m of mins){
-        const c=new Date(Date.UTC(base.getUTCFullYear(),base.getUTCMonth(),base.getUTCDate(),h,m,0));
-        if(c<=now)continue;
-        if(!best||c<best)best=c;
+    for(let day=0;day<3;day++){
+      for(const hour of candidateHours){
+        const d=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+day,hour,minute));
+        if(d<=now||!targetHours.includes(centralHour(d)))continue;
+        if(!best||d<best)best=d;
       }
-      if(best)return best;
     }
-    return null;
+    return best;
   }
+  function centralStamp(v){
+    const d=dt(v);if(!d)return '—';
+    return d.toLocaleString('en-US',{
+      timeZone:'America/Chicago',month:'short',day:'numeric',
+      hour:'numeric',minute:'2-digit',timeZoneName:'short'
+    });
+  }
+
   function runDetail(d){
     if(!d)return 'No result payload.';
     const status=String(d.status||'').toLowerCase();
@@ -117,10 +121,53 @@
     if($('#autoNavCount'))$('#autoNavCount').textContent=healthy+'/'+total;
     const state=$('#autoHealthState');
     if(state){
-      const bad=num(s.recent_failures)>0||healthy<total;
+      const bad=num(s.recent_failures)>0||healthy<total||autoHealth?.status_source_stale===true;
       state.className='hud-badge '+(bad?'warn':'good');
       state.textContent=bad?'ATTENTION':'ALL SYSTEMS HEALTHY';
     }
+  }
+
+  function readinessCard(kind,label,value,detail){
+    return '<article class="auto-readiness-card '+kind+'">'+
+      '<span>'+escv(label)+'</span><strong>'+escv(value)+'</strong><p>'+escv(detail)+'</p></article>';
+  }
+  function renderReadiness(){
+    const host=$('#autoReadinessGrid'),actions=$('#autoReadinessActions');
+    if(!host)return;
+    const s=autoData?.summary||{},h=autoHealth||{},news=autoData?.news_pulse?.last_logged_run||{};
+    const total=num(s.sources_total),good=num(s.sources_healthy);
+    const statusKnown=h.status_source_stale!=null;
+    const stale=statusKnown&&h.status_source_stale===true;
+    const statusValue=!statusKnown?'UNKNOWN':stale?'STALE':'CURRENT';
+    const statusText=!statusKnown
+      ?'Could not verify the status-source timestamp.'
+      :'Last refresh '+centralStamp(h.status_source_last_refresh)
+        +' · '+Math.round(num(h.status_source_age_hours))+'h old';
+    const staleInj=num(h.stale_injury_source_mismatches),staleTeam=num(h.stale_team_source_mismatches);
+    const ranks=num(h.ranked_players),slots=num(h.unique_rank_slots),dups=num(h.duplicate_ranking_history_groups);
+    const rankOK=ranks===500&&slots===500&&dups===0;
+    const pulseRecent=news.run_at&&Date.now()-new Date(news.run_at).getTime()<10*60*60*1000;
+    const jobsFail=arr(jobMetrics).reduce((n,j)=>n+num(j.failed_runs_7d),0);
+    host.innerHTML=
+      readinessCard(total&&good===total?'good':'warn',
+        'AUTOMATED DATA SOURCES',good+'/'+total+' healthy',
+        'Stats, snaps, player metadata and roster history · checked independently of player-status feed')+
+      readinessCard(stale?'bad':statusKnown?'good':'warn',
+        'INJURY / PLAYER STATUS SOURCE',statusValue,
+        statusText+(stale?' · '+staleInj+' injury and '+staleTeam+' team discrepancies need review':'') )+
+      readinessCard(pulseRecent&&news.success!==false?'good':'warn',
+        'NEWS PULSE · SEPARATE SCAN',news.run_at?rel(news.run_at):'NOT LOGGED',
+        news.run_at?'Last verified-news scan: '+centralStamp(news.run_at)+'. This does not refresh the whole status-source snapshot.':'No recent run recorded.')+
+      readinessCard(rankOK?'good':'bad','MANUAL RANKING INTEGRITY',
+        ranks+'/'+500+' slots',rankOK?'All rank slots unique · no duplicate history groups':'Inspect ranking integrity before applying moves')+
+      readinessCard(jobsFail?'bad':'good','CRON ERRORS · 7 DAYS',
+        jobsFail+' errors','Counts real Central-time windows, excluding no-write DST alignment checks');
+    if(actions)actions.innerHTML=(stale
+      ?'<span class="auto-readiness-warning">The old status source is stale. Do not treat its injury labels as current NFL verification.</span>'
+      :'<span>All status-source timestamps are within the configured freshness threshold.</span>')+
+      '<div><button class="small-btn" type="button" data-auto-jump="injuries">OPEN INJURY CENTER</button>'+
+      '<button class="small-btn" type="button" data-auto-jump="review">REVIEW EXCEPTIONS</button>'+
+      '<button class="small-btn" type="button" data-auto-jump="prospects">PROSPECT LAB</button></div>';
   }
 
   function renderGuards(){
@@ -151,12 +198,15 @@
   }
 
   function jobCard(j){
-    const lr=j.last_run||{},next=cronNext(j.schedule),status=String(lr.status||'scheduled').toUpperCase();
+    const lr=j.last_run||{},next=nextActualRun(j),status=String(lr.status||'scheduled').toUpperCase();
+    const metrics=arr(jobMetrics).find(m=>m.jobname===j.jobname)||{};
+    const lastReal=metrics.last_eligible_run;
     const hc=lr.status==='failed'?'bad':j.active?'good':'neutral';
     return '<article class="auto-job-card '+hc+'">'+
       '<div class="auto-job-state"><i></i><span>'+escv(j.active?'ACTIVE':'PAUSED')+'</span></div>'+
       '<div class="auto-job-copy"><small>'+escv(j.jobname)+'</small><h3>'+escv(j.label)+'</h3><p>'+escv(scheduleLabel(j))+'</p></div>'+
-      '<div class="auto-job-times"><div><span>LAST CRON RUN</span><strong>'+escv(lr.start_time?rel(lr.start_time):'NOT YET')+'</strong></div><div><span>NEXT RUN</span><strong>'+escv(next?localStamp(next):'OFFSEASON')+'</strong></div></div>'+
+      '<div class="auto-job-times"><div><span>LAST REAL WINDOW</span><strong>'+escv(lastReal?rel(lastReal):'NOT YET')+'</strong></div><div><span>NEXT REAL CHECK</span><strong>'+escv(next?centralStamp(next):'PAUSED')+'</strong></div></div>'+
+      '<div class="auto-run-metrics"><span>'+escv(metrics.successful_runs_7d??'—')+'/'+escv(metrics.eligible_runs_7d??'—')+' successful eligible runs · 7d</span>'+(num(metrics.failed_runs_7d)?'<strong>'+escv(metrics.failed_runs_7d)+' failed</strong>':'<small>Central-time aware</small>')+'</div>'+
       '<div class="auto-job-result '+healthClass(status)+'"><span>'+escv(status)+'</span>'+(lr.duration_seconds!=null?'<small>'+Math.round(num(lr.duration_seconds))+'s</small>':'')+'</div>'+
     '</article>';
   }
@@ -194,7 +244,7 @@
 
   function render(){
     if(!autoLoaded||!autoData)return;
-    renderSummary();renderGuards();renderSources();renderJobs();renderRuns();renderLatestNews();bindActions();
+    renderSummary();renderReadiness();renderGuards();renderSources();renderJobs();renderRuns();renderLatestNews();bindActions();
   }
 
   async function load(force=false){
@@ -203,7 +253,15 @@
     autoLoading=true;
     const state=$('#autoLoadState');if(state){state.textContent='SYNCING…';state.classList.add('auto-pulsing')}
     try{
-      autoData=await rpc('admin_get_automation_control_center',{})||null;
+      const results=await Promise.allSettled([
+        rpc('admin_get_automation_control_center',{}),
+        rpc('admin_get_data_health',{}),
+        rpc('admin_get_job_run_health',{})
+      ]);
+      if(results[0].status!=='fulfilled')throw results[0].reason;
+      autoData=results[0].value||null;
+      autoHealth=results[1].status==='fulfilled'?results[1].value:null;
+      jobMetrics=results[2].status==='fulfilled'?arr(results[2].value?.jobs):[];
       autoLoaded=true;render();
     }catch(e){
       console.error('Automation Control Center failed',e);
@@ -232,7 +290,8 @@
 
   function bindActions(){
     $$('[data-auto-run]').forEach(b=>b.onclick=()=>runSource(b.dataset.autoRun,b));
-    $$('[data-auto-player]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.autoPlayer,'activity'));
+    $('[data-auto-player]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.autoPlayer,'activity'));
+    $('[data-auto-jump]').forEach(b=>b.onclick=()=>page(b.dataset.autoJump));
   }
 
   $('#autoRefresh')?.addEventListener('click',()=>load(true));
