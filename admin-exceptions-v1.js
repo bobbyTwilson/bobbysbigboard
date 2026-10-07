@@ -23,7 +23,7 @@
     return '<div class="exception-player-art"><img src="https://a.espncdn.com/i/headshots/nfl/players/full/'+encodeURIComponent(id)+'.png" data-exception-espn="'+escv(id)+'" data-exception-name="'+escv(name)+'" alt="" loading="lazy"></div>';
   }
   function hydratePlayerArt(){
-    $('.exception-player-art img').forEach(img=>{
+    $$('.exception-player-art img').forEach(img=>{
       img.onerror=function(){
         if(img.dataset.fallbackDone==='1'){
           const wrap=img.closest('.exception-player-art');
