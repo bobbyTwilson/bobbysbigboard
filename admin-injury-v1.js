@@ -238,8 +238,14 @@
   };
 
   try{
-    if(typeof ADMIN_COMMANDS!=='undefined'&&!ADMIN_COMMANDS.some(x=>x.id==='injuries-center')){
-      ADMIN_COMMANDS.splice(3,0,{id:'injuries-center',icon:'✚',label:'Injury Command Center',sub:'Availability, practice and dynasty injury triage',tag:'PAGE'});
+    if(typeof ADMIN_COMMANDS!=='undefined'){
+      const item=ADMIN_COMMANDS.find(x=>x.id==='injuries');
+      if(item){
+        item.icon='✚';
+        item.label='Injury Command Center';
+        item.sub='Availability, practice and dynasty injury triage';
+        item.tag='PAGE';
+      }
     }
   }catch(_){}
 
