@@ -1,7 +1,7 @@
 const SUPA='https://twbduhmibbotregdxlla.supabase.co';
 const KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
 const STORE='bbb_admin_session_v1';
-let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,classAudit=[],classAuditLoaded=false,classAuditLoading=false,classAuditView='attention',activeAdminPage='dashboard';
+let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,classAudit=[],classAuditLoaded=false,classAuditLoading=false,classAuditView='attention',prospectGradeOnly=false,activeAdminPage='dashboard';
 const PAGE=50;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -244,11 +244,13 @@ function renderCommandDashboard(){
   if($('#metricPlayers'))$('#metricPlayers').textContent=board.length||'—';
   if($('#metricInjuries'))$('#metricInjuries').textContent=board.filter(x=>!healthy(x.injury_status)).length;
   if($('#metricRookies'))$('#metricRookies').textContent=rookiesCount;
-  if($('#metricProspects'))$('#metricProspects').textContent=prospectsCount;
+  if($('#metricProspects'))$('#metricProspects').textContent=prospectLab.filter(x=>x.graded).length;
   renderMarketSignal();renderBoardCore();renderDashboardHealth();renderDashboardReview();renderMarketEdges();renderActivityStream();renderOpsActionCenter();bindDashboardActions();
 }
 function updateAdminClock(){
-  const d=new Date(),time=$('#adminClock'),date=$('#adminDate');if(time)time.textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});if(date)date.textContent=d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
+  const d=new Date(),time=$('#adminClock'),date=$('#adminDate');
+  if(time)time.textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit',second:'2-digit'});
+  if(date)date.textContent=d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
 }
 async function loadActivity(){try{adminActivity=await rpc('admin_recent_activity',{p_limit:20})||[];renderActivityStream()}catch(e){adminActivity=[];if($('#activityList'))$('#activityList').innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
 function marketKind(x){const s=String(x.view||'').toUpperCase();if(s.includes('BUY'))return'BUY';if(s.includes('FADE'))return'FADE';return'MARKET'}
@@ -272,7 +274,18 @@ function renderRankings(){
   $('#rankCount').textContent=(list.length?rankPage*PAGE+1:0)+'–'+Math.min((rankPage+1)*PAGE,list.length)+' of '+list.length;
   $('#rankPrev').disabled=rankPage===0;$('#rankNext').disabled=rankPage>=max;bindRows();renderRankLens();
 }
-function filteredPlayers(){const q=$('#playerAdminSearch').value.trim().toLowerCase(),pos=$('#playerAdminPos').value,inj=$('#playerAdminInjury').value;return board.filter(x=>(pos==='ALL'||x.pos===pos)&&(inj==='ALL'||(inj==='HEALTHY'?healthy(x.injury_status):!healthy(x.injury_status)))&&(!q||`${x.name} ${x.team} ${x.college||''}`.toLowerCase().includes(q)))}
+function filteredPlayers(){
+  const q=$('#playerAdminSearch').value.trim().toLowerCase();
+  const pos=$('#playerAdminPos').value;
+  const draft=$('#playerAdminDraft')?.value||'ALL';
+  const inj=$('#playerAdminInjury').value;
+  return board.filter(x=>
+    (pos==='ALL'||x.pos===pos)&&
+    (draft==='ALL'||String(x.draft)===draft)&&
+    (inj==='ALL'||(inj==='HEALTHY'?healthy(x.injury_status):!healthy(x.injury_status)))&&
+    (!q||(x.name+' '+x.team+' '+(x.college||'')).toLowerCase().includes(q))
+  );
+}
 function renderPlayers(){const list=filteredPlayers();const max=Math.max(0,Math.ceil(list.length/PAGE)-1);playerPage=Math.min(playerPage,max);const rows=list.slice(playerPage*PAGE,(playerPage+1)*PAGE);$('#playerAdminBody').innerHTML=rows.map(x=>`<tr><td class="rank-number">${x.rank}</td><td class="player-name">${esc(x.name)}</td><td><span class="pos">${esc(x.pos)}</span></td><td>${esc(x.team||'—')}</td><td>${x.age??'—'}</td><td>${esc(x.college||'—')}</td><td class="${healthy(x.injury_status)?'green':'red'}">${esc(x.injury_status||'Healthy')}</td><td><button class="edit-btn" data-edit="${esc(x.player_key)}">EDIT</button></td></tr>`).join('')||'<tr><td colspan="8" class="empty">No players match.</td></tr>';$('#playerAdminCount').textContent=`${list.length?playerPage*PAGE+1:0}–${Math.min((playerPage+1)*PAGE,list.length)} of ${list.length}`;$('#playerAdminPrev').disabled=playerPage===0;$('#playerAdminNext').disabled=playerPage>=max;bindRows()}
 function bindRows(){$$('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit));$$('[data-move]').forEach(b=>b.onclick=()=>movePlayer(b.dataset.move))}
 function selectRankPlayer(key){selectedRankKey=key;renderRankings()}
@@ -308,8 +321,18 @@ TE:[['Speed',10],['Agility',5],['Blocking',5],['Catching',5],['Analytics',10],['
 };
 function prospectReady(x){return x.research_status==='researched'||x.recommended_overall_grade!=null||Object.keys(x.recommended_traits||{}).length>0}
 function filteredProspects(){
- const q=($('#prospectSearch')?.value||'').toLowerCase(),year=$('#prospectYear')?.value||'ALL',pos=$('#prospectPos')?.value||'ALL',research=$('#prospectResearch')?.value||'ALL',show=!!$('#prospectIncludeGraded')?.checked;
- return prospectLab.filter(x=>(show||!x.graded)&&(year==='ALL'||String(x.class_year)===year)&&(pos==='ALL'||x.position===pos)&&(research==='ALL'||(research==='READY')===prospectReady(x))&&(!q||(`${x.name} ${x.school||''}`).toLowerCase().includes(q)));
+  const q=($('#prospectSearch')?.value||'').toLowerCase();
+  const year=$('#prospectYear')?.value||'ALL';
+  const pos=$('#prospectPos')?.value||'ALL';
+  const research=$('#prospectResearch')?.value||'ALL';
+  const show=!!$('#prospectIncludeGraded')?.checked;
+  return prospectLab.filter(x=>
+    (prospectGradeOnly?x.graded:(show||!x.graded))&&
+    (year==='ALL'||String(x.class_year)===year)&&
+    (pos==='ALL'||x.position===pos)&&
+    (research==='ALL'||(research==='READY')===prospectReady(x))&&
+    (!q||(x.name+' '+(x.school||'')).toLowerCase().includes(q))
+  );
 }
 function renderProspectLab(){
  const grid=$('#prospectLabGrid');if(!grid)return;
@@ -780,7 +803,7 @@ function page(name){
   const titles={dashboard:'Dashboard',rankings:'Rankings Manager',players:'Player Editor',prospects:'Prospect Lab',research:'Research Queue',eligibility:'Draft Class Audit',review:'Review Queue'};if($('#missionPageTitle'))$('#missionPageTitle').textContent=titles[name]||name;
   if(name==='rankings')renderRankings();
   if(name==='players')renderPlayers();
-  if(name==='prospects')renderProspectLab();
+  if(name==='prospects'){prospectGradeOnly=false;renderProspectLab()}
   if(name==='research'){renderResearchQueue();if(!researchLoaded&&!researchLoading)void loadResearchQueue(false)}
   if(name==='eligibility'){renderClassAudit();if(!classAuditLoaded&&!classAuditLoading)void loadClassAudit(false)}
   if(name==='review'){renderReviewQueue();renderDataHealth()}
@@ -807,6 +830,43 @@ function adminClickRouter(e){
     e.preventDefault();
     page(quick.dataset.quickPage);
     return;
+  }
+  const dashKpi=e.target.closest&&e.target.closest('[data-dashboard-kpi]');
+  if(dashKpi){
+    e.preventDefault();
+    const key=dashKpi.dataset.dashboardKpi;
+    if(key==='dynasty'){goRankings();return}
+    if(key==='injuries'){
+      page('players');
+      $('#playerAdminSearch').value='';
+      $('#playerAdminPos').value='ALL';
+      if($('#playerAdminDraft'))$('#playerAdminDraft').value='ALL';
+      $('#playerAdminInjury').value='CONCERN';
+      playerPage=0;
+      renderPlayers();
+      return;
+    }
+    if(key==='rookies'){
+      page('players');
+      $('#playerAdminSearch').value='';
+      $('#playerAdminPos').value='ALL';
+      if($('#playerAdminDraft'))$('#playerAdminDraft').value='2026';
+      $('#playerAdminInjury').value='ALL';
+      playerPage=0;
+      renderPlayers();
+      return;
+    }
+    if(key==='prospectgrades'){
+      page('prospects');
+      prospectGradeOnly=true;
+      if($('#prospectSearch'))$('#prospectSearch').value='';
+      if($('#prospectYear'))$('#prospectYear').value='ALL';
+      if($('#prospectPos'))$('#prospectPos').value='ALL';
+      if($('#prospectResearch'))$('#prospectResearch').value='ALL';
+      if($('#prospectIncludeGraded'))$('#prospectIncludeGraded').checked=true;
+      renderProspectLab();
+      return;
+    }
   }
   const classView=e.target.closest&&e.target.closest('[data-class-view]');
   if(classView){
@@ -862,7 +922,7 @@ function adminClickRouter(e){
 document.addEventListener('click',adminClickRouter,true);
 
 document.addEventListener('DOMContentLoaded',()=>{
-  updateAdminClock();setInterval(updateAdminClock,30000);
+  updateAdminClock();setInterval(updateAdminClock,1000);
 
   bindControlGroup('auth',()=>{
     $$('.auth-tabs').forEach(x=>x.remove());
@@ -912,8 +972,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 
   bindControlGroup('player editor',()=>{
-    ['#playerAdminSearch','#playerAdminPos','#playerAdminInjury'].forEach(s=>$(s)?.addEventListener(s==='#playerAdminSearch'?'input':'change',()=>{playerPage=0;renderPlayers()}));
-    $('#playerAdminClear')?.addEventListener('click',()=>{$('#playerAdminSearch').value='';$('#playerAdminPos').value='ALL';$('#playerAdminInjury').value='ALL';playerPage=0;renderPlayers()});
+    ['#playerAdminSearch','#playerAdminPos','#playerAdminDraft','#playerAdminInjury'].forEach(s=>$(s)?.addEventListener(s==='#playerAdminSearch'?'input':'change',()=>{playerPage=0;renderPlayers()}));
+    $('#playerAdminClear')?.addEventListener('click',()=>{$('#playerAdminSearch').value='';$('#playerAdminPos').value='ALL';if($('#playerAdminDraft'))$('#playerAdminDraft').value='ALL';$('#playerAdminInjury').value='ALL';playerPage=0;renderPlayers()});
     $('#playerAdminPrev')?.addEventListener('click',()=>{playerPage=Math.max(0,playerPage-1);renderPlayers()});
     $('#playerAdminNext')?.addEventListener('click',()=>{playerPage++;renderPlayers()});
     $('#drawerClose')?.addEventListener('click',closeEditor);
@@ -922,8 +982,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 
   bindControlGroup('prospect lab',()=>{
-    ['#prospectSearch','#prospectYear','#prospectPos','#prospectResearch'].forEach(sel=>$(sel)?.addEventListener(sel==='#prospectSearch'?'input':'change',renderProspectLab));
-    $('#prospectIncludeGraded')?.addEventListener('change',renderProspectLab);
+    ['#prospectSearch','#prospectYear','#prospectPos','#prospectResearch'].forEach(sel=>$(sel)?.addEventListener(sel==='#prospectSearch'?'input':'change',()=>{prospectGradeOnly=false;renderProspectLab()}));
+    $('#prospectIncludeGraded')?.addEventListener('change',()=>{prospectGradeOnly=false;renderProspectLab()});
     $('#prospectLabGrid')?.addEventListener('click',e=>{
       const gradeBtn=e.target.closest('[data-grade-prospect]');
       if(gradeBtn){e.preventDefault();e.stopPropagation();startProspectGrade(gradeBtn.dataset.gradeProspect);return}
