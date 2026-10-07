@@ -23,6 +23,7 @@
   text-align:center!important;
 }
 #appView .system-live>i{display:none!important}
+#appView .top-actions .system-live:before{content:none!important;display:none!important}
 #appView .system-live>b{
   display:inline-flex!important;
   align-items:center!important;
