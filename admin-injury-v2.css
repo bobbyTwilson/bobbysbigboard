@@ -1,0 +1,145 @@
+/* BBB Injury Command Center v2 — readability pass */
+
+/* Keep the cyber look, but stop using micro-text for information Bobby actually needs to read. */
+#pageInjuries .page-head p{color:#8aa394!important;font-size:11px!important;line-height:1.55}
+#pageInjuries .inj-hero p{color:#91aa9b!important;font-size:12px!important}
+#pageInjuries .inj-hero-pills span{color:#b08f96!important;font-size:8.5px!important}
+#pageInjuries .inj-vitals small,
+#pageInjuries .inj-vitals span{font-size:8px!important}
+
+#pageInjuries .inj-kpi span{color:#7e9c89!important;font-size:8px!important}
+#pageInjuries .inj-kpi strong{font-size:29px!important}
+#pageInjuries .inj-kpi small{color:#718a7b!important;font-size:8px!important;line-height:1.35}
+#pageInjuries .inj-kpi.active:after{font-size:7px!important}
+
+#pageInjuries .inj-data-health{padding:13px 15px!important}
+#pageInjuries .inj-data-health>strong{font-size:10px!important}
+#pageInjuries .inj-data-health span{color:#87aa94!important;font-size:8px!important;padding:6px 8px!important}
+#pageInjuries .inj-data-health span.stale{color:#ffd096!important}
+#pageInjuries .inj-data-health p{color:#789184!important;font-size:9px!important;line-height:1.45}
+
+#pageInjuries .inj-priority{padding:15px!important}
+#pageInjuries .inj-priority-head span{color:#bd7f89!important;font-size:8px!important}
+#pageInjuries .inj-priority-head strong{font-size:14px!important}
+#pageInjuries .inj-priority-head small{color:#7d9687!important;font-size:9px!important}
+#pageInjuries .inj-priority-grid{gap:10px!important}
+#pageInjuries .inj-priority-card{min-height:116px!important;padding:11px 12px!important;grid-template-columns:70px minmax(0,1fr)!important}
+#pageInjuries .inj-priority-card .inj-art{width:66px!important;height:90px!important}
+#pageInjuries .inj-priority-card .inj-art img{height:90px!important;max-width:92px!important}
+#pageInjuries .inj-priority-copy small{color:#7f9989!important;font-size:7.5px!important}
+#pageInjuries .inj-priority-copy strong{font-size:16px!important;margin-top:4px!important}
+#pageInjuries .inj-priority-copy em{color:#a2b4a8!important;font-size:9px!important;line-height:1.45!important}
+#pageInjuries .inj-priority-return{color:#c09aa2!important;font-size:7px!important;bottom:9px!important}
+#pageInjuries .inj-priority-num{font-size:36px!important}
+
+#pageInjuries .inj-summary{padding:12px 14px!important;font-size:10px!important;color:#81998a!important}
+#pageInjuries .inj-summary span:first-child{color:#c0dccb!important}
+
+#pageInjuries .inj-card{border-color:rgba(57,255,155,.12)!important}
+#pageInjuries .inj-card-head{min-height:116px!important;padding-right:16px!important}
+#pageInjuries .inj-player .inj-art{width:80px!important;height:108px!important}
+#pageInjuries .inj-player .inj-art img{height:107px!important;max-width:110px!important}
+#pageInjuries .inj-eyeline{gap:10px!important}
+#pageInjuries .inj-eyeline span{color:#7f9989!important;font-size:7.5px!important}
+#pageInjuries .inj-player-copy button{font-size:21px!important;margin-top:5px!important}
+#pageInjuries .inj-player-copy p{color:#b2c4b7!important;font-size:10px!important;line-height:1.4}
+
+#pageInjuries .inj-status,
+#pageInjuries .inj-trend,
+#pageInjuries .inj-new{
+  min-height:28px!important;
+  padding:0 9px!important;
+  font-size:8px!important;
+  letter-spacing:.07em!important
+}
+#pageInjuries .inj-status{color:#e0a7af!important}
+#pageInjuries .inj-status.returning{color:#8ff0b6!important}
+#pageInjuries .inj-trend.improving{color:#8bf0b5!important}
+#pageInjuries .inj-trend.worsening{color:#ff9eac!important}
+#pageInjuries .inj-trend.unchanged{color:#b0beb5!important}
+#pageInjuries .inj-trend.new-unknown{color:#ffd194!important}
+#pageInjuries .inj-new{color:#a3f0fa!important}
+
+/* Use a wider three-column information layout; opportunity watch gets a full-width row. */
+#pageInjuries .inj-card-body{
+  grid-template-columns:minmax(390px,1.35fr) minmax(220px,.65fr) minmax(300px,.9fr)!important
+}
+#pageInjuries .inj-opportunity{grid-column:1/-1!important;padding-top:12px!important;padding-bottom:12px!important}
+#pageInjuries .inj-watch-list{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:7px!important
+}
+
+#pageInjuries .inj-card-body>section,
+#pageInjuries .inj-practice{padding:15px!important}
+#pageInjuries .inj-section-label>span{color:#77a187!important;font-size:8px!important}
+#pageInjuries .inj-section-label>em{color:#84998d!important;font-size:8px!important}
+#pageInjuries .inj-section-label>em.stale{color:#ffd091!important}
+
+#pageInjuries .inj-latest{
+  color:#c1d5c8!important;
+  font-size:11px!important;
+  line-height:1.62!important;
+  margin:9px 0 12px!important
+}
+#pageInjuries .inj-meta-row{gap:8px!important}
+#pageInjuries .inj-meta-row>span{
+  min-width:100px!important;
+  padding:8px 9px!important;
+  color:#a2b5a8!important;
+  font-size:8.5px!important;
+  line-height:1.35!important
+}
+#pageInjuries .inj-meta-row b{color:#718e7c!important;font-size:7px!important}
+
+#pageInjuries .inj-impact-panel{gap:12px!important}
+#pageInjuries .inj-impact{padding:11px!important}
+#pageInjuries .inj-impact>span{color:#718f7c!important;font-size:7px!important}
+#pageInjuries .inj-impact>strong{font-size:12px!important;margin-top:6px!important}
+#pageInjuries .inj-impact>i{height:5px!important;margin-top:9px!important}
+
+#pageInjuries .inj-practice-current{margin-top:10px!important;gap:10px!important}
+#pageInjuries .inj-practice-current strong{
+  min-width:50px!important;
+  padding:7px 8px!important;
+  color:#ffadba!important;
+  font-size:9px!important
+}
+#pageInjuries .inj-practice-current p{color:#9fb1a5!important;font-size:9.5px!important;line-height:1.5!important}
+#pageInjuries .inj-practice-timeline{gap:7px!important;margin-top:12px!important}
+#pageInjuries .inj-practice-pill{min-width:58px!important;padding:7px 7px!important}
+#pageInjuries .inj-practice-pill small{color:#758a7d!important;font-size:6.5px!important}
+#pageInjuries .inj-practice-pill b{font-size:8px!important;margin-top:3px!important}
+
+#pageInjuries .inj-watch-chip{
+  min-height:38px!important;
+  padding:7px 9px!important;
+  grid-template-columns:40px 1fr auto!important
+}
+#pageInjuries .inj-watch-chip b{color:#78a68b!important;font-size:8px!important}
+#pageInjuries .inj-watch-chip span{color:#b8cbbf!important;font-size:9.5px!important}
+#pageInjuries .inj-watch-chip small{color:#789081!important;font-size:7px!important}
+#pageInjuries .inj-no-watch{color:#7f9588!important;font-size:9px!important}
+
+#pageInjuries .inj-card-foot{padding:11px 14px!important}
+#pageInjuries .inj-source-health span{color:#86a992!important;font-size:7px!important}
+#pageInjuries .inj-source-health span.stale{color:#ffd092!important}
+#pageInjuries .inj-source-health small{color:#748a7d!important;font-size:8px!important}
+#pageInjuries .inj-actions .small-btn,
+#pageInjuries .inj-actions .queue-action{min-height:38px!important;font-size:8px!important;padding:9px 11px!important}
+
+@media(max-width:1350px){
+  #pageInjuries .inj-card-body{grid-template-columns:1fr 1fr!important}
+  #pageInjuries .inj-intel{grid-column:1/-1!important}
+  #pageInjuries .inj-practice{grid-column:1/-1!important}
+  #pageInjuries .inj-watch-list{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:900px){
+  #pageInjuries .inj-priority-grid{grid-template-columns:1fr!important}
+  #pageInjuries .inj-card-body{grid-template-columns:1fr!important}
+  #pageInjuries .inj-intel,
+  #pageInjuries .inj-practice,
+  #pageInjuries .inj-opportunity{grid-column:auto!important}
+  #pageInjuries .inj-watch-list{grid-template-columns:1fr!important}
+}
