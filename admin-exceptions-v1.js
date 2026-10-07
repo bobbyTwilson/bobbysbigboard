@@ -42,6 +42,15 @@
     return out.join('');
   }
   function statusClass(x){return x.source_is_stale?'stale':'actionable'}
+  function showExceptionNotice(message,warn=false){
+    const el=$('#exceptionActionNotice');if(!el)return;
+    const token=String(Date.now());
+    el.dataset.token=token;
+    el.textContent=message;
+    el.classList.remove('hide','warn');
+    if(warn)el.classList.add('warn');
+    setTimeout(()=>{if(el.dataset.token===token)el.classList.add('hide')},8000);
+  }
   function filtered(){
     const source=exceptionView==='RESOLVED'?arr(exceptionData?.resolved):arr(exceptionData?.exceptions);
     const q=exceptionSearch.trim().toLowerCase();
@@ -143,9 +152,8 @@
       (x.latest_update_text?'<div class="exception-latest"><span>LATEST BBB INTEL · '+escv(x.latest_update_date||'')+'</span><p>'+escv(x.latest_update_text)+'</p><div class="exception-source-links">'+links+'</div></div>':'')+
       '<footer>'+
         '<button type="button" data-exception-player="'+escv(x.player_key)+'">OPEN PLAYER</button>'+
-        (team?'<button type="button" data-exception-refresh-team="'+escv(x.player_key)+'">CHECK ROSTERS NOW</button>':'<button type="button" data-exception-injury="'+escv(x.player_key)+'">OPEN INJURY CENTER</button>')+
-        '<button type="button" class="accept" data-exception-resolve="'+escv(x.player_key)+'" data-exception-kind="'+escv(x.kind)+'" data-exception-action="ACCEPT_BBB">ACCEPT BBB</button>'+
-        (stale?'<button type="button" class="muted" data-exception-resolve="'+escv(x.player_key)+'" data-exception-kind="'+escv(x.kind)+'" data-exception-action="MARK_SOURCE_STALE">MARK SOURCE STALE</button>':'')+
+        (team?'<button type="button" data-exception-refresh-team="'+escv(x.player_key)+'">RECHECK ROSTER FEEDS</button>':'<button type="button" data-exception-injury="'+escv(x.player_key)+'">OPEN INJURY CENTER</button>')+
+        '<button type="button" class="accept" data-exception-resolve="'+escv(x.player_key)+'" data-exception-kind="'+escv(x.kind)+'" data-exception-action="ACCEPT_BBB">KEEP BBB VALUE</button>'+
       '</footer>'+
     '</article>';
   }
@@ -196,15 +204,20 @@
     const row=arr(exceptionData?.exceptions).find(x=>x.kind===kind&&x.player_key===key);
     if(!row)return;
     const wording=action==='ACCEPT_BBB'
-      ?'Accept BBB as authoritative for this '+kindLabel(kind).toLowerCase()+' snapshot?'
-      :'Mark this source snapshot stale until the source changes?';
+      ?'Keep BBB '+(row.bbb_value||'current value')+' for '+row.name+' and resolve this snapshot?'
+      :'Resolve this snapshot as stale?';
     if(!confirm(wording+' This does not change rankings or overwrite the external source.'))return;
     const old=btn.textContent;btn.disabled=true;btn.textContent='SAVING…';
     try{
       await rpc('admin_resolve_data_exception',{p_exception_kind:kind,p_player_key:key,p_action:action,p_note:null});
       await Promise.all([load(true),loadDataHealth()]);
       renderDataHealth();decorateLegacyHealth();
-    }catch(e){alert(e.message);btn.disabled=false;btn.textContent=old}
+      showExceptionNotice(row.name+': BBB value kept ('+(row.bbb_value||'current')+'). This snapshot moved to Resolved and will automatically return if BBB or the source changes.');
+    }catch(e){
+      console.error('Exception resolution failed',e);
+      showExceptionNotice('Could not resolve '+row.name+': '+(e.message||'Unknown error'),true);
+      btn.disabled=false;btn.textContent=old;
+    }
   }
 
   async function reopen(kind,key,btn){
@@ -219,24 +232,63 @@
   async function refreshTeam(btn){
     const old=btn.textContent;btn.disabled=true;btn.textContent='CHECKING…';
     try{
-      await rpc('admin_run_automation_source',{p_source:'rosters'});
-      await rpc('admin_run_automation_source',{p_source:'metadata'});
+      const roster=await rpc('admin_run_automation_source',{p_source:'rosters'});
+      const metadata=await rpc('admin_run_automation_source',{p_source:'metadata'});
       await Promise.all([load(true),loadDataHealth(),loadBoard(),loadProfiles()]);
       renderDataHealth();decorateLegacyHealth();
-    }catch(e){alert(e.message)}
-    finally{btn.disabled=false;btn.textContent=old}
+      const rs=String(roster?.status||'completed');
+      const ms=String(metadata?.status||'completed');
+      const unchanged=rs==='skipped_no_change'&&ms==='skipped_no_change';
+      showExceptionNotice(
+        unchanged
+          ?'Roster + player metadata feeds checked. Neither upstream source changed, so BBB performed no database rewrite.'
+          :'Roster feeds checked. New upstream data was imported where available and the Exception Manager was rescanned.'
+      );
+    }catch(e){
+      console.error('Roster recheck failed',e);
+      showExceptionNotice('Roster recheck failed: '+(e.message||'Unknown error'),true);
+    }finally{btn.disabled=false;btn.textContent=old}
   }
 
   function bindActions(){
-    $$('[data-exception-view]').forEach(b=>b.onclick=()=>{exceptionView=b.dataset.exceptionView||'ACTIONABLE';renderTabs();renderList()});
-    $$('[data-exception-switch]').forEach(b=>b.onclick=()=>{exceptionView=b.dataset.exceptionSwitch||'STALE';renderTabs();renderList()});
-    $$('[data-exception-player]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.exceptionPlayer,'activity'));
-    $$('[data-exception-injury]').forEach(b=>b.onclick=()=>page('injuries'));
-    $$('[data-exception-refresh-team]').forEach(b=>b.onclick=()=>refreshTeam(b));
-    $$('[data-exception-resolve]').forEach(b=>b.onclick=()=>resolveException(b.dataset.exceptionKind,b.dataset.exceptionResolve,b.dataset.exceptionAction,b));
-    $$('[data-exception-reopen]').forEach(b=>b.onclick=()=>reopen(b.dataset.exceptionKind,b.dataset.exceptionReopen,b));
-    $$('[data-exception-page]').forEach(b=>b.onclick=()=>page(b.dataset.exceptionPage));
+    /* Action buttons use delegated routing below so rerenders cannot break them. */
   }
+
+  function exceptionClickRouter(e){
+    const b=e.target.closest&&e.target.closest(
+      '[data-exception-view],[data-exception-switch],[data-exception-player],[data-exception-injury],[data-exception-refresh-team],[data-exception-resolve],[data-exception-reopen],[data-exception-page]'
+    );
+    if(!b)return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    if(b.dataset.exceptionView){
+      exceptionView=b.dataset.exceptionView||'ACTIONABLE';renderTabs();renderList();return;
+    }
+    if(b.dataset.exceptionSwitch){
+      exceptionView=b.dataset.exceptionSwitch||'STALE';renderTabs();renderList();return;
+    }
+    if(b.dataset.exceptionPlayer){
+      window.openBBBPlayerWorkspace?.(b.dataset.exceptionPlayer,'activity');return;
+    }
+    if(b.dataset.exceptionInjury){
+      page('injuries');return;
+    }
+    if(b.dataset.exceptionRefreshTeam!==undefined){
+      void refreshTeam(b);return;
+    }
+    if(b.dataset.exceptionResolve){
+      void resolveException(b.dataset.exceptionKind,b.dataset.exceptionResolve,b.dataset.exceptionAction,b);return;
+    }
+    if(b.dataset.exceptionReopen){
+      void reopen(b.dataset.exceptionKind,b.dataset.exceptionReopen,b);return;
+    }
+    if(b.dataset.exceptionPage){
+      page(b.dataset.exceptionPage);return;
+    }
+  }
+
+  document.addEventListener('click',exceptionClickRouter,true);
 
   $('#exceptionRefresh')?.addEventListener('click',()=>load(true));
   $('#exceptionSearch')?.addEventListener('input',e=>{exceptionSearch=e.target.value||'';renderList()});
