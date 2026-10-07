@@ -1843,7 +1843,7 @@ body:after{
       <div class="brand"><div class="brand-mark">BBB</div><div class="brand-copy"><strong>BOBBY'S BIG BOARD</strong><span>CYBER DYNASTY ADMIN</span></div></div>
       <div class="command-search"><span>⌕</span><input id="adminGlobalSearch" placeholder="Search players, teams, rankings…"><kbd>⌘ K</kbd></div>
       <div class="top-actions">
-        <span class="admin-pill system-live"><i></i><b>SYSTEM ONLINE</b><small>All systems operational</small></span>
+        <span class="admin-pill system-live"><i></i><b>SYSTEM ONLINE</b></span>
         <span class="admin-clock"><small id="adminDate">—</small><strong id="adminClock">—</strong></span>
         <span id="adminRole" class="admin-pill">OWNER ACCESS</span>
         <a class="ghost" href="/" target="_blank">View Site ↗</a><button id="signOut" class="ghost">Sign Out</button>
@@ -1901,10 +1901,10 @@ body:after{
           </section>
 
           <div class="metric-grid dashboard-kpis">
-            <div class="metric cyber-metric"><div class="metric-icon">◉</div><div><span>Dynasty Players</span><strong id="metricPlayers">—</strong><small>LIVE BOARD DATABASE</small></div><div class="mini-bars"><i></i><i></i><i></i><i></i><i></i></div></div>
-            <div class="metric cyber-metric"><div class="metric-icon">＋</div><div><span>Injury Concerns</span><strong id="metricInjuries">—</strong><small>ACTIVE AVAILABILITY FLAGS</small></div><div class="mini-pulse"></div></div>
-            <div class="metric cyber-metric"><div class="metric-icon">◇</div><div><span>Rookies</span><strong id="metricRookies">—</strong><small>ROOKIE BOARD ENTRIES</small></div><div class="mini-radar"></div></div>
-            <div class="metric cyber-metric"><div class="metric-icon">⌁</div><div><span>Prospect Grades</span><strong id="metricProspects">—</strong><small>SCOUTING DATABASE</small></div><div class="mini-bars alt"><i></i><i></i><i></i><i></i><i></i></div></div>
+            <button type="button" class="metric cyber-metric dashboard-kpi-btn" data-dashboard-kpi="dynasty"><div class="metric-icon">◉</div><div><span>Dynasty Players</span><strong id="metricPlayers">—</strong><small>OPEN TOP 500 BOARD</small></div><div class="mini-bars"><i></i><i></i><i></i><i></i><i></i></div></button>
+            <button type="button" class="metric cyber-metric dashboard-kpi-btn" data-dashboard-kpi="injuries"><div class="metric-icon">＋</div><div><span>Injury Concerns</span><strong id="metricInjuries">—</strong><small>VIEW ACTIVE FLAGS</small></div><div class="mini-pulse"></div></button>
+            <button type="button" class="metric cyber-metric dashboard-kpi-btn" data-dashboard-kpi="rookies"><div class="metric-icon">◇</div><div><span>Rookies</span><strong id="metricRookies">—</strong><small>VIEW 2026 ROOKIES</small></div><div class="mini-radar"></div></button>
+            <button type="button" class="metric cyber-metric dashboard-kpi-btn" data-dashboard-kpi="prospectgrades"><div class="metric-icon">⌁</div><div><span>Prospect Grades</span><strong id="metricProspects">—</strong><small>VIEW SAVED BBB GRADES</small></div><div class="mini-bars alt"><i></i><i></i><i></i><i></i><i></i></div></button>
           </div>
 
           <section class="ops-action-center">
@@ -1976,7 +1976,7 @@ body:after{
         <section id="pagePlayers" class="admin-page hide">
           <div class="page-head"><div><div class="eyebrow">PLAYER CODEX</div><h1>Player Editor</h1><p>Edit identity, age, college, overview and injury information without touching SQL.</p></div><button class="refresh-btn" data-refresh>Refresh Players</button></div>
           <section class="panel">
-            <div class="toolbar"><input id="playerAdminSearch" class="input" placeholder="Search player, team, college…"><select id="playerAdminPos" class="select"><option value="ALL">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select><select id="playerAdminInjury" class="select"><option value="ALL">All injury statuses</option><option value="HEALTHY">Healthy</option><option value="CONCERN">Injury concern</option></select><button id="playerAdminClear" class="small-btn">Clear</button></div>
+            <div class="toolbar"><input id="playerAdminSearch" class="input" placeholder="Search player, team, college…"><select id="playerAdminPos" class="select"><option value="ALL">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select><select id="playerAdminDraft" class="select"><option value="ALL">All draft classes</option><option value="2026">2026 rookies</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option></select><select id="playerAdminInjury" class="select"><option value="ALL">All injury statuses</option><option value="HEALTHY">Healthy</option><option value="CONCERN">Injury concern</option></select><button id="playerAdminClear" class="small-btn">Clear</button></div>
             <div class="rank-scroll"><table class="rank-table"><thead><tr><th>Rank</th><th>Player</th><th>Pos</th><th>Team</th><th>Age</th><th>College</th><th>Injury</th><th></th></tr></thead><tbody id="playerAdminBody"></tbody></table></div>
             <div class="pager"><span id="playerAdminCount"></span><div class="pager-actions"><button id="playerAdminPrev" class="small-btn">Previous</button><button id="playerAdminNext" class="small-btn">Next</button></div></div>
           </section>
@@ -3287,6 +3287,15 @@ body:after{
 .class-empty{grid-column:1/-1;min-height:240px;display:grid;place-items:center;align-content:center;text-align:center;padding:30px;color:#607c6b}.class-empty strong{font-size:17px;color:#aee0c2;margin-bottom:6px}.class-empty span{font-size:10px;max-width:520px;line-height:1.6}.class-empty-actions{display:flex;gap:7px;margin-top:14px}
 @media(max-width:1050px){.class-grid{grid-template-columns:1fr}.class-toolbar{grid-template-columns:1fr 1fr}.class-toolbar #classAuditSearch{grid-column:1/-1}.class-tabs{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:700px){.class-hero{padding:18px 15px}.class-hero h2{font-size:24px}.class-lock{width:82px;height:82px}.class-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}.class-tabs{grid-template-columns:1fr 1fr}.class-toolbar{grid-template-columns:1fr}.class-toolbar #classAuditSearch{grid-column:auto}.class-summary-line{flex-direction:column}.class-card-head{grid-template-columns:auto minmax(0,1fr)}.class-status{grid-column:1/-1;justify-self:start}.class-card-foot{align-items:flex-start;flex-direction:column}.class-actions{width:100%;justify-content:stretch}.class-action{flex:1}}
+</style>
+
+
+<style id="bbb-dashboard-interactions-v23">
+.dashboard-kpi-btn{appearance:none;width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit}
+.dashboard-kpi-btn:hover{border-color:rgba(57,255,155,.28)!important;transform:translateY(-2px);box-shadow:0 16px 36px rgba(0,0,0,.22),inset 0 0 0 1px rgba(57,255,155,.035)}
+.dashboard-kpi-btn:focus-visible{outline:2px solid rgba(57,255,155,.55);outline-offset:2px}
+.system-live{gap:7px}
+.system-live small{display:none!important}
 </style>
 
 </body>
