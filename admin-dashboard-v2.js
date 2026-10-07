@@ -60,7 +60,7 @@
     if(scan)return{
       kind:'scanner',eyebrow:'WEEKLY SIGNAL',title:(scan.name||'Player')+' is the strongest role signal',
       player:scan.name,detail:scan.signal_reason||'Weekly role signal requires review.',
-      page:'scanner',action:'OPEN WEEKLY SCANNER',score:(scan.signal||'SIGNAL')+' '+Math.abs(num(scan.signal_score)),key:scan.player_key
+      page:'scanner',action:'OPEN WEEKLY SCANNER',score:(scan.signal||'SIGNAL')+' '+Math.abs(num(scan.signal_score)),key:scan.player_key,espn:scan.espn_id
     };
     if(content)return{
       kind:'content',eyebrow:'CREATOR OPS',title:(content.name||'Player')+' is the best content opportunity',
@@ -101,7 +101,7 @@
     }
     if(kind==='ranking')return '<article class="nexus-signal-card ranking" data-nexus-page="moves"><div class="nexus-signal-icon">↕</div><div><span>RANKING GATE · P'+val(x.priority,'—')+'</span><strong>'+esc(x.name||x.player_name||'Player')+'</strong><p>'+esc(x.reason||'Ranking decision waiting.')+'</p><small>#'+val(x.current_rank,'—')+(x.recommended_rank?' → #'+x.recommended_rank:' · TARGET NEEDED')+'</small></div></article>';
     if(kind==='injury')return '<article class="nexus-signal-card injury" data-nexus-page="injuries">'+art(x.espn_id,x.name)+'<div><span>INJURY · '+esc(x.trend||'WATCH')+'</span><strong>'+esc(x.name||'Player')+'</strong><p>'+esc(x.latest_update_text||x.current_status||x.injury_note||'Availability update')+'</p><small>BBB #'+val(x.overall_rank,'—')+' · '+esc(x.return_window||'RETURN TBD')+'</small></div></article>';
-    if(kind==='scanner')return '<article class="nexus-signal-card scanner" data-nexus-page="scanner"><div class="nexus-signal-icon">⌁</div><div><span>'+esc(x.signal||'WEEKLY SIGNAL')+' · SCORE '+Math.abs(num(x.signal_score))+'</span><strong>'+esc(x.name||'Player')+'</strong><p>'+esc(x.signal_reason||'Weekly usage signal')+'</p><small>BBB #'+val(x.overall_rank,'—')+' · '+pct(x.target_share)+' TARGET SHARE</small></div></article>';
+    if(kind==='scanner')return '<article class="nexus-signal-card scanner" data-nexus-page="scanner">'+art(x.espn_id,x.name)+'<div><span>'+esc(x.signal||'WEEKLY SIGNAL')+' · SCORE '+Math.abs(num(x.signal_score))+'</span><strong>'+esc(x.name||'Player')+'</strong><p>'+esc(x.signal_reason||'Weekly usage signal')+'</p><small>BBB #'+val(x.overall_rank,'—')+' · '+pct(x.target_share)+' TARGET SHARE</small></div></article>';
     return '<article class="nexus-signal-card content" data-nexus-page="content">'+art(x.espn_id,x.name)+'<div><span>'+esc(x.recommended_format||'CONTENT')+' · '+val(x.content_score,'—')+'/100</span><strong>'+esc(x.name||'Player')+'</strong><p>'+esc(x.recommended_title||x.primary_signal||'Creator opportunity')+'</p><small>'+esc(x.coverage_status||'')+'</small></div></article>';
   }
 
