@@ -25,6 +25,10 @@ const scannerV3Css=await readFile('admin-scanner-v3.css','utf8');
 const scannerV3Js=await readFile('admin-scanner-v3.js','utf8');
 await writeFile(`${out}/static/admin-scanner-v3.css`,scannerV3Css);
 await writeFile(`${out}/static/admin-scanner-v3.js`,scannerV3Js);
+const injuryCss=await readFile('admin-injury-v1.css','utf8');
+const injuryJs=await readFile('admin-injury-v1.js','utf8');
+await writeFile(`${out}/static/admin-injury-v1.css`,injuryCss);
+await writeFile(`${out}/static/admin-injury-v1.js`,injuryJs);
 
 const config=JSON.parse(await readFile(`${out}/config.json`,'utf8'));
 config.routes=[
