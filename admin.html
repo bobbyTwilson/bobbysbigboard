@@ -1818,6 +1818,7 @@ body:after{
 </style>
   <link rel="stylesheet" href="/admin-scanner-v2.css?v=2">
   <link rel="stylesheet" href="/admin-scanner-v3.css?v=3">
+  <link rel="stylesheet" href="/admin-injury-v1.css?v=1">
 </head>
 <body>
   <section id="loginView" class="login-wrap">
@@ -1874,12 +1875,13 @@ body:after{
           <button class="nav-btn active" data-page="dashboard">Dashboard <span>01</span></button>
           <button class="nav-btn" data-page="moves">Ranking Moves <span id="moveNavCount">0</span></button>
           <button class="nav-btn" data-page="scanner">Weekly Scanner <span id="scannerNavCount">W—</span></button>
-          <button class="nav-btn" data-page="rankings">Rankings Manager <span>04</span></button>
-          <button class="nav-btn" data-page="players">Player Editor <span>05</span></button>
-          <button class="nav-btn" data-page="prospects">Prospect Lab <span id="prospectNavCount">06</span></button>
-          <button class="nav-btn" data-page="research">Research Queue <span id="researchNavCount">07</span></button>
-          <button class="nav-btn" data-page="eligibility">Class Audit <span id="classAuditNavCount">08</span></button>
-          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">09</span></button>
+          <button class="nav-btn" data-page="injuries">Injury Center <span id="injuryNavCount">—</span></button>
+          <button class="nav-btn" data-page="rankings">Rankings Manager <span>05</span></button>
+          <button class="nav-btn" data-page="players">Player Editor <span>06</span></button>
+          <button class="nav-btn" data-page="prospects">Prospect Lab <span id="prospectNavCount">07</span></button>
+          <button class="nav-btn" data-page="research">Research Queue <span id="researchNavCount">08</span></button>
+          <button class="nav-btn" data-page="eligibility">Class Audit <span id="classAuditNavCount">09</span></button>
+          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">10</span></button>
         </div>
         <div class="side-note"><strong>SECURE COMMAND LINK</strong><span>Every write is audited. The board moves only when you command it.</span></div>
       </aside>
@@ -2090,6 +2092,73 @@ body:after{
           </section>
 
           <div class="danger-note"><strong>Scanner rule:</strong> This page creates signals, not rank moves. “Queue Rank Review” sends the player to Ranking Moves with the weekly evidence attached. You still choose the final rank.</div>
+        </section>
+
+        <section id="pageInjuries" class="admin-page hide">
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">MEDICAL INTELLIGENCE · AVAILABILITY + DYNASTY IMPACT</div>
+              <h1>Injury Command Center</h1>
+              <p>Separate short-term availability from long-term dynasty value, track injury direction, and route only the meaningful cases into ranking review.</p>
+            </div>
+            <div class="inj-head-actions">
+              <span id="injuryLoadState" class="hud-badge good">LIVE INTEL</span>
+              <button id="injuryRefresh" class="refresh-btn" type="button">Refresh Center</button>
+            </div>
+          </div>
+
+          <section class="inj-hero">
+            <div>
+              <div class="panel-kicker">AVAILABILITY ≠ DYNASTY VALUE</div>
+              <h2>Know who is hurt, who is improving, and which injuries actually matter.</h2>
+              <p>The command center combines Bobby's current injury notes, recent status updates, practice-feed context, market position and same-team opportunity watches without ever moving a ranking automatically.</p>
+              <div class="inj-hero-pills"><span>STATUS TREND</span><span>PRACTICE</span><span>RETURN WINDOW</span><span>DYNASTY SEVERITY</span><span>OPPORTUNITY WATCH</span><span>RANK REVIEW</span></div>
+            </div>
+            <div class="inj-vitals" aria-hidden="true"><small>MEDICAL OPS</small><strong>TRIAGE</strong><span>TOP 500</span><div class="inj-ecg"></div></div>
+          </section>
+
+          <div class="inj-kpis">
+            <button type="button" class="inj-kpi" data-inj-preset="ACTIONABLE"><span>ACTIVE INJURIES</span><strong id="injuryActive">—</strong><small>ACTIONABLE FIRST</small></button>
+            <button type="button" class="inj-kpi" data-inj-preset="UPDATED"><span>UPDATED TODAY</span><strong id="injuryToday">—</strong><small>NEW INFORMATION</small></button>
+            <button type="button" class="inj-kpi" data-inj-preset="TOP100"><span>TOP 100 AFFECTED</span><strong id="injuryTop100">—</strong><small>CORE DYNASTY ASSETS</small></button>
+            <button type="button" class="inj-kpi" data-inj-preset="RESERVE"><span>IR / RESERVE</span><strong id="injuryReserve">—</strong><small>LONGER ABSENCES</small></button>
+            <button type="button" class="inj-kpi" data-inj-preset="RETURNING"><span>RETURNING / CLEARED</span><strong id="injuryReturning">—</strong><small>RECENTLY IMPROVED</small></button>
+          </div>
+
+          <section class="inj-data-health">
+            <strong>DATA HEALTH</strong>
+            <span id="injuryProfileFresh">PLAYER INTEL —</span>
+            <span id="injuryPracticeFresh">PRACTICE FEED —</span>
+            <span id="injuryDnpCount">— CURRENT DNP</span>
+            <p>Current player notes are the source of truth. Older practice data is visibly marked stale instead of being treated like today's report.</p>
+          </section>
+
+          <section class="inj-priority">
+            <div class="inj-priority-head"><div><span>IMMEDIATE WATCH</span><strong>Highest-priority active injury decisions</strong></div><small>Top-ranked, recently updated, non-reserve cases</small></div>
+            <div id="injuryPriorityBoard" class="inj-priority-grid"><div class="research-loading"><span></span><strong>Building triage board…</strong></div></div>
+          </section>
+
+          <section class="panel inj-panel">
+            <div class="toolbar inj-toolbar">
+              <input id="injurySearch" class="input" placeholder="Search player, team, injury or update…">
+              <select id="injuryPos" class="select"><option value="ALL">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select>
+              <select id="injuryStatus" class="select">
+                <option value="ALL">All statuses</option>
+                <option value="QUESTIONABLE">Questionable / watch</option>
+                <option value="DOUBTFUL">Doubtful / week-to-week</option>
+                <option value="OUT">Out</option>
+                <option value="RESERVE">IR / reserve</option>
+                <option value="RETURNING">Returning / cleared</option>
+              </select>
+              <select id="injuryTrend" class="select"><option value="ALL">All trends</option><option value="IMPROVING">Improving</option><option value="WORSENING">Worsening</option><option value="UNCHANGED">Unchanged</option><option value="NEW / UNKNOWN">New / unknown</option></select>
+              <select id="injuryScope" class="select"><option value="TOP500">Top 500</option><option value="TOP100">Top 100</option><option value="TOP250">Top 250</option></select>
+              <button id="injuryClear" class="small-btn" type="button">Clear</button>
+            </div>
+            <div class="inj-summary"><span id="injuryResultCount">Loading injury board…</span><span>Queueing a review never changes the live ranking.</span></div>
+            <div id="injuryGrid" class="inj-grid"><div class="research-loading"><span></span><strong>Loading medical intelligence…</strong><small>Comparing availability, dynasty severity and latest updates.</small></div></div>
+          </section>
+
+          <div class="danger-note"><strong>Injury rule:</strong> Availability and dynasty value are separate decisions. This page can flag a ranking review, but only the Ranking Move Queue can change the board after your approval.</div>
         </section>
 
         <section id="pageRankings" class="admin-page hide">
@@ -2441,6 +2510,7 @@ body:after{
   <script src="/admin.js?v=weekly-scanner-v27"></script>
   <script src="/admin-scanner-v2.js?v=2"></script>
   <script src="/admin-scanner-v3.js?v=4"></script>
+  <script src="/admin-injury-v1.js?v=1"></script>
 
   <style id="bbb-player-workspace-v1">
     body.pw-open{overflow:hidden}
