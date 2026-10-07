@@ -508,7 +508,7 @@ function researchIssueCompatible(owner,issue){
   return true;
 }
 function setResearchOwner(owner){
-  $('.research-owner-tab').forEach(b=>b.classList.toggle('active',b.dataset.researchOwner===owner));
+  $$('.research-owner-tab').forEach(b=>b.classList.toggle('active',b.dataset.researchOwner===owner));
   const issue=$('#researchIssue');
   if(issue&&!researchIssueCompatible(owner,issue.value))issue.value='ALL';
   renderResearchQueue();
