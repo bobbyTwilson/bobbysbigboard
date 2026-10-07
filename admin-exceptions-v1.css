@@ -1,30 +1,263 @@
-/* BBB Actionable Exception Manager v1 */
-.exception-manager-shell{margin-top:11px;border-top:1px solid rgba(167,124,255,.10);background:linear-gradient(180deg,rgba(11,9,19,.62),rgba(5,7,11,.78))}
-.exception-manager-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 15px;border-bottom:1px solid rgba(167,124,255,.08)}
-.exception-manager-head .copy span{display:block;color:#776b94;font-size:6px;font-weight:1000;letter-spacing:.14em}.exception-manager-head .copy h3{margin:4px 0 3px;color:#eee9f8;font-size:14px}.exception-manager-head .copy p{margin:0;color:#777184;font-size:8px;line-height:1.45}.exception-manager-actions{display:flex;align-items:center;gap:7px;flex:none}
-.exception-pulsing{animation:exceptionPulse 1s ease-in-out infinite}@keyframes exceptionPulse{50%{opacity:.5}}
-.exception-health-grid{border-bottom:1px solid rgba(167,124,255,.07)}
-.health-chip.exception-clickable{cursor:pointer;transition:.15s}.health-chip.exception-clickable:hover{transform:translateY(-1px);border-color:rgba(102,232,255,.25)!important}
+/* BBB Actionable Exception Manager v2 · readable player-art pass */
+.exception-manager-shell{
+  margin-top:14px;
+  border-top:1px solid rgba(167,124,255,.12);
+  background:linear-gradient(180deg,rgba(11,9,19,.66),rgba(5,7,11,.84))
+}
+.exception-manager-head{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:20px 22px;border-bottom:1px solid rgba(167,124,255,.09)
+}
+.exception-manager-head .copy span{
+  display:block;color:#9485b8;font-size:9px;font-weight:950;letter-spacing:.12em
+}
+.exception-manager-head .copy h3{
+  margin:7px 0 5px;color:#f4effc;font-size:21px;line-height:1.15;letter-spacing:-.025em
+}
+.exception-manager-head .copy p{
+  max-width:900px;margin:0;color:#aaa4b2;font-size:12px;line-height:1.55
+}
+.exception-manager-actions{display:flex;align-items:center;gap:9px;flex:none}
+.exception-manager-actions .hud-badge{font-size:9px!important;padding:8px 10px!important}
+.exception-manager-actions .small-btn{min-height:38px!important;font-size:9px!important;padding:9px 12px!important}
+.exception-pulsing{animation:exceptionPulse 1s ease-in-out infinite}
+@keyframes exceptionPulse{50%{opacity:.5}}
 
-.exception-overview{display:grid;grid-template-columns:150px repeat(4,minmax(0,1fr));gap:8px;padding:11px}
-.exception-score{grid-row:span 2;display:grid;place-items:center;text-align:center;min-height:128px;border:1px solid rgba(98,245,178,.14);border-radius:13px;background:radial-gradient(circle,rgba(98,245,178,.08),rgba(8,14,12,.72) 64%)}
-.exception-score span{display:block;color:#5c7e6b;font-size:6px;font-weight:1000;letter-spacing:.12em}.exception-score strong{display:block;margin-top:5px;color:#80efb2;font-size:34px;line-height:1}.exception-score small{display:block;margin-top:7px;color:#5f6f65;font-size:6px}
-.exception-stat{min-height:60px;padding:10px 11px;border:1px solid rgba(167,124,255,.08);border-radius:11px;background:rgba(9,10,16,.74)}.exception-stat span{display:block;color:#625d70;font-size:6px;font-weight:1000;letter-spacing:.09em}.exception-stat strong{display:block;margin-top:5px;color:#ddd7e9;font-size:18px;line-height:1}.exception-stat small{display:block;margin-top:4px;color:#5b5864;font-size:6px}.exception-stat.warn strong{color:#f3c978}.exception-stat.good strong{color:#71e7a5}.exception-stat.cyan strong{color:#7adfea}.exception-stat.violet strong{color:#b19aff}
+.exception-health-grid{border-bottom:1px solid rgba(167,124,255,.08)}
+.health-chip.exception-clickable{cursor:pointer;transition:.15s}
+.health-chip.exception-clickable:hover{transform:translateY(-1px);border-color:rgba(102,232,255,.28)!important}
+#pageReview .exception-health-grid .health-chip{min-height:68px!important;padding:12px 13px!important}
+#pageReview .exception-health-grid .health-chip span{font-size:8px!important;letter-spacing:.08em!important}
+#pageReview .exception-health-grid .health-chip strong{margin-top:5px;font-size:13px!important}
 
-.exception-source-banner{display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:center;margin:0 11px 11px;padding:11px 12px;border:1px solid rgba(244,207,124,.15);border-radius:11px;background:linear-gradient(90deg,rgba(103,75,19,.12),rgba(15,12,9,.66))}
-.exception-source-banner.hide{display:none}.exception-source-orb{width:39px;height:39px;display:grid;place-items:center;border:1px solid rgba(244,207,124,.18);border-radius:11px;color:#f4cf7c;background:rgba(244,207,124,.05);font-size:15px;font-weight:1000}.exception-source-banner span{display:block;color:#8d774b;font-size:6px;font-weight:1000;letter-spacing:.11em}.exception-source-banner strong{display:block;margin-top:3px;color:#d9c59c;font-size:9px}.exception-source-banner p{margin:4px 0 0;color:#7f7461;font-size:7px;line-height:1.45}.exception-source-banner button{min-height:34px;border:1px solid rgba(244,207,124,.15);border-radius:8px;background:rgba(111,80,19,.08);color:#d8bd81;padding:8px 9px;font-size:6px;font-weight:1000;cursor:pointer}
+.exception-overview{
+  display:grid;grid-template-columns:180px repeat(3,minmax(0,1fr));gap:10px;padding:14px
+}
+.exception-score{
+  grid-row:span 2;display:grid;place-items:center;text-align:center;min-height:156px;
+  border:1px solid rgba(98,245,178,.18);border-radius:15px;
+  background:radial-gradient(circle,rgba(98,245,178,.10),rgba(8,14,12,.76) 66%)
+}
+.exception-score span{display:block;color:#77a68d;font-size:9px;font-weight:950;letter-spacing:.1em}
+.exception-score strong{display:block;margin-top:8px;color:#87f0b7;font-size:42px;line-height:1}
+.exception-score small{display:block;margin-top:10px;color:#748279;font-size:8px;font-weight:800}
+.exception-stat{
+  min-height:72px;padding:13px 14px;border:1px solid rgba(167,124,255,.09);
+  border-radius:12px;background:rgba(10,11,18,.80)
+}
+.exception-stat span{display:block;color:#817b8b;font-size:8px;font-weight:950;letter-spacing:.08em}
+.exception-stat strong{display:block;margin-top:7px;color:#ece7f3;font-size:25px;line-height:1}
+.exception-stat small{display:block;margin-top:6px;color:#74717b;font-size:8px;line-height:1.35}
+.exception-stat.warn strong{color:#f3cb7f}.exception-stat.good strong{color:#77e9a9}
+.exception-stat.cyan strong{color:#82e2ed}.exception-stat.violet strong{color:#b9a2ff}
 
-.exception-checks{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;padding:0 11px 11px}.exception-check{display:grid;grid-template-columns:auto 1fr;gap:7px;align-items:center;padding:8px;border:1px solid rgba(167,124,255,.07);border-radius:9px;background:rgba(7,8,13,.72)}.exception-check i{width:24px;height:24px;display:grid;place-items:center;border-radius:7px;background:rgba(98,245,178,.04);color:#70e6a4;font-style:normal;font-size:8px}.exception-check.bad i{background:rgba(255,124,146,.05);color:#ff8ca0}.exception-check span{display:block;color:#5c5964;font-size:5.5px;font-weight:1000;letter-spacing:.07em}.exception-check strong{display:block;margin-top:3px;color:#aaa4b2;font-size:7px}
+.exception-source-banner{
+  display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+  margin:0 14px 14px;padding:15px 16px;border:1px solid rgba(244,207,124,.18);
+  border-radius:12px;background:linear-gradient(90deg,rgba(103,75,19,.13),rgba(15,12,9,.72))
+}
+.exception-source-banner.hide{display:none}
+.exception-source-orb{
+  width:46px;height:46px;display:grid;place-items:center;border:1px solid rgba(244,207,124,.22);
+  border-radius:12px;color:#f4cf7c;background:rgba(244,207,124,.06);font-size:18px;font-weight:1000
+}
+.exception-source-banner span{display:block;color:#b2955f;font-size:9px;font-weight:950;letter-spacing:.09em}
+.exception-source-banner strong{display:block;margin-top:4px;color:#ead6aa;font-size:13px}
+.exception-source-banner p{margin:6px 0 0;color:#a39782;font-size:11px;line-height:1.55}
+.exception-source-banner button{
+  min-height:38px;border:1px solid rgba(244,207,124,.18);border-radius:9px;
+  background:rgba(111,80,19,.09);color:#e3c78a;padding:9px 11px;font-size:8px;font-weight:950;cursor:pointer
+}
 
-.exception-workbench{margin:0 11px 11px;border:1px solid rgba(167,124,255,.09);border-radius:12px;overflow:hidden;background:rgba(5,7,11,.72);scroll-margin-top:92px}.exception-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-bottom:1px solid rgba(167,124,255,.07)}.exception-tabs{display:flex;gap:5px;overflow-x:auto}.exception-tab{flex:none;display:flex;align-items:center;gap:6px;min-height:31px;padding:7px 9px;border:1px solid rgba(167,124,255,.08);border-radius:8px;background:rgba(10,10,17,.72);color:#726c7d;font-size:6px;font-weight:1000;cursor:pointer}.exception-tab span{display:grid;place-items:center;min-width:18px;height:17px;padding:0 4px;border-radius:999px;background:rgba(167,124,255,.07);font-size:6px}.exception-tab.active{border-color:rgba(167,124,255,.26);background:rgba(102,67,177,.14);color:#d8cff0}.exception-search{display:flex;gap:5px;min-width:270px}.exception-search .input{min-height:31px;padding:7px 9px;font-size:8px}.exception-search .small-btn{min-height:31px}
-.exception-sortline{display:flex;justify-content:space-between;gap:10px;padding:7px 11px;border-bottom:1px solid rgba(167,124,255,.055);color:#5f5a67;font-size:6px}.exception-sortline strong{color:#827a92}
+.exception-checks{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 14px 14px
+}
+.exception-check{
+  display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;
+  padding:11px 12px;border:1px solid rgba(167,124,255,.08);border-radius:10px;background:rgba(7,8,13,.76)
+}
+.exception-check i{
+  width:31px;height:31px;display:grid;place-items:center;border-radius:8px;
+  background:rgba(98,245,178,.05);color:#78e8aa;font-style:normal;font-size:11px
+}
+.exception-check.bad i{background:rgba(255,124,146,.06);color:#ff91a4}
+.exception-check span{display:block;color:#7b7585;font-size:8px;font-weight:950;letter-spacing:.06em}
+.exception-check strong{display:block;margin-top:4px;color:#c9c3d0;font-size:11px}
 
-.exception-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:9px}.exception-card{display:flex;flex-direction:column;min-width:0;border:1px solid rgba(167,124,255,.08);border-radius:11px;background:linear-gradient(150deg,rgba(12,13,21,.90),rgba(6,8,12,.92));overflow:hidden}.exception-card.actionable{border-color:rgba(255,124,146,.17)}.exception-card.stale{border-color:rgba(244,207,124,.12)}.exception-card.resolved{border-color:rgba(98,245,178,.10);opacity:.84}.exception-card header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;padding:10px 11px;border-bottom:1px solid rgba(167,124,255,.06)}.exception-kind{width:43px;height:30px;display:grid;place-items:center;border-radius:8px;font-size:6px;font-weight:1000;letter-spacing:.08em}.exception-kind.team{color:#77e2ee;background:rgba(102,232,255,.055);border:1px solid rgba(102,232,255,.11)}.exception-kind.injury{color:#ff92a5;background:rgba(255,124,146,.05);border:1px solid rgba(255,124,146,.11)}.exception-id span{display:block;color:#625d70;font-size:5.5px;font-weight:1000}.exception-id h3{margin:3px 0 0;color:#e5e0ec;font-size:12px}.exception-card header em{font-style:normal;padding:4px 6px;border-radius:999px;font-size:5.5px;font-weight:1000;letter-spacing:.08em}.exception-card header em.stale{color:#d5b873;background:rgba(244,207,124,.06);border:1px solid rgba(244,207,124,.12)}.exception-card header em.actionable{color:#ff91a4;background:rgba(255,124,146,.06);border:1px solid rgba(255,124,146,.13)}
-.exception-compare{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(167,124,255,.055);border-bottom:1px solid rgba(167,124,255,.055)}.exception-compare>div{padding:10px;background:#090b11}.exception-compare span{display:block;color:#5d5967;font-size:5.5px;font-weight:1000;letter-spacing:.08em}.exception-compare strong{display:block;margin-top:5px;color:#d9d4e1;font-size:10px;line-height:1.25}.exception-compare .bbb strong{color:#7be7a9}.exception-compare .source strong{color:#d3b878}.exception-compare small{display:block;margin-top:5px;color:#54525b;font-size:5.5px}
-.exception-third-source,.exception-context,.exception-latest,.exception-resolution{padding:9px 11px;border-bottom:1px solid rgba(167,124,255,.055)}.exception-third-source span,.exception-context span,.exception-latest span,.exception-resolution span{display:block;color:#625d70;font-size:5.5px;font-weight:1000;letter-spacing:.08em}.exception-third-source strong,.exception-resolution strong{display:block;margin-top:4px;color:#aba6b2;font-size:8px}.exception-third-source p,.exception-context p,.exception-latest p{margin:4px 0 0;color:#807b88;font-size:7px;line-height:1.5}.exception-latest a{display:inline-block;margin:7px 7px 0 0;color:#78c6d2;font-size:5.5px;font-weight:1000;text-decoration:none}.exception-resolution small{display:block;margin-top:5px;color:#58555e;font-size:5.5px}
-.exception-card footer{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto;padding:9px 10px}.exception-card footer button{min-height:29px;padding:6px 8px;border:1px solid rgba(167,124,255,.11);border-radius:7px;background:rgba(18,16,27,.78);color:#9e97ad;font-size:5.5px;font-weight:1000;cursor:pointer}.exception-card footer button:hover{border-color:rgba(167,124,255,.28);color:#eee9f7}.exception-card footer .accept{border-color:rgba(98,245,178,.14);color:#80dca7;background:rgba(38,113,74,.07)}.exception-card footer .muted{border-color:rgba(244,207,124,.10);color:#a18b60}
-.exception-empty{grid-column:1/-1;min-height:220px;display:grid;place-items:center;align-content:center;text-align:center;padding:25px}.exception-empty>div{width:48px;height:48px;display:grid;place-items:center;border:1px solid rgba(98,245,178,.13);border-radius:15px;color:#75e4a6;background:rgba(98,245,178,.04);font-size:18px}.exception-empty strong{margin-top:10px;color:#cbc5d5;font-size:12px}.exception-empty p{max-width:560px;margin:6px auto 0;color:#686470;font-size:7.5px;line-height:1.55}.exception-empty button{margin-top:11px;min-height:31px;padding:7px 10px;border:1px solid rgba(244,207,124,.13);border-radius:8px;background:rgba(88,63,17,.07);color:#c3aa70;font-size:6px;font-weight:1000;cursor:pointer}
+.exception-workbench{
+  margin:0 14px 14px;border:1px solid rgba(167,124,255,.11);border-radius:13px;
+  overflow:hidden;background:rgba(5,7,11,.78);scroll-margin-top:92px
+}
+.exception-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 13px;border-bottom:1px solid rgba(167,124,255,.08)
+}
+.exception-tabs{display:flex;gap:7px;overflow-x:auto;padding-bottom:1px}
+.exception-tab{
+  flex:none;display:flex;align-items:center;gap:8px;min-height:38px;padding:9px 12px;
+  border:1px solid rgba(167,124,255,.10);border-radius:9px;background:rgba(10,10,17,.78);
+  color:#9a94a4;font-size:9px;font-weight:950;cursor:pointer
+}
+.exception-tab span{
+  display:grid;place-items:center;min-width:22px;height:20px;padding:0 5px;border-radius:999px;
+  background:rgba(167,124,255,.08);font-size:8px
+}
+.exception-tab.active{border-color:rgba(167,124,255,.30);background:rgba(102,67,177,.17);color:#eee8fb}
+.exception-search{display:flex;gap:6px;min-width:330px}
+.exception-search .input{min-height:38px!important;padding:9px 11px!important;font-size:11px!important}
+.exception-search .small-btn{min-height:38px!important;font-size:9px!important;padding:8px 11px!important}
+.exception-sortline{
+  display:flex;justify-content:space-between;gap:12px;padding:10px 14px;
+  border-bottom:1px solid rgba(167,124,255,.06);color:#7d7785;font-size:9px
+}
+.exception-sortline strong{color:#b5adbf}
 
-@media(max-width:1250px){.exception-overview{grid-template-columns:130px repeat(2,minmax(0,1fr))}.exception-score{grid-row:span 4}.exception-checks{grid-template-columns:repeat(3,1fr)}.exception-list{grid-template-columns:1fr}}
-@media(max-width:800px){.exception-manager-head{align-items:flex-start;flex-direction:column}.exception-overview{grid-template-columns:repeat(2,1fr)}.exception-score{grid-column:1/-1;grid-row:auto;min-height:100px}.exception-source-banner{grid-template-columns:auto 1fr}.exception-source-banner button{grid-column:1/-1}.exception-checks{grid-template-columns:repeat(2,1fr)}.exception-toolbar{align-items:stretch;flex-direction:column}.exception-search{min-width:0;width:100%}.exception-tabs{width:100%}.exception-compare{grid-template-columns:1fr}}
-@media(max-width:520px){.exception-overview{grid-template-columns:1fr 1fr}.exception-checks{grid-template-columns:1fr}.exception-list{padding:7px}.exception-card header{grid-template-columns:auto minmax(0,1fr)}.exception-card header em{grid-column:1/-1;justify-self:start}}
+.exception-list{
+  display:grid;grid-template-columns:1fr;gap:12px;padding:12px
+}
+.exception-card{
+  display:flex;flex-direction:column;min-width:0;border:1px solid rgba(167,124,255,.10);
+  border-radius:14px;background:linear-gradient(150deg,rgba(13,14,23,.94),rgba(7,9,14,.95));
+  overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.16)
+}
+.exception-card.actionable{border-color:rgba(255,124,146,.22)}
+.exception-card.stale{border-color:rgba(244,207,124,.16)}
+.exception-card.resolved{border-color:rgba(98,245,178,.14);opacity:.96}
+
+.exception-card header{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  min-height:118px;padding:12px 17px 10px 12px;border-bottom:1px solid rgba(167,124,255,.07);
+  background:linear-gradient(90deg,rgba(31,24,52,.16),transparent 55%)
+}
+.exception-player-main{display:flex;align-items:center;gap:15px;min-width:0}
+.exception-player-art{
+  position:relative;width:88px;height:104px;flex:none;overflow:hidden
+}
+.exception-player-art:before{
+  content:"";position:absolute;left:50%;bottom:6px;width:76px;height:76px;transform:translateX(-50%);
+  border-radius:50%;background:radial-gradient(circle,rgba(167,124,255,.18),rgba(102,232,255,.045) 58%,transparent 72%)
+}
+.exception-player-art img{
+  position:absolute;z-index:1;left:50%;bottom:-3px;height:105px;max-width:112px;width:auto;
+  transform:translateX(-50%);object-fit:contain;filter:drop-shadow(0 10px 13px rgba(0,0,0,.40))
+}
+.exception-player-art.fallback{
+  display:grid;place-items:center;width:78px;height:78px;margin:13px 5px;
+  border:1px solid rgba(167,124,255,.15);border-radius:20px;background:rgba(167,124,255,.05);
+  color:#c0a9f5;font-size:22px;font-weight:1000
+}
+.exception-player-art.fallback:before{display:none}
+.exception-id{min-width:0}
+.exception-id-meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:6px}
+.exception-id-meta>span:not(.exception-kind){color:#8f8898;font-size:10px;font-weight:850}
+.exception-id h3{margin:0;color:#f6f1fb;font-size:22px;line-height:1.08;letter-spacing:-.025em}
+.exception-id p{margin:5px 0 0;color:#8b8592;font-size:10px}
+.exception-kind{
+  width:auto;height:auto;display:inline-flex;align-items:center;justify-content:center;
+  min-width:54px;padding:5px 8px;border-radius:7px;font-size:8px;font-weight:1000;letter-spacing:.08em
+}
+.exception-kind.team{color:#83e7ef;background:rgba(102,232,255,.07);border:1px solid rgba(102,232,255,.14)}
+.exception-kind.injury{color:#ff9aad;background:rgba(255,124,146,.065);border:1px solid rgba(255,124,146,.14)}
+.exception-card header em{
+  flex:none;font-style:normal;padding:7px 9px;border-radius:999px;font-size:8px;font-weight:1000;letter-spacing:.07em
+}
+.exception-card header em.stale{color:#dfc27d;background:rgba(244,207,124,.08);border:1px solid rgba(244,207,124,.16)}
+.exception-card header em.actionable{color:#ff9aad;background:rgba(255,124,146,.08);border:1px solid rgba(255,124,146,.17)}
+.exception-card header em.resolved{color:#7ce8aa;background:rgba(98,245,178,.07);border:1px solid rgba(98,245,178,.14)}
+
+.exception-compare{
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(167,124,255,.07);
+  border-bottom:1px solid rgba(167,124,255,.06)
+}
+.exception-compare>div{padding:15px 17px;background:#090b11}
+.exception-compare span{display:block;color:#7d7787;font-size:9px;font-weight:1000;letter-spacing:.08em}
+.exception-compare strong{display:block;margin-top:7px;color:#e5dfe9;font-size:18px;line-height:1.25}
+.exception-compare .bbb strong{color:#84ecb1}
+.exception-compare .source strong{color:#e0c17b}
+.exception-compare small{display:block;margin-top:7px;color:#77727d;font-size:9px}
+
+.exception-third-source,.exception-context,.exception-latest,.exception-resolution{
+  padding:13px 17px;border-bottom:1px solid rgba(167,124,255,.06)
+}
+.exception-third-source{
+  display:grid;grid-template-columns:minmax(200px,.35fr) minmax(0,1fr);gap:18px;align-items:center;
+  background:rgba(102,232,255,.018)
+}
+.exception-third-source span,.exception-context span,.exception-latest span,.exception-resolution span{
+  display:block;color:#827b8c;font-size:9px;font-weight:1000;letter-spacing:.08em
+}
+.exception-third-source strong,.exception-resolution strong{
+  display:block;margin-top:5px;color:#d1cbd6;font-size:13px;line-height:1.4
+}
+.exception-third-source p,.exception-context p,.exception-latest p{
+  margin:6px 0 0;color:#aaa4b0;font-size:11px;line-height:1.6
+}
+.exception-third-source>p{margin:0}
+.exception-latest{background:rgba(255,255,255,.008)}
+.exception-latest p{max-width:1200px}
+.exception-source-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:9px}
+.exception-latest a{
+  display:inline-block;margin:0;color:#84d8e3;font-size:9px;font-weight:950;text-decoration:none
+}
+.exception-latest a:hover{text-decoration:underline}
+.exception-resolution small{display:block;margin-top:6px;color:#716c75;font-size:9px}
+
+.exception-card footer{
+  display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding:12px 14px;background:rgba(3,5,8,.34)
+}
+.exception-card footer button{
+  min-height:36px;padding:8px 11px;border:1px solid rgba(167,124,255,.14);border-radius:8px;
+  background:rgba(18,16,27,.84);color:#c0b8ca;font-size:8px;font-weight:1000;cursor:pointer
+}
+.exception-card footer button:hover{border-color:rgba(167,124,255,.34);color:#fff}
+.exception-card footer .accept{border-color:rgba(98,245,178,.18);color:#8de6b1;background:rgba(38,113,74,.08)}
+.exception-card footer .muted{border-color:rgba(244,207,124,.13);color:#c0a66f}
+
+.exception-empty{
+  min-height:250px;display:grid;place-items:center;align-content:center;text-align:center;padding:30px
+}
+.exception-empty>div{
+  width:56px;height:56px;display:grid;place-items:center;border:1px solid rgba(98,245,178,.16);
+  border-radius:16px;color:#80e7ad;background:rgba(98,245,178,.05);font-size:20px
+}
+.exception-empty strong{margin-top:12px;color:#ded8e5;font-size:16px}
+.exception-empty p{max-width:680px;margin:8px auto 0;color:#89838f;font-size:11px;line-height:1.6}
+.exception-empty button{
+  margin-top:14px;min-height:36px;padding:8px 11px;border:1px solid rgba(244,207,124,.16);
+  border-radius:8px;background:rgba(88,63,17,.08);color:#d2b878;font-size:8px;font-weight:1000;cursor:pointer
+}
+
+@media(max-width:1250px){
+  .exception-overview{grid-template-columns:160px repeat(2,minmax(0,1fr))}
+  .exception-score{grid-row:span 3}
+  .exception-checks{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:850px){
+  .exception-manager-head{align-items:flex-start;flex-direction:column}
+  .exception-overview{grid-template-columns:repeat(2,1fr)}
+  .exception-score{grid-column:1/-1;grid-row:auto;min-height:112px}
+  .exception-source-banner{grid-template-columns:auto 1fr}
+  .exception-source-banner button{grid-column:1/-1}
+  .exception-checks{grid-template-columns:1fr 1fr}
+  .exception-toolbar{align-items:stretch;flex-direction:column}
+  .exception-search{min-width:0;width:100%}
+  .exception-tabs{width:100%}
+  .exception-card header{align-items:flex-start}
+  .exception-player-art{width:76px;height:92px}
+  .exception-player-art img{height:92px}
+  .exception-id h3{font-size:18px}
+}
+@media(max-width:600px){
+  .exception-overview{grid-template-columns:1fr 1fr}
+  .exception-checks{grid-template-columns:1fr}
+  .exception-list{padding:8px}
+  .exception-card header{display:grid;grid-template-columns:1fr}
+  .exception-card header em{justify-self:start}
+  .exception-player-main{align-items:flex-start}
+  .exception-player-art{width:68px;height:84px}
+  .exception-player-art img{height:84px}
+  .exception-compare{grid-template-columns:1fr}
+  .exception-third-source{grid-template-columns:1fr;gap:8px}
+  .exception-card footer{display:grid;grid-template-columns:1fr 1fr}
+  .exception-card footer button{width:100%}
+}
