@@ -150,7 +150,7 @@
       '<div class="scanner-spotlight-grid">'+stars.map((x,i)=>{
         const sig=scannerSignalClass(x.signal),strength=scannerSignalStrength(x);
         return '<button type="button" class="scanner-spotlight-card '+sig+'" data-scanner-open="'+esc(x.player_key)+'" style="--signal:'+strength+'%">'+
-          '<span class="spotlight-number">0'+(i+1)+'</span>'+
+
           scannerArt(x.espn_id,x.name)+
           '<span class="spotlight-copy"><small>#'+x.overall_rank+' · '+esc(x.position)+' · '+esc(x.team||'FA')+'</small><strong>'+esc(x.name)+'</strong><em>'+esc(x.signal_reason||scannerBoxScore(x))+'</em></span>'+
           '<span class="spotlight-meter"><i></i></span>'+
