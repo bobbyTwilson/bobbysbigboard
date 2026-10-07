@@ -51,6 +51,8 @@ const uiPolishCss=await readFile('admin-ui-polish-v1.css','utf8');
 const uiPolishJs=await readFile('admin-ui-polish-v1.js','utf8');
 await writeFile(`${out}/static/admin-ui-polish-v1.css`,uiPolishCss);
 await writeFile(`${out}/static/admin-ui-polish-v1.js`,uiPolishJs);
+const adminDesignV2Css=await readFile('admin-design-system-v2.css','utf8');
+await writeFile(`${out}/static/admin-design-system-v2.css`,adminDesignV2Css);
 
 const config=JSON.parse(await readFile(`${out}/config.json`,'utf8'));
 config.routes=[
