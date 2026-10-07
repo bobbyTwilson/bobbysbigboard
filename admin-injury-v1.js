@@ -1,6 +1,6 @@
 /* BBB Injury Command Center v1 */
 (function(){
-  let injuryCenter=null,injuryLoaded=false,injuryLoading=false,injuryPreset='ACTIONABLE';
+  let injuryCenter=null,injuryLoaded=false,injuryLoading=false,injuryPreset='ACTIVE';
 
   function artUrl(id,sport='nfl'){
     if(!id)return '';
@@ -94,7 +94,7 @@
       if(injuryPreset==='RESERVE'&&statusGroup(x)!=='RESERVE')return false;
       if(injuryPreset==='RETURNING'&&!x.recent_return)return false;
       if(injuryPreset==='DNP'&&!(String(x.practice_participation||'').toLowerCase()==='dnp'&&!x.practice_is_stale))return false;
-      if(injuryPreset==='ACTIONABLE'&&(Number(x.current_score)<=0||statusGroup(x)==='RESERVE'))return false;
+      if(injuryPreset==='ACTIVE'&&Number(x.current_score)<=0)return false;
       const hay=(x.name+' '+(x.team||'')+' '+(x.position||'')+' '+(x.current_status||'')+' '+(x.injury_note||'')+' '+(x.latest_update_text||'')).toLowerCase();
       return !q||hay.includes(q);
     });
@@ -212,7 +212,7 @@
       el.addEventListener(sel==='#injurySearch'?'input':'change',renderCards);
     });
     $('#injuryClear')?.addEventListener('click',()=>{
-      $('#injurySearch').value='';$('#injuryPos').value='ALL';$('#injuryStatus').value='ALL';$('#injuryTrend').value='ALL';$('#injuryScope').value='TOP500';injuryPreset='ACTIONABLE';render();
+      $('#injurySearch').value='';$('#injuryPos').value='ALL';$('#injuryStatus').value='ALL';$('#injuryTrend').value='ALL';$('#injuryScope').value='TOP500';injuryPreset='ACTIVE';render();
     });
     $('#injuryRefresh')?.addEventListener('click',()=>load(true));
     $$('[data-inj-preset]').forEach(el=>{
