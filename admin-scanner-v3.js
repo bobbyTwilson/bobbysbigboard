@@ -163,15 +163,25 @@
     bindKpiButtons();
     bindFilterReset();
 
-    $$('.scanner-signal-meter small').forEach(el=>{
-      const card=el.closest('.scanner-card-v2');
-      if(!card)return;
+    $('.scanner-card-v2').forEach(card=>{
       const name=card.querySelector('.scanner-name-v2')?.textContent;
       const player=scannerRows().find(x=>x.name===name);
       if(!player)return;
       const raw=Math.abs(Number(player.signal_score)||0);
-      el.textContent='SIGNAL '+Math.min(10,raw)+'/10';
-      if(raw>10)el.title='Raw scanner score: '+raw;
+      const meter=card.querySelector('.scanner-signal-meter small');
+      if(meter){
+        meter.textContent='SIGNAL '+Math.min(10,raw)+'/10';
+        if(raw>10)meter.title='Raw scanner score: '+raw;
+      }
+      const trend=card.querySelector('.scanner-signal-panel strong');
+      if(trend){
+        const parts=[];
+        if(Math.abs(Number(player.target_share_delta)||0)>=.01)parts.push(trendToken(player.target_share_delta,'pct','target share'));
+        if(Math.abs(Number(player.snap_pct_delta)||0)>=.01)parts.push(trendToken(player.snap_pct_delta,'pct','snaps'));
+        if(Math.abs(Number(player.opportunity_delta)||0)>=1)parts.push(trendToken(player.opportunity_delta,'int','opportunities'));
+        if(Math.abs(Number(player.ppr_delta)||0)>=1)parts.push(trendToken(player.ppr_delta,'num','PPR'));
+        trend.textContent=parts.filter(Boolean).slice(0,3).join(' · ')||'No major prior-week change';
+      }
     });
   };
 })();
