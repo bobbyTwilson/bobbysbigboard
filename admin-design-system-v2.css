@@ -1,0 +1,549 @@
+/* BBB Admin Design System v2
+   Readability-first command center refresh.
+   Neutral cyberpunk surfaces, semantic accent colors, larger type, zero radar art. */
+
+:root{
+  --bbb-bg:#05080a;
+  --bbb-bg-2:#070c0f;
+  --bbb-panel:#0a1113;
+  --bbb-panel-2:#0d1517;
+  --bbb-panel-3:#10191b;
+  --bbb-line:rgba(151,191,170,.14);
+  --bbb-line-strong:rgba(151,191,170,.24);
+  --bbb-text:#f1f6f3;
+  --bbb-text-2:#c3d0c9;
+  --bbb-text-3:#95a59d;
+  --bbb-green:#53e69a;
+  --bbb-cyan:#62d6e8;
+  --bbb-blue:#7fa8ff;
+  --bbb-amber:#e7b964;
+  --bbb-red:#ef7686;
+  --bbb-violet:#ad98e8;
+  --bbb-shadow:0 18px 46px rgba(0,0,0,.28);
+  --bbb-radius:14px;
+}
+
+/* ---------- GLOBAL BACKGROUND: NO RADAR / NO CIRCLES ---------- */
+html,body{
+  background:var(--bbb-bg)!important;
+  color:var(--bbb-text)!important;
+}
+body{
+  background:
+    linear-gradient(118deg,transparent 0 61%,rgba(98,214,232,.018) 61.15%,transparent 61.35%),
+    linear-gradient(72deg,transparent 0 68%,rgba(83,230,154,.016) 68.15%,transparent 68.35%),
+    linear-gradient(180deg,#05080a 0%,#070c0f 46%,#05080a 100%)!important;
+}
+body:before{
+  content:""!important;
+  position:fixed!important;
+  inset:0!important;
+  z-index:0!important;
+  pointer-events:none!important;
+  background:
+    repeating-linear-gradient(90deg,transparent 0 71px,rgba(98,214,232,.018) 72px 73px),
+    repeating-linear-gradient(0deg,transparent 0 71px,rgba(83,230,154,.013) 72px 73px)!important;
+  opacity:.52!important;
+}
+body:after{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+#appView{
+  background:transparent!important;
+  min-height:100vh!important;
+}
+#appView:before{
+  content:""!important;
+  position:fixed!important;
+  inset:70px 0 0!important;
+  z-index:0!important;
+  pointer-events:none!important;
+  background:
+    linear-gradient(126deg,transparent 0 73%,rgba(98,214,232,.02) 73.15%,transparent 73.35%),
+    linear-gradient(54deg,transparent 0 81%,rgba(83,230,154,.018) 81.15%,transparent 81.35%),
+    linear-gradient(180deg,rgba(255,255,255,.004),transparent 42%)!important;
+}
+
+/* Hard-disable every legacy radar/orbit decoration. */
+.hero-holo,.holo-orbit,.holo-core,.holo-node,.holo-scan,
+.prospect-radar,.research-radar,.mini-radar,
+[class*="radar"]:not(.rank-radar-data),
+[class*="orbit"]{
+  display:none!important;
+}
+[class*="radar"]:before,[class*="radar"]:after,
+[class*="orbit"]:before,[class*="orbit"]:after{
+  content:none!important;
+  display:none!important;
+}
+
+/* ---------- TYPOGRAPHY ---------- */
+#appView{
+  font-size:14px!important;
+}
+#appView .eyebrow,
+#appView .panel-kicker{
+  font-size:9px!important;
+  line-height:1.25!important;
+  letter-spacing:.11em!important;
+  color:#78958a!important;
+}
+#appView h1{font-size:clamp(30px,2.6vw,44px)!important;line-height:1.04!important}
+#appView h2{font-size:22px!important;line-height:1.15!important}
+#appView h3{font-size:17px!important;line-height:1.2!important}
+#appView p{line-height:1.58!important}
+#appView small{line-height:1.4!important}
+
+/* ---------- SHARED PAGE HEADERS ---------- */
+#appView .admin-page>.page-head{
+  min-height:104px!important;
+  padding:19px 22px!important;
+  margin-bottom:12px!important;
+  border:1px solid var(--bbb-line)!important;
+  border-radius:var(--bbb-radius)!important;
+  background:
+    linear-gradient(125deg,rgba(12,20,21,.97),rgba(8,14,16,.98))!important;
+  box-shadow:var(--bbb-shadow)!important;
+}
+#appView .admin-page>.page-head h1{
+  margin:5px 0 7px!important;
+  color:var(--bbb-text)!important;
+}
+#appView .admin-page>.page-head p{
+  max-width:900px!important;
+  color:var(--bbb-text-3)!important;
+  font-size:12px!important;
+}
+#appView .admin-page>.page-head:before{
+  content:""!important;
+  position:absolute!important;
+  left:0!important;top:16px!important;bottom:16px!important;
+  width:2px!important;border-radius:2px!important;
+  background:var(--page-accent,var(--bbb-green))!important;
+  box-shadow:0 0 14px color-mix(in srgb,var(--page-accent,var(--bbb-green)) 34%,transparent)!important;
+}
+
+/* ---------- HEROES: SAME SHELL, DIFFERENT ACCENT ---------- */
+#pageDashboard .cyber-hero,
+#pageScanner .scanner-hero,
+#pageInjuries .inj-hero,
+#pageContent .content-hero,
+#pageAutomations .auto-hero,
+#pageProspects .prospect-hero,
+#pageResearch .research-hero{
+  position:relative!important;
+  overflow:hidden!important;
+  border:1px solid var(--bbb-line)!important;
+  border-radius:16px!important;
+  background:
+    linear-gradient(90deg,transparent 0 72%,rgba(98,214,232,.018) 72.2%,transparent 72.4%),
+    linear-gradient(125deg,rgba(11,19,20,.98),rgba(7,13,15,.99))!important;
+  box-shadow:var(--bbb-shadow),inset 0 1px 0 rgba(255,255,255,.018)!important;
+}
+#pageDashboard .cyber-hero:before,
+#pageScanner .scanner-hero:before,
+#pageInjuries .inj-hero:before,
+#pageContent .content-hero:before,
+#pageAutomations .auto-hero:before,
+#pageProspects .prospect-hero:before,
+#pageResearch .research-hero:before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  pointer-events:none!important;
+  opacity:.38!important;
+  background:
+    repeating-linear-gradient(90deg,transparent 0 54px,rgba(98,214,232,.022) 55px 56px),
+    linear-gradient(122deg,transparent 0 66%,rgba(255,255,255,.015) 66.15%,transparent 66.35%)!important;
+}
+#pageDashboard .cyber-hero:after,
+#pageScanner .scanner-hero:after,
+#pageInjuries .inj-hero:after,
+#pageContent .content-hero:after,
+#pageAutomations .auto-hero:after,
+#pageProspects .prospect-hero:after,
+#pageResearch .research-hero:after{
+  content:""!important;
+  position:absolute!important;
+  left:0!important;right:0!important;bottom:0!important;
+  height:1px!important;
+  background:linear-gradient(90deg,transparent,var(--page-accent,var(--bbb-green)),transparent)!important;
+  opacity:.58!important;
+}
+
+/* ---------- PANELS / CARDS ---------- */
+#appView .panel,
+#appView .nexus-block,
+#appView .scanner-panel,
+#appView .content-right-now,
+#appView .content-youtube-dna,
+#appView .exception-workbench,
+#appView .auto-panel{
+  border:1px solid var(--bbb-line)!important;
+  border-radius:var(--bbb-radius)!important;
+  background:linear-gradient(180deg,rgba(10,17,19,.97),rgba(7,12,14,.98))!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.18)!important;
+}
+#appView .panel-head,
+#appView .nexus-block-head{
+  border-bottom:1px solid rgba(151,191,170,.09)!important;
+  background:rgba(255,255,255,.006)!important;
+}
+#appView .panel-head h2,
+#appView .nexus-block-head strong{
+  color:var(--bbb-text)!important;
+}
+#appView .panel-head span,
+#appView .nexus-block-head small{
+  color:var(--bbb-text-3)!important;
+  font-size:10px!important;
+}
+
+/* ---------- BUTTONS / CONTROLS ---------- */
+#appView button,
+#appView .small-btn,
+#appView .refresh-btn,
+#appView .content-action,
+#appView .pw-action{
+  min-height:38px!important;
+  border-radius:9px!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  letter-spacing:.02em!important;
+}
+#appView .small-btn,
+#appView .refresh-btn,
+#appView .pw-action{
+  padding:8px 11px!important;
+  border:1px solid var(--bbb-line)!important;
+  background:rgba(11,19,20,.94)!important;
+  color:var(--bbb-text-2)!important;
+}
+#appView .small-btn:hover,
+#appView .refresh-btn:hover,
+#appView .pw-action:hover{
+  border-color:rgba(98,214,232,.30)!important;
+  background:rgba(15,26,27,.98)!important;
+  color:#fff!important;
+}
+#appView .input,
+#appView .select,
+#appView .textarea{
+  min-height:40px!important;
+  padding:9px 11px!important;
+  border:1px solid var(--bbb-line)!important;
+  border-radius:9px!important;
+  background:#081013!important;
+  color:var(--bbb-text)!important;
+  font-size:11px!important;
+}
+#appView .input::placeholder,
+#appView .textarea::placeholder{
+  color:#72837b!important;
+  opacity:1!important;
+}
+#appView .input:focus,
+#appView .select:focus,
+#appView .textarea:focus{
+  outline:none!important;
+  border-color:rgba(98,214,232,.38)!important;
+  box-shadow:0 0 0 3px rgba(98,214,232,.05)!important;
+}
+
+/* ---------- PILLS / BADGES ---------- */
+#appView .hud-badge,
+#appView .content-format-row>span,
+#appView .scanner-signal,
+#appView .inj-status,
+#appView .status-pill,
+#appView .pill{
+  min-height:27px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  padding:0 9px!important;
+  border-radius:999px!important;
+  font-size:8px!important;
+  font-weight:950!important;
+  letter-spacing:.06em!important;
+}
+
+/* ---------- TABLES ---------- */
+#appView .rank-table{
+  width:100%!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+}
+#appView .rank-table th{
+  padding:11px 12px!important;
+  color:#7f9188!important;
+  font-size:9px!important;
+  letter-spacing:.08em!important;
+  border-bottom:1px solid rgba(151,191,170,.11)!important;
+  background:#081013!important;
+}
+#appView .rank-table td{
+  padding:12px!important;
+  color:var(--bbb-text-2)!important;
+  font-size:11px!important;
+  border-bottom:1px solid rgba(151,191,170,.07)!important;
+  background:rgba(9,16,18,.70)!important;
+}
+#appView .rank-table tbody tr:hover td{
+  background:rgba(14,24,25,.94)!important;
+}
+#appView .player-name{
+  color:#edf6f1!important;
+  font-size:12px!important;
+  font-weight:900!important;
+}
+
+/* ---------- METRICS ---------- */
+#appView .metric,
+#appView .cyber-metric,
+#appView .nexus-kpi,
+#appView .content-kpi,
+#appView .inj-kpi,
+#appView .scanner-kpi-btn,
+#appView .auto-kpi,
+#appView .exception-stat{
+  border:1px solid var(--bbb-line)!important;
+  background:linear-gradient(145deg,rgba(11,19,20,.98),rgba(7,13,15,.98))!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.14)!important;
+}
+#appView .metric span,
+#appView .cyber-metric span,
+#appView .nexus-kpi span,
+#appView .content-kpi span,
+#appView .inj-kpi span,
+#appView .scanner-kpi-btn span,
+#appView .auto-kpi span,
+#appView .exception-stat span{
+  color:#81958a!important;
+  font-size:9px!important;
+}
+#appView .metric strong,
+#appView .cyber-metric strong,
+#appView .nexus-kpi strong,
+#appView .content-kpi strong,
+#appView .inj-kpi strong,
+#appView .scanner-kpi-btn strong,
+#appView .auto-kpi strong,
+#appView .exception-stat strong{
+  color:#f2f7f4!important;
+}
+#appView .metric small,
+#appView .cyber-metric small,
+#appView .nexus-kpi small,
+#appView .content-kpi small,
+#appView .inj-kpi small,
+#appView .scanner-kpi-btn small,
+#appView .auto-kpi small,
+#appView .exception-stat small{
+  color:#788b81!important;
+  font-size:8px!important;
+}
+
+/* ---------- NAV / COMMAND DECK ---------- */
+#appView .side-card{
+  border:1px solid rgba(151,191,170,.12)!important;
+  background:linear-gradient(180deg,rgba(8,15,17,.96),rgba(6,11,13,.98))!important;
+}
+#appView .nav-btn{
+  min-height:50px!important;
+  font-size:10.5px!important;
+}
+#appView .nav-label svg{
+  width:25px!important;height:25px!important;
+}
+#appView .nav-btn>span:last-child{
+  font-size:8px!important;
+  color:#879b90!important;
+}
+
+/* ---------- DASHBOARD ---------- */
+#pageDashboard .cyber-hero-copy{
+  width:min(860px,74%)!important;
+  padding:30px 30px!important;
+}
+#pageDashboard .cyber-hero h1{
+  font-size:clamp(46px,4.1vw,66px)!important;
+}
+#pageDashboard .cyber-hero p{
+  max-width:700px!important;
+  color:#a7b6ae!important;
+  font-size:12px!important;
+}
+#pageDashboard .hero-telemetry span{
+  min-height:30px!important;
+  padding:0 10px!important;
+  color:#879b91!important;
+  font-size:8px!important;
+}
+#pageDashboard .dashboard-nexus{
+  border-color:var(--bbb-line)!important;
+  background:linear-gradient(145deg,rgba(10,17,19,.98),rgba(7,12,14,.99))!important;
+}
+#pageDashboard .nexus-head h2{font-size:24px!important}
+#pageDashboard .nexus-head p{font-size:12px!important;color:#9aaba2!important}
+#pageDashboard .nexus-next-copy h3{font-size:20px!important}
+#pageDashboard .nexus-next-copy p{font-size:11px!important;color:#9daea5!important}
+#pageDashboard .nexus-signal-card{
+  border-color:var(--bbb-line)!important;
+  background:rgba(9,16,18,.86)!important;
+}
+#pageDashboard .nexus-signal-card strong{font-size:13px!important}
+#pageDashboard .nexus-signal-card p{font-size:10px!important;color:#91a39a!important}
+#pageDashboard .nexus-system{
+  background:rgba(9,16,18,.88)!important;
+  border-color:var(--bbb-line)!important;
+}
+
+/* ---------- WEEKLY SCANNER ---------- */
+#pageScanner{--page-accent:var(--bbb-cyan)}
+#pageScanner .scanner-hero p{font-size:12px!important;color:#9eafa6!important}
+#pageScanner .scanner-spotlight-card,
+#pageScanner .scanner-card-v2{
+  border-color:var(--bbb-line)!important;
+  background:linear-gradient(145deg,rgba(10,18,20,.98),rgba(7,13,15,.99))!important;
+}
+#pageScanner .scanner-player-copy strong,
+#pageScanner .spotlight-copy strong{font-size:16px!important;color:#f0f6f3!important}
+#pageScanner .scanner-player-topline,
+#pageScanner .spotlight-copy small{font-size:9px!important;color:#859990!important}
+#pageScanner .scanner-boxscore-v2{font-size:11px!important;color:#b7c4bd!important}
+#pageScanner .scanner-stat span{font-size:9px!important}
+#pageScanner .scanner-stat strong{font-size:14px!important}
+#pageScanner .scanner-stat small{font-size:9px!important}
+#pageScanner .scanner-signal-panel strong{font-size:11px!important}
+#pageScanner .scanner-signal-panel small{font-size:10px!important}
+
+/* ---------- INJURY CENTER ---------- */
+#pageInjuries{--page-accent:var(--bbb-red)}
+#pageInjuries .inj-hero p{font-size:12px!important;color:#a4b0aa!important}
+#pageInjuries .inj-card,
+#pageInjuries .inj-priority-card{
+  border-color:var(--bbb-line)!important;
+  background:linear-gradient(145deg,rgba(11,18,19,.98),rgba(8,13,15,.99))!important;
+}
+#pageInjuries .inj-card h3,
+#pageInjuries .inj-priority-card h3{font-size:17px!important}
+#pageInjuries .inj-latest p{font-size:12px!important;color:#b1beb8!important}
+#pageInjuries .inj-meta-row{font-size:10px!important;color:#8fa198!important}
+#pageInjuries .inj-section-label{font-size:9px!important}
+
+/* ---------- CONTENT INTELLIGENCE ---------- */
+#pageContent{--page-accent:var(--bbb-violet)}
+#pageContent .content-hero p{font-size:12px!important;color:#a3b0aa!important}
+#pageContent .content-card,
+#pageContent .content-now-card,
+#pageContent .content-prospect-card,
+#pageContent .content-youtube-leaders{
+  border-color:var(--bbb-line)!important;
+  background:linear-gradient(145deg,rgba(11,18,20,.98),rgba(8,13,15,.99))!important;
+}
+#pageContent .content-player button{
+  color:#f0f5f2!important;
+  font-size:20px!important;
+}
+#pageContent .content-player p{font-size:11px!important;color:#a7b7af!important}
+#pageContent .content-angle h4{font-size:15px!important;color:#e7efe9!important}
+#pageContent .content-angle p{font-size:11px!important;color:#a9b6b0!important}
+#pageContent .content-youtube-row strong{font-size:10px!important}
+#pageContent .content-youtube-row span{font-size:8.5px!important}
+#pageContent .content-format{color:#c7b9ee!important}
+
+/* ---------- AUTOMATION ---------- */
+#pageAutomations{--page-accent:var(--bbb-blue)}
+#pageAutomations .auto-hero p{font-size:12px!important;color:#9dafa6!important}
+#pageAutomations .auto-source-card,
+#pageAutomations .auto-job-card,
+#pageAutomations .auto-run-row{
+  border-color:var(--bbb-line)!important;
+  background:rgba(9,16,18,.90)!important;
+}
+#pageAutomations .auto-source-card span,
+#pageAutomations .auto-job-card span{font-size:9px!important}
+#pageAutomations .auto-source-card small,
+#pageAutomations .auto-job-card small,
+#pageAutomations .auto-run-row small{font-size:9px!important;color:#879990!important}
+
+/* ---------- PROSPECT / RESEARCH ---------- */
+#pageProspects{--page-accent:#78e8b6}
+#pageResearch{--page-accent:var(--bbb-amber)}
+#pageProspects .prospect-hero h2,
+#pageResearch .research-hero h2{font-size:30px!important}
+#pageProspects .prospect-hero p,
+#pageResearch .research-hero p{
+  max-width:860px!important;
+  font-size:12px!important;
+  color:#9baca3!important;
+}
+#pageResearch .research-hero-pills span{
+  min-height:30px!important;
+  font-size:8px!important;
+  color:#9bb0a4!important;
+}
+
+/* ---------- REVIEW QUEUE / EXCEPTIONS ---------- */
+#pageReview{--page-accent:#ff9c88}
+#pageReview .exception-manager-head .copy h3{font-size:19px!important}
+#pageReview .exception-manager-head .copy p{font-size:11px!important}
+#pageReview .exception-id h3{font-size:19px!important}
+#pageReview .exception-id p{font-size:10px!important}
+#pageReview .exception-compare span{font-size:9px!important}
+#pageReview .exception-compare strong{font-size:17px!important}
+#pageReview .exception-compare small{font-size:9px!important}
+#pageReview .exception-third-source p,
+#pageReview .exception-context p,
+#pageReview .exception-latest p{font-size:11px!important;color:#acb9b2!important}
+
+/* ---------- PLAYER WORKSPACE ---------- */
+#bbbPlayerWorkspace{
+  border-color:var(--bbb-line-strong)!important;
+  background:#060b0d!important;
+}
+#bbbPlayerWorkspace .pw-shell{
+  background:linear-gradient(180deg,#091012,#070c0e)!important;
+}
+#bbbPlayerWorkspace .pw-title h2{font-size:22px!important}
+#bbbPlayerWorkspace .pw-title p{font-size:11px!important;color:#99aaa1!important}
+#bbbPlayerWorkspace .pw-tab{font-size:9px!important}
+#bbbPlayerWorkspace .pw-panel{
+  border-color:var(--bbb-line)!important;
+  background:linear-gradient(160deg,rgba(10,17,19,.98),rgba(7,12,14,.99))!important;
+}
+#bbbPlayerWorkspace .pw-panel-head h3{font-size:15px!important}
+#bbbPlayerWorkspace .pw-panel-head span{font-size:9px!important}
+#bbbPlayerWorkspace .pw-copy{font-size:11px!important;color:#aab8b1!important}
+#bbbPlayerWorkspace .pw-table td{font-size:10px!important}
+#bbbPlayerWorkspace .pw-table th{font-size:9px!important}
+
+/* ---------- REMOVE OVER-FADED REAL UI ---------- */
+#appView .muted,
+#appView .helper-text,
+#appView .sub-label{
+  color:#899c92!important;
+  opacity:1!important;
+}
+#appView [style*="opacity:.5"],
+#appView [style*="opacity: .5"]{
+  opacity:.72!important;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media(max-width:1100px){
+  #appView .admin-page>.page-head{padding:17px!important}
+  #pageDashboard .cyber-hero-copy{width:100%!important}
+}
+@media(max-width:700px){
+  #appView{font-size:13px!important}
+  #appView .admin-page>.page-head{min-height:92px!important}
+  #pageDashboard .cyber-hero h1{font-size:38px!important}
+  #pageDashboard .cyber-hero-copy{padding:22px 18px!important}
+  #appView .rank-table td{font-size:10px!important}
+  #appView .rank-table th{font-size:8px!important}
+}
