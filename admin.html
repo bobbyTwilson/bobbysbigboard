@@ -1820,6 +1820,7 @@ body:after{
   <link rel="stylesheet" href="/admin-scanner-v3.css?v=3">
   <link rel="stylesheet" href="/admin-injury-v1.css?v=1">
   <link rel="stylesheet" href="/admin-injury-v2.css?v=2">
+  <link rel="stylesheet" href="/admin-content-v1.css?v=1">
 </head>
 <body>
   <section id="loginView" class="login-wrap">
@@ -1877,12 +1878,13 @@ body:after{
           <button class="nav-btn" data-page="moves">Ranking Moves <span id="moveNavCount">0</span></button>
           <button class="nav-btn" data-page="scanner">Weekly Scanner <span id="scannerNavCount">W—</span></button>
           <button class="nav-btn" data-page="injuries">Injury Center <span id="injuryNavCount">—</span></button>
-          <button class="nav-btn" data-page="rankings">Rankings Manager <span>05</span></button>
-          <button class="nav-btn" data-page="players">Player Editor <span>06</span></button>
-          <button class="nav-btn" data-page="prospects">Prospect Lab <span id="prospectNavCount">07</span></button>
-          <button class="nav-btn" data-page="research">Research Queue <span id="researchNavCount">08</span></button>
-          <button class="nav-btn" data-page="eligibility">Class Audit <span id="classAuditNavCount">09</span></button>
-          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">10</span></button>
+          <button class="nav-btn" data-page="content">Content Intelligence <span id="contentNavCount">—</span></button>
+          <button class="nav-btn" data-page="rankings">Rankings Manager <span>06</span></button>
+          <button class="nav-btn" data-page="players">Player Editor <span>07</span></button>
+          <button class="nav-btn" data-page="prospects">Prospect Lab <span id="prospectNavCount">08</span></button>
+          <button class="nav-btn" data-page="research">Research Queue <span id="researchNavCount">09</span></button>
+          <button class="nav-btn" data-page="eligibility">Class Audit <span id="classAuditNavCount">10</span></button>
+          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">11</span></button>
         </div>
         <div class="side-note"><strong>SECURE COMMAND LINK</strong><span>Every write is audited. The board moves only when you command it.</span></div>
       </aside>
@@ -2160,6 +2162,95 @@ body:after{
           </section>
 
           <div class="danger-note"><strong>Injury rule:</strong> Availability and dynasty value are separate decisions. This page can flag a ranking review, but only the Ranking Move Queue can change the board after your approval.</div>
+        </section>
+
+        <section id="pageContent" class="admin-page hide">
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">CREATOR INTELLIGENCE · FOOTBALL SIGNALS → CONTENT</div>
+              <h1>Content Intelligence</h1>
+              <p>Turn usage, rankings, market disagreement, injuries and prospect research into a prioritized answer to one question: what should Bobby make next?</p>
+            </div>
+            <div class="content-head-actions">
+              <span id="contentLoadState" class="hud-badge good">LIVE SIGNALS</span>
+              <button id="contentRefresh" class="refresh-btn" type="button">Refresh Intelligence</button>
+            </div>
+          </div>
+
+          <section class="content-hero">
+            <div class="content-hero-copy">
+              <div class="panel-kicker">FOOTBALL SIGNAL → CREATOR DECISION</div>
+              <h2>What should <span>Bobby make next?</span></h2>
+              <p>Content Score combines weekly role changes, advanced usage, BBB-versus-market disagreement, recent rank movement, breaking player intel and prior BBB coverage. Strong box scores with weak roles are pushed into the noise board instead of blindly becoming video ideas.</p>
+              <div class="content-hero-pills"><span>WEEKLY USAGE</span><span>MARKET EDGE</span><span>RANK MOVEMENT</span><span>INJURY NEWS</span><span>PROSPECT RESEARCH</span><span>COVERAGE HISTORY</span></div>
+            </div>
+            <div class="content-orb" aria-hidden="true"><small>CREATOR OPS</small><strong>NEXT UP</strong><span id="contentWeek">WEEK —</span><i></i></div>
+          </section>
+
+          <div class="content-kpis">
+            <button type="button" class="content-kpi active" data-content-preset="TOP"><span>TOP OPPORTUNITIES</span><strong id="contentTop">—</strong><small>SCORE 70+</small></button>
+            <button type="button" class="content-kpi" data-content-preset="FILM"><span>FILM RADAR</span><strong id="contentFilm">—</strong><small>LONG-FORM CANDIDATES</small></button>
+            <button type="button" class="content-kpi" data-content-preset="NEWS"><span>NEWS / REACTION</span><strong id="contentNews">—</strong><small>TIME-SENSITIVE ANGLES</small></button>
+            <button type="button" class="content-kpi" data-content-preset="MARKET"><span>MARKET DEBATES</span><strong id="contentMarket">—</strong><small>BBB VS CONSENSUS</small></button>
+            <button type="button" class="content-kpi" data-content-preset="PROSPECTS"><span>PROSPECT SPOTLIGHTS</span><strong id="contentProspects">—</strong><small>RESEARCH READY</small></button>
+            <button type="button" class="content-kpi" data-content-preset="QUEUE"><span>CONTENT QUEUE</span><strong id="contentQueueCount">—</strong><small>PLANNED / IN PROGRESS</small></button>
+          </div>
+
+          <section class="content-right-now">
+            <div class="content-right-head"><div><span>RIGHT NOW</span><strong>Highest-priority content opportunities</strong></div><small>Role-weighted · coverage-aware · dynasty-first</small></div>
+            <div id="contentRightNow" class="content-now-grid"><div class="research-loading"><span></span><strong>Finding the next video…</strong></div></div>
+          </section>
+
+          <div class="content-view-tabs">
+            <button type="button" class="active" data-content-view="opportunities">OPPORTUNITIES</button>
+            <button type="button" data-content-view="prospects">PROSPECT SPOTLIGHTS</button>
+            <button type="button" data-content-view="noise">DON'T CHASE THIS</button>
+            <button type="button" data-content-view="queue">CONTENT QUEUE</button>
+          </div>
+
+          <section id="contentViewOpportunities" class="content-view panel">
+            <div class="toolbar content-toolbar">
+              <input id="contentSearch" class="input" placeholder="Search player, angle, signal or team…">
+              <select id="contentPos" class="select"><option value="ALL">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select>
+              <select id="contentFormat" class="select">
+                <option value="ALL">All content types</option>
+                <option value="FILM BREAKDOWN">Film breakdown</option>
+                <option value="SHORT">Short</option>
+                <option value="NEWS / REACTION">News / reaction</option>
+                <option value="RANKING DEBATE">Ranking debate</option>
+                <option value="RANKING UPDATE">Ranking update</option>
+                <option value="WATCH">Watch</option>
+              </select>
+              <select id="contentCoverage" class="select">
+                <option value="ALL">All coverage</option>
+                <option value="NEVER LOGGED">Never logged</option>
+                <option value="JUST COVERED">Just covered</option>
+                <option value="RECENTLY COVERED">Recently covered</option>
+                <option value="PREVIOUSLY COVERED">Previously covered</option>
+                <option value="COVERED BEFORE">Covered before</option>
+              </select>
+              <button id="contentClear" class="small-btn" type="button">Clear</button>
+            </div>
+            <div class="content-summary"><span id="contentResultCount">Loading creator opportunities…</span><span>Queueing content never changes rankings or player data.</span></div>
+            <div id="contentOpportunityGrid" class="content-opportunity-grid"><div class="research-loading"><span></span><strong>Scoring content opportunities…</strong><small>Usage + market + rankings + news + coverage.</small></div></div>
+          </section>
+
+          <section id="contentViewProspects" class="content-view panel hide">
+            <div class="content-summary"><span>Research-backed prospect ideas</span><span>Grades, comps and research confidence drive this board.</span></div>
+            <div id="contentProspectGrid" class="content-prospect-grid"><div class="research-loading"><span></span><strong>Building prospect radar…</strong></div></div>
+          </section>
+
+          <section id="contentViewNoise" class="content-view panel hide">
+            <div class="content-summary"><span>Don't waste a video</span><span>Big fantasy production that may not be supported by sustainable role.</span></div>
+            <div id="contentNoiseGrid" class="content-noise-grid"><div class="research-loading"><span></span><strong>Checking box score vs role…</strong></div></div>
+          </section>
+
+          <section id="contentViewQueue" class="content-view panel hide">
+            <div class="content-summary"><span>Creator pipeline</span><span>Move ideas from planned → in progress → published without touching football data.</span></div>
+            <div id="contentQueueGrid" class="content-queue-grid"><div class="research-loading"><span></span><strong>Loading content queue…</strong></div></div>
+          </section>
+
+          <div class="danger-note"><strong>Content rule:</strong> Content Intelligence recommends and prioritizes. It does not alter the Top 500. Football decisions still flow through Ranking Moves and your approval.</div>
         </section>
 
         <section id="pageRankings" class="admin-page hide">
@@ -2512,6 +2603,7 @@ body:after{
   <script src="/admin-scanner-v2.js?v=2"></script>
   <script src="/admin-scanner-v3.js?v=4"></script>
   <script src="/admin-injury-v1.js?v=1"></script>
+  <script src="/admin-content-v1.js?v=1"></script>
 
   <style id="bbb-player-workspace-v1">
     body.pw-open{overflow:hidden}
