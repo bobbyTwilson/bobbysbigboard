@@ -2699,13 +2699,97 @@ body:after{
       finally{btn.disabled=false}
     }
 
+    function pwBackgroundReviewSync(){
+      commandBrief=null;
+      Promise.allSettled([
+        loadReviewQueue(),
+        loadDataHealth(),
+        loadActivity(),
+        loadCommandBrief(true)
+      ]).then(function(){
+        renderReviewQueue();
+        renderDataHealth();
+        renderCommandDashboard();
+      }).catch(function(e){console.error("BBB background review sync failed",e)});
+    }
+
     async function pwVerify(btn){
       var r=pwReview(pwKey);if(!r)return;
-      await markReviewVerified(pwKey,btn);pwCache.delete(pwKey);await pwLoadDetail(pwKey,true);pwRender();
+      var old=btn.textContent;
+      btn.disabled=true;btn.textContent="VERIFYING…";
+      try{
+        await rpc("admin_mark_player_verified",{p_player_key:pwKey});
+        var cached=pwCache.get(pwKey);
+        if(cached&&cached.rawProfile){
+          cached.rawProfile.last_verified_at=new Date().toISOString();
+          cached.rawProfile.review_status="Reviewed";
+        }
+        if(r.ranking_review_needed){
+          r.hours_since_verified=0;
+          r.latest_update_review_status="verified";
+          r.attention_reason=r.ranking_review_reason?"Ranking review: "+r.ranking_review_reason:"Ranking review still active.";
+        }else{
+          reviewQueue=reviewQueue.filter(function(v){return v.player_key!==pwKey});
+        }
+        pwRender();
+        pwBackgroundReviewSync();
+      }catch(e){
+        alert(e.message);
+        btn.disabled=false;btn.textContent=old;
+      }
     }
+
     async function pwRankReview(btn){
       var r=pwReview(pwKey);if(!r)return;
-      await toggleRankingReview(pwKey,btn);pwCache.delete(pwKey);await pwLoadDetail(pwKey,true);pwRender();
+      var old=btn.textContent;
+      var active=!!r.ranking_review_needed;
+      var reason=null;
+      if(!active){
+        reason=prompt("Why should "+r.name+" get a ranking review?",r.attention_reason||"Manual ranking review");
+        if(reason===null)return;
+      }
+      btn.disabled=true;btn.textContent=active?"RESOLVING…":"SAVING…";
+      try{
+        await rpc("admin_set_ranking_review",{
+          p_player_key:pwKey,
+          p_needed:!active,
+          p_reason:active?null:reason,
+          p_priority:active?1:2
+        });
+
+        var cached=pwCache.get(pwKey);
+        if(cached&&cached.rawProfile){
+          cached.rawProfile.ranking_review_needed=!active;
+          cached.rawProfile.ranking_review_reason=active?null:reason;
+          cached.rawProfile.ranking_review_priority=active?1:2;
+          cached.rawProfile.ranking_review_triggered_at=active?null:new Date().toISOString();
+        }
+
+        if(active){
+          var stillNeedsData=typeof reviewVerificationNeeded==="function"&&reviewVerificationNeeded(r);
+          if(stillNeedsData){
+            r.ranking_review_needed=false;
+            r.ranking_review_reason=null;
+            r.queue_priority=3;
+            r.attention_reason=r.latest_update_review_status==="needs_review"
+              ?"Latest major update still needs source/review."
+              :"Profile verification still needs attention.";
+          }else{
+            reviewQueue=reviewQueue.filter(function(v){return v.player_key!==pwKey});
+          }
+        }else{
+          r.ranking_review_needed=true;
+          r.ranking_review_reason=reason;
+          r.queue_priority=2;
+          r.attention_reason="Ranking review: "+reason;
+        }
+
+        pwRender();
+        pwBackgroundReviewSync();
+      }catch(e){
+        alert(e.message);
+        btn.disabled=false;btn.textContent=old;
+      }
     }
 
     function pwHandleWorkspaceClick(e){
@@ -3354,6 +3438,22 @@ body:after{
 <style id="bbb-player-workspace-review-v26">
 #bbbPlayerWorkspace .pw-action.verified-state{cursor:default;border-color:rgba(57,255,155,.09);background:rgba(57,255,155,.035);color:#79b793}
 #bbbPlayerWorkspace .pw-review-box .pw-action.primary[data-pw-action="rankreview"]{border-color:rgba(255,200,97,.25);background:rgba(123,83,22,.18);color:#f0cb79}
+</style>
+
+
+<style id="bbb-player-workspace-speed-header-v27">
+#bbbPlayerWorkspace .pw-head{padding-top:27px!important;padding-bottom:20px!important;min-height:104px}
+#bbbPlayerWorkspace .pw-identity{align-items:center!important;padding-top:1px;padding-bottom:1px}
+#bbbPlayerWorkspace .pw-title{overflow:visible!important;padding:2px 0 3px}
+#bbbPlayerWorkspace .pw-title-top{min-height:20px;align-items:center!important;overflow:visible!important}
+#bbbPlayerWorkspace .pw-kicker{line-height:1.35!important}
+#bbbPlayerWorkspace .pw-status{line-height:1.25!important;min-height:21px;box-sizing:border-box}
+#bbbPlayerWorkspace .pw-title h2{line-height:1.12!important;overflow:visible!important;padding:1px 0 2px}
+#bbbPlayerWorkspace .pw-title p{line-height:1.55!important}
+#bbbPlayerWorkspace .pw-rank-orb strong{line-height:1.08!important}
+@media(max-width:720px){
+  #bbbPlayerWorkspace .pw-head{padding-top:19px!important;padding-bottom:14px!important;min-height:auto}
+}
 </style>
 
 </body>
