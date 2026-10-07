@@ -1215,6 +1215,7 @@ body:after{
   <link rel="stylesheet" href="/admin-automation-v1.css?v=1">
   <link rel="stylesheet" href="/admin-exceptions-v1.css?v=2">
   <link rel="stylesheet" href="/admin-ui-polish-v1.css?v=5">
+  <link rel="stylesheet" href="/admin-design-system-v2.css?v=1">
 </head>
 <body>
   <section id="loginView" class="login-wrap">
@@ -1427,7 +1428,7 @@ body:after{
             </section>
 
             <section class="panel edge-panel">
-              <div class="panel-head"><div><div class="panel-kicker">VALUE RADAR</div><h2>Market Edge Leaders</h2><span>Where BBB is furthest from market consensus</span></div><button class="small-btn" data-page-jump="rankings">MANAGE ↗</button></div>
+              <div class="panel-head"><div><div class="panel-kicker">MARKET EDGE</div><h2>Market Edge Leaders</h2><span>Where BBB is furthest from market consensus</span></div><button class="small-btn" data-page-jump="rankings">MANAGE ↗</button></div>
               <div id="dashMarketEdges" class="market-edge-grid"><div class="empty">Loading market edges…</div></div>
             </section>
           </div>
@@ -1675,7 +1676,7 @@ body:after{
 
           <div class="content-kpis">
             <button type="button" class="content-kpi active" data-content-preset="TOP"><span>TOP OPPORTUNITIES</span><strong id="contentTop">—</strong><small>SCORE 70+</small></button>
-            <button type="button" class="content-kpi" data-content-preset="FILM"><span>FILM RADAR</span><strong id="contentFilm">—</strong><small>LONG-FORM CANDIDATES</small></button>
+            <button type="button" class="content-kpi" data-content-preset="FILM"><span>FILM CANDIDATES</span><strong id="contentFilm">—</strong><small>LONG-FORM CANDIDATES</small></button>
             <button type="button" class="content-kpi" data-content-preset="NEWS"><span>NEWS / REACTION</span><strong id="contentNews">—</strong><small>TIME-SENSITIVE ANGLES</small></button>
             <button type="button" class="content-kpi" data-content-preset="MARKET"><span>MARKET DEBATES</span><strong id="contentMarket">—</strong><small>BBB VS CONSENSUS</small></button>
             <button type="button" class="content-kpi" data-content-preset="PROSPECTS"><span>PROSPECT SPOTLIGHTS</span><strong id="contentProspects">—</strong><small>RESEARCH READY</small></button>
@@ -1732,7 +1733,7 @@ body:after{
 
           <section id="contentViewProspects" class="content-view panel hide">
             <div class="content-summary"><span>Research-backed prospect ideas</span><span>Grades, comps and research confidence drive this board.</span></div>
-            <div id="contentProspectGrid" class="content-prospect-grid"><div class="research-loading"><span></span><strong>Building prospect radar…</strong></div></div>
+            <div id="contentProspectGrid" class="content-prospect-grid"><div class="research-loading"><span></span><strong>Building prospect board…</strong></div></div>
           </section>
 
           <section id="contentViewNoise" class="content-view panel hide">
@@ -1846,8 +1847,7 @@ body:after{
               <h2>Your next grades are waiting.</h2>
               <p>The lab surfaces ungraded QB, RB, WR and TE prospects from the next two NFL Draft classes. Research recommendations are suggestions only — your final grade is the one that gets published.</p>
             </div>
-            <div class="prospect-radar" aria-hidden="true"><i></i><i></i><i></i><i></i><span>SCOUT</span></div>
-          </section>
+            </section>
 
           <div class="metric-grid prospect-kpis">
             <div class="metric cyber-metric"><div class="metric-icon">◎</div><div><span>Ungraded</span><strong id="prospectUngraded">—</strong><small>WAITING FOR YOUR GRADE</small></div></div>
@@ -1892,8 +1892,7 @@ body:after{
         <span>YOUR DECISIONS</span><span>SYSTEM TASKS</span><span>FYI SIGNALS</span><span>NO AUTO RANK MOVES</span>
       </div>
     </div>
-    <div class="research-radar" aria-hidden="true"><span>SCAN</span><i></i></div>
-  </section>
+    </section>
 
   <div class="metric-grid research-kpis">
     <button class="metric cyber-metric research-kpi-btn" type="button" data-research-owner-jump="BOBBY"><div class="metric-icon">★</div><div><span>Bobby Action Required</span><strong id="researchBobbyCount">—</strong><small>YOUR DECISIONS</small></div></button>
