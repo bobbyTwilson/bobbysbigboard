@@ -838,3 +838,138 @@
   background:linear-gradient(180deg,#07130f,#05100d)!important;
 }
 #pageScanner .scanner-card-foot-v2{background:rgba(3,9,8,.70)!important}
+
+
+/* ===== DASHBOARD RESTRAINT V4 · remove radar, quiet decoration, fix faded UI ===== */
+
+/* Dashboard should feel premium, not decorative. */
+#pageDashboard .hero-holo,
+#pageDashboard .holo-orbit,
+#pageDashboard .holo-core,
+#pageDashboard .holo-node,
+#pageDashboard .holo-scan{display:none!important}
+
+/* Replace the old radar/hologram with a subtle signal-mesh texture. */
+#pageDashboard .cyber-hero{
+  background:
+    radial-gradient(circle at 88% 16%,rgba(98,223,240,.045),transparent 23%),
+    radial-gradient(circle at 72% 82%,rgba(69,245,154,.035),transparent 25%),
+    linear-gradient(125deg,rgba(5,17,12,.985),rgba(3,11,9,.985) 55%,rgba(4,13,14,.985))!important;
+}
+#pageDashboard .cyber-hero:before{
+  content:""!important;
+  position:absolute!important;inset:0!important;z-index:-1!important;
+  opacity:.42!important;
+  background:
+    linear-gradient(118deg,transparent 60%,rgba(98,223,240,.028) 60.15%,transparent 60.35%),
+    linear-gradient(73deg,transparent 69%,rgba(69,245,154,.024) 69.15%,transparent 69.35%),
+    repeating-linear-gradient(90deg,transparent 0 72px,rgba(98,223,240,.017) 73px 74px),
+    repeating-linear-gradient(0deg,transparent 0 72px,rgba(69,245,154,.012) 73px 74px)!important;
+}
+#pageDashboard .cyber-grid{
+  right:2%!important;top:14%!important;bottom:auto!important;
+  width:42%!important;height:72%!important;
+  opacity:.11!important;
+  transform:none!important;
+  background:
+    linear-gradient(rgba(98,223,240,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(69,245,154,.045) 1px,transparent 1px)!important;
+  background-size:34px 34px!important;
+  -webkit-mask-image:linear-gradient(90deg,transparent,black 24%,black 72%,transparent)!important;
+  mask-image:linear-gradient(90deg,transparent,black 24%,black 72%,transparent)!important;
+}
+#pageDashboard .cyber-hero-copy{width:min(820px,72%)!important}
+#pageDashboard .cyber-hero p{color:#9aada3!important;font-size:11px!important}
+#pageDashboard .hero-telemetry span{
+  color:#789287!important;
+  border-color:rgba(83,232,160,.12)!important;
+  background:rgba(4,15,11,.72)!important;
+  font-size:7px!important;
+}
+#pageDashboard .hero-telemetry span:first-child{color:#8af0b7!important}
+
+/* Remove any legacy circular/radar decoration around the Command Nexus right rail. */
+#pageDashboard .dashboard-nexus:after,
+#pageDashboard .nexus-side-stack:before,
+#pageDashboard .nexus-side-stack:after,
+#pageDashboard .nexus-block:before,
+#pageDashboard .nexus-block:after{
+  content:none!important;
+  display:none!important;
+}
+#pageDashboard .dashboard-nexus{
+  background:
+    radial-gradient(circle at 92% 8%,rgba(98,223,240,.025),transparent 28%),
+    linear-gradient(145deg,rgba(5,17,13,.985),rgba(3,9,11,.985))!important;
+}
+#pageDashboard .dashboard-nexus:before{
+  opacity:.12!important;
+  background-image:
+    linear-gradient(rgba(98,223,240,.022) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(69,245,154,.018) 1px,transparent 1px)!important;
+  background-size:34px 34px!important;
+}
+#pageDashboard .nexus-side-stack{
+  position:relative!important;
+  border-radius:14px!important;
+  background:rgba(2,9,8,.32)!important;
+}
+#pageDashboard .nexus-side-stack .nexus-block{
+  background:linear-gradient(160deg,rgba(6,18,14,.96),rgba(3,10,9,.98))!important;
+  border-color:rgba(83,232,160,.085)!important;
+}
+
+/* Real UI text should be readable; only decoration should fade. */
+#pageDashboard .nexus-block-head span{color:#7f988a!important}
+#pageDashboard .nexus-block-head strong{color:#e5f0e9!important}
+#pageDashboard .nexus-block-head small{color:#81938a!important}
+#pageDashboard .nexus-system span{color:#7f9689!important}
+#pageDashboard .nexus-system small{color:#809188!important}
+#pageDashboard .nexus-system strong{color:#eff8f3!important}
+#pageDashboard .nexus-path-step span strong{color:#c7d8cf!important}
+#pageDashboard .nexus-path-step span small{color:#819187!important}
+#pageDashboard .nexus-path-step em{color:#7d9587!important}
+#pageDashboard .nexus-head .panel-kicker{color:#7ca08c!important}
+#pageDashboard .nexus-head p{color:#96aaa0!important}
+
+/* The old sticky micro-shortcuts were visually ghosting over the hero and duplicated the Command Deck. */
+#appView .mission-shortcuts,
+#appView .mission-status{display:none!important}
+#appView .admin-mission-bar{
+  grid-template-columns:1fr!important;
+  height:44px!important;
+  background:rgba(3,11,8,.96)!important;
+  border-color:rgba(83,232,160,.09)!important;
+  backdrop-filter:blur(18px)!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.18)!important;
+}
+#appView .mission-context{padding-left:14px!important}
+#appView .mission-context small{
+  color:#637e6e!important;font-size:6px!important;
+}
+#appView .mission-context strong{
+  color:#cff5df!important;font-size:9px!important;
+}
+
+/* Slightly quieter system pulse cards so the right rail doesn't compete with the next action. */
+#pageDashboard .nexus-system{
+  background:rgba(4,14,11,.74)!important;
+  border-color:rgba(83,232,160,.07)!important;
+}
+#pageDashboard .nexus-system:hover{
+  background:rgba(6,19,15,.90)!important;
+  border-color:rgba(98,223,240,.17)!important;
+}
+#pageDashboard .nexus-system i{
+  width:5px!important;height:5px!important;
+  box-shadow:0 0 7px rgba(57,255,155,.38)!important;
+}
+
+/* Responsive: keep the quiet texture from crowding the title. */
+@media(max-width:850px){
+  #pageDashboard .cyber-grid{width:58%!important;opacity:.07!important}
+  #pageDashboard .cyber-hero-copy{width:100%!important}
+}
+@media(max-width:600px){
+  #pageDashboard .cyber-grid{display:none!important}
+}
