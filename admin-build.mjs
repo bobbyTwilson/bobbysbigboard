@@ -43,6 +43,10 @@ const automationCss=await readFile('admin-automation-v1.css','utf8');
 const automationJs=await readFile('admin-automation-v1.js','utf8');
 await writeFile(`${out}/static/admin-automation-v1.css`,automationCss);
 await writeFile(`${out}/static/admin-automation-v1.js`,automationJs);
+const exceptionCss=await readFile('admin-exceptions-v1.css','utf8');
+const exceptionJs=await readFile('admin-exceptions-v1.js','utf8');
+await writeFile(`${out}/static/admin-exceptions-v1.css`,exceptionCss);
+await writeFile(`${out}/static/admin-exceptions-v1.js`,exceptionJs);
 
 const config=JSON.parse(await readFile(`${out}/config.json`,'utf8'));
 config.routes=[
