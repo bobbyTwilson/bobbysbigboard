@@ -2,7 +2,7 @@ const SUPA='https://twbduhmibbotregdxlla.supabase.co';
 const KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
 const STORE='bbb_admin_session_v1';
 const BRIEF_SEEN='bbb_admin_brief_seen_v1';
-let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,classAudit=[],classAuditLoaded=false,classAuditLoading=false,classAuditView='attention',prospectGradeOnly=false,commandBrief=null,commandBriefLoading=false,briefMode='ranking_decisions',activeAdminPage='dashboard';
+let session=null,board=[],profileMap=new Map(),reviewQueue=[],rankingMoveQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,classAudit=[],classAuditLoaded=false,classAuditLoading=false,classAuditView='attention',prospectGradeOnly=false,commandBrief=null,commandBriefLoading=false,briefMode='ranking_decisions',activeAdminPage='dashboard';
 const PAGE=50;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -60,6 +60,7 @@ async function loadAll(){
     loadProfiles().then(()=>{renderPlayers();queueDashboardPaint()}),
     loadActivity().then(()=>queueDashboardPaint()),
     loadReviewQueue().then(()=>{renderReviewQueue();queueDashboardPaint()}),
+    loadRankingMoveQueue().then(()=>{renderRankingMoveQueue();queueDashboardPaint()}),
     loadProspectLab().then(()=>{renderProspectLab();queueDashboardPaint()}),
     loadDataHealth().then(()=>{renderDataHealth();queueDashboardPaint()}),
     loadCounts().then(()=>queueDashboardPaint()),
@@ -72,6 +73,7 @@ async function loadAll(){
 async function loadBoard(){board=await rest('site_dynasty?select=rank,player_key,name,pos,pr,team,age,draft,market,gap,view,injury_status,injury_note,injury_updated,college,overview&order=rank.asc')||[]}
 async function loadProfiles(){const rows=await rest('site_profiles?select=player_key,name,pos,team,age,draft_year,college,overall_breakdown,injury_status,injury_note,injury_updated&order=name.asc')||[];profileMap=new Map(rows.map(x=>[x.player_key,x]))}
 async function loadReviewQueue(){reviewQueue=await rpc('admin_get_review_queue',{p_limit:500})||[]}
+async function loadRankingMoveQueue(){rankingMoveQueue=await rpc('admin_get_ranking_move_queue',{p_include_resolved:false,p_limit:500})||[]}
 async function loadProspectLab(){prospectLab=await rpc('admin_get_prospect_lab',{p_year:null,p_include_graded:true})||[]}
 async function loadDataHealth(){dataHealth=await rpc('admin_get_data_health',{})||{}}
 async function loadCounts(){const [r,p]=await Promise.all([rest('site_rookies?select=player_key'),rest('site_prospects?select=player_key')]);rookiesCount=r?.length??0;prospectsCount=p?.length??0}
@@ -385,6 +387,133 @@ async function quickMoveSelected(delta){
   const x=board.find(v=>v.player_key===selectedRankKey);if(!x)return;
   const nr=x.rank+delta;if(nr<1||nr>board.length)return;
   try{await rpc('admin_move_dynasty_player',{p_player_key:x.player_key,p_new_rank:nr});await Promise.all([loadBoard(),loadActivity()]);renderRankings();renderPlayers();renderCommandDashboard()}catch(e){alert(e.message)}
+}
+
+
+function rankingMoveDirection(x){
+  if(x.recommended_rank==null)return 'needs_target';
+  const cur=Number(x.current_rank),rec=Number(x.recommended_rank);
+  if(rec<cur)return 'up';
+  if(rec>cur)return 'down';
+  return 'hold';
+}
+function rankingMoveSignal(x){
+  const dir=rankingMoveDirection(x),cur=Number(x.current_rank),rec=x.recommended_rank==null?null:Number(x.recommended_rank);
+  if(dir==='needs_target')return {label:'TARGET NEEDED',cls:'target',spots:''};
+  if(dir==='hold')return {label:'HOLD #'+cur,cls:'hold',spots:'NO CHANGE'};
+  const spots=Math.abs(cur-rec);
+  return {label:(dir==='up'?'MOVE UP':'MOVE DOWN'),cls:dir,spots:(dir==='up'?'UP ':'DOWN ')+spots};
+}
+function filteredRankingMoves(){
+  const q=($('#moveSearch')?.value||'').trim().toLowerCase();
+  const priority=$('#movePriority')?.value||'ALL';
+  const direction=$('#moveDirection')?.value||'ALL';
+  return rankingMoveQueue.filter(x=>{
+    if(priority!=='ALL'&&String(x.priority)!==priority)return false;
+    const dir=rankingMoveDirection(x);
+    if(direction!=='ALL'&&dir!==direction)return false;
+    const hay=(x.name+' '+(x.team||'')+' '+(x.position||'')+' '+(x.reason||'')+' '+(x.latest_update_text||'')).toLowerCase();
+    return !q||hay.includes(q);
+  });
+}
+function rankingMoveMarketText(x){
+  const market=x.market_rank?'Market #'+x.market_rank:'Market UR';
+  const gap=x.market_gap==null?'':(' · Edge '+(Number(x.market_gap)>0?'+':'')+x.market_gap);
+  return market+gap;
+}
+function renderRankingMoveQueue(){
+  const grid=$('#rankingMoveGrid');if(!grid)return;
+  const pending=rankingMoveQueue.filter(x=>x.status==='pending');
+  const list=filteredRankingMoves();
+  if($('#movePending'))$('#movePending').textContent=pending.length;
+  if($('#moveUp'))$('#moveUp').textContent=pending.filter(x=>rankingMoveDirection(x)==='up').length;
+  if($('#moveDown'))$('#moveDown').textContent=pending.filter(x=>rankingMoveDirection(x)==='down').length;
+  if($('#moveTargetless'))$('#moveTargetless').textContent=pending.filter(x=>rankingMoveDirection(x)==='needs_target').length;
+  if($('#moveNavCount'))$('#moveNavCount').textContent=pending.length||'0';
+  if($('#moveQueueCount'))$('#moveQueueCount').textContent=list.length+' pending decision'+(list.length===1?'':'s');
+  if($('#moveQueueHint'))$('#moveQueueHint').textContent=pending.length?'Nothing moves until you approve it. Change any target rank before approving.':'Queue clear — no ranking decision is waiting on you.';
+  grid.innerHTML=list.length?list.map(x=>{
+    const sig=rankingMoveSignal(x);
+    const cur=Number(x.current_rank)||'—';
+    const rec=x.recommended_rank==null?'—':Number(x.recommended_rank);
+    const priority=Number(x.priority)===1?'P1 · CRITICAL':Number(x.priority)===2?'P2 · HIGH':'P3 · NORMAL';
+    const latest=x.latest_update_text?'<div class="move-card-update"><span>LATEST PLAYER SIGNAL</span><p>'+esc(clip(x.latest_update_text,240))+'</p>'+(x.latest_rank_impact?'<small>'+esc(x.latest_rank_impact)+'</small>':'')+'</div>':'';
+    const targetless=x.recommended_rank==null;
+    return '<article class="move-card '+sig.cls+'" data-move-card="'+x.id+'">'+
+      '<div class="move-card-top">'+
+        '<span class="move-priority p'+(x.priority||3)+'">'+priority+'</span>'+
+        '<span class="move-direction '+sig.cls+'">'+sig.label+(sig.spots?' · '+sig.spots:'')+'</span>'+
+      '</div>'+
+      '<div class="move-card-main">'+
+        '<div class="move-player-block"><span class="move-player-rank">#'+cur+'</span><div><button type="button" class="move-player-name" data-move-open="'+esc(x.player_key)+'">'+esc(x.name)+'</button><span>'+esc(x.position||'')+' · '+esc(x.team||'FA')+(x.college?' · '+esc(x.college):'')+'</span></div></div>'+
+        '<div class="move-rank-flow"><div><span>CURRENT</span><strong>#'+cur+'</strong></div><b>→</b><div class="'+(targetless?'targetless':'')+'"><span>RECOMMENDED</span><strong>'+(targetless?'?':'#'+rec)+'</strong></div></div>'+
+      '</div>'+
+      '<div class="move-card-context"><span>'+esc(rankingMoveMarketText(x))+'</span><span class="'+(healthy(x.injury_status)?'':'warn')+'">'+esc(x.injury_status||'Healthy')+'</span><span>'+esc((x.source||'manual_review').replaceAll('_',' ').toUpperCase())+'</span>'+(x.confidence?'<span>'+esc(String(x.confidence).toUpperCase())+' CONFIDENCE</span>':'')+'</div>'+
+      '<div class="move-card-reason"><span>WHY IT IS HERE</span><p>'+esc(x.reason||'Manual ranking review — set a target or resolve the hold.')+'</p></div>'+
+      latest+
+      '<div class="move-decision">'+
+        '<div class="move-target"><label>FINAL RANK</label><input class="rank-input" type="number" min="1" max="'+board.length+'" '+(targetless?'placeholder="'+cur+'"':'value="'+rec+'"')+' data-move-target="'+x.id+'"><small>'+(targetless?'Choose a target, or keep the current rank.':'Change this number to modify the recommendation before approval.')+'</small></div>'+
+        '<div class="move-decision-actions">'+
+          (targetless?'<button type="button" class="queue-action hold" data-move-keep="'+x.id+'" data-current-rank="'+cur+'">KEEP #'+cur+'</button>':'')+
+          '<button type="button" class="queue-action reject" data-move-reject="'+x.id+'">REJECT</button>'+
+          '<button type="button" class="queue-action approve" data-move-approve="'+x.id+'">'+(sig.cls==='hold'?'APPROVE HOLD':'APPROVE')+'</button>'+
+        '</div>'+
+      '</div>'+
+    '</article>';
+  }).join(''):'<div class="move-queue-empty"><div class="move-empty-orb">✓</div><strong>No ranking decisions waiting.</strong><span>Future scanner recommendations and manual ranking reviews will land here instead of moving the board automatically.</span></div>';
+
+  $('[data-move-open]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.moveOpen,'dynasty'));
+  $('[data-move-approve]').forEach(b=>b.onclick=()=>resolveRankingMove(Number(b.dataset.moveApprove),'approve',b));
+  $('[data-move-reject]').forEach(b=>b.onclick=()=>resolveRankingMove(Number(b.dataset.moveReject),'reject',b));
+  $('[data-move-keep]').forEach(b=>b.onclick=()=>{
+    const id=Number(b.dataset.moveKeep),input=$('[data-move-target="'+id+'"]');
+    if(input)input.value=b.dataset.currentRank;
+    resolveRankingMove(id,'approve',b,Number(b.dataset.currentRank));
+  });
+}
+function showMoveQueueNotice(message,warn=false){
+  const el=$('#moveQueueNotice');if(!el)return;
+  el.textContent=message;
+  el.classList.remove('hide','warn');
+  if(warn)el.classList.add('warn');
+  clearTimeout(showMoveQueueNotice.timer);
+  showMoveQueueNotice.timer=setTimeout(()=>el.classList.add('hide'),6500);
+}
+async function refreshRankingDecisionState(){
+  commandBrief=null;
+  await Promise.all([loadBoard(),loadRankingMoveQueue(),loadReviewQueue(),loadActivity(),loadDataHealth()]);
+  await loadCommandBrief(true);
+  renderRankings();renderPlayers();renderRankingMoveQueue();renderReviewQueue();renderDataHealth();renderCommandDashboard();
+}
+async function resolveRankingMove(id,action,btn,overrideRank){
+  const x=rankingMoveQueue.find(v=>Number(v.id)===Number(id));if(!x)return;
+  let finalRank=null;
+  if(action==='approve'){
+    const input=$('[data-move-target="'+id+'"]');
+    finalRank=Number.isInteger(overrideRank)?overrideRank:Number(input?.value);
+    if(!Number.isInteger(finalRank)||finalRank<1||finalRank>board.length){
+      alert('Choose a final rank from 1 to '+board.length+'.');
+      input?.focus();
+      return;
+    }
+  }
+  const old=btn?.textContent;
+  if(btn){btn.disabled=true;btn.textContent=action==='approve'?'APPLYING…':'REJECTING…'}
+  try{
+    const modified=action==='approve'&&x.recommended_rank!=null&&Number(x.recommended_rank)!==finalRank;
+    const note=modified?'Approved with modified target: recommended #'+x.recommended_rank+', final #'+finalRank:null;
+    const result=await rpc('admin_resolve_ranking_move',{p_id:id,p_action:action,p_final_rank:finalRank,p_note:note});
+    await refreshRankingDecisionState();
+    if(action==='approve'){
+      const oldRank=Number(result?.old_rank??x.current_rank),newRank=Number(result?.final_rank??finalRank);
+      showMoveQueueNotice(newRank===oldRank?x.name+' held at #'+newRank+' — decision resolved.':x.name+' moved from #'+oldRank+' to #'+newRank+' and the queue item is resolved.');
+    }else{
+      showMoveQueueNotice(x.name+' recommendation rejected. The live rank stayed at #'+x.current_rank+'.');
+    }
+  }catch(e){
+    alert(e.message);
+    if(btn){btn.disabled=false;btn.textContent=old}
+  }
 }
 
 const clip=(v,len=180)=>{const x=String(v??'').replace(/\s+/g,' ').trim();return x.length>len?x.slice(0,len-1)+'…':x};
@@ -948,6 +1077,7 @@ async function resolveClassAudit(key,action,btn){
 
 const ADMIN_COMMANDS=[
   {id:'dashboard',icon:'⌂',label:'Dashboard',sub:'Return to Dynasty Command Center',tag:'PAGE'},
+  {id:'moves',icon:'↕',label:'Ranking Move Queue',sub:'Approve, modify or reject rank recommendations',tag:'PAGE'},
   {id:'rankings',icon:'▥',label:'Rankings Manager',sub:'Move and inspect the Top 500',tag:'PAGE'},
   {id:'players',icon:'◎',label:'Player Editor',sub:'Edit identity, injury and profile data',tag:'PAGE'},
   {id:'prospects',icon:'✦',label:'Prospect Lab',sub:'Research and grade 2027 / 2028 prospects',tag:'PAGE'},
@@ -995,7 +1125,8 @@ function page(name){
   const target=$(`#page${name[0].toUpperCase()+name.slice(1)}`);
   if(!target)return;
   target.classList.remove('hide');
-  const titles={dashboard:'Dashboard',rankings:'Rankings Manager',players:'Player Editor',prospects:'Prospect Lab',research:'Research Queue',eligibility:'Draft Class Audit',review:'Review Queue'};if($('#missionPageTitle'))$('#missionPageTitle').textContent=titles[name]||name;
+  const titles={dashboard:'Dashboard',moves:'Ranking Move Queue',rankings:'Rankings Manager',players:'Player Editor',prospects:'Prospect Lab',research:'Research Queue',eligibility:'Draft Class Audit',review:'Review Queue'};if($('#missionPageTitle'))$('#missionPageTitle').textContent=titles[name]||name;
+  if(name==='moves')renderRankingMoveQueue();
   if(name==='rankings')renderRankings();
   if(name==='players')renderPlayers();
   if(name==='prospects'){prospectGradeOnly=false;renderProspectLab()}
@@ -1241,6 +1372,16 @@ document.addEventListener('DOMContentLoaded',()=>{
     $('#classAuditRefresh')?.addEventListener('click',async e=>{
       const b=e.currentTarget;b.disabled=true;
       try{classAuditLoaded=false;await loadClassAudit(true)}finally{b.disabled=false}
+    });
+  });
+
+  bindControlGroup('ranking move queue',()=>{
+    ['#moveSearch','#movePriority','#moveDirection'].forEach(s=>$(s)?.addEventListener(s==='#moveSearch'?'input':'change',renderRankingMoveQueue));
+    $('#moveClear')?.addEventListener('click',()=>{
+      $('#moveSearch').value='';
+      $('#movePriority').value='ALL';
+      $('#moveDirection').value='ALL';
+      renderRankingMoveQueue();
     });
   });
 
