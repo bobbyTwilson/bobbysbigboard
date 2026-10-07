@@ -1821,6 +1821,7 @@ body:after{
   <link rel="stylesheet" href="/admin-injury-v1.css?v=1">
   <link rel="stylesheet" href="/admin-injury-v2.css?v=2">
   <link rel="stylesheet" href="/admin-content-v1.css?v=1">
+  <link rel="stylesheet" href="/admin-dashboard-v2.css?v=2">
 </head>
 <body>
   <section id="loginView" class="login-wrap">
@@ -1906,6 +1907,80 @@ body:after{
               <div class="holo-core"><span>BBB</span></div>
               <div class="holo-node node-1">QB</div><div class="holo-node node-2">RB</div><div class="holo-node node-3">WR</div><div class="holo-node node-4">TE</div>
               <div class="holo-scan"></div>
+            </div>
+          </section>
+
+          <section class="dashboard-nexus">
+            <div class="nexus-head">
+              <div>
+                <div class="panel-kicker">ADMIN COMMAND NEXUS · MORNING CONTROL ROOM</div>
+                <h2>Your next 20 minutes, in the right order.</h2>
+                <p>One place to see ranking decisions, injury changes, weekly role signals and the best content opportunity without hunting through every admin tab.</p>
+              </div>
+              <div class="nexus-head-actions">
+                <span id="nexusGenerated" class="hud-badge">UPDATED —</span>
+                <span id="nexusState" class="hud-badge good">ALL SYSTEMS</span>
+                <button id="nexusRefresh" class="small-btn" type="button">REFRESH NEXUS</button>
+              </div>
+            </div>
+
+            <div class="nexus-kpis">
+              <div class="nexus-kpi ranking" data-nexus-page="moves">
+                <div class="nexus-kpi-icon">↕</div>
+                <div><span>PENDING RANK DECISIONS</span><strong id="nexusPendingMoves">—</strong><small>APPROVAL GATE</small></div><i></i>
+              </div>
+              <div class="nexus-kpi injury" data-nexus-page="injuries">
+                <div class="nexus-kpi-icon">＋</div>
+                <div><span>INJURY UPDATES TODAY</span><strong id="nexusInjuryToday">—</strong><small>FRESH MEDICAL INTEL</small></div><i></i>
+              </div>
+              <div class="nexus-kpi scanner" data-nexus-page="scanner">
+                <div class="nexus-kpi-icon">⌁</div>
+                <div><span>WEEKLY BREAKOUTS</span><strong id="nexusBreakouts">—</strong><small id="nexusScannerWeek">W—</small></div><i></i>
+              </div>
+              <div class="nexus-kpi content" data-nexus-page="content">
+                <div class="nexus-kpi-icon">▶</div>
+                <div><span>TOP CONTENT OPPORTUNITIES</span><strong id="nexusContentTop">—</strong><small>SCORE 70+</small></div><i></i>
+              </div>
+            </div>
+
+            <div class="nexus-body">
+              <div class="nexus-main-stack">
+                <div id="nexusNextAction" class="nexus-next-action">
+                  <div class="research-loading"><span></span><strong>Choosing the next action…</strong></div>
+                </div>
+
+                <section class="nexus-block">
+                  <div class="nexus-block-head">
+                    <div><span>LIVE SIGNAL STREAM</span><strong>The most important signals across every football system</strong></div>
+                    <small>Balanced across rankings · injuries · performance · content</small>
+                  </div>
+                  <div id="nexusSignalGrid" class="nexus-signal-grid">
+                    <div class="research-loading"><span></span><strong>Syncing admin signals…</strong></div>
+                  </div>
+                </section>
+              </div>
+
+              <div class="nexus-side-stack">
+                <section class="nexus-block">
+                  <div class="nexus-block-head">
+                    <div><span>SYSTEM PULSE</span><strong>Everything important at a glance</strong></div>
+                    <small>Click any system to open it</small>
+                  </div>
+                  <div id="nexusSystems" class="nexus-systems">
+                    <div class="research-loading"><span></span><strong>Checking systems…</strong></div>
+                  </div>
+                </section>
+
+                <section class="nexus-block">
+                  <div class="nexus-block-head">
+                    <div><span>COMMAND PATH</span><strong>Recommended admin workflow</strong></div>
+                    <small>Decisions → intel → content</small>
+                  </div>
+                  <div id="nexusCommandPath" class="nexus-path">
+                    <div class="research-loading"><span></span><strong>Building workflow…</strong></div>
+                  </div>
+                </section>
+              </div>
             </div>
           </section>
 
@@ -2604,6 +2679,7 @@ body:after{
   <script src="/admin-scanner-v3.js?v=4"></script>
   <script src="/admin-injury-v1.js?v=1"></script>
   <script src="/admin-content-v1.js?v=1"></script>
+  <script src="/admin-dashboard-v2.js?v=2"></script>
 
   <style id="bbb-player-workspace-v1">
     body.pw-open{overflow:hidden}
