@@ -130,3 +130,91 @@
   #pageAutomations .auto-readiness-actions>div{width:100%}
   #pageAutomations .auto-readiness-actions .small-btn{flex:1}
 }
+
+
+/* Football intelligence: read-only research and triage */
+#pageAutomations .auto-intelligence-panel{
+  padding:18px;margin:0 0 12px;
+  border:1px solid rgba(105,217,168,.20);
+  background:linear-gradient(155deg,#142525,#152228);
+  border-radius:15px;
+}
+#pageAutomations .auto-intelligence-layout{
+  display:grid;grid-template-columns:minmax(0,1.6fr) minmax(270px,1fr);
+  gap:12px;margin-top:15px;
+}
+#pageAutomations .auto-intelligence-lane,
+#pageAutomations .auto-intelligence-summary{
+  padding:13px;
+  border:1px solid rgba(143,195,175,.17);
+  background:#17292c;border-radius:12px;min-width:0;
+}
+#pageAutomations .auto-intelligence-label{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding-bottom:10px;border-bottom:1px solid rgba(135,183,163,.14);
+}
+#pageAutomations .auto-intelligence-label strong{
+  font-size:11px;color:#b6f1d0;letter-spacing:.09em;
+}
+#pageAutomations .auto-intelligence-label span{
+  color:#9daea7;font-size:10px;font-weight:750;
+}
+#pageAutomations .auto-intelligence-players{
+  max-height:470px;overflow-y:auto;
+}
+#pageAutomations .auto-intelligence-player{
+  display:grid;grid-template-columns:47px minmax(0,1fr) auto;
+  gap:10px;align-items:center;
+  border-bottom:1px solid rgba(133,175,157,.12);
+  padding:11px 1px;min-height:72px;
+}
+#pageAutomations .auto-intelligence-player:last-child{border-bottom:0}
+#pageAutomations .auto-intelligence-player-rank{
+  display:grid;place-items:center;
+  height:41px;border-radius:9px;
+  border:1px solid rgba(105,217,168,.15);
+  background:#203834;
+  color:#a3e4c1;
+  font-size:13px;font-weight:900;
+}
+#pageAutomations .auto-intelligence-player-info{min-width:0}
+#pageAutomations .auto-intelligence-player-info strong{
+  display:block;color:#f3faf6;font-size:14px;line-height:1.4;
+}
+#pageAutomations .auto-intelligence-player-info span{
+  display:block;color:#acccbc;font-size:12px;margin-top:2px;
+}
+#pageAutomations .auto-intelligence-player-info p{
+  margin:5px 0 0;color:#abbeb7;font-size:12px;line-height:1.45;
+}
+#pageAutomations .auto-intelligence-player .small-btn{
+  padding:10px 12px!important;font-size:11px!important;min-height:36px;
+}
+#pageAutomations .auto-intelligence-sidebar{display:grid;gap:12px}
+#pageAutomations .auto-intelligence-summary{
+  display:flex;flex-direction:column;
+  justify-content:flex-start;gap:10px;
+}
+#pageAutomations .auto-intelligence-summary .auto-intelligence-label{padding-bottom:9px}
+#pageAutomations .auto-intel-big{font-size:32px;font-weight:950;color:#f4faf6}
+#pageAutomations .auto-intel-big small{font-size:12px;color:#a9c4b6;font-weight:750}
+#pageAutomations .auto-intelligence-summary p{
+  font-size:13px;color:#b9d0c5;line-height:1.5;margin:0;
+}
+#pageAutomations .auto-intel-detail{
+  flex:1;color:#aebfb6;font-size:12px;line-height:1.55;
+}
+#pageAutomations .auto-intelligence-summary .small-btn{
+  width:max-content;min-height:36px;font-size:11px!important;
+}
+@media(max-width:1100px){
+  #pageAutomations .auto-intelligence-layout{grid-template-columns:1fr}
+  #pageAutomations .auto-intelligence-sidebar{grid-template-columns:1fr 1fr}
+}
+@media(max-width:680px){
+  #pageAutomations .auto-intelligence-sidebar{grid-template-columns:1fr}
+  #pageAutomations .auto-intelligence-player{grid-template-columns:39px minmax(0,1fr)}
+  #pageAutomations .auto-intelligence-player .small-btn{grid-column:2;justify-self:start}
+  #pageAutomations .auto-intelligence-panel{padding:12px}
+  #pageAutomations .auto-intelligence-label{flex-wrap:wrap}
+}
