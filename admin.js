@@ -1,7 +1,8 @@
 const SUPA='https://twbduhmibbotregdxlla.supabase.co';
 const KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
 const STORE='bbb_admin_session_v1';
-let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,classAudit=[],classAuditLoaded=false,classAuditLoading=false,classAuditView='attention',prospectGradeOnly=false,activeAdminPage='dashboard';
+const BRIEF_SEEN='bbb_admin_brief_seen_v1';
+let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,classAudit=[],classAuditLoaded=false,classAuditLoading=false,classAuditView='attention',prospectGradeOnly=false,commandBrief=null,commandBriefLoading=false,briefMode='ranking_decisions',activeAdminPage='dashboard';
 const PAGE=50;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -61,7 +62,8 @@ async function loadAll(){
     loadReviewQueue().then(()=>{renderReviewQueue();queueDashboardPaint()}),
     loadProspectLab().then(()=>{renderProspectLab();queueDashboardPaint()}),
     loadDataHealth().then(()=>{renderDataHealth();queueDashboardPaint()}),
-    loadCounts().then(()=>queueDashboardPaint())
+    loadCounts().then(()=>queueDashboardPaint()),
+    loadCommandBrief(false).then(()=>queueDashboardPaint())
   ]);
   const failed=jobs.filter(x=>x.status==='rejected');
   if(failed.length)console.error('BBB Admin data load warning',failed.map(x=>x.reason));
@@ -73,6 +75,83 @@ async function loadReviewQueue(){reviewQueue=await rpc('admin_get_review_queue',
 async function loadProspectLab(){prospectLab=await rpc('admin_get_prospect_lab',{p_year:null,p_include_graded:true})||[]}
 async function loadDataHealth(){dataHealth=await rpc('admin_get_data_health',{})||{}}
 async function loadCounts(){const [r,p]=await Promise.all([rest('site_rookies?select=player_key'),rest('site_prospects?select=player_key')]);rookiesCount=r?.length??0;prospectsCount=p?.length??0}
+
+function briefSince(){
+  const raw=localStorage.getItem(BRIEF_SEEN);
+  const t=raw?new Date(raw).getTime():NaN;
+  const now=Date.now(),week=7*24*60*60*1000;
+  if(Number.isFinite(t)&&t<=now&&now-t<=week)return new Date(t).toISOString();
+  return new Date(now-24*60*60*1000).toISOString();
+}
+function briefWindowText(){
+  const raw=localStorage.getItem(BRIEF_SEEN);
+  const since=new Date(briefSince());
+  const label=raw?'Since you last marked the brief read':'Last 24 hours';
+  return label+' · '+since.toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+}
+async function loadCommandBrief(force=false){
+  if(commandBriefLoading)return;
+  if(commandBrief&&!force){renderOpsActionCenter();return}
+  commandBriefLoading=true;
+  try{
+    commandBrief=await rpc('admin_get_command_brief',{p_since:briefSince()})||null;
+    renderOpsActionCenter();
+  }catch(e){
+    console.error('BBB Daily Command Brief failed',e);
+    const feed=$('#commandBriefFeed');
+    if(feed)feed.innerHTML='<div class="empty">'+esc(e.message||'Command Brief could not load.')+'</div>';
+  }finally{commandBriefLoading=false}
+}
+function briefItems(mode){
+  if(!commandBrief)return[];
+  return Array.isArray(commandBrief[mode])?commandBrief[mode]:[];
+}
+function briefSignal(mode,x){
+  if(mode==='market_movers'){
+    const n=Number(x.market_move)||0;
+    return {text:(n>0?'+':'')+n+' MARKET',cls:n<0?'down':''};
+  }
+  if(mode==='rank_moves'){
+    return {text:x.rank_impact||'RANK MOVE',cls:''};
+  }
+  if(mode==='injury_changes'){
+    return {text:x.injury_status||'INJURY UPDATE',cls:'warn'};
+  }
+  return {text:'P'+(x.queue_priority||'—')+' REVIEW',cls:'warn'};
+}
+function briefCopy(mode,x){
+  if(mode==='market_movers')return 'Market #'+(x.previous_market_rank??'—')+' → #'+(x.current_market_rank??'—')+' · BBB #'+(x.rank??'UR')+' · edge '+((Number(x.bbb_edge)>0?'+':'')+(x.bbb_edge??'—'));
+  if(mode==='ranking_decisions')return x.ranking_review_reason||x.attention_reason||x.latest_update_text||'Ranking decision required.';
+  return x.update_text||'No additional detail.';
+}
+function renderBriefFeed(){
+  const feed=$('#commandBriefFeed'),title=$('#briefDetailTitle'),meta=$('#briefDetailMeta');
+  if(!feed)return;
+  const definitions={
+    ranking_decisions:{title:'Ranking decisions waiting on you',meta:'Current unresolved review flags'},
+    injury_changes:{title:'Injury changes',meta:'Since the current brief window'},
+    rank_moves:{title:'Recent BBB rank moves',meta:'Changes already made and logged'},
+    market_movers:{title:'Major market movement',meta:'20+ spots · latest market snapshot'}
+  };
+  const def=definitions[briefMode]||definitions.ranking_decisions;
+  const rows=briefItems(briefMode);
+  if(title)title.textContent=def.title;
+  if(meta)meta.textContent=def.meta;
+  if(!rows.length){
+    feed.innerHTML='<div class="empty">Nothing in this bucket right now.</div>';
+    return;
+  }
+  feed.innerHTML=rows.map(x=>{
+    const signal=briefSignal(briefMode,x);
+    return '<button type="button" class="brief-row" data-brief-player="'+esc(x.player_key||'')+'" data-brief-kind="'+esc(briefMode)+'">'+
+      '<span class="brief-row-pos">'+esc(x.pos||'—')+'</span>'+
+      '<span class="brief-row-player"><strong>'+esc(x.name||x.player_key||'Player')+'</strong><span>'+(x.rank!=null?'#'+esc(x.rank)+' · ':'')+esc(x.team||'—')+'</span></span>'+
+      '<span class="brief-row-copy">'+esc(briefCopy(briefMode,x))+'</span>'+
+      '<span class="brief-row-signal '+esc(signal.cls)+'">'+esc(signal.text)+'</span>'+
+    '</button>';
+  }).join('');
+}
+
 function activityPlayerName(a){
   const key=a?.row_key||a?.new_row?.player_key||a?.old_row?.player_key||'';
   const direct=a?.new_row?.name||a?.old_row?.name;
@@ -216,28 +295,24 @@ function bindDashboardActions(){
   });
 }
 function renderOpsActionCenter(){
-  const el=$('#opsActionGrid');if(!el)return;
-  const high=reviewQueue.filter(x=>Number(x.queue_priority)<=2).length;
-  const ungraded=prospectLab.filter(x=>!x.graded).length;
-  const injuries=board.filter(x=>!healthy(x.injury_status)).length;
-  const buys=board.filter(x=>marketKind(x)==='BUY').length;
-  const actions=[
-    {key:'review',icon:'◈',count:high,label:'High-priority reviews',sub:'Open the players most likely to need a decision now.',accent:'#ff7f90'},
-    {key:'prospects',icon:'✦',count:ungraded,label:'Prospects to grade',sub:'Continue working through the 2027 and 2028 scouting queue.',accent:'#39ff9b'},
-    {key:'injuries',icon:'＋',count:injuries,label:'Injury concerns',sub:'Jump straight to players carrying an active availability flag.',accent:'#ffc861'},
-    {key:'buys',icon:'↗',count:buys,label:'BBB market buys',sub:'Review the players where your board is ahead of market.',accent:'#58eaff'}
-  ];
-  el.innerHTML=actions.map(a=>'<button type="button" class="ops-action" data-ops-action="'+a.key+'" style="--action-accent:'+a.accent+'"><div class="ops-action-top"><span class="ops-action-icon">'+a.icon+'</span><span class="ops-action-count">'+a.count+'</span></div><strong>'+a.label+'</strong><small>'+a.sub+'</small></button>').join('');
-  if($('#opsAttentionLabel'))$('#opsAttentionLabel').textContent=high?high+' high-priority items right now':'No high-priority review flags';
+  const cards=$('#commandBriefCards');if(!cards)return;
   if($('#missionReviewCount'))$('#missionReviewCount').textContent=reviewQueue.length;
-  if($('#missionProspectCount'))$('#missionProspectCount').textContent=ungraded;
-  $$('[data-ops-action]').forEach(b=>b.onclick=()=>{
-    const key=b.dataset.opsAction;
-    if(key==='review'){page('review');$('#reviewPriority').value='ALL';reviewPage=0;renderReviewQueue()}
-    if(key==='prospects'){page('prospects');$('#prospectIncludeGraded').checked=false;renderProspectLab()}
-    if(key==='injuries'){page('players');$('#playerAdminInjury').value='CONCERN';playerPage=0;renderPlayers()}
-    if(key==='buys')goRankings({market:'BUY'});
-  });
+  if($('#missionProspectCount'))$('#missionProspectCount').textContent=prospectLab.filter(x=>!x.graded).length;
+  if($('#briefWindowLabel'))$('#briefWindowLabel').textContent=briefWindowText();
+  if(!commandBrief){
+    if(!commandBriefLoading)void loadCommandBrief(false);
+    return;
+  }
+  const counts=commandBrief.counts||{};
+  const defs=[
+    {key:'ranking_decisions',icon:'◈',count:Number(counts.ranking_decisions)||0,label:'Ranking decisions',sub:'Unresolved reviews that still need your call.',accent:'#ff7f90'},
+    {key:'injury_changes',icon:'＋',count:Number(counts.injury_changes)||0,label:'Injury changes',sub:'New availability and injury updates in this brief window.',accent:'#ffc861'},
+    {key:'rank_moves',icon:'↕',count:Number(counts.rank_moves)||0,label:'BBB rank moves',sub:'Moves already made and logged since the brief started.',accent:'#39ff9b'},
+    {key:'market_movers',icon:'↗',count:Number(counts.market_movers)||0,label:'Major market movers',sub:'Players who moved 20+ spots in the latest market snapshot.',accent:'#58eaff'}
+  ];
+  if(!defs.some(x=>x.key===briefMode&&x.count>0))briefMode=defs.find(x=>x.count>0)?.key||'ranking_decisions';
+  cards.innerHTML=defs.map(a=>'<button type="button" class="ops-action '+(briefMode===a.key?'active':'')+'" data-brief-mode="'+a.key+'" style="--action-accent:'+a.accent+'"><div class="ops-action-top"><span class="ops-action-icon">'+a.icon+'</span><span class="ops-action-count">'+a.count+'</span></div><strong>'+a.label+'</strong><small>'+a.sub+'</small></button>').join('');
+  renderBriefFeed();
 }
 function renderCommandDashboard(){
   if(!$('#pageDashboard'))return;
@@ -831,6 +906,23 @@ function adminClickRouter(e){
     page(quick.dataset.quickPage);
     return;
   }
+  const briefCard=e.target.closest&&e.target.closest('[data-brief-mode]');
+  if(briefCard){
+    e.preventDefault();
+    briefMode=briefCard.dataset.briefMode||'ranking_decisions';
+    renderOpsActionCenter();
+    return;
+  }
+  const briefPlayer=e.target.closest&&e.target.closest('[data-brief-player]');
+  if(briefPlayer){
+    e.preventDefault();
+    const key=briefPlayer.dataset.briefPlayer;
+    const kind=briefPlayer.dataset.briefKind||'';
+    if(window.openBBBPlayerWorkspace&&key){
+      window.openBBBPlayerWorkspace(key,kind==='injury_changes'?'activity':kind==='market_movers'||kind==='rank_moves'?'dynasty':'overview');
+    }
+    return;
+  }
   const dashKpi=e.target.closest&&e.target.closest('[data-dashboard-kpi]');
   if(dashKpi){
     e.preventDefault();
@@ -958,6 +1050,19 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   bindControlGroup('global refresh',()=>{
     $$('[data-refresh]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await loadAll()}finally{b.disabled=false}});
+  });
+
+  bindControlGroup('daily brief',()=>{
+    $('#briefRefresh')?.addEventListener('click',async e=>{
+      const b=e.currentTarget;b.disabled=true;
+      try{await loadCommandBrief(true)}finally{b.disabled=false}
+    });
+    $('#briefMarkRead')?.addEventListener('click',async e=>{
+      const b=e.currentTarget;b.disabled=true;
+      localStorage.setItem(BRIEF_SEEN,new Date().toISOString());
+      commandBrief=null;
+      try{await loadCommandBrief(true)}finally{b.disabled=false}
+    });
   });
 
   bindControlGroup('rankings',()=>{
