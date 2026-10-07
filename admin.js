@@ -1,7 +1,7 @@
 const SUPA='https://twbduhmibbotregdxlla.supabase.co';
 const KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
 const STORE='bbb_admin_session_v1';
-let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,activeAdminPage='dashboard';
+let session=null,board=[],profileMap=new Map(),reviewQueue=[],prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,classAudit=[],classAuditLoaded=false,classAuditLoading=false,classAuditView='attention',activeAdminPage='dashboard';
 const PAGE=50;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -601,12 +601,140 @@ async function markResearchVerified(key,btn){
   }catch(e){alert(e.message);btn.disabled=false;btn.textContent=old}
 }
 
+
+function classAuditStatusLabel(status){
+  return status==='conflict'?'CLASS CONFLICT':status==='recheck'?'NEEDS RECHECK':'VERIFIED';
+}
+function classAuditDate(ts){
+  if(!ts)return 'Never verified';
+  const d=new Date(ts);
+  return Number.isFinite(d.getTime())?d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'Unknown date';
+}
+function setClassAuditView(view){
+  classAuditView=view||'attention';
+  $$('.class-tab').forEach(b=>b.classList.toggle('active',b.dataset.classView===classAuditView));
+  renderClassAudit();
+}
+function classAuditBaseRows(){
+  const q=String($('#classAuditSearch')?.value||'').trim().toLowerCase();
+  const year=$('#classAuditYear')?.value||'ALL';
+  const pos=$('#classAuditPos')?.value||'ALL';
+  const confidence=$('#classAuditConfidence')?.value||'ALL';
+  return classAudit.filter(x=>{
+    if(year!=='ALL'&&String(x.current_class)!==year&&String(x.recommended_class)!==year)return false;
+    if(pos!=='ALL'&&x.pos!==pos)return false;
+    if(confidence!=='ALL'&&String(x.confidence||'').toUpperCase()!==confidence)return false;
+    if(q){
+      const hay=(x.name+' '+(x.school||'')+' '+x.pos+' '+x.issue+' '+(x.evidence||'')+' '+(x.evidence_source||'')).toLowerCase();
+      if(!hay.includes(q))return false;
+    }
+    return true;
+  });
+}
+function filteredClassAuditRows(view){
+  const rows=classAuditBaseRows(),v=view||classAuditView;
+  if(v==='attention')return rows.filter(x=>x.audit_status==='conflict'||x.audit_status==='recheck');
+  if(v==='all')return rows;
+  return rows.filter(x=>x.audit_status===v);
+}
+async function loadClassAudit(force){
+  if(classAuditLoading)return;
+  if(classAuditLoaded&&!force){renderClassAudit();return}
+  classAuditLoading=true;
+  const state=$('#classAuditState');
+  const grid=$('#classAuditGrid');
+  if(state){state.textContent='SCANNING…';state.classList.remove('good')}
+  if(grid&&!classAuditLoaded)grid.innerHTML='<div class="research-loading"><span></span><strong>Cross-checking draft classes…</strong><small>Comparing canonical, scouting and grade data.</small></div>';
+  try{
+    classAudit=await rpc('admin_get_class_audit',{p_year:null,p_status:null})||[];
+    classAuditLoaded=true;
+    renderClassAudit();
+    if(state){state.textContent='LIVE · '+classAudit.length+' PROSPECTS';state.classList.add('good')}
+  }catch(e){
+    console.error('BBB Class Audit load failed',e);
+    if(state){state.textContent='LOAD ERROR';state.classList.remove('good')}
+    if(grid)grid.innerHTML='<div class="class-empty"><strong>Class Audit could not load.</strong><span>'+esc(e.message||'Unknown database error')+'</span></div>';
+  }finally{classAuditLoading=false}
+}
+function classAuditCardHtml(x){
+  const status=String(x.audit_status||'verified').toLowerCase();
+  const current=x.current_class??'—',recommended=x.recommended_class??'—';
+  const conflict=status==='conflict',recheck=status==='recheck';
+  const grade=x.grade_class==null?'No final BBB grade yet':'Saved BBB grade class: '+x.grade_class;
+  let actions='<button type="button" class="class-action" data-class-open="'+esc(x.player_key)+'">OPEN SCOUTING</button>';
+  if(conflict){
+    actions='<button type="button" class="class-action accept" data-class-action="accept" data-class-key="'+esc(x.player_key)+'">ACCEPT '+esc(recommended)+'</button>'+
+      '<button type="button" class="class-action keep" data-class-action="keep" data-class-key="'+esc(x.player_key)+'">KEEP '+esc(current)+'</button>'+actions;
+  }else if(recheck){
+    actions='<button type="button" class="class-action accept" data-class-action="verify" data-class-key="'+esc(x.player_key)+'">VERIFY '+esc(current)+'</button>'+actions;
+  }
+  return '<article class="class-card '+esc(status)+'">'+
+    '<div class="class-card-head"><span class="class-pos">'+esc(x.pos||'—')+'</span><div class="class-player"><strong>'+esc(x.name)+'</strong><span>'+esc(x.school||'School TBD')+' · '+esc(x.research_status||'research')+'</span></div><span class="class-status">'+classAuditStatusLabel(status)+'</span></div>'+
+    '<div class="class-compare"><div class="class-year-box"><span>CURRENT CLASS</span><strong>'+esc(current)+'</strong></div><span class="class-arrow">→</span><div class="class-year-box recommended"><span>SCOUTING RECOMMENDS</span><strong>'+esc(recommended)+'</strong></div><div class="class-grade-note">'+esc(grade)+'</div></div>'+
+    '<div class="class-evidence"><div class="class-evidence-label"><span>'+esc(x.issue||'Eligibility check')+'</span><span>'+esc(classAuditDate(x.class_verified_at))+'</span></div><p>'+esc(x.evidence||'No verification note has been saved yet.')+'</p><div class="class-source">Evidence source: '+esc(x.evidence_source||'Not recorded')+'</div></div>'+
+    '<div class="class-card-foot"><span class="class-confidence">SYSTEM CONFIDENCE <b>'+esc(x.confidence||'—')+'</b></span><div class="class-actions">'+actions+'</div></div>'+
+  '</article>';
+}
+function renderClassAudit(){
+  const grid=$('#classAuditGrid');if(!grid)return;
+  if(!classAuditLoaded){if(!classAuditLoading)void loadClassAudit(false);return}
+  const conflicts=classAudit.filter(x=>x.audit_status==='conflict');
+  const rechecks=classAudit.filter(x=>x.audit_status==='recheck');
+  const verified=classAudit.filter(x=>x.audit_status==='verified');
+  const y27=verified.filter(x=>Number(x.current_class)===2027);
+  const y28=verified.filter(x=>Number(x.current_class)===2028);
+  const base=classAuditBaseRows();
+  const rows=filteredClassAuditRows();
+
+  if($('#classConflictCount'))$('#classConflictCount').textContent=conflicts.length;
+  if($('#classRecheckCount'))$('#classRecheckCount').textContent=rechecks.length;
+  if($('#class2027Count'))$('#class2027Count').textContent=y27.length;
+  if($('#class2028Count'))$('#class2028Count').textContent=y28.length;
+  if($('#classAuditNavCount'))$('#classAuditNavCount').textContent=conflicts.length+rechecks.length;
+  if($('#classTabAttention'))$('#classTabAttention').textContent=base.filter(x=>x.audit_status!=='verified').length;
+  if($('#classTabConflict'))$('#classTabConflict').textContent=base.filter(x=>x.audit_status==='conflict').length;
+  if($('#classTabRecheck'))$('#classTabRecheck').textContent=base.filter(x=>x.audit_status==='recheck').length;
+  if($('#classTabVerified'))$('#classTabVerified').textContent=base.filter(x=>x.audit_status==='verified').length;
+  if($('#classTabAll'))$('#classTabAll').textContent=base.length;
+  if($('#classAuditCount'))$('#classAuditCount').textContent=rows.length+' shown · '+conflicts.length+' conflicts · '+rechecks.length+' rechecks · '+verified.length+' verified';
+
+  const hint=$('#classAuditHint');
+  if(hint)hint.textContent=classAuditView==='attention'?'Only conflicts and missing evidence need your attention.':classAuditView==='verified'?'Verified class records — inspect anytime, no action required.':classAuditView==='conflict'?'Choose Accept Recommendation or Keep Current for each conflict.':classAuditView==='recheck'?'Evidence is incomplete — verify the current class after review.':'Showing the complete 2027 / 2028 eligibility board.';
+
+  if(rows.length){
+    grid.innerHTML=rows.map(classAuditCardHtml).join('');
+  }else if(classAuditView==='attention'&&conflicts.length===0&&rechecks.length===0){
+    grid.innerHTML='<div class="class-empty"><strong>Class board is clean.</strong><span>All '+verified.length+' current 2027/2028 prospects have matching canonical and scouting classes with verification evidence. Nothing needs a Bobby decision right now.</span><div class="class-empty-actions"><button class="class-action" type="button" data-class-year-jump="2027">VIEW 2027 CLASS</button><button class="class-action" type="button" data-class-year-jump="2028">VIEW 2028 CLASS</button></div></div>';
+  }else{
+    grid.innerHTML='<div class="class-empty"><strong>No prospects match this view.</strong><span>Clear the search, year, position or confidence filters to widen the audit.</span></div>';
+  }
+}
+async function resolveClassAudit(key,action,btn){
+  const row=classAudit.find(x=>x.player_key===key);
+  if(!row)return;
+  const verb=action==='accept'?'Accept '+row.recommended_class+' for '+row.name+'?':action==='keep'?'Keep '+row.current_class+' for '+row.name+'?':'Re-verify '+row.current_class+' for '+row.name+'?';
+  if(!confirm(verb+' This will not change dynasty rank.'))return;
+  const old=btn?.textContent;
+  if(btn){btn.disabled=true;btn.textContent='SAVING…'}
+  try{
+    await rpc('admin_resolve_class_audit',{p_player_key:key,p_action:action});
+    classAuditLoaded=false;
+    await loadClassAudit(true);
+    researchLoaded=false;
+    if(activeAdminPage==='research')await loadResearchQueue(true);
+  }catch(e){
+    alert(e.message);
+    if(btn){btn.disabled=false;btn.textContent=old}
+  }
+}
+
 const ADMIN_COMMANDS=[
   {id:'dashboard',icon:'⌂',label:'Dashboard',sub:'Return to Dynasty Command Center',tag:'PAGE'},
   {id:'rankings',icon:'▥',label:'Rankings Manager',sub:'Move and inspect the Top 500',tag:'PAGE'},
   {id:'players',icon:'◎',label:'Player Editor',sub:'Edit identity, injury and profile data',tag:'PAGE'},
   {id:'prospects',icon:'✦',label:'Prospect Lab',sub:'Research and grade 2027 / 2028 prospects',tag:'PAGE'},
   {id:'research',icon:'⌬',label:'Research Queue',sub:'Work player completeness, class audits and missing data',tag:'PAGE'},
+  {id:'eligibility',icon:'⌁',label:'Draft Class Audit',sub:'Verify 2027 / 2028 eligibility and resolve class conflicts',tag:'PAGE'},
   {id:'review',icon:'◈',label:'Review Queue',sub:'Work freshness, sources and ranking flags',tag:'PAGE'},
   {id:'injuries',icon:'＋',label:'Show injury concerns',sub:'Open Player Editor filtered to active injuries',tag:'ACTION'},
   {id:'buys',icon:'↗',label:'Show BBB buys',sub:'Open rankings where BBB is above market',tag:'ACTION'},
@@ -649,11 +777,12 @@ function page(name){
   const target=$(`#page${name[0].toUpperCase()+name.slice(1)}`);
   if(!target)return;
   target.classList.remove('hide');
-  const titles={dashboard:'Dashboard',rankings:'Rankings Manager',players:'Player Editor',prospects:'Prospect Lab',research:'Research Queue',review:'Review Queue'};if($('#missionPageTitle'))$('#missionPageTitle').textContent=titles[name]||name;
+  const titles={dashboard:'Dashboard',rankings:'Rankings Manager',players:'Player Editor',prospects:'Prospect Lab',research:'Research Queue',eligibility:'Draft Class Audit',review:'Review Queue'};if($('#missionPageTitle'))$('#missionPageTitle').textContent=titles[name]||name;
   if(name==='rankings')renderRankings();
   if(name==='players')renderPlayers();
   if(name==='prospects')renderProspectLab();
   if(name==='research'){renderResearchQueue();if(!researchLoaded&&!researchLoading)void loadResearchQueue(false)}
+  if(name==='eligibility'){renderClassAudit();if(!classAuditLoaded&&!classAuditLoading)void loadClassAudit(false)}
   if(name==='review'){renderReviewQueue();renderDataHealth()}
   if(name==='dashboard')renderCommandDashboard()
 }
@@ -677,6 +806,37 @@ function adminClickRouter(e){
   if(quick){
     e.preventDefault();
     page(quick.dataset.quickPage);
+    return;
+  }
+  const classView=e.target.closest&&e.target.closest('[data-class-view]');
+  if(classView){
+    e.preventDefault();
+    setClassAuditView(classView.dataset.classView);
+    return;
+  }
+  const classKpi=e.target.closest&&e.target.closest('[data-class-kpi]');
+  if(classKpi){
+    e.preventDefault();
+    setClassAuditView(classKpi.dataset.classKpi);
+    return;
+  }
+  const classYear=e.target.closest&&e.target.closest('[data-class-year-jump]');
+  if(classYear){
+    e.preventDefault();
+    if($('#classAuditYear'))$('#classAuditYear').value=classYear.dataset.classYearJump||'ALL';
+    setClassAuditView('verified');
+    return;
+  }
+  const classOpen=e.target.closest&&e.target.closest('[data-class-open]');
+  if(classOpen){
+    e.preventDefault();
+    if(window.openBBBPlayerWorkspace)window.openBBBPlayerWorkspace(classOpen.dataset.classOpen,'scouting');
+    return;
+  }
+  const classAction=e.target.closest&&e.target.closest('[data-class-action][data-class-key]');
+  if(classAction){
+    e.preventDefault();
+    void resolveClassAudit(classAction.dataset.classKey,classAction.dataset.classAction,classAction);
     return;
   }
   const owner=e.target.closest&&e.target.closest('.research-owner-tab[data-research-owner]');
@@ -782,6 +942,21 @@ document.addEventListener('DOMContentLoaded',()=>{
     ['#researchSearch','#researchScope','#researchIssue','#researchPriority','#researchClass'].forEach(s=>$(s)?.addEventListener(s==='#researchSearch'?'input':'change',renderResearchQueue));
     $('#researchClear')?.addEventListener('click',()=>{$('#researchSearch').value='';$('#researchScope').value='ALL';$('#researchIssue').value='ALL';$('#researchPriority').value='ALL';$('#researchClass').value='ALL';setResearchOwner('BOBBY')});
     $('#researchRefresh')?.addEventListener('click',async e=>{const b=e.currentTarget;b.disabled=true;try{researchLoaded=false;await loadResearchQueue(true)}finally{b.disabled=false}});
+  });
+
+  bindControlGroup('class audit',()=>{
+    ['#classAuditSearch','#classAuditYear','#classAuditPos','#classAuditConfidence'].forEach(s=>$(s)?.addEventListener(s==='#classAuditSearch'?'input':'change',renderClassAudit));
+    $('#classAuditClear')?.addEventListener('click',()=>{
+      $('#classAuditSearch').value='';
+      $('#classAuditYear').value='ALL';
+      $('#classAuditPos').value='ALL';
+      $('#classAuditConfidence').value='ALL';
+      setClassAuditView('attention');
+    });
+    $('#classAuditRefresh')?.addEventListener('click',async e=>{
+      const b=e.currentTarget;b.disabled=true;
+      try{classAuditLoaded=false;await loadClassAudit(true)}finally{b.disabled=false}
+    });
   });
 
   bindControlGroup('review queue',()=>{
