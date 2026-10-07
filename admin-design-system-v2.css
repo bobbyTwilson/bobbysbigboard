@@ -1,4 +1,4 @@
-/* BBB Admin Design System v2
+/* BBB Admin Design System v3 — consolidated overrides
    Readability-first command center refresh.
    Neutral cyberpunk surfaces, semantic accent colors, larger type, zero radar art. */
 
@@ -549,610 +549,360 @@ body:after{
 }
 
 
-/* ===== DESIGN SYSTEM V2.1 · BLUE/GREEN STANDARD + VISIBLE CYBER MESH ===== */
+
+
+/* ======================================================================
+   BBB ADMIN V3 · GREEN SIGNAL / CHARCOAL CANVAS
+   Replaces the competing 600+ line blue V2.1 override stack.
+   One surface language, meaningful status accents, and readable metadata.
+   ====================================================================== */
 :root{
-  --bbb-bg:#05090d;
-  --bbb-bg-2:#081018;
-  --bbb-panel:#0b1319;
-  --bbb-panel-2:#0d1820;
-  --bbb-panel-3:#111e27;
-
-  /* Blue is now the structural UI accent everywhere. Green is the live/positive accent. */
-  --bbb-blue:#59c8ff;
-  --bbb-cyan:#63e6d2;
-  --bbb-green:#64e6a0;
-
-  --bbb-line:rgba(89,200,255,.17);
-  --bbb-line-strong:rgba(89,200,255,.30);
-
-  --bbb-text:#f2f7f9;
-  --bbb-text-2:#c9d6da;
-  --bbb-text-3:#96a9b0;
+  color-scheme:dark;
+  --bbb-bg:#080d10;
+  --bbb-bg-2:#0a1114;
+  --bbb-panel:#10191d;
+  --bbb-panel-2:#142126;
+  --bbb-panel-3:#18272b;
+  --bbb-line:rgba(158,191,181,.19);
+  --bbb-line-strong:rgba(158,191,181,.33);
+  --bbb-text:#f4f8f6;
+  --bbb-text-2:#d4dfdb;
+  --bbb-text-3:#a4b7b0;
+  --bbb-green:#53e5a0;
+  --bbb-cyan:#79d4dc;
+  --bbb-blue:#87bbdb;
+  --bbb-amber:#f2c57a;
+  --bbb-red:#fa949c;
+  --bbb-violet:#b9a6e8;
+  --bbb-shadow:0 12px 35px rgba(0,0,0,.23);
+  --bbb-radius:14px;
+  --ui-green:var(--bbb-green);
+  --ui-mint:#a3efc8;
+  --ui-cyan:var(--bbb-cyan);
+  --ui-blue:var(--bbb-blue);
+  --ui-amber:var(--bbb-amber);
+  --ui-red:var(--bbb-red);
+  --ui-violet:var(--bbb-violet);
+  --ui-text:var(--bbb-text);
+  --ui-muted:var(--bbb-text-3);
+  --ui-line:var(--bbb-line);
 }
-
-/* A visible but quiet cyberpunk mesh across every Admin page. */
+/* Single fixed ambient mesh. No circle/radar/orbit, no overlay on content. */
+html,body{background:#080d10!important;color:var(--bbb-text)!important}
 body{
   background:
-    linear-gradient(180deg,#05090d 0%,#071019 46%,#05090d 100%)!important;
+    linear-gradient(145deg,rgba(37,96,78,.10),transparent 36%),
+    linear-gradient(330deg,rgba(38,82,96,.09),transparent 46%),
+    linear-gradient(180deg,#080d10 0%,#0b1216 53%,#080d10 100%)!important;
 }
-body:before{
+body::before{
+  content:""!important;position:fixed!important;inset:0!important;
+  pointer-events:none!important;z-index:0!important;
   background:
-    linear-gradient(rgba(89,200,255,.035) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(99,230,210,.026) 1px,transparent 1px)!important;
-  background-size:52px 52px!important;
-  opacity:.72!important;
+    repeating-linear-gradient(62deg,transparent 0 92px,rgba(114,177,165,.075) 93px,transparent 94px),
+    repeating-linear-gradient(118deg,transparent 0 92px,rgba(83,161,171,.055) 93px,transparent 94px)!important;
+  opacity:.34!important;
+  -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.95),rgba(0,0,0,.40) 68%,transparent)!important;
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.95),rgba(0,0,0,.40) 68%,transparent)!important;
 }
-#appView:before{
-  inset:70px 0 0!important;
-  opacity:1!important;
-  background:
-    linear-gradient(122deg,transparent 0 61%,rgba(89,200,255,.040) 61.12%,transparent 61.34%),
-    linear-gradient(58deg,transparent 0 76%,rgba(99,230,210,.026) 76.14%,transparent 76.34%),
-    linear-gradient(142deg,transparent 0 84%,rgba(89,200,255,.020) 84.10%,transparent 84.26%),
-    repeating-linear-gradient(90deg,transparent 0 103px,rgba(89,200,255,.018) 104px 105px),
-    linear-gradient(180deg,rgba(255,255,255,.006),transparent 52%)!important;
+body::after,#appView::before,#appView::after{
+  content:none!important;display:none!important;background:none!important;
 }
-#appView:after{
-  content:""!important;
-  position:fixed!important;
-  inset:70px 0 0!important;
-  z-index:0!important;
-  pointer-events:none!important;
-  background:
-    linear-gradient(135deg,transparent 0 31%,rgba(89,200,255,.025) 31.12%,transparent 31.30%),
-    linear-gradient(45deg,transparent 0 83%,rgba(99,230,210,.020) 83.12%,transparent 83.30%)!important;
-  opacity:.82!important;
+#appView{position:relative!important;z-index:1!important;background:transparent!important;font-size:15px!important}
+#appView .admin-layout{gap:20px!important}
+#appView .content{min-width:0!important}
+/* Surface values: the data, not the decor, is the brightest layer. */
+#appView :is(.panel,.nexus-block,.scanner-panel,.auto-panel,.exception-workbench,
+  .content-right-now,.content-youtube-dna,.side-card){
+  border:1px solid var(--bbb-line)!important;
+  border-radius:var(--bbb-radius)!important;
+  background:linear-gradient(160deg,rgba(19,29,33,.985),rgba(13,22,26,.985))!important;
+  box-shadow:var(--bbb-shadow)!important;
 }
-#appView .topbar,
-#appView .admin-mission-bar,
-#appView .admin-layout{position:relative!important;z-index:1!important}
-#appView .content,
-#appView .admin-page{background:transparent!important}
-
-/* Shared chrome now carries a blue/cyan edge instead of old dark green. */
-#appView .panel,
-#appView .nexus-block,
-#appView .scanner-panel,
-#appView .content-right-now,
-#appView .content-youtube-dna,
-#appView .exception-workbench,
-#appView .auto-panel{
-  border-color:rgba(89,200,255,.15)!important;
-  background:
-    linear-gradient(145deg,rgba(12,21,28,.975),rgba(8,15,20,.985))!important;
-  box-shadow:0 12px 34px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.014)!important;
+#appView :is(.metric,.cyber-metric,.nexus-kpi,.content-kpi,.inj-kpi,.scanner-kpi-btn,
+  .auto-kpi,.exception-stat,.nexus-system,.nexus-signal-card,.nexus-next-action,
+  .scanner-card-v2,.scanner-spotlight-card,.inj-card,.inj-priority-card,
+  .content-card,.content-now-card,.content-prospect-card,.content-youtube-leaders,
+  .auto-source-card,.auto-job-card,.auto-run-row,.exception-card,.exception-check,
+  .exception-manager-shell,.exception-tab){
+  border-color:var(--bbb-line)!important;
+  background:linear-gradient(145deg,rgba(21,33,37,.97),rgba(13,23,28,.98))!important;
+  box-shadow:none!important;
 }
-#appView .panel:before{
-  background:linear-gradient(90deg,transparent,rgba(89,200,255,.24),rgba(99,230,210,.13),transparent)!important;
+#appView :is(.metric,.cyber-metric,.nexus-kpi,.nexus-system,.nexus-signal-card,
+  .scanner-card-v2,.scanner-spotlight-card,.inj-card,.inj-priority-card,
+  .content-card,.content-now-card,.auto-job-card,.exception-card):hover{
+  border-color:rgba(83,229,160,.40)!important;
+  background:linear-gradient(145deg,#1a302e,#13252a)!important;
 }
-#appView .panel-head,
-#appView .nexus-block-head{
-  border-bottom-color:rgba(89,200,255,.09)!important;
-  background:linear-gradient(90deg,rgba(89,200,255,.018),transparent 42%)!important;
+/* Eliminate noisy nested grids, masks, beams, and competing micro-patterns. */
+#appView :is(.cyber-hero,.scanner-hero,.inj-hero,.content-hero,.auto-hero,
+  .prospect-hero,.research-hero,.dashboard-nexus){
+  border:1px solid var(--bbb-line-strong)!important;
+  background:linear-gradient(120deg,#152725 0%,#101c21 61%,#111d24 100%)!important;
+  box-shadow:0 14px 38px rgba(0,0,0,.24)!important;
 }
-
-/* Page heads keep semantic page accent, but the frame is always blue. */
-#appView .admin-page>.page-head{
-  border-color:rgba(89,200,255,.16)!important;
-  background:
-    linear-gradient(125deg,rgba(12,22,29,.98),rgba(8,15,20,.99))!important;
+#appView :is(.cyber-hero,.scanner-hero,.inj-hero,.content-hero,.auto-hero,
+  .prospect-hero,.research-hero,.dashboard-nexus)::before{
+  content:none!important;display:none!important;
 }
-
-/* Hero shell: blue structural light + a restrained green live accent. */
-#pageDashboard .cyber-hero,
-#pageScanner .scanner-hero,
-#pageInjuries .inj-hero,
-#pageContent .content-hero,
-#pageAutomations .auto-hero,
-#pageProspects .prospect-hero,
-#pageResearch .research-hero{
-  border-color:rgba(89,200,255,.17)!important;
-  background:
-    linear-gradient(90deg,transparent 0 72%,rgba(89,200,255,.026) 72.2%,transparent 72.4%),
-    linear-gradient(125deg,rgba(12,22,29,.985),rgba(8,15,20,.995))!important;
+#appView :is(.cyber-hero,.scanner-hero,.inj-hero,.content-hero,.auto-hero,
+  .prospect-hero,.research-hero)::after{
+  background:linear-gradient(90deg,transparent,var(--bbb-green),transparent)!important;
+  opacity:.45!important;
 }
-#pageDashboard .cyber-hero:before,
-#pageScanner .scanner-hero:before,
-#pageInjuries .inj-hero:before,
-#pageContent .content-hero:before,
-#pageAutomations .auto-hero:before,
-#pageProspects .prospect-hero:before,
-#pageResearch .research-hero:before{
-  opacity:.56!important;
-  background:
-    linear-gradient(rgba(89,200,255,.032) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(99,230,210,.021) 1px,transparent 1px),
-    linear-gradient(122deg,transparent 0 67%,rgba(89,200,255,.025) 67.12%,transparent 67.32%)!important;
-  background-size:56px 56px,56px 56px,auto!important;
+#appView .cyber-grid,#appView .hero-holo,#appView .holo-orbit,
+#appView .holo-scan,#appView .holo-core,#appView .holo-node{
+  display:none!important;
 }
-
-/* Metrics/cards: dark navy-charcoal, blue border; green only for positive status. */
-#appView .metric,
-#appView .cyber-metric,
-#appView .nexus-kpi,
-#appView .content-kpi,
-#appView .inj-kpi,
-#appView .scanner-kpi-btn,
-#appView .auto-kpi,
-#appView .exception-stat{
-  border-color:rgba(89,200,255,.14)!important;
-  background:linear-gradient(145deg,rgba(12,22,29,.98),rgba(8,15,20,.99))!important;
-}
-#appView .metric:hover,
-#appView .cyber-metric:hover,
-#appView .nexus-kpi:hover,
-#appView .content-kpi:hover,
-#appView .inj-kpi:hover,
-#appView .scanner-kpi-btn:hover{
-  border-color:rgba(89,200,255,.29)!important;
-  box-shadow:0 10px 30px rgba(0,0,0,.22),0 0 20px rgba(89,200,255,.035)!important;
-}
-
-/* Inputs, buttons and neutral actions use blue by default. */
-#appView .input,
-#appView .select,
-#appView .textarea{
-  border-color:rgba(89,200,255,.16)!important;
-  background:#081117!important;
-}
-#appView .input:focus,
-#appView .select:focus,
-#appView .textarea:focus{
-  border-color:rgba(89,200,255,.48)!important;
-  box-shadow:0 0 0 3px rgba(89,200,255,.07)!important;
-}
-#appView .small-btn,
-#appView .refresh-btn,
-#appView .pw-action{
-  border-color:rgba(89,200,255,.17)!important;
-  background:rgba(10,20,27,.96)!important;
-}
-#appView .small-btn:hover,
-#appView .refresh-btn:hover,
-#appView .pw-action:hover{
-  border-color:rgba(89,200,255,.39)!important;
-  background:rgba(14,29,38,.98)!important;
-}
-
-/* Command Deck itself gets the blue/green standard while retaining semantic icon colors. */
-#appView .side-card{
-  border-color:rgba(89,200,255,.15)!important;
-  background:linear-gradient(180deg,rgba(10,19,25,.97),rgba(7,14,18,.99))!important;
-}
-#appView .nav-btn{
-  border-color:transparent!important;
-}
-#appView .nav-btn.active{
-  background:linear-gradient(90deg,rgba(89,200,255,.090),rgba(99,230,210,.025),transparent)!important;
-  box-shadow:inset 0 0 0 1px rgba(89,200,255,.12)!important;
-}
-#appView .nav-btn.active:before{
-  background:var(--bbb-blue)!important;
-  box-shadow:0 0 13px rgba(89,200,255,.55)!important;
-}
-
-/* Dashboard: replace remaining green-card structure with the blue standard. */
-#pageDashboard .dashboard-nexus{
-  border-color:rgba(89,200,255,.16)!important;
-  background:linear-gradient(145deg,rgba(12,22,29,.985),rgba(8,15,20,.995))!important;
-}
-#pageDashboard .nexus-signal-card,
-#pageDashboard .nexus-system,
-#pageDashboard .nexus-next{
-  border-color:rgba(89,200,255,.13)!important;
-  background:rgba(10,19,25,.90)!important;
-}
-#pageDashboard .nexus-signal-card:hover,
-#pageDashboard .nexus-system:hover{
-  border-color:rgba(89,200,255,.27)!important;
-  background:rgba(13,25,32,.96)!important;
-}
-#pageDashboard .nexus-system i.good,
-#pageDashboard .nexus-system.good i{background:var(--bbb-green)!important}
-
-/* Weekly Scanner. */
-#pageScanner .scanner-spotlight-card,
-#pageScanner .scanner-card-v2,
-#pageScanner .scanner-signal-panel,
-#pageScanner .scanner-stats-v2 .scanner-stat{
-  border-color:rgba(89,200,255,.13)!important;
-  background:linear-gradient(145deg,rgba(12,22,29,.98),rgba(8,15,20,.99))!important;
-}
-#pageScanner .spotlight-tag,
-#pageScanner .scanner-signal-panel>span{
-  border-color:rgba(89,200,255,.18)!important;
-  background:rgba(89,200,255,.055)!important;
-  color:#9edfff!important;
-}
-
-/* Injury Center. */
-#pageInjuries .inj-card,
-#pageInjuries .inj-priority-card,
-#pageInjuries .inj-kpi{
-  border-color:rgba(89,200,255,.13)!important;
-  background:linear-gradient(145deg,rgba(12,22,29,.98),rgba(8,15,20,.99))!important;
-}
-
-/* Content Intelligence: blue framework; violet only for content-type chips. */
-#pageContent .content-card,
-#pageContent .content-now-card,
-#pageContent .content-prospect-card,
-#pageContent .content-youtube-leaders,
-#pageContent .content-youtube-dna,
-#pageContent .content-right-now{
-  border-color:rgba(89,200,255,.14)!important;
-  background:linear-gradient(145deg,rgba(12,22,29,.98),rgba(8,15,20,.99))!important;
-}
-#pageContent .content-score-ring,
-#pageContent .content-now-score,
-#pageContent .content-prospect-score{
-  border-color:rgba(89,200,255,.16)!important;
-  background:rgba(89,200,255,.035)!important;
-}
-#pageContent .content-score-ring span,
-#pageContent .content-now-score small,
-#pageContent .content-prospect-score small{
-  color:#82afc2!important;
-}
-#pageContent .content-action.secondary{
-  border-color:rgba(89,200,255,.20)!important;
-  color:#a2e0ff!important;
-}
-#pageContent .content-action.primary{
-  border-color:rgba(99,230,210,.20)!important;
-  background:rgba(99,230,210,.06)!important;
-  color:#91eedc!important;
-}
-
-/* Automation. */
-#pageAutomations .auto-source-card,
-#pageAutomations .auto-job-card,
-#pageAutomations .auto-run-row{
-  border-color:rgba(89,200,255,.13)!important;
-  background:rgba(10,19,25,.92)!important;
-}
-
-/* Review / Exception Manager. */
-#pageReview .exception-manager-shell,
-#pageReview .exception-workbench,
-#pageReview .exception-card,
-#pageReview .exception-stat,
-#pageReview .exception-check{
-  border-color:rgba(89,200,255,.13)!important;
-  background:linear-gradient(145deg,rgba(12,22,29,.98),rgba(8,15,20,.99))!important;
-}
-#pageReview .exception-tab{
-  border-color:rgba(89,200,255,.12)!important;
-  background:rgba(10,19,25,.86)!important;
-}
-#pageReview .exception-tab.active{
-  border-color:rgba(89,200,255,.30)!important;
-  background:rgba(89,200,255,.075)!important;
-  color:#d9f3ff!important;
-}
-
-/* Ranking/Player tables. */
-#appView .rank-table th{
-  background:#091219!important;
-  border-bottom-color:rgba(89,200,255,.13)!important;
-}
-#appView .rank-table td{
-  background:rgba(10,18,24,.78)!important;
-  border-bottom-color:rgba(89,200,255,.075)!important;
-}
-#appView .rank-table tbody tr:hover td{
-  background:rgba(14,28,36,.96)!important;
-}
-
-/* Player Workspace also follows the blue structural shell. */
-#bbbPlayerWorkspace{
-  border-color:rgba(89,200,255,.24)!important;
-}
-#bbbPlayerWorkspace .pw-shell{
-  background:linear-gradient(180deg,#0a1319,#071016)!important;
-}
-#bbbPlayerWorkspace .pw-head,
-#bbbPlayerWorkspace .pw-tabs,
-#bbbPlayerWorkspace .pw-panel,
-#bbbPlayerWorkspace .pw-metric,
-#bbbPlayerWorkspace .pw-info,
-#bbbPlayerWorkspace .pw-history-row,
-#bbbPlayerWorkspace .pw-feed-item,
-#bbbPlayerWorkspace .pw-check{
-  border-color:rgba(89,200,255,.11)!important;
-  background:rgba(10,19,25,.90)!important;
-}
-
-/* Neutral labels should lean blue-gray instead of green-gray. */
-#appView .eyebrow,
-#appView .panel-kicker,
-#appView .metric span,
-#appView .cyber-metric span,
-#appView .nexus-kpi span,
-#appView .content-kpi span,
-#appView .inj-kpi span,
-#appView .scanner-kpi-btn span,
-#appView .auto-kpi span,
-#appView .exception-stat span{
-  color:#7f9caa!important;
-}
-
-/* Green is deliberately reserved for live / healthy / approved / positive states. */
-#appView .good,
-#appView .status-good,
-#appView .positive,
-#appView .approved{
-  --state-accent:var(--bbb-green);
-}
-
-
-/* ===== DESIGN SYSTEM V2.2 · FULL BLUE/GREEN CONSISTENCY PASS ===== */
-
-/* Top shell / header */
+#appView .panel::before{background:none!important;box-shadow:none!important}
+#appView .metric::after{display:none!important}
+/* Navigation and secure command link: green is our BRAND, not blue. */
 #appView .topbar{
-  border-bottom:1px solid rgba(89,200,255,.16)!important;
-  background:rgba(5,12,16,.96)!important;
-  box-shadow:0 10px 32px rgba(0,0,0,.18)!important;
+  background:rgba(9,17,20,.96)!important;
+  border-bottom-color:var(--bbb-line)!important;
+  box-shadow:0 4px 24px rgba(0,0,0,.23)!important;
 }
 #appView .brand-mark{
-  background:linear-gradient(145deg,#16a66d,#238fc2)!important;
-  box-shadow:0 0 22px rgba(89,200,255,.10)!important;
+  background:linear-gradient(145deg,#159460,#0d6748)!important;
+  color:#fff!important;box-shadow:0 0 0 1px rgba(83,229,160,.29)!important;
 }
-#appView .brand-copy span{color:#7f9aa6!important}
-#appView .command-search{
-  border-color:rgba(89,200,255,.18)!important;
-  background:rgba(7,16,21,.86)!important;
+#appView .side-card{
+  border-color:var(--bbb-line)!important;
+  background:linear-gradient(180deg,#111d20,#0d161a)!important;
 }
-#appView .command-search:focus-within{
-  border-color:rgba(89,200,255,.38)!important;
-  box-shadow:0 0 0 3px rgba(89,200,255,.055)!important;
+#appView .side-note{
+  position:relative!important;overflow:hidden!important;
+  border:1px solid var(--bbb-line)!important;
+  background:#121e22!important;color:var(--bbb-text-2)!important;
+  box-shadow:none!important;
 }
-#appView .command-search input::placeholder{color:#708893!important}
-#appView .command-search kbd{
-  border-color:rgba(89,200,255,.17)!important;
-  background:#09151c!important;
-  color:#7ea9bb!important;
+#appView .side-note::before{
+  background:var(--bbb-green)!important;box-shadow:none!important;
 }
-#appView .admin-pill,
-#appView .ghost{
-  border-color:rgba(89,200,255,.18)!important;
-  background:rgba(9,20,27,.82)!important;
-  color:#a5bdc8!important;
-}
-#appView .admin-pill:hover,
-#appView .ghost:hover{
-  border-color:rgba(89,200,255,.34)!important;
-  background:rgba(13,28,36,.94)!important;
-  color:#eefaff!important;
-}
-#appView .system-live{
-  border-color:rgba(89,200,255,.18)!important;
-  background:rgba(8,20,25,.88)!important;
-}
-#appView .system-live>b{color:#c8f6e4!important}
-#appView .admin-clock{
-  border-left-color:rgba(89,200,255,.12)!important;
-  border-right-color:rgba(89,200,255,.12)!important;
-}
-#appView .admin-clock small{color:#75919c!important}
-
-/* Sticky workspace context bar */
-#appView .admin-mission-bar{
-  border-left-color:rgba(89,200,255,.11)!important;
-  border-right-color:rgba(89,200,255,.11)!important;
-  border-bottom-color:rgba(89,200,255,.11)!important;
-  background:rgba(6,14,18,.94)!important;
-}
-#appView .mission-context small{color:#6f8c98!important}
-#appView .mission-context strong{color:#d7ebe3!important}
-#appView .mission-dot{
-  background:var(--bbb-cyan)!important;
-  box-shadow:0 0 12px rgba(99,230,210,.62)!important;
-}
-
-/* Command Deck shell + nav */
-#appView .sidebar .side-card{
-  border-color:rgba(89,200,255,.16)!important;
-  background:linear-gradient(180deg,rgba(9,19,25,.98),rgba(6,13,18,.99))!important;
-  box-shadow:0 16px 38px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.014)!important;
-}
-#appView .nav-overline{color:#6f8c98!important}
+#appView .side-note :is(p,small,span){color:var(--bbb-text-3)!important}
+#appView .side-note :is(strong,b){color:var(--bbb-text)!important}
+#appView .nav-overline{font-size:11px!important;color:var(--bbb-text-3)!important;letter-spacing:.12em!important}
 #appView .nav-btn{
-  color:#93a8b1!important;
+  min-height:49px!important;color:#bed0c8!important;
+  font-size:13px!important;letter-spacing:0!important;
 }
-#appView .nav-btn:hover{
-  color:#f3fbff!important;
-  background:rgba(89,200,255,.045)!important;
+#appView .nav-btn:hover{color:#fff!important;background:rgba(83,229,160,.065)!important}
+#appView .nav-btn.active{
+  color:#f5fff9!important;
+  background:linear-gradient(90deg,rgba(83,229,160,.16),rgba(83,229,160,.035))!important;
+  box-shadow:inset 0 0 0 1px rgba(83,229,160,.20)!important;
 }
-#appView .nav-btn>span:last-child{
-  border-color:rgba(89,200,255,.10)!important;
-  background:rgba(89,200,255,.025)!important;
-  color:#79939e!important;
-}
-/* Every icon tile uses the same blue structural shell; semantic icon color remains. */
+#appView .nav-btn.active::before{background:var(--bbb-green)!important;box-shadow:none!important}
+#appView .nav-label{font-weight:850!important}
 #appView .nav-label svg{
-  border-color:rgba(89,200,255,.20)!important;
-  background:rgba(89,200,255,.045)!important;
+  border-color:rgba(158,191,181,.25)!important;
+  background:rgba(255,255,255,.025)!important;
 }
 #appView .nav-btn.active .nav-label svg{
-  border-color:rgba(89,200,255,.38)!important;
-  background:linear-gradient(145deg,rgba(89,200,255,.13),rgba(99,230,210,.075))!important;
-  box-shadow:0 0 18px rgba(89,200,255,.08)!important;
+  border-color:rgba(83,229,160,.38)!important;
+  background:rgba(83,229,160,.10)!important;
+  box-shadow:none!important;
 }
-#appView .nav-btn.active{
-  background:linear-gradient(90deg,rgba(89,200,255,.10),rgba(99,230,210,.035),transparent)!important;
+#appView .nav-btn>span:last-child{
+  min-width:27px!important;color:#a8bcb2!important;
+  background:rgba(255,255,255,.035)!important;border-color:var(--bbb-line)!important;
+  font-size:11px!important;
 }
-#appView .nav-btn.active:before{
-  background:linear-gradient(180deg,var(--bbb-blue),var(--bbb-cyan))!important;
-  box-shadow:0 0 13px rgba(89,200,255,.50)!important;
+#appView .system-live>b{font-size:11px!important;color:#a8f1cd!important}
+/* Page framing: consistent charcoal, small signal rule, no competing color washes. */
+#appView .admin-page>.page-head{
+  min-height:109px!important;padding:21px 23px!important;
+  border:1px solid var(--bbb-line)!important;
+  background:linear-gradient(125deg,#162327,#111c21)!important;
+  box-shadow:0 8px 25px rgba(0,0,0,.13)!important;
 }
-
-/* Secure Command Link — blue/cyan structure, green only for trust/secure signal. */
-#appView .side-note{
-  border:1px solid rgba(89,200,255,.18)!important;
-  background:
-    linear-gradient(145deg,rgba(11,23,30,.97),rgba(7,15,20,.99))!important;
-  box-shadow:0 14px 34px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.015)!important;
+#appView .admin-page>.page-head::before{
+  background:var(--bbb-green)!important;box-shadow:none!important;
 }
-#appView .side-note:before{
-  content:""!important;
-  position:absolute!important;
-  left:0!important;top:13px!important;bottom:13px!important;
-  width:2px!important;border-radius:2px!important;
-  background:linear-gradient(180deg,var(--bbb-blue),var(--bbb-cyan))!important;
-  box-shadow:0 0 12px rgba(89,200,255,.30)!important;
+#appView .admin-page>.page-head::after{content:none!important}
+#appView .admin-page>.page-head h1{color:var(--bbb-text)!important;font-size:clamp(30px,2.8vw,43px)!important}
+#appView .admin-page>.page-head p{color:var(--bbb-text-3)!important;font-size:14px!important;line-height:1.5!important}
+#appView .eyebrow,#appView .panel-kicker{
+  font-size:11px!important;color:#92dfb7!important;letter-spacing:.12em!important;
 }
-#appView .side-note-icon{
-  border-color:rgba(89,200,255,.25)!important;
-  background:linear-gradient(145deg,rgba(89,200,255,.10),rgba(99,230,210,.06))!important;
-  color:#89efd5!important;
-  box-shadow:0 0 18px rgba(89,200,255,.06)!important;
+#appView h2{font-size:22px!important}
+#appView h3{font-size:18px!important}
+#appView .panel-head span,#appView .nexus-block-head small{
+  color:var(--bbb-text-3)!important;font-size:12px!important;
 }
-#appView .side-note strong{
-  color:#bde9f7!important;
-  font-size:10.5px!important;
+#appView .panel-head,#appView .nexus-block-head,
+#appView :is(.content-toolbar,.content-view-tabs,.exception-toolbar,.exception-sortline){
+  border-color:var(--bbb-line)!important;background:rgba(255,255,255,.018)!important;
 }
-#appView .side-note span{
-  color:#9fb1b8!important;
-  font-size:10.5px!important;
+/* Data typography floors: formerly 6-9px at desktop widths. */
+#appView :is(.metric,.cyber-metric,.nexus-kpi,.inj-kpi,.scanner-kpi-btn,.content-kpi,
+  .auto-kpi,.exception-stat) span{
+  font-size:11px!important;color:var(--bbb-text-3)!important;line-height:1.35!important;
 }
-
-/* Shared cards and rows that legacy CSS still paints green. */
-#appView .toolbar,
-#appView .activity-row,
-#appView .health-chip,
-#appView .ops-action,
-#appView .research-card,
-#appView .prospect-card,
-#appView .move-card,
-#appView .move-queue-card,
-#appView .queue-card{
-  border-color:rgba(89,200,255,.11)!important;
+#appView :is(.nexus-kpi,.inj-kpi,.scanner-kpi-btn,.content-kpi,.auto-kpi) small{
+  font-size:11px!important;color:var(--bbb-text-3)!important;line-height:1.4!important;
 }
-#appView .toolbar{
-  border-bottom-color:rgba(89,200,255,.10)!important;
-  background:rgba(8,17,23,.72)!important;
+#appView :is(.nexus-kpi,.inj-kpi,.scanner-kpi-btn,.content-kpi,.auto-kpi) strong{
+  color:var(--bbb-text)!important;
 }
-#appView .activity-row{
-  border-bottom-color:rgba(89,200,255,.07)!important;
+#appView :is(.nexus-head,.nexus-block-head,.nexus-next-copy,.nexus-signal-card,
+  .nexus-system,.nexus-path-step,.inj-priority-card,.inj-data-health,.inj-card,
+  .scanner-card-v2,.scanner-spotlight-card,.content-card,.content-now-card,
+  .content-prospect-card,.auto-job-card,.auto-run-row,.exception-card)
+  :is(small,em){
+  font-size:11px!important;line-height:1.5!important;color:var(--bbb-text-3)!important;
 }
-#appView .activity-row:hover{
-  background:rgba(89,200,255,.025)!important;
+#appView :is(.nexus-head,.nexus-block-head,.nexus-next-copy,.nexus-signal-card,
+  .nexus-system,.nexus-path-step,.inj-priority-card,.inj-data-health,.inj-card,
+  .scanner-card-v2,.scanner-spotlight-card,.content-card,.content-now-card,
+  .content-prospect-card,.auto-job-card,.auto-run-row,.exception-card)
+  :is(p,span){
+  font-size:12px!important;line-height:1.5!important;color:var(--bbb-text-3)!important;
 }
-#appView .health-chip,
-#appView .ops-action,
-#appView .research-card,
-#appView .prospect-card,
-#appView .move-card,
-#appView .move-queue-card,
-#appView .queue-card{
-  background:linear-gradient(145deg,rgba(11,21,27,.96),rgba(8,15,20,.985))!important;
+#appView :is(.nexus-next-copy,.nexus-signal-card,.nexus-system,
+  .inj-priority-card,.scanner-card-v2,.content-card,.auto-job-card,.exception-card)
+  strong{
+  color:var(--bbb-text-2)!important;font-size:clamp(13px,.85vw,16px)!important;
 }
-
-/* Ranking Moves retains amber meaning, but the card shell follows the system. */
-#pageMoves .move-card,
-#pageMoves .move-queue-card,
-#pageMoves .move-target,
-#pageMoves .move-card-context{
-  border-color:rgba(89,200,255,.13)!important;
-  background:linear-gradient(145deg,rgba(11,21,27,.97),rgba(8,15,20,.99))!important;
+#appView .nexus-next-copy h3{font-size:20px!important;color:var(--bbb-text)!important}
+#appView .nexus-head h2{font-size:24px!important}
+#appView .nexus-signal-card{min-height:117px!important;gap:12px!important}
+#appView .nexus-system{min-height:92px!important}
+#appView .nexus-kpi{min-height:100px!important;padding:16px!important}
+#appView .nexus-path-step{min-height:60px!important}
+#appView .nexus-next-action{min-height:148px!important}
+#appView .nexus-next-copy p{font-size:13px!important}
+#appView .inj-priority-card{min-height:125px!important}
+#appView .inj-priority-copy strong{font-size:15px!important}
+#appView .inj-latest{font-size:13px!important;color:var(--bbb-text-2)!important}
+#appView .inj-meta-row,#appView .inj-meta-row :is(span,b){font-size:11px!important}
+#appView .inj-section-label :is(span,em){font-size:11px!important;color:var(--bbb-text-3)!important}
+#appView .scanner-boxscore-v2,#appView .scanner-signal-panel strong{font-size:12px!important}
+#appView .scanner-signal-panel small{font-size:11px!important;line-height:1.45!important}
+#appView .content-player p,#appView .content-angle p{font-size:13px!important}
+#appView .content-youtube-row :is(strong,span){font-size:12px!important}
+#appView .content-angle h4{font-size:16px!important}
+#appView .auto-source-card :is(span,small),
+#appView .auto-job-card :is(span,small),
+#appView .auto-run-row :is(span,small){font-size:12px!important;color:var(--bbb-text-3)!important}
+#appView :is(.hud-badge,.scanner-signal,.inj-status,.status-pill,.pill,
+  .queue-priority,.queue-source,.review-status,.pos){
+  font-size:11px!important;min-height:25px!important;line-height:1.3!important;
 }
-#pageMoves .move-priority,
-#pageMoves .move-direction{
-  border-color:rgba(231,185,100,.20)!important;
+/* Workspace / grade editing must be usable, including on a laptop. */
+#bbbPlayerWorkspace{
+  border-color:var(--bbb-line-strong)!important;
+  background:#0c151a!important;
 }
-
-/* Scanner internal pieces */
-#pageScanner .scanner-card-foot-v2,
-#pageScanner .scanner-card-main-v2,
-#pageScanner .scanner-spotlight,
-#pageScanner .scanner-stats-v2{
-  border-color:rgba(89,200,255,.09)!important;
-}
-#pageScanner .scanner-card-foot-v2{background:rgba(7,15,20,.82)!important}
-#pageScanner .scanner-rank-chip{
-  border-color:rgba(89,200,255,.16)!important;
-  background:rgba(89,200,255,.04)!important;
-  color:#9dbdca!important;
-}
-
-/* Injury center internals */
-#pageInjuries .inj-card-body,
-#pageInjuries .inj-card-body>section,
-#pageInjuries .inj-latest,
-#pageInjuries .inj-meta-row{
-  border-color:rgba(89,200,255,.08)!important;
-}
-#pageInjuries .inj-card-body{background:rgba(7,15,20,.74)!important}
-#pageInjuries .inj-card-body>section{background:#0a141a!important}
-
-/* Content internals */
-#pageContent .content-card-grid,
-#pageContent .content-card-foot,
-#pageContent .content-toolbar,
-#pageContent .content-view-tabs{
-  border-color:rgba(89,200,255,.09)!important;
-}
-#pageContent .content-card-grid{background:rgba(89,200,255,.035)!important}
-#pageContent .content-card-grid>section{background:#0a141a!important}
-#pageContent .content-card-foot{background:rgba(7,15,20,.82)!important}
-#pageContent .content-toolbar,
-#pageContent .content-view-tabs{background:rgba(8,17,23,.80)!important}
-
-/* Automation internals */
-#pageAutomations .auto-section,
-#pageAutomations .auto-source-card,
-#pageAutomations .auto-job-card,
-#pageAutomations .auto-run-row{
-  border-color:rgba(89,200,255,.12)!important;
-}
-
-/* Review / Exception internals */
-#pageReview .exception-manager-head,
-#pageReview .exception-toolbar,
-#pageReview .exception-sortline,
-#pageReview .exception-card header,
-#pageReview .exception-compare,
-#pageReview .exception-third-source,
-#pageReview .exception-context,
-#pageReview .exception-latest,
-#pageReview .exception-resolution,
-#pageReview .exception-card footer{
-  border-color:rgba(89,200,255,.08)!important;
-}
-#pageReview .exception-card footer{background:rgba(7,15,20,.82)!important}
-#pageReview .exception-compare{background:rgba(89,200,255,.035)!important}
-#pageReview .exception-compare>div{background:#0a141a!important}
-
-/* Player Workspace internals */
-#bbbPlayerWorkspace .pw-head,
-#bbbPlayerWorkspace .pw-tabs,
-#bbbPlayerWorkspace .pw-panel-head,
-#bbbPlayerWorkspace .pw-info-grid{
-  border-color:rgba(89,200,255,.10)!important;
-}
-#bbbPlayerWorkspace .pw-action,
-#bbbPlayerWorkspace .pw-close,
-#bbbPlayerWorkspace .pw-input{
-  border-color:rgba(89,200,255,.15)!important;
-  background:#0a151c!important;
+#bbbPlayerWorkspace :is(.pw-shell,.pw-head,.pw-tabs,.pw-panel,.pw-metric,.pw-info,
+  .pw-history-row,.pw-feed-item,.pw-check){
+  border-color:var(--bbb-line)!important;
+  background:#122024!important;
 }
 #bbbPlayerWorkspace .pw-tab.active{
-  background:linear-gradient(145deg,rgba(89,200,255,.12),rgba(99,230,210,.06))!important;
-  box-shadow:inset 0 0 0 1px rgba(89,200,255,.13)!important;
+  background:rgba(83,229,160,.12)!important;
+  color:#ddf9e9!important;
+  box-shadow:inset 0 0 0 1px rgba(83,229,160,.30)!important;
 }
-
-/* Empty states / helper copy are blue-gray, not muddy green. */
-#appView .empty,
-#appView .auth-note,
-#appView .helper-text,
-#appView .sub-label{
-  color:#859ba5!important;
+#bbbPlayerWorkspace :is(.pw-copy,.pw-panel-head span,.pw-table td,
+  .pw-info,.pw-history-row,.pw-feed-item){font-size:13px!important;line-height:1.5!important}
+#bbbPlayerWorkspace :is(.pw-table th,.pw-tab,.pw-input,.pw-action){font-size:12px!important}
+#bbbPlayerWorkspace .pw-input{background:#0b171b!important;color:var(--bbb-text)!important}
+#bbbPlayerWorkspace .pw-action{background:#17282a!important;color:#d1e9dc!important}
+/* Tables and forms are core workflows, not microprint. */
+#appView :is(.rank-table,.pw-table) th{
+  background:#132126!important;color:#aebfb8!important;font-size:12px!important;
+  padding:13px 12px!important;
 }
-
-/* Primary brand green remains available for real positive/action states. */
-#appView .green,
-#appView .activity-table,
-#appView .rank-number{
-  color:#7ce7b1!important;
+#appView :is(.rank-table,.pw-table) td{
+  background:rgba(17,28,32,.86)!important;color:var(--bbb-text-2)!important;
+  font-size:13px!important;padding:13px 12px!important;
+}
+#appView .rank-table tbody tr:hover td{background:#1a302e!important}
+#appView .player-name{font-size:14px!important;color:#fff!important}
+#appView .rank-number{color:var(--bbb-green)!important}
+#appView .muted,#appView .empty,#appView .helper-text,
+#appView .sub-label,#appView .save-status{
+  color:var(--bbb-text-3)!important;opacity:1!important;font-size:12px!important;
+}
+#appView .input,#appView .select,#appView .textarea,
+#appView .rank-input,#appView .pw-input{
+  background:#0c171b!important;border:1px solid var(--bbb-line-strong)!important;
+  color:var(--bbb-text)!important;font-size:14px!important;min-height:43px!important;
+}
+#appView .input::placeholder,#appView .textarea::placeholder{color:#a1b2ab!important}
+#appView .input:focus,#appView .select:focus,#appView .textarea:focus,
+#appView .rank-input:focus,#appView .pw-input:focus{
+  border-color:var(--bbb-green)!important;
+  box-shadow:0 0 0 3px rgba(83,229,160,.15)!important;
+  outline:0!important;
+}
+#appView :is(button,.small-btn,.refresh-btn,.edit-btn,.move-btn,.queue-action,
+  .content-action,.pw-action){
+  font-size:12px!important;min-height:38px!important;
+  font-weight:800!important;letter-spacing:.01em!important;
+}
+#appView :is(.primary,.save-btn,.move-btn){
+  background:#176e4e!important;color:#f6fff9!important;
+  border:1px solid rgba(83,229,160,.36)!important;
+}
+#appView :is(.small-btn,.refresh-btn,.edit-btn,.queue-action,.pw-action){
+  background:#172629!important;border-color:var(--bbb-line-strong)!important;
+  color:#dfede6!important;
+}
+#appView :is(.small-btn,.refresh-btn,.edit-btn,.queue-action,.pw-action):hover{
+  background:#203b35!important;border-color:rgba(83,229,160,.48)!important;
+}
+#appView :is(.primary,.save-btn,.move-btn):hover{background:#1b875e!important}
+#appView :is(button,a,input,select,textarea,[role="button"]):focus-visible,
+#bbbPlayerWorkspace :is(button,a,input,select,textarea):focus-visible{
+  outline:2px solid var(--bbb-green)!important;outline-offset:3px!important;
+}
+/* Preserve semantic status: actionable warnings/critical states stay distinct. */
+#appView :is(.red,.queue-p1,.inj-status.out,.inj-trend.worsening){color:var(--bbb-red)!important}
+#appView :is(.queue-p2,.stale,.inj-trend.new-unknown){color:var(--bbb-amber)!important}
+#appView :is(.green,.health-ok strong,.activity-table){color:var(--bbb-green)!important}
+#appView #pageContent :is(.content-format,.content-type){color:var(--bbb-violet)!important}
+#appView #pageInjuries .inj-actions .queue-action:not(.verified-state){
+  color:#ffc0c4!important;border-color:rgba(250,148,156,.34)!important;
+  background:rgba(130,47,56,.14)!important;
+}
+/* Keep section internals on the same neutral surface, no swamp-green blocks. */
+#pageDashboard :is(.nexus-kpis,.nexus-body){background:transparent!important}
+#pageDashboard :is(.nexus-block,.nexus-next-score){background:#131f23!important}
+#pageScanner :is(.scanner-signal-panel,.scanner-stats-v2 .scanner-stat){
+  background:#142125!important;border-color:var(--bbb-line)!important;
+}
+#pageInjuries :is(.inj-card-body,.inj-card-body>section,.inj-practice){
+  background:#142125!important;border-color:var(--bbb-line)!important;
+}
+#pageContent :is(.content-card-grid,.content-card-grid>section,
+  .content-card-foot,.content-toolbar,.content-view-tabs){
+  background:#142125!important;border-color:var(--bbb-line)!important;
+}
+#pageReview :is(.exception-compare,.exception-compare>div,.exception-toolbar,
+  .exception-context,.exception-latest,.exception-card footer){
+  background:#142125!important;border-color:var(--bbb-line)!important;
+}
+/* Smaller screens: preserve readable labels and let dense grids wrap. */
+@media(max-width:1200px){
+  #appView .nexus-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #appView .admin-page>.page-head{min-height:0!important}
+}
+@media(max-width:780px){
+  #appView{font-size:14px!important}
+  #appView .admin-layout{gap:12px!important}
+  #appView .admin-page>.page-head{padding:17px!important}
+  #appView .admin-page>.page-head h1{font-size:32px!important}
+  #appView .admin-page>.page-head p{font-size:13px!important}
+  #appView .nexus-side-stack{grid-template-columns:1fr!important}
+  #appView .nexus-signal-grid{grid-template-columns:1fr!important}
+  #appView .nav-btn{font-size:12px!important}
+  #appView .rank-scroll{overflow-x:auto!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #appView *,#appView *::before,#appView *::after{
+    animation-duration:.01ms!important;transition-duration:.01ms!important;
+  }
 }
