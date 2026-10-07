@@ -39,6 +39,10 @@ const dashboardV2Css=await readFile('admin-dashboard-v2.css','utf8');
 const dashboardV2Js=await readFile('admin-dashboard-v2.js','utf8');
 await writeFile(`${out}/static/admin-dashboard-v2.css`,dashboardV2Css);
 await writeFile(`${out}/static/admin-dashboard-v2.js`,dashboardV2Js);
+const automationCss=await readFile('admin-automation-v1.css','utf8');
+const automationJs=await readFile('admin-automation-v1.js','utf8');
+await writeFile(`${out}/static/admin-automation-v1.css`,automationCss);
+await writeFile(`${out}/static/admin-automation-v1.js`,automationJs);
 
 const config=JSON.parse(await readFile(`${out}/config.json`,'utf8'));
 config.routes=[
