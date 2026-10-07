@@ -1822,6 +1822,7 @@ body:after{
   <link rel="stylesheet" href="/admin-injury-v2.css?v=2">
   <link rel="stylesheet" href="/admin-content-v1.css?v=1">
   <link rel="stylesheet" href="/admin-dashboard-v2.css?v=2">
+  <link rel="stylesheet" href="/admin-automation-v1.css?v=1">
 </head>
 <body>
   <section id="loginView" class="login-wrap">
@@ -1880,12 +1881,13 @@ body:after{
           <button class="nav-btn" data-page="scanner">Weekly Scanner <span id="scannerNavCount">W—</span></button>
           <button class="nav-btn" data-page="injuries">Injury Center <span id="injuryNavCount">—</span></button>
           <button class="nav-btn" data-page="content">Content Intelligence <span id="contentNavCount">—</span></button>
-          <button class="nav-btn" data-page="rankings">Rankings Manager <span>06</span></button>
-          <button class="nav-btn" data-page="players">Player Editor <span>07</span></button>
-          <button class="nav-btn" data-page="prospects">Prospect Lab <span id="prospectNavCount">08</span></button>
-          <button class="nav-btn" data-page="research">Research Queue <span id="researchNavCount">09</span></button>
-          <button class="nav-btn" data-page="eligibility">Class Audit <span id="classAuditNavCount">10</span></button>
-          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">11</span></button>
+          <button class="nav-btn" data-page="automations">Automation Center <span id="autoNavCount">—</span></button>
+          <button class="nav-btn" data-page="rankings">Rankings Manager <span>07</span></button>
+          <button class="nav-btn" data-page="players">Player Editor <span>08</span></button>
+          <button class="nav-btn" data-page="prospects">Prospect Lab <span id="prospectNavCount">09</span></button>
+          <button class="nav-btn" data-page="research">Research Queue <span id="researchNavCount">10</span></button>
+          <button class="nav-btn" data-page="eligibility">Class Audit <span id="classAuditNavCount">11</span></button>
+          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">12</span></button>
         </div>
         <div class="side-note"><strong>SECURE COMMAND LINK</strong><span>Every write is audited. The board moves only when you command it.</span></div>
       </aside>
@@ -2328,6 +2330,66 @@ body:after{
           <div class="danger-note"><strong>Content rule:</strong> Content Intelligence recommends and prioritizes. It does not alter the Top 500. Football decisions still flow through Ranking Moves and your approval.</div>
         </section>
 
+        <section id="pageAutomations" class="admin-page hide">
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">AUTOMATION OPS · SCHEDULES + FRESHNESS + SAFETY</div>
+              <h1>Automation Control Center</h1>
+              <p>See exactly what is running, when it last checked, whether the source actually changed, what was written, and which safeguards are protecting the board.</p>
+            </div>
+            <div class="auto-head-actions">
+              <span id="autoLoadState" class="hud-badge good">LIVE CONTROL</span>
+              <button id="autoRefresh" class="refresh-btn" type="button">Refresh Control Center</button>
+            </div>
+          </div>
+
+          <section class="auto-hero">
+            <div class="auto-hero-copy">
+              <div class="panel-kicker">CHECK OFTEN · WRITE ONLY WHEN SOMETHING CHANGED</div>
+              <h2>Automation you can <span>actually trust.</span></h2>
+              <p>Stats, advanced usage, snap counts, roster history, player metadata and market data all report their freshness here. Hash-gated imports skip database writes when the upstream file is unchanged, while news and ranking guards prevent duplicate noise or automated board movement.</p>
+              <div class="auto-hero-pills"><span>5× DAILY</span><span>HASH-GATED</span><span>NO DUPLICATE NEWS</span><span>ONE PENDING REVIEW</span><span>MANUAL RANKS ONLY</span></div>
+            </div>
+            <div class="auto-health-orb"><small>AUTOMATION HEALTH</small><strong id="autoHealthScore">—</strong><span id="autoHealthState">CHECKING SYSTEMS</span><i></i></div>
+          </section>
+
+          <div class="auto-kpis">
+            <div class="auto-kpi"><span>HEALTHY DATA SOURCES</span><strong id="autoSourcesHealthy">—</strong><small>FRESH + LAST IMPORT SUCCESSFUL</small></div>
+            <div class="auto-kpi"><span>ACTIVE SCHEDULED JOBS</span><strong id="autoActiveJobs">—</strong><small>DATABASE + MARKET AUTOMATION</small></div>
+            <div class="auto-kpi"><span>FAILURES · LAST 24H</span><strong id="autoFailures">—</strong><small>CURRENT ACTIVE JOBS ONLY</small></div>
+            <div class="auto-kpi lock"><span>RANKING AUTOMATION</span><strong id="autoRankLock">MANUAL ONLY</strong><small>NO SCHEDULED RANK MOVES</small></div>
+          </div>
+
+          <section class="auto-guard-panel">
+            <div class="auto-section-head"><div><span>SAFETY RAILS</span><strong>Protections enforced before automation can create noise</strong></div><small>These are database-level controls, not just UI promises.</small></div>
+            <div id="autoGuardGrid" class="auto-guard-grid"><div class="research-loading"><span></span><strong>Checking safeguards…</strong></div></div>
+          </section>
+
+          <div class="auto-grid">
+            <section class="auto-panel">
+              <div class="auto-panel-head"><div><span>DATA SOURCE HEALTH</span><strong>Freshness + source-change detection</strong></div><small>CHECK NOW only imports when the source hash changed.</small></div>
+              <div id="autoSourceGrid" class="auto-source-grid"><div class="research-loading"><span></span><strong>Reading source fingerprints…</strong></div></div>
+            </section>
+
+            <section class="auto-panel">
+              <div class="auto-panel-head"><div><span>LATEST PLAYER INTEL</span><strong>Most recent meaningful update</strong></div><small>News writes remain separate from ranks.</small></div>
+              <div id="autoLatestNews" class="auto-latest-news"><div class="research-loading"><span></span><strong>Finding latest update…</strong></div></div>
+            </section>
+          </div>
+
+          <section class="auto-panel" style="margin-bottom:10px">
+            <div class="auto-panel-head"><div><span>SCHEDULE MATRIX</span><strong>When every automation runs</strong></div><small>Times shown in Central Time. Intraday data jobs are staggered to avoid load spikes.</small></div>
+            <div id="autoJobGrid" class="auto-job-grid"><div class="research-loading"><span></span><strong>Loading schedules…</strong></div></div>
+          </section>
+
+          <section class="auto-panel">
+            <div class="auto-panel-head"><div><span>AUTOMATION RUN LOG</span><strong>What actually happened on recent runs</strong></div><small>No-change runs stay quiet in ChatGPT but remain auditable here.</small></div>
+            <div id="autoRunList" class="auto-run-list"><div class="research-loading"><span></span><strong>Loading automation history…</strong></div></div>
+          </section>
+
+          <div class="danger-note"><strong>Automation rule:</strong> Refresh jobs may update factual player data, stats, usage, roster history and market reference data. They cannot alter Bobby's live dynasty ranking. Any dynasty-value decision must still stop at the Ranking Move Queue for your approval.</div>
+        </section>
+
         <section id="pageRankings" class="admin-page hide">
           <div class="page-head"><div><div class="eyebrow">THE BOARD FORGE</div><h1>Rankings Manager</h1><p>Move a player to a new rank and BBB safely shifts the board around them.</p></div><button class="refresh-btn" data-refresh>Refresh Board</button></div>
           <section id="rankLens" class="rank-lens">
@@ -2680,6 +2742,7 @@ body:after{
   <script src="/admin-injury-v1.js?v=1"></script>
   <script src="/admin-content-v1.js?v=1"></script>
   <script src="/admin-dashboard-v2.js?v=2"></script>
+  <script src="/admin-automation-v1.js?v=1"></script>
 
   <style id="bbb-player-workspace-v1">
     body.pw-open{overflow:hidden}
