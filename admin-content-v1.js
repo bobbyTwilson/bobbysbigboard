@@ -200,7 +200,7 @@
     el.innerHTML=list.length?list.map((x,i)=>{
       const cls=scoreClass(x.content_score);
       return '<article class="content-now-card '+cls+'">'+
-        '<span class="content-now-num">0'+(i+1)+'</span>'+
+
         '<div class="content-now-art">'+playerArt(x.espn_id,x.name)+'</div>'+
         '<div class="content-now-copy">'+
           '<div class="content-now-meta"><span>BBB #'+x.overall_rank+'</span><span>'+esc(x.position)+' · '+esc(x.team||'FA')+'</span><span>'+esc(x.coverage_status||'')+'</span></div>'+
