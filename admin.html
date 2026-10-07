@@ -1820,7 +1820,7 @@ body:after{
   <link rel="stylesheet" href="/admin-scanner-v3.css?v=3">
   <link rel="stylesheet" href="/admin-injury-v1.css?v=1">
   <link rel="stylesheet" href="/admin-injury-v2.css?v=2">
-  <link rel="stylesheet" href="/admin-content-v1.css?v=1">
+  <link rel="stylesheet" href="/admin-content-v1.css?v=2">
   <link rel="stylesheet" href="/admin-dashboard-v2.css?v=2">
   <link rel="stylesheet" href="/admin-automation-v1.css?v=1">\n  <link rel="stylesheet" href="/admin-exceptions-v1.css?v=2">
 </head>
@@ -2264,6 +2264,29 @@ body:after{
             <div class="content-orb" aria-hidden="true"><small>CREATOR OPS</small><strong>NEXT UP</strong><span id="contentWeek">WEEK —</span><i></i></div>
           </section>
 
+          <section id="contentYoutubeDNA" class="content-youtube-dna">
+            <div class="content-youtube-head">
+              <div>
+                <span>CHANNEL DNA · VIDIQ PERFORMANCE LAYER</span>
+                <strong>What actually works on Bobby's Big Board</strong>
+                <p>Real channel history now influences opportunity scores, format fit and coverage penalties. Scheduled uploads are suppressed automatically so we do not recommend content you already made.</p>
+              </div>
+              <div class="content-youtube-sync"><small>LAST VIDIQ SYNC</small><strong id="contentYoutubeSync">—</strong></div>
+            </div>
+            <div class="content-youtube-kpis">
+              <div><span>LONG-FORM MEDIAN</span><strong id="contentYTLongMedian">—</strong><small>RECENT 50 VIDEOS</small></div>
+              <div><span>SHORTS MEDIAN</span><strong id="contentYTShortMedian">—</strong><small>RECENT 50 SHORTS</small></div>
+              <div><span>7-DAY CHANNEL MEDIAN</span><strong id="contentYT7Day">—</strong><small>TYPICAL VIEW CURVE</small></div>
+              <div><span>VIDEOS LEARNED</span><strong id="contentYTSynced">—</strong><small>MATCHED INTO BBB</small></div>
+              <div class="scheduled"><span>SCHEDULED NOW</span><strong id="contentYTScheduled">—</strong><small>AUTO-SUPPRESSED</small></div>
+            </div>
+            <div class="content-youtube-columns">
+              <div class="content-youtube-leaders"><div class="content-youtube-subhead"><span>LONG-FORM WINNERS</span><small>Breakout vs channel baseline</small></div><div id="contentYTTopLong" class="content-youtube-list"><div class="empty">Loading long-form history…</div></div></div>
+              <div class="content-youtube-leaders"><div class="content-youtube-subhead"><span>SHORT-FORM WINNERS</span><small>Breakout vs channel baseline</small></div><div id="contentYTTopShort" class="content-youtube-list"><div class="empty">Loading Shorts history…</div></div></div>
+              <div class="content-youtube-leaders scheduled"><div class="content-youtube-subhead"><span>ALREADY ON THE CALENDAR</span><small>Do not recommend duplicates</small></div><div id="contentYTScheduleList" class="content-youtube-list"><div class="empty">Checking scheduled uploads…</div></div></div>
+            </div>
+          </section>
+
           <div class="content-kpis">
             <button type="button" class="content-kpi active" data-content-preset="TOP"><span>TOP OPPORTUNITIES</span><strong id="contentTop">—</strong><small>SCORE 70+</small></button>
             <button type="button" class="content-kpi" data-content-preset="FILM"><span>FILM RADAR</span><strong id="contentFilm">—</strong><small>LONG-FORM CANDIDATES</small></button>
@@ -2299,12 +2322,21 @@ body:after{
                 <option value="WATCH">Watch</option>
               </select>
               <select id="contentCoverage" class="select">
-                <option value="ALL">All coverage</option>
+                <option value="ALL">All BBB coverage</option>
                 <option value="NEVER LOGGED">Never logged</option>
                 <option value="JUST COVERED">Just covered</option>
                 <option value="RECENTLY COVERED">Recently covered</option>
                 <option value="PREVIOUSLY COVERED">Previously covered</option>
                 <option value="COVERED BEFORE">Covered before</option>
+              </select>
+              <select id="contentYoutube" class="select">
+                <option value="ALL">All YouTube states</option>
+                <option value="FRESH">Fresh topic</option>
+                <option value="HISTORY">Has channel history</option>
+                <option value="SCHEDULED">Already scheduled</option>
+                <option value="PUBLISHED THIS WEEK">Published this week</option>
+                <option value="JUST PUBLISHED">Just published</option>
+                <option value="RECENTLY PUBLISHED">Recently published</option>
               </select>
               <button id="contentClear" class="small-btn" type="button">Clear</button>
             </div>
@@ -2793,7 +2825,7 @@ body:after{
   <script src="/admin-scanner-v2.js?v=2"></script>
   <script src="/admin-scanner-v3.js?v=4"></script>
   <script src="/admin-injury-v1.js?v=1"></script>
-  <script src="/admin-content-v1.js?v=1"></script>
+  <script src="/admin-content-v1.js?v=2"></script>
   <script src="/admin-dashboard-v2.js?v=2"></script>
   <script src="/admin-automation-v1.js?v=1"></script>\n  <script src="/admin-exceptions-v1.js?v=4"></script>
 
