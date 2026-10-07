@@ -28,3 +28,105 @@
 @media(max-width:1050px){.auto-source-grid{grid-template-columns:1fr 1fr}.auto-job-card{grid-template-columns:55px 1fr 180px}.auto-job-result{grid-column:1/-1;justify-self:end;min-width:80px}.auto-kpis{grid-template-columns:1fr 1fr}}
 @media(max-width:760px){.auto-hero{grid-template-columns:1fr;padding:18px}.auto-health-orb{display:none}.auto-source-grid{grid-template-columns:1fr}.auto-guard-grid{grid-template-columns:1fr}.auto-job-card{grid-template-columns:1fr}.auto-job-state,.auto-job-result{grid-column:auto}.auto-job-times{grid-template-columns:1fr 1fr}.auto-kpis{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.auto-kpis{grid-template-columns:1fr}.auto-job-times{grid-template-columns:1fr}}
+
+
+/* Ops reliability v2 — distinct freshness vs source-check signals */
+#pageAutomations .auto-readiness-panel{
+  padding:18px;
+  margin:0 0 12px;
+  border:1px solid rgba(105,217,168,.20);
+  background:linear-gradient(145deg,rgba(19,36,35,.95),rgba(17,29,33,.96));
+  border-radius:15px;
+}
+#pageAutomations .auto-readiness-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;
+  margin-top:15px;
+}
+#pageAutomations .auto-readiness-card{
+  min-height:126px;
+  padding:16px 13px;
+  border:1px solid rgba(145,194,181,.17);
+  background:#17292b;
+  border-radius:12px;
+  border-top:2px solid #6b9185;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+#pageAutomations .auto-readiness-card.good{border-top-color:#55dda0}
+#pageAutomations .auto-readiness-card.warn{border-top-color:#f1c776}
+#pageAutomations .auto-readiness-card.bad{border-top-color:#fa8e92}
+#pageAutomations .auto-readiness-card>span{
+  font-size:11px;font-weight:850;letter-spacing:.055em;color:#a9c0b8;
+}
+#pageAutomations .auto-readiness-card>strong{
+  color:#f4fbf7;font-size:21px;line-height:1.2;
+  font-weight:950;
+}
+#pageAutomations .auto-readiness-card.bad>strong{color:#ffada9}
+#pageAutomations .auto-readiness-card p{
+  margin:0;color:#a9beb6;
+  font-size:12px;line-height:1.52;
+}
+#pageAutomations .auto-readiness-actions{
+  margin-top:13px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;
+  color:#b3c9bf;
+  font-size:12px;line-height:1.5;
+}
+#pageAutomations .auto-readiness-warning{
+  max-width:660px;color:#f1c998;font-weight:700;
+}
+#pageAutomations .auto-readiness-actions>div{
+  display:flex;flex-wrap:wrap;gap:7px;
+}
+#pageAutomations .auto-readiness-actions .small-btn{
+  font-size:11px!important;
+  padding:10px 12px!important;
+  min-height:36px!important;
+}
+#pageAutomations .auto-run-metrics{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:7px;
+  margin:11px 0 0;
+  padding:8px 0 0;
+  border-top:1px solid rgba(159,218,195,.11);
+  color:#abc3b7;
+  font-size:11px;line-height:1.45;
+}
+#pageAutomations .auto-run-metrics small{
+  color:#8cbdad;font-size:10px;
+}
+#pageAutomations .auto-run-metrics strong{
+  color:#ffc1b5;font-size:11px;
+}
+#pageAutomations .auto-job-times strong{
+  font-size:12px!important;
+  line-height:1.35!important;
+  overflow-wrap:anywhere;
+}
+@media(max-width:1300px){
+  #pageAutomations .auto-readiness-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+@media(max-width:840px){
+  #pageAutomations .auto-readiness-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  #pageAutomations .auto-readiness-actions{
+    align-items:flex-start;flex-direction:column;
+  }
+}
+@media(max-width:530px){
+  #pageAutomations .auto-readiness-grid{grid-template-columns:1fr}
+  #pageAutomations .auto-readiness-card{
+    min-height:0;padding:13px;
+  }
+  #pageAutomations .auto-readiness-panel{padding:12px}
+  #pageAutomations .auto-readiness-actions>div{width:100%}
+  #pageAutomations .auto-readiness-actions .small-btn{flex:1}
+}
