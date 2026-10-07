@@ -547,3 +547,340 @@ body:after{
   #appView .rank-table td{font-size:10px!important}
   #appView .rank-table th{font-size:8px!important}
 }
+
+
+/* ===== DESIGN SYSTEM V2.1 · BLUE/GREEN STANDARD + VISIBLE CYBER MESH ===== */
+:root{
+  --bbb-bg:#05090d;
+  --bbb-bg-2:#081018;
+  --bbb-panel:#0b1319;
+  --bbb-panel-2:#0d1820;
+  --bbb-panel-3:#111e27;
+
+  /* Blue is now the structural UI accent everywhere. Green is the live/positive accent. */
+  --bbb-blue:#59c8ff;
+  --bbb-cyan:#63e6d2;
+  --bbb-green:#64e6a0;
+
+  --bbb-line:rgba(89,200,255,.17);
+  --bbb-line-strong:rgba(89,200,255,.30);
+
+  --bbb-text:#f2f7f9;
+  --bbb-text-2:#c9d6da;
+  --bbb-text-3:#96a9b0;
+}
+
+/* A visible but quiet cyberpunk mesh across every Admin page. */
+body{
+  background:
+    linear-gradient(180deg,#05090d 0%,#071019 46%,#05090d 100%)!important;
+}
+body:before{
+  background:
+    linear-gradient(rgba(89,200,255,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(99,230,210,.026) 1px,transparent 1px)!important;
+  background-size:52px 52px!important;
+  opacity:.72!important;
+}
+#appView:before{
+  inset:70px 0 0!important;
+  opacity:1!important;
+  background:
+    linear-gradient(122deg,transparent 0 61%,rgba(89,200,255,.040) 61.12%,transparent 61.34%),
+    linear-gradient(58deg,transparent 0 76%,rgba(99,230,210,.026) 76.14%,transparent 76.34%),
+    linear-gradient(142deg,transparent 0 84%,rgba(89,200,255,.020) 84.10%,transparent 84.26%),
+    repeating-linear-gradient(90deg,transparent 0 103px,rgba(89,200,255,.018) 104px 105px),
+    linear-gradient(180deg,rgba(255,255,255,.006),transparent 52%)!important;
+}
+#appView:after{
+  content:""!important;
+  position:fixed!important;
+  inset:70px 0 0!important;
+  z-index:0!important;
+  pointer-events:none!important;
+  background:
+    linear-gradient(135deg,transparent 0 31%,rgba(89,200,255,.025) 31.12%,transparent 31.30%),
+    linear-gradient(45deg,transparent 0 83%,rgba(99,230,210,.020) 83.12%,transparent 83.30%)!important;
+  opacity:.82!important;
+}
+#appView .topbar,
+#appView .admin-mission-bar,
+#appView .admin-layout{position:relative!important;z-index:1!important}
+#appView .content,
+#appView .admin-page{background:transparent!important}
+
+/* Shared chrome now carries a blue/cyan edge instead of old dark green. */
+#appView .panel,
+#appView .nexus-block,
+#appView .scanner-panel,
+#appView .content-right-now,
+#appView .content-youtube-dna,
+#appView .exception-workbench,
+#appView .auto-panel{
+  border-color:rgba(89,200,255,.15)!important;
+  background:
+    linear-gradient(145deg,rgba(12,21,28,.975),rgba(8,15,20,.985))!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.014)!important;
+}
+#appView .panel:before{
+  background:linear-gradient(90deg,transparent,rgba(89,200,255,.24),rgba(99,230,210,.13),transparent)!important;
+}
+#appView .panel-head,
+#appView .nexus-block-head{
+  border-bottom-color:rgba(89,200,255,.09)!important;
+  background:linear-gradient(90deg,rgba(89,200,255,.018),transparent 42%)!important;
+}
+
+/* Page heads keep semantic page accent, but the frame is always blue. */
+#appView .admin-page>.page-head{
+  border-color:rgba(89,200,255,.16)!important;
+  background:
+    linear-gradient(125deg,rgba(12,22,29,.98),rgba(8,15,20,.99))!important;
+}
+
+/* Hero shell: blue structural light + a restrained green live accent. */
+#pageDashboard .cyber-hero,
+#pageScanner .scanner-hero,
+#pageInjuries .inj-hero,
+#pageContent .content-hero,
+#pageAutomations .auto-hero,
+#pageProspects .prospect-hero,
+#pageResearch .research-hero{
+  border-color:rgba(89,200,255,.17)!important;
+  background:
+    linear-gradient(90deg,transparent 0 72%,rgba(89,200,255,.026) 72.2%,transparent 72.4%),
+    linear-gradient(125deg,rgba(12,22,29,.985),rgba(8,15,20,.995))!important;
+}
+#pageDashboard .cyber-hero:before,
+#pageScanner .scanner-hero:before,
+#pageInjuries .inj-hero:before,
+#pageContent .content-hero:before,
+#pageAutomations .auto-hero:before,
+#pageProspects .prospect-hero:before,
+#pageResearch .research-hero:before{
+  opacity:.56!important;
+  background:
+    linear-gradient(rgba(89,200,255,.032) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(99,230,210,.021) 1px,transparent 1px),
+    linear-gradient(122deg,transparent 0 67%,rgba(89,200,255,.025) 67.12%,transparent 67.32%)!important;
+  background-size:56px 56px,56px 56px,auto!important;
+}
+
+/* Metrics/cards: dark navy-charcoal, blue border; green only for positive status. */
+#appView .metric,
+#appView .cyber-metric,
+#appView .nexus-kpi,
+#appView .content-kpi,
+#appView .inj-kpi,
+#appView .scanner-kpi-btn,
+#appView .auto-kpi,
+#appView .exception-stat{
+  border-color:rgba(89,200,255,.14)!important;
+  background:linear-gradient(145deg,rgba(12,22,29,.98),rgba(8,15,20,.99))!important;
+}
+#appView .metric:hover,
+#appView .cyber-metric:hover,
+#appView .nexus-kpi:hover,
+#appView .content-kpi:hover,
+#appView .inj-kpi:hover,
+#appView .scanner-kpi-btn:hover{
+  border-color:rgba(89,200,255,.29)!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.22),0 0 20px rgba(89,200,255,.035)!important;
+}
+
+/* Inputs, buttons and neutral actions use blue by default. */
+#appView .input,
+#appView .select,
+#appView .textarea{
+  border-color:rgba(89,200,255,.16)!important;
+  background:#081117!important;
+}
+#appView .input:focus,
+#appView .select:focus,
+#appView .textarea:focus{
+  border-color:rgba(89,200,255,.48)!important;
+  box-shadow:0 0 0 3px rgba(89,200,255,.07)!important;
+}
+#appView .small-btn,
+#appView .refresh-btn,
+#appView .pw-action{
+  border-color:rgba(89,200,255,.17)!important;
+  background:rgba(10,20,27,.96)!important;
+}
+#appView .small-btn:hover,
+#appView .refresh-btn:hover,
+#appView .pw-action:hover{
+  border-color:rgba(89,200,255,.39)!important;
+  background:rgba(14,29,38,.98)!important;
+}
+
+/* Command Deck itself gets the blue/green standard while retaining semantic icon colors. */
+#appView .side-card{
+  border-color:rgba(89,200,255,.15)!important;
+  background:linear-gradient(180deg,rgba(10,19,25,.97),rgba(7,14,18,.99))!important;
+}
+#appView .nav-btn{
+  border-color:transparent!important;
+}
+#appView .nav-btn.active{
+  background:linear-gradient(90deg,rgba(89,200,255,.090),rgba(99,230,210,.025),transparent)!important;
+  box-shadow:inset 0 0 0 1px rgba(89,200,255,.12)!important;
+}
+#appView .nav-btn.active:before{
+  background:var(--bbb-blue)!important;
+  box-shadow:0 0 13px rgba(89,200,255,.55)!important;
+}
+
+/* Dashboard: replace remaining green-card structure with the blue standard. */
+#pageDashboard .dashboard-nexus{
+  border-color:rgba(89,200,255,.16)!important;
+  background:linear-gradient(145deg,rgba(12,22,29,.985),rgba(8,15,20,.995))!important;
+}
+#pageDashboard .nexus-signal-card,
+#pageDashboard .nexus-system,
+#pageDashboard .nexus-next{
+  border-color:rgba(89,200,255,.13)!important;
+  background:rgba(10,19,25,.90)!important;
+}
+#pageDashboard .nexus-signal-card:hover,
+#pageDashboard .nexus-system:hover{
+  border-color:rgba(89,200,255,.27)!important;
+  background:rgba(13,25,32,.96)!important;
+}
+#pageDashboard .nexus-system i.good,
+#pageDashboard .nexus-system.good i{background:var(--bbb-green)!important}
+
+/* Weekly Scanner. */
+#pageScanner .scanner-spotlight-card,
+#pageScanner .scanner-card-v2,
+#pageScanner .scanner-signal-panel,
+#pageScanner .scanner-stats-v2 .scanner-stat{
+  border-color:rgba(89,200,255,.13)!important;
+  background:linear-gradient(145deg,rgba(12,22,29,.98),rgba(8,15,20,.99))!important;
+}
+#pageScanner .spotlight-tag,
+#pageScanner .scanner-signal-panel>span{
+  border-color:rgba(89,200,255,.18)!important;
+  background:rgba(89,200,255,.055)!important;
+  color:#9edfff!important;
+}
+
+/* Injury Center. */
+#pageInjuries .inj-card,
+#pageInjuries .inj-priority-card,
+#pageInjuries .inj-kpi{
+  border-color:rgba(89,200,255,.13)!important;
+  background:linear-gradient(145deg,rgba(12,22,29,.98),rgba(8,15,20,.99))!important;
+}
+
+/* Content Intelligence: blue framework; violet only for content-type chips. */
+#pageContent .content-card,
+#pageContent .content-now-card,
+#pageContent .content-prospect-card,
+#pageContent .content-youtube-leaders,
+#pageContent .content-youtube-dna,
+#pageContent .content-right-now{
+  border-color:rgba(89,200,255,.14)!important;
+  background:linear-gradient(145deg,rgba(12,22,29,.98),rgba(8,15,20,.99))!important;
+}
+#pageContent .content-score-ring,
+#pageContent .content-now-score,
+#pageContent .content-prospect-score{
+  border-color:rgba(89,200,255,.16)!important;
+  background:rgba(89,200,255,.035)!important;
+}
+#pageContent .content-score-ring span,
+#pageContent .content-now-score small,
+#pageContent .content-prospect-score small{
+  color:#82afc2!important;
+}
+#pageContent .content-action.secondary{
+  border-color:rgba(89,200,255,.20)!important;
+  color:#a2e0ff!important;
+}
+#pageContent .content-action.primary{
+  border-color:rgba(99,230,210,.20)!important;
+  background:rgba(99,230,210,.06)!important;
+  color:#91eedc!important;
+}
+
+/* Automation. */
+#pageAutomations .auto-source-card,
+#pageAutomations .auto-job-card,
+#pageAutomations .auto-run-row{
+  border-color:rgba(89,200,255,.13)!important;
+  background:rgba(10,19,25,.92)!important;
+}
+
+/* Review / Exception Manager. */
+#pageReview .exception-manager-shell,
+#pageReview .exception-workbench,
+#pageReview .exception-card,
+#pageReview .exception-stat,
+#pageReview .exception-check{
+  border-color:rgba(89,200,255,.13)!important;
+  background:linear-gradient(145deg,rgba(12,22,29,.98),rgba(8,15,20,.99))!important;
+}
+#pageReview .exception-tab{
+  border-color:rgba(89,200,255,.12)!important;
+  background:rgba(10,19,25,.86)!important;
+}
+#pageReview .exception-tab.active{
+  border-color:rgba(89,200,255,.30)!important;
+  background:rgba(89,200,255,.075)!important;
+  color:#d9f3ff!important;
+}
+
+/* Ranking/Player tables. */
+#appView .rank-table th{
+  background:#091219!important;
+  border-bottom-color:rgba(89,200,255,.13)!important;
+}
+#appView .rank-table td{
+  background:rgba(10,18,24,.78)!important;
+  border-bottom-color:rgba(89,200,255,.075)!important;
+}
+#appView .rank-table tbody tr:hover td{
+  background:rgba(14,28,36,.96)!important;
+}
+
+/* Player Workspace also follows the blue structural shell. */
+#bbbPlayerWorkspace{
+  border-color:rgba(89,200,255,.24)!important;
+}
+#bbbPlayerWorkspace .pw-shell{
+  background:linear-gradient(180deg,#0a1319,#071016)!important;
+}
+#bbbPlayerWorkspace .pw-head,
+#bbbPlayerWorkspace .pw-tabs,
+#bbbPlayerWorkspace .pw-panel,
+#bbbPlayerWorkspace .pw-metric,
+#bbbPlayerWorkspace .pw-info,
+#bbbPlayerWorkspace .pw-history-row,
+#bbbPlayerWorkspace .pw-feed-item,
+#bbbPlayerWorkspace .pw-check{
+  border-color:rgba(89,200,255,.11)!important;
+  background:rgba(10,19,25,.90)!important;
+}
+
+/* Neutral labels should lean blue-gray instead of green-gray. */
+#appView .eyebrow,
+#appView .panel-kicker,
+#appView .metric span,
+#appView .cyber-metric span,
+#appView .nexus-kpi span,
+#appView .content-kpi span,
+#appView .inj-kpi span,
+#appView .scanner-kpi-btn span,
+#appView .auto-kpi span,
+#appView .exception-stat span{
+  color:#7f9caa!important;
+}
+
+/* Green is deliberately reserved for live / healthy / approved / positive states. */
+#appView .good,
+#appView .status-good,
+#appView .positive,
+#appView .approved{
+  --state-accent:var(--bbb-green);
+}
