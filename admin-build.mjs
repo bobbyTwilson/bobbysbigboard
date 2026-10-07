@@ -17,6 +17,10 @@ adminJs=adminJs
   .replace("$('#authSubmit').textContent=authMode==='login'?'SIGN IN':'CREATE ACCOUNT';",'')
   .replace("$('#authPassword').autocomplete=authMode==='login'?'current-password':'new-password';",'');
 await writeFile(`${out}/static/admin.js`,adminJs);
+const scannerCss=await readFile('admin-scanner-v2.css','utf8');
+const scannerJs=await readFile('admin-scanner-v2.js','utf8');
+await writeFile(`${out}/static/admin-scanner-v2.css`,scannerCss);
+await writeFile(`${out}/static/admin-scanner-v2.js`,scannerJs);
 
 const config=JSON.parse(await readFile(`${out}/config.json`,'utf8'));
 config.routes=[
