@@ -1822,7 +1822,7 @@ body:after{
   <link rel="stylesheet" href="/admin-injury-v2.css?v=2">
   <link rel="stylesheet" href="/admin-content-v1.css?v=1">
   <link rel="stylesheet" href="/admin-dashboard-v2.css?v=2">
-  <link rel="stylesheet" href="/admin-automation-v1.css?v=1">
+  <link rel="stylesheet" href="/admin-automation-v1.css?v=1">\n  <link rel="stylesheet" href="/admin-exceptions-v1.css?v=1">
 </head>
 <body>
   <section id="loginView" class="login-wrap">
@@ -2626,8 +2626,60 @@ body:after{
             <div class="metric"><span>Board Integrity</span><strong id="metricBoardHealth">—</strong></div>
           </div>
           <section class="panel">
-            <div class="panel-head"><div><h2>Data Health</h2><span>Fast QA checks for the live Top 500</span></div></div>
-            <div id="healthGrid" class="health-grid"><div class="empty">Loading health checks…</div></div>
+            <div class="panel-head"><div><h2>Data Health & Exception Manager</h2><span>Board integrity, source freshness, and actionable mismatches — separated from stale-source noise.</span></div></div>
+            <div id="healthGrid" class="health-grid exception-health-grid"><div class="empty">Loading health checks…</div></div>
+
+            <div class="exception-manager-shell">
+              <div class="exception-manager-head">
+                <div class="copy">
+                  <span>BBB DATA INTEGRITY · EXCEPTION WORKBENCH</span>
+                  <h3>Only real conflicts should demand your attention.</h3>
+                  <p>Fresh conflicts are actionable. Old status snapshots are quarantined so stale sources do not make clean BBB data look broken.</p>
+                </div>
+                <div class="exception-manager-actions">
+                  <span id="exceptionState" class="hud-badge good">READY</span>
+                  <button id="exceptionRefresh" type="button" class="small-btn">REFRESH EXCEPTIONS</button>
+                </div>
+              </div>
+
+              <div class="exception-overview">
+                <div class="exception-score">
+                  <div><span>BOARD INTEGRITY</span><strong id="exceptionIntegrityScore">—</strong><small>FRESH CONFLICTS ONLY</small></div>
+                </div>
+                <div class="exception-stat good"><span>ACTIONABLE</span><strong id="exceptionActionable">—</strong><small>FRESH SOURCE CONFLICTS</small></div>
+                <div class="exception-stat warn"><span>STALE SOURCE</span><strong id="exceptionStale">—</strong><small>QUARANTINED DISAGREEMENTS</small></div>
+                <div class="exception-stat violet"><span>PROFILE REMINDERS</span><strong id="exceptionReviewReminders">—</strong><small>EXISTING P3 REVIEW QUEUE</small></div>
+                <div class="exception-stat cyan"><span>RESOLVED SNAPSHOTS</span><strong id="exceptionResolved">—</strong><small>MANUALLY ACCEPTED</small></div>
+                <div class="exception-stat"><span>STATUS SOURCE AGE</span><strong id="exceptionSourceAge">—</strong><small id="exceptionSourceStamp">LAST REFRESH —</small></div>
+                <div class="exception-stat"><span>LABEL NOISE SUPPRESSED</span><strong id="exceptionLabelNoise">—</strong><small>EQUIVALENT INJURY SEVERITY</small></div>
+              </div>
+
+              <div id="exceptionSourceBanner" class="exception-source-banner hide"></div>
+              <div id="exceptionChecks" class="exception-checks"></div>
+
+              <div id="exceptionWorkbench" class="exception-workbench">
+                <div class="exception-toolbar">
+                  <div class="exception-tabs">
+                    <button type="button" class="exception-tab active" data-exception-view="ACTIONABLE">ACTIONABLE <span>—</span></button>
+                    <button type="button" class="exception-tab" data-exception-view="STALE">STALE SOURCE <span>—</span></button>
+                    <button type="button" class="exception-tab" data-exception-view="TEAM">TEAM <span>—</span></button>
+                    <button type="button" class="exception-tab" data-exception-view="INJURY">INJURY <span>—</span></button>
+                    <button type="button" class="exception-tab" data-exception-view="RESOLVED">RESOLVED <span>—</span></button>
+                  </div>
+                  <div class="exception-search">
+                    <input id="exceptionSearch" class="input" placeholder="Search exception, player, source…">
+                    <button id="exceptionClear" type="button" class="small-btn">CLEAR</button>
+                  </div>
+                </div>
+                <div class="exception-sortline">
+                  <span><strong id="exceptionListCount">—</strong> in this view</span>
+                  <span>BBB values are never overwritten by exception resolution.</span>
+                </div>
+                <div id="exceptionList" class="exception-list">
+                  <div class="research-loading"><span></span><strong>Building exception map…</strong><small>Comparing current BBB data to source snapshots.</small></div>
+                </div>
+              </div>
+            </div>
           </section>
           <section class="panel">
             <div id="reviewActionNotice" class="review-action-notice hide"></div>
@@ -2742,7 +2794,7 @@ body:after{
   <script src="/admin-injury-v1.js?v=1"></script>
   <script src="/admin-content-v1.js?v=1"></script>
   <script src="/admin-dashboard-v2.js?v=2"></script>
-  <script src="/admin-automation-v1.js?v=1"></script>
+  <script src="/admin-automation-v1.js?v=1"></script>\n  <script src="/admin-exceptions-v1.js?v=1"></script>
 
   <style id="bbb-player-workspace-v1">
     body.pw-open{overflow:hidden}
