@@ -1870,12 +1870,13 @@ body:after{
         <div class="side-card">
           <div class="nav-overline">COMMAND DECK</div>
           <button class="nav-btn active" data-page="dashboard">Dashboard <span>01</span></button>
-          <button class="nav-btn" data-page="rankings">Rankings Manager <span>02</span></button>
-          <button class="nav-btn" data-page="players">Player Editor <span>03</span></button>
-          <button class="nav-btn" data-page="prospects">Prospect Lab <span id="prospectNavCount">04</span></button>
-          <button class="nav-btn" data-page="research">Research Queue <span id="researchNavCount">05</span></button>
-          <button class="nav-btn" data-page="eligibility">Class Audit <span id="classAuditNavCount">06</span></button>
-          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">07</span></button>
+          <button class="nav-btn" data-page="moves">Ranking Moves <span id="moveNavCount">0</span></button>
+          <button class="nav-btn" data-page="rankings">Rankings Manager <span>03</span></button>
+          <button class="nav-btn" data-page="players">Player Editor <span>04</span></button>
+          <button class="nav-btn" data-page="prospects">Prospect Lab <span id="prospectNavCount">05</span></button>
+          <button class="nav-btn" data-page="research">Research Queue <span id="researchNavCount">06</span></button>
+          <button class="nav-btn" data-page="eligibility">Class Audit <span id="classAuditNavCount">07</span></button>
+          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">08</span></button>
         </div>
         <div class="side-note"><strong>SECURE COMMAND LINK</strong><span>Every write is audited. The board moves only when you command it.</span></div>
       </aside>
@@ -1959,6 +1960,63 @@ body:after{
               <div id="dashMarketEdges" class="market-edge-grid"><div class="empty">Loading market edges…</div></div>
             </section>
           </div>
+        </section>
+
+        <section id="pageMoves" class="admin-page hide">
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">BOARD DECISIONS · HUMAN APPROVAL</div>
+              <h1>Ranking Move Queue</h1>
+              <p>Recommendations stop here. Review the reason, change the target if needed, then approve or reject the move yourself.</p>
+            </div>
+            <button class="refresh-btn" data-refresh>Refresh Queue</button>
+          </div>
+
+          <section class="move-queue-hero">
+            <div>
+              <div class="panel-kicker">NO AUTO RANK MOVES</div>
+              <h2>The board only moves when you say so.</h2>
+              <p>Scanners, research passes, injury updates and manual flags can create recommendations. They cannot change the Top 500 from this queue without your approval.</p>
+            </div>
+            <div class="move-safety-lock" aria-hidden="true"><span>BBB</span><small>APPROVAL GATE</small></div>
+          </section>
+
+          <div class="metric-grid move-queue-kpis">
+            <div class="metric cyber-metric"><div class="metric-icon">◈</div><div><span>Pending Decisions</span><strong id="movePending">—</strong><small>WAITING ON YOU</small></div></div>
+            <div class="metric cyber-metric"><div class="metric-icon">↑</div><div><span>Move Up</span><strong id="moveUp">—</strong><small>RECOMMENDED RISERS</small></div></div>
+            <div class="metric cyber-metric"><div class="metric-icon">↓</div><div><span>Move Down</span><strong id="moveDown">—</strong><small>RECOMMENDED FALLERS</small></div></div>
+            <div class="metric cyber-metric"><div class="metric-icon">?</div><div><span>Needs Target</span><strong id="moveTargetless">—</strong><small>REVIEW FLAG ONLY</small></div></div>
+          </div>
+
+          <section class="panel move-queue-panel">
+            <div id="moveQueueNotice" class="review-action-notice hide"></div>
+            <div class="toolbar move-queue-toolbar">
+              <input id="moveSearch" class="input" placeholder="Search player, team or reason…">
+              <select id="movePriority" class="select">
+                <option value="ALL">All priorities</option>
+                <option value="1">P1 · Critical</option>
+                <option value="2">P2 · High</option>
+                <option value="3">P3 · Normal</option>
+              </select>
+              <select id="moveDirection" class="select">
+                <option value="ALL">All decisions</option>
+                <option value="up">Move up</option>
+                <option value="down">Move down</option>
+                <option value="hold">Hold</option>
+                <option value="needs_target">Needs target</option>
+              </select>
+              <button id="moveClear" class="small-btn" type="button">Clear</button>
+            </div>
+            <div class="move-queue-summary">
+              <span id="moveQueueCount">Loading ranking decisions…</span>
+              <span id="moveQueueHint">Nothing moves until you approve it.</span>
+            </div>
+            <div id="rankingMoveGrid" class="move-queue-grid">
+              <div class="research-loading"><span></span><strong>Loading ranking decisions…</strong><small>Building the approval queue.</small></div>
+            </div>
+          </section>
+
+          <div class="danger-note"><strong>Safety rule:</strong> Approve is the only queue action that can change a live rank. Reject leaves the board untouched. You can edit the final target rank before approving.</div>
         </section>
 
         <section id="pageRankings" class="admin-page hide">
@@ -2307,7 +2365,7 @@ body:after{
     </form>
   </aside>
 
-  <script src="/admin.js?v=review-verification-v25"></script>
+  <script src="/admin.js?v=ranking-move-queue-v26"></script>
 
   <style id="bbb-player-workspace-v1">
     body.pw-open{overflow:hidden}
@@ -2598,7 +2656,7 @@ body:after{
       if(!b)return '<div class="pw-empty"><strong>Not on the dynasty board yet.</strong>This player does not currently have a Top 500 dynasty ranking, so there is no rank workflow to manage here.</div>';
       var gap=b.gap==null?"—":((Number(b.gap)>0?"+":"")+b.gap);
       var metrics=pwMetric("BBB RANK","#"+b.rank,"Current board slot","violet")+pwMetric("POS RANK",b.pr?"#"+b.pr:"—","Within "+b.pos,"")+pwMetric("MARKET",b.market?"#"+b.market:"UR","Current consensus reference","cyan")+pwMetric("EDGE",gap,b.view||"BBB vs market",Number(b.gap)>0?"good":Number(b.gap)<0?"bad":"");
-      var move='<div class="pw-rank-control"><div class="pw-field"><label>MOVE TO OVERALL RANK</label><input id="pwRankInput" class="pw-input" type="number" min="1" max="'+board.length+'" value="'+esc(b.rank)+'"></div><button type="button" class="pw-action primary" data-pw-action="move">MOVE PLAYER</button><a class="pw-action" href="/player/'+encodeURIComponent(pwKey)+'" target="_blank">PROFILE ↗</a></div><div id="pwMoveStatus" class="pw-status-line">Rank changes use the same protected BBB rank-move function as Rankings Manager.</div>';
+      var move='<div class="pw-rank-control"><div class="pw-field"><label>MOVE / RECOMMEND OVERALL RANK</label><input id="pwRankInput" class="pw-input" type="number" min="1" max="'+board.length+'" value="'+esc(b.rank)+'"></div><button type="button" class="pw-action primary" data-pw-action="move">MOVE NOW</button><button type="button" class="pw-action cyan" data-pw-action="queue">QUEUE FOR APPROVAL</button><a class="pw-action" href="/player/'+encodeURIComponent(pwKey)+'" target="_blank">PROFILE ↗</a></div><div id="pwMoveStatus" class="pw-status-line">Move now for a direct manual change, or queue the target so it must pass through the Ranking Move Queue first.</div>';
       var history=(detail.history||[]).slice(0,14);
       var historyHtml=history.length?'<div class="pw-history">'+history.map(function(h){
         var edge=h.bbb_vs_fp==null?"—":((Number(h.bbb_vs_fp)>0?"+":"")+h.bbb_vs_fp);
@@ -2828,6 +2886,32 @@ body:after{
       finally{pwLoading=false;pwRender()}
     }
 
+    async function pwQueueRankMove(btn){
+      var b=pwBoard(pwKey),input=pwQ("#pwRankInput"),status=pwQ("#pwMoveStatus"),nr=Number(input&&input.value);
+      if(!b||!Number.isInteger(nr)||nr<1||nr>board.length){if(status)status.textContent="Enter a target rank from 1 to "+board.length+".";return}
+      var reason=prompt("Why are we considering "+b.name+" at #"+nr+"?",b.injury_note||b.overview||"Manual ranking recommendation");
+      if(reason===null)return;
+      var old=btn.textContent;btn.disabled=true;btn.textContent="QUEUING…";
+      try{
+        await rpc("admin_queue_ranking_move",{
+          p_player_key:pwKey,
+          p_recommended_rank:nr,
+          p_reason:reason,
+          p_priority:2,
+          p_source:"player_workspace",
+          p_confidence:null,
+          p_trigger_update_id:null
+        });
+        if(typeof loadRankingMoveQueue==="function")await loadRankingMoveQueue();
+        if(typeof loadReviewQueue==="function")await loadReviewQueue();
+        if(typeof renderRankingMoveQueue==="function")renderRankingMoveQueue();
+        if(typeof renderReviewQueue==="function")renderReviewQueue();
+        if(typeof renderCommandDashboard==="function")renderCommandDashboard();
+        if(status)status.textContent=b.name+" queued at #"+nr+" — the live board has not moved.";
+      }catch(e){if(status)status.textContent=e.message}
+      finally{btn.disabled=false;btn.textContent=old}
+    }
+
     async function pwMoveRank(btn){
       var b=pwBoard(pwKey),input=pwQ("#pwRankInput"),status=pwQ("#pwMoveStatus"),nr=Number(input&&input.value);
       if(!b||!Number.isInteger(nr)||nr<1||nr>board.length){if(status)status.textContent="Enter a valid rank from 1 to "+board.length+".";return}
@@ -2849,11 +2933,13 @@ body:after{
       commandBrief=null;
       Promise.allSettled([
         loadReviewQueue(),
+        loadRankingMoveQueue(),
         loadDataHealth(),
         loadActivity(),
         loadCommandBrief(true)
       ]).then(function(){
         renderReviewQueue();
+        renderRankingMoveQueue();
         renderDataHealth();
         renderCommandDashboard();
       }).catch(function(e){console.error("BBB background review sync failed",e)});
@@ -2946,6 +3032,7 @@ body:after{
       if(action==="close"){pwClose();return}
       if(action==="refresh"){pwRefresh();return}
       if(action==="move"){pwMoveRank(a);return}
+      if(action==="queue"){pwQueueRankMove(a);return}
       if(action==="edit"){var k=pwKey;pwClose();openEditor(k);return}
       if(action==="report"){var kr=pwKey;pwClose();openProspectReport(kr);return}
       if(action==="grade"){var kg=pwKey;pwClose();startProspectGrade(kg);return}
@@ -3912,6 +3999,70 @@ body:after{
     margin-right:6px;
     padding-right:10px;
   }
+}
+</style>
+
+
+
+<style id="bbb-ranking-move-queue-v1">
+.nav-btn[data-page="moves"]:before{content:"↕"!important}
+.move-queue-hero{
+  position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:24px;align-items:center;
+  min-height:164px;margin-bottom:11px;padding:23px 26px;border:1px solid rgba(57,255,155,.14);border-radius:18px;
+  background:
+    radial-gradient(circle at 86% 45%,rgba(57,255,155,.14),transparent 24%),
+    linear-gradient(125deg,rgba(5,24,15,.96),rgba(2,11,7,.97));
+  box-shadow:0 24px 70px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.018);
+}
+.move-queue-hero:after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,#39ff9b,#58eaff,transparent);opacity:.48}
+.move-queue-hero h2{margin:6px 0 8px;color:#effff6;font-size:29px;letter-spacing:-.035em}
+.move-queue-hero p{max-width:760px;margin:0;color:#789686;font-size:12px;line-height:1.6}
+.move-safety-lock{justify-self:end;width:138px;height:112px;border:1px solid rgba(57,255,155,.16);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(57,255,155,.12),rgba(3,15,9,.72) 65%);box-shadow:inset 0 0 30px rgba(57,255,155,.04),0 0 34px rgba(57,255,155,.045)}
+.move-safety-lock span{color:#dffff0;font-size:25px;font-weight:1000;letter-spacing:.06em}
+.move-safety-lock small{margin-top:5px;color:#67b88b;font-size:8px;font-weight:1000;letter-spacing:.13em}
+.move-queue-toolbar{grid-template-columns:minmax(260px,1fr) 170px 170px auto!important}
+.move-queue-summary{display:flex;justify-content:space-between;gap:18px;padding:11px 14px;border-bottom:1px solid rgba(57,255,155,.07);color:#6f8e7b;font-size:10px}
+.move-queue-summary span:first-child{color:#a7c9b5;font-weight:900}
+.move-queue-grid{display:grid;gap:10px;padding:12px}
+.move-card{position:relative;overflow:hidden;border:1px solid rgba(57,255,155,.10);border-radius:15px;background:linear-gradient(145deg,rgba(6,21,13,.92),rgba(3,11,7,.95));box-shadow:inset 0 1px 0 rgba(255,255,255,.015)}
+.move-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#6e917d}
+.move-card.up:before{background:#39ff9b}.move-card.down:before{background:#ff8090}.move-card.hold:before{background:#58eaff}.move-card.target:before{background:#ffc861}
+.move-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 13px;border-bottom:1px solid rgba(57,255,155,.065)}
+.move-priority,.move-direction{display:inline-flex;align-items:center;min-height:24px;padding:0 8px;border-radius:999px;font-size:8px;font-weight:1000;letter-spacing:.09em}
+.move-priority{border:1px solid rgba(57,255,155,.10);background:rgba(57,255,155,.035);color:#72917f}
+.move-priority.p1{color:#ff99a6;border-color:rgba(255,128,144,.18);background:rgba(255,86,108,.07)}
+.move-priority.p2{color:#ffd17b;border-color:rgba(255,200,97,.16);background:rgba(255,190,72,.055)}
+.move-direction{border:1px solid rgba(57,255,155,.11);color:#84b79a;background:rgba(57,255,155,.035)}
+.move-direction.up{color:#87f2b5}.move-direction.down{color:#ff9aa7}.move-direction.hold{color:#86e9f5}.move-direction.target{color:#ffd27c}
+.move-card-main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;padding:15px 15px 11px}
+.move-player-block{display:flex;align-items:center;gap:12px;min-width:0}
+.move-player-rank{min-width:48px;color:#5f8e72;font-size:22px;font-weight:1000;letter-spacing:-.04em}
+.move-player-name{display:block;padding:0;border:0;background:none;color:#effff6;font-size:17px;font-weight:950;letter-spacing:-.025em;text-align:left;cursor:pointer}
+.move-player-name:hover{color:#7cf0ad}
+.move-player-block div>span{display:block;margin-top:4px;color:#658271;font-size:9px}
+.move-rank-flow{display:flex;align-items:center;gap:12px;padding:8px 11px;border:1px solid rgba(57,255,155,.08);border-radius:11px;background:rgba(2,11,6,.58)}
+.move-rank-flow>div{min-width:76px;text-align:center}.move-rank-flow>div span{display:block;color:#577762;font-size:7px;font-weight:1000;letter-spacing:.11em}.move-rank-flow>div strong{display:block;margin-top:5px;color:#eafff2;font-size:23px;line-height:1}.move-rank-flow>b{color:#3b7457;font-size:18px}.move-rank-flow .targetless strong{color:#ffc861}
+.move-card-context{display:flex;flex-wrap:wrap;gap:6px;padding:0 15px 12px}.move-card-context span{display:inline-flex;min-height:24px;align-items:center;padding:0 8px;border:1px solid rgba(57,255,155,.075);border-radius:7px;background:rgba(57,255,155,.025);color:#6d8c79;font-size:8px;font-weight:900;letter-spacing:.04em}.move-card-context span.warn{color:#ff9ba8;border-color:rgba(255,128,144,.13)}
+.move-card-reason,.move-card-update{margin:0 15px 11px;padding:11px 12px;border:1px solid rgba(57,255,155,.065);border-radius:10px;background:rgba(2,10,6,.55)}
+.move-card-reason span,.move-card-update span{display:block;color:#5d846c;font-size:7px;font-weight:1000;letter-spacing:.12em}
+.move-card-reason p,.move-card-update p{margin:6px 0 0;color:#a8c2b2;font-size:11px;line-height:1.55}
+.move-card-update small{display:block;margin-top:6px;color:#69917a;font-size:8px}
+.move-decision{display:grid;grid-template-columns:minmax(210px,300px) 1fr;gap:16px;align-items:end;padding:12px 15px 15px;border-top:1px solid rgba(57,255,155,.065);background:rgba(1,8,4,.34)}
+.move-target label{display:block;margin-bottom:6px;color:#6f947e;font-size:8px;font-weight:1000;letter-spacing:.11em}.move-target .rank-input{width:100%;min-height:40px;padding:8px 10px;font-size:15px!important}.move-target small{display:block;margin-top:5px;color:#586f62;font-size:8px;line-height:1.35}
+.move-decision-actions{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap}.move-decision-actions .queue-action{min-height:40px;padding:9px 12px}.move-decision-actions .approve{border-color:rgba(57,255,155,.30)!important;background:linear-gradient(145deg,rgba(28,130,78,.36),rgba(5,44,25,.68))!important;color:#9cf5bd!important}.move-decision-actions .reject{border-color:rgba(255,120,137,.18)!important;color:#ff9cab!important}.move-decision-actions .hold{border-color:rgba(88,234,255,.18)!important;color:#8ceaf6!important}
+.move-queue-empty{min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center}.move-empty-orb{width:58px;height:58px;border:1px solid rgba(57,255,155,.19);border-radius:50%;display:grid;place-items:center;background:rgba(57,255,155,.06);color:#76efaa;font-size:24px;box-shadow:0 0 28px rgba(57,255,155,.06)}.move-queue-empty strong{margin-top:12px;color:#eafff2;font-size:16px}.move-queue-empty span{max-width:560px;margin-top:6px;color:#678273;font-size:10px;line-height:1.55}
+@media(max-width:980px){
+  .move-queue-hero{grid-template-columns:1fr}.move-safety-lock{display:none}
+  .move-queue-toolbar{grid-template-columns:1fr 1fr!important}.move-queue-toolbar .input{grid-column:1/-1!important}
+  .move-card-main{grid-template-columns:1fr}.move-rank-flow{justify-self:start}
+}
+@media(max-width:700px){
+  .move-queue-hero{min-height:0;padding:18px}.move-queue-hero h2{font-size:24px}
+  .move-queue-toolbar{grid-template-columns:1fr!important}.move-queue-toolbar .input{grid-column:1!important}
+  .move-queue-summary{flex-direction:column;gap:4px}
+  .move-card-main{padding:13px}.move-player-rank{min-width:42px;font-size:19px}.move-player-name{font-size:15px}
+  .move-rank-flow{width:100%;justify-content:space-between}.move-rank-flow>div{min-width:68px}
+  .move-decision{grid-template-columns:1fr}.move-decision-actions{justify-content:flex-start}
 }
 </style>
 
