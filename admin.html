@@ -1874,7 +1874,8 @@ body:after{
           <button class="nav-btn" data-page="players">Player Editor <span>03</span></button>
           <button class="nav-btn" data-page="prospects">Prospect Lab <span id="prospectNavCount">04</span></button>
           <button class="nav-btn" data-page="research">Research Queue <span id="researchNavCount">05</span></button>
-          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">06</span></button>
+          <button class="nav-btn" data-page="eligibility">Class Audit <span id="classAuditNavCount">06</span></button>
+          <button class="nav-btn" data-page="review">Review Queue <span id="reviewNavCount">07</span></button>
         </div>
         <div class="side-note"><strong>SECURE COMMAND LINK</strong><span>Every write is audited. The board moves only when you command it.</span></div>
       </aside>
@@ -2101,6 +2102,86 @@ body:after{
   </section>
 
   <div class="danger-note"><strong>Ranking safety:</strong> Research Queue can explain why a ranking deserves review, but it never moves a player. Every dynasty rank change still requires your command.</div>
+</section>
+
+
+<section id="pageEligibility" class="admin-page hide">
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">PROSPECT CONTROL · ELIGIBILITY</div>
+      <h1>Draft Class Audit</h1>
+      <p>Verify 2027 vs 2028 eligibility, isolate conflicts, and keep the prospect database synchronized.</p>
+    </div>
+    <button id="classAuditRefresh" class="refresh-btn" type="button">Refresh Audit</button>
+  </div>
+
+  <section class="class-hero">
+    <div>
+      <div class="panel-kicker">BBB ELIGIBILITY CONTROL</div>
+      <h2>Wrong draft class should never survive quietly.</h2>
+      <p>Canonical player class is compared against scouting research and any saved BBB grade. Only disagreements or missing evidence require action.</p>
+      <div class="class-hero-pills"><span>2027 CLASS</span><span>2028 CLASS</span><span>EVIDENCE CHECK</span><span>MANUAL DECISION GATE</span></div>
+    </div>
+    <div class="class-lock" aria-hidden="true"><span>CLASS</span><strong>✓</strong></div>
+  </section>
+
+  <div class="metric-grid class-kpis">
+    <button type="button" class="metric cyber-metric class-kpi-btn" data-class-kpi="conflict">
+      <div class="metric-icon">!</div><div><span>Needs Decision</span><strong id="classConflictCount">—</strong><small>CLASS CONFLICTS</small></div>
+    </button>
+    <button type="button" class="metric cyber-metric class-kpi-btn" data-class-kpi="recheck">
+      <div class="metric-icon">↻</div><div><span>Needs Recheck</span><strong id="classRecheckCount">—</strong><small>MISSING EVIDENCE</small></div>
+    </button>
+    <button type="button" class="metric cyber-metric class-kpi-btn" data-class-year-jump="2027">
+      <div class="metric-icon">27</div><div><span>2027 Verified</span><strong id="class2027Count">—</strong><small>CLEAN RECORDS</small></div>
+    </button>
+    <button type="button" class="metric cyber-metric class-kpi-btn" data-class-year-jump="2028">
+      <div class="metric-icon">28</div><div><span>2028 Verified</span><strong id="class2028Count">—</strong><small>CLEAN RECORDS</small></div>
+    </button>
+  </div>
+
+  <section class="panel class-audit-panel">
+    <div class="panel-head">
+      <div><div class="panel-kicker">ELIGIBILITY BOARD</div><h2>Class Verification</h2><span>Current class vs scouting recommendation vs saved BBB grade</span></div>
+      <span id="classAuditState" class="hud-badge good">READY</span>
+    </div>
+
+    <div class="class-tabs">
+      <button type="button" class="class-tab active" data-class-view="attention"><strong>Needs Attention</strong><span id="classTabAttention">—</span></button>
+      <button type="button" class="class-tab" data-class-view="conflict"><strong>Conflicts</strong><span id="classTabConflict">—</span></button>
+      <button type="button" class="class-tab" data-class-view="recheck"><strong>Recheck</strong><span id="classTabRecheck">—</span></button>
+      <button type="button" class="class-tab" data-class-view="verified"><strong>Verified</strong><span id="classTabVerified">—</span></button>
+      <button type="button" class="class-tab" data-class-view="all"><strong>All</strong><span id="classTabAll">—</span></button>
+    </div>
+
+    <div class="class-toolbar">
+      <input id="classAuditSearch" class="input" placeholder="Search prospect or school…">
+      <select id="classAuditYear" class="select">
+        <option value="ALL">2027 + 2028</option>
+        <option value="2027">2027 only</option>
+        <option value="2028">2028 only</option>
+      </select>
+      <select id="classAuditPos" class="select">
+        <option value="ALL">All positions</option>
+        <option value="QB">QB</option><option value="RB">RB</option><option value="WR">WR</option><option value="TE">TE</option>
+      </select>
+      <select id="classAuditConfidence" class="select">
+        <option value="ALL">All confidence</option>
+        <option value="HIGH">High</option><option value="MEDIUM">Medium</option><option value="LOW">Low</option>
+      </select>
+      <button id="classAuditClear" type="button" class="small-btn">Clear</button>
+    </div>
+
+    <div class="class-summary-line">
+      <span id="classAuditCount">Loading class audit…</span>
+      <span id="classAuditHint">Only conflicts and missing evidence need your attention.</span>
+    </div>
+    <div id="classAuditGrid" class="class-grid">
+      <div class="research-loading"><span></span><strong>Cross-checking draft classes…</strong><small>Comparing canonical, scouting and grade data.</small></div>
+    </div>
+  </section>
+
+  <div class="danger-note"><strong>Safety rule:</strong> Accepting or keeping a draft class never changes dynasty rank. It only synchronizes prospect eligibility fields and records an audit event.</div>
 </section>
 
 <section id="pageReview" class="admin-page hide">
@@ -3175,6 +3256,37 @@ body:after{
   .drawer-backdrop{z-index:140!important}
   .drawer{z-index:141!important}
 }
+</style>
+
+
+<style id="bbb-class-audit-v1">
+.nav-btn[data-page="eligibility"]:before{content:"⌁"!important}
+.class-hero{position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:center;gap:20px;min-height:156px;margin-bottom:11px;padding:22px 25px;border:1px solid rgba(57,255,155,.13);border-radius:18px;background:radial-gradient(circle at 86% 45%,rgba(88,234,255,.09),transparent 24%),linear-gradient(125deg,rgba(5,25,15,.97),rgba(2,11,7,.98));box-shadow:0 24px 70px rgba(0,0,0,.32)}
+.class-hero h2{margin:6px 0 8px;color:#f1fff7;font-size:29px;letter-spacing:-.04em}.class-hero p{max-width:760px;margin:0;color:#789686;font-size:12px;line-height:1.6}
+.class-hero-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px}.class-hero-pills span{padding:6px 9px;border:1px solid rgba(57,255,155,.11);border-radius:999px;background:rgba(4,20,13,.6);color:#73a889;font-size:9px;font-weight:950;letter-spacing:.08em}
+.class-lock{flex:none;width:112px;height:112px;border:1px solid rgba(88,234,255,.16);border-radius:22px;display:grid;place-items:center;align-content:center;background:linear-gradient(145deg,rgba(7,46,38,.32),rgba(2,18,12,.35));box-shadow:inset 0 0 32px rgba(57,255,155,.04),0 0 34px rgba(88,234,255,.04)}
+.class-lock span{font-size:9px;font-weight:1000;letter-spacing:.15em;color:#6e9d86}.class-lock strong{font-size:37px;color:#79efb0;line-height:1}
+.class-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}.class-kpi-btn{appearance:none;width:100%;text-align:left;cursor:pointer}.class-kpi-btn:hover{border-color:rgba(57,255,155,.28)!important;transform:translateY(-1px)}
+.class-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;padding:12px 14px 0}
+.class-tab{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:42px;padding:0 11px;border:1px solid rgba(57,255,155,.09);border-radius:10px;background:rgba(4,16,10,.72);color:#789484}.class-tab strong{font-size:10px}.class-tab span{font-size:9px;font-weight:1000;color:#62816f}.class-tab.active{border-color:rgba(57,255,155,.27);background:rgba(23,106,65,.18);color:#eafff2}.class-tab.active span{color:#86edb2}
+.class-toolbar{display:grid;grid-template-columns:minmax(240px,1.5fr) repeat(3,minmax(130px,.75fr)) auto;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(57,255,155,.07)}
+.class-summary-line{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(57,255,155,.06);color:#617d6d;font-size:10px}.class-summary-line span:first-child{color:#89d4a9;font-weight:900}
+.class-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:12px}
+.class-card{position:relative;overflow:hidden;border:1px solid rgba(57,255,155,.1);border-radius:13px;background:linear-gradient(145deg,rgba(7,24,15,.94),rgba(3,12,8,.96))}
+.class-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#4cdf93;opacity:.55}.class-card.conflict:before{background:#ff7080;opacity:.9}.class-card.recheck:before{background:#ffc861;opacity:.82}
+.class-card-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:13px 14px 10px}
+.class-pos{width:43px;height:43px;display:grid;place-items:center;border:1px solid rgba(88,234,255,.13);border-radius:10px;background:rgba(7,39,42,.18);color:#89dbe3;font-size:10px;font-weight:1000}
+.class-player{min-width:0}.class-player strong{display:block;color:#f1fff7;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.class-player span{display:block;margin-top:3px;color:#658171;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.class-status{padding:5px 8px;border:1px solid rgba(57,255,155,.12);border-radius:999px;background:rgba(57,255,155,.04);color:#7ed9a4;font-size:8px;font-weight:1000;letter-spacing:.07em}.conflict .class-status{border-color:rgba(255,112,128,.19);color:#ff9ba6;background:rgba(145,39,53,.09)}.recheck .class-status{border-color:rgba(255,200,97,.18);color:#e7c071;background:rgba(125,85,25,.08)}
+.class-compare{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin:0 14px 11px;padding:12px;border:1px solid rgba(57,255,155,.07);border-radius:11px;background:rgba(2,10,6,.5)}
+.class-year-box span{display:block;color:#5e7768;font-size:8px;font-weight:950;letter-spacing:.08em}.class-year-box strong{display:block;margin-top:3px;color:#e8fff1;font-size:24px;letter-spacing:-.04em}.class-year-box.recommended{text-align:right}.class-arrow{color:#4f8467;font-size:17px}
+.class-grade-note{grid-column:1/-1;padding-top:7px;border-top:1px solid rgba(57,255,155,.05);color:#62806f;font-size:9px}
+.class-evidence{margin:0 14px 11px;padding:10px 11px;border:1px solid rgba(57,255,155,.07);border-radius:9px;background:rgba(2,10,6,.5)}.class-evidence-label{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px;color:#5e9675;font-size:8px;font-weight:1000;letter-spacing:.08em}.class-evidence p{margin:0;color:#a7c2b1;font-size:10px;line-height:1.5}.class-source{margin-top:6px;color:#5f7a69;font-size:9px}
+.class-card-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid rgba(57,255,155,.06);background:rgba(2,10,6,.42)}
+.class-confidence{display:flex;align-items:center;gap:6px;color:#688576;font-size:9px}.class-confidence b{color:#91d6ad}.class-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.class-action{padding:8px 10px;border:1px solid rgba(57,255,155,.14);border-radius:8px;background:rgba(5,24,14,.8);color:#91c9aa;font-size:9px;font-weight:950}.class-action:hover{border-color:rgba(57,255,155,.35);color:#effff5}.class-action.accept{background:rgba(31,124,76,.22);color:#8cf1b5}.class-action.keep{border-color:rgba(255,200,97,.16);color:#dfbd76}.class-action.danger{border-color:rgba(255,112,128,.18);color:#ee939d}
+.class-empty{grid-column:1/-1;min-height:240px;display:grid;place-items:center;align-content:center;text-align:center;padding:30px;color:#607c6b}.class-empty strong{font-size:17px;color:#aee0c2;margin-bottom:6px}.class-empty span{font-size:10px;max-width:520px;line-height:1.6}.class-empty-actions{display:flex;gap:7px;margin-top:14px}
+@media(max-width:1050px){.class-grid{grid-template-columns:1fr}.class-toolbar{grid-template-columns:1fr 1fr}.class-toolbar #classAuditSearch{grid-column:1/-1}.class-tabs{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.class-hero{padding:18px 15px}.class-hero h2{font-size:24px}.class-lock{width:82px;height:82px}.class-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}.class-tabs{grid-template-columns:1fr 1fr}.class-toolbar{grid-template-columns:1fr}.class-toolbar #classAuditSearch{grid-column:auto}.class-summary-line{flex-direction:column}.class-card-head{grid-template-columns:auto minmax(0,1fr)}.class-status{grid-column:1/-1;justify-self:start}.class-card-foot{align-items:flex-start;flex-direction:column}.class-actions{width:100%;justify-content:stretch}.class-action{flex:1}}
 </style>
 
 </body>
