@@ -1,4 +1,4 @@
-/* BBB Content Intelligence v1 */
+/* BBB Content Intelligence v2 · vidIQ Channel DNA */
 (function(){
   let contentIntel=null;
   let contentLoaded=false;
@@ -29,6 +29,7 @@
   }
 
   function ops(){return Array.isArray(contentIntel?.opportunities)?contentIntel.opportunities:[]}
+  function youtube(){return contentIntel?.youtube||{}}
   function prospects(){return Array.isArray(contentIntel?.prospects)?contentIntel.prospects:[]}
   function noise(){return Array.isArray(contentIntel?.noise)?contentIntel.noise:[]}
   function queue(){return Array.isArray(contentIntel?.queue)?contentIntel.queue:[]}
@@ -75,6 +76,21 @@
     if(Number.isNaN(d.getTime()))return String(v);
     return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
   }
+  function timeText(v){
+    if(!v)return '—';
+    const d=new Date(v);
+    if(Number.isNaN(d.getTime()))return String(v);
+    return d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  }
+  function compactViews(v){
+    const x=Number(v);if(!Number.isFinite(x))return '—';
+    if(x>=1000000)return (x/1000000).toFixed(x>=10000000?0:1)+'M';
+    if(x>=1000)return (x/1000).toFixed(x>=10000?0:1)+'K';
+    return Math.round(x).toLocaleString();
+  }
+  function breakout(v){
+    const x=Number(v);return Number.isFinite(x)?x.toFixed(1)+'×':'—';
+  }
 
   function currentWeeklyStats(x){
     if(x.position==='WR'||x.position==='TE'){
@@ -109,12 +125,16 @@
       ['PERFORMANCE',Number(x.performance_points)||0,50],
       ['MARKET',Number(x.market_points)||0,20],
       ['RANK MOVE',Number(x.movement_points)||0,15],
-      ['NEWS',Number(x.news_points)||0,28]
+      ['NEWS',Number(x.news_points)||0,28],
+      ['YOUTUBE FIT',Number(x.youtube_points)||0,14],
+      ['DYNASTY RELEVANCE',Number(x.dynasty_relevance_adjustment)||0,8]
     ];
     return parts.map(([label,val,max])=>{
-      const pct=Math.max(0,Math.min(100,(val/max)*100));
-      return '<div class="content-signal-bar"><span><b>'+esc(label)+'</b><em>'+val+'</em></span><i><u style="width:'+pct+'%"></u></i></div>';
-    }).join('');
+      const abs=Math.abs(val),pct=Math.max(0,Math.min(100,(abs/max)*100));
+      const cls=val<0?'negative':'';
+      return '<div class="content-signal-bar '+cls+'"><span><b>'+esc(label)+'</b><em>'+(val>0?'+':'')+val+'</em></span><i><u style="width:'+pct+'%"></u></i></div>';
+    }).join('')+
+    (Number(x.youtube_penalty)>0?'<div class="content-signal-penalty"><span>YOUTUBE COVERAGE PENALTY</span><strong>-'+int(x.youtube_penalty)+'</strong></div>':'');
   }
 
   function filteredOps(){
@@ -122,11 +142,13 @@
     const pos=$('#contentPos')?.value||'ALL';
     const format=$('#contentFormat')?.value||'ALL';
     const coverage=$('#contentCoverage')?.value||'ALL';
+    const youtubeState=$('#contentYoutube')?.value||'ALL';
 
     return ops().filter(x=>{
       if(pos!=='ALL'&&x.position!==pos)return false;
       if(format!=='ALL'&&x.recommended_format!==format)return false;
       if(coverage!=='ALL'&&x.coverage_status!==coverage)return false;
+      if(youtubeState!=='ALL'&&x.youtube_coverage_status!==youtubeState)return false;
       if(contentPreset==='TOP'&&Number(x.content_score)<70)return false;
       if(contentPreset==='FILM'&&x.recommended_format!=='FILM BREAKDOWN')return false;
       if(contentPreset==='NEWS'&&x.recommended_format!=='NEWS / REACTION')return false;
@@ -149,6 +171,27 @@
     Object.entries(map).forEach(([id,v])=>{const el=$('#'+id);if(el)el.textContent=v??'—'});
     const nav=$('#contentNavCount');if(nav)nav.textContent=s.top_opportunities??'—';
     if($('#contentWeek'))$('#contentWeek').textContent='WEEK '+(contentIntel?.week??'—');
+  }
+
+  function renderYoutubeDNA(){
+    const y=youtube();
+    if($('#contentYoutubeSync'))$('#contentYoutubeSync').textContent=timeText(y.synced_at);
+    if($('#contentYTLongMedian'))$('#contentYTLongMedian').textContent=compactViews(y.long_median_views);
+    if($('#contentYTShortMedian'))$('#contentYTShortMedian').textContent=compactViews(y.short_median_views);
+    if($('#contentYT7Day'))$('#contentYT7Day').textContent=compactViews(y.median_views_7d);
+    if($('#contentYTSynced'))$('#contentYTSynced').textContent=(y.player_matched??0)+' / '+(y.videos_synced??0);
+    if($('#contentYTScheduled'))$('#contentYTScheduled').textContent=y.scheduled_count??0;
+
+    const row=v=>'<article class="content-youtube-row">'+
+      '<div class="content-youtube-thumb">'+(v.thumbnail_url?'<img src="'+esc(v.thumbnail_url)+'" alt="" loading="lazy">':'<span>▶</span>')+'</div>'+
+      '<div><strong>'+esc(v.title||'Untitled video')+'</strong><span>'+compactViews(v.view_count)+' views · '+breakout(v.breakout_score)+' breakout</span></div>'+
+    '</article>';
+    const long=$('#contentYTTopLong');if(long)long.innerHTML=(Array.isArray(y.top_long)&&y.top_long.length)?y.top_long.slice(0,4).map(row).join(''):'<div class="empty">No long-form history synced.</div>';
+    const short=$('#contentYTTopShort');if(short)short.innerHTML=(Array.isArray(y.top_short)&&y.top_short.length)?y.top_short.slice(0,4).map(row).join(''):'<div class="empty">No Shorts history synced.</div>';
+    const sched=$('#contentYTScheduleList');
+    if(sched)sched.innerHTML=(Array.isArray(y.scheduled)&&y.scheduled.length)?y.scheduled.slice(0,5).map(v=>
+      '<article class="content-youtube-row scheduled"><div class="content-youtube-thumb">'+(v.thumbnail_url?'<img src="'+esc(v.thumbnail_url)+'" alt="" loading="lazy">':'<span>◷</span>')+'</div><div><strong>'+esc(v.title||'Scheduled upload')+'</strong><span>'+esc(String(v.video_type||'').toUpperCase())+' · '+timeText(v.scheduled_publish_at)+'</span></div></article>'
+    ).join(''):'<div class="content-youtube-clear">✓ Nothing scheduled in the synced window.</div>';
   }
 
   function renderRightNow(){
@@ -175,7 +218,9 @@
     const cls=scoreClass(x.content_score),fmt=formatClass(x.recommended_format);
     const stats=currentWeeklyStats(x).map(([l,v])=>'<div class="content-stat"><span>'+esc(l)+'</span><strong>'+esc(v)+'</strong></div>').join('');
     const covered=x.coverage_status&&x.coverage_status!=='NEVER LOGGED';
-    return '<article class="content-card '+cls+'">'+
+    const scheduled=x.youtube_coverage_status==='SCHEDULED';
+    const ytFit=Number(x.youtube_fit_score)||0;
+    return '<article class="content-card '+cls+(scheduled?' content-scheduled':'')+'">'+
       '<div class="content-card-glow"></div>'+
       '<header class="content-card-head">'+
         '<div class="content-player">'+playerArt(x.espn_id,x.name)+
@@ -185,13 +230,13 @@
         '</div>'+
         '<div class="content-score-ring '+cls+'"><span>CONTENT</span><strong>'+int(x.content_score)+'</strong><small>/100</small></div>'+
       '</header>'+
-      '<div class="content-format-row"><span class="content-format '+fmt+'">'+esc(x.recommended_format||'WATCH')+'</span><span class="content-priority '+cls+'">'+esc(scoreLabel(x.content_score))+'</span><span class="content-coverage '+(covered?'covered':'fresh')+'">'+esc(x.coverage_status||'NEVER LOGGED')+'</span>'+(x.last_published_at?'<span class="content-last">LAST '+dateText(x.last_published_at).toUpperCase()+'</span>':'')+'</div>'+
+      '<div class="content-format-row"><span class="content-format '+fmt+'">'+esc(x.recommended_format||'WATCH')+'</span><span class="content-priority '+cls+'">'+esc(scoreLabel(x.content_score))+'</span><span class="content-coverage '+(covered?'covered':'fresh')+'">'+esc(x.coverage_status||'NEVER LOGGED')+'</span><span class="content-yt-fit '+(ytFit>=80?'hot':ytFit>=65?'good':'neutral')+'">CHANNEL FIT '+int(ytFit)+'</span><span class="content-yt-state '+(scheduled?'scheduled':'')+'">'+esc(x.youtube_coverage_status||'FRESH')+'</span>'+(x.last_published_at?'<span class="content-last">BBB LAST '+dateText(x.last_published_at).toUpperCase()+'</span>':'')+'</div>'+
       '<div class="content-card-grid">'+
         '<section class="content-why"><div class="content-label">WHY NOW</div><strong>'+esc(x.primary_signal||'')+'</strong><p>'+esc(x.secondary_signal||'')+'</p><div class="content-stats">'+stats+'</div></section>'+
         '<section class="content-score-build"><div class="content-label">SCORE BUILD</div>'+signalBars(x)+'</section>'+
-        '<section class="content-angle"><div class="content-label">RECOMMENDED ANGLE</div><h4>'+esc(x.recommended_title||'')+'</h4><p>'+(x.latest_update_text?esc(x.latest_update_text):'Use the underlying role and market signal as the spine of the content.')+'</p></section>'+
+        '<section class="content-angle"><div class="content-label">WHY THIS VIDEO?</div><h4>'+esc(x.recommended_title||'')+'</h4><p>'+esc(x.youtube_signal||'No YouTube fit signal yet.')+'</p><div class="content-why-tags"><span>FOOTBALL '+int(x.football_score)+'</span><span>YT FIT '+int(x.youtube_fit_score)+'</span><span>RELEVANCE '+(Number(x.dynasty_relevance_adjustment)>0?'+':'')+int(x.dynasty_relevance_adjustment)+'</span>'+(Number(x.youtube_penalty)>0?'<span class="penalty">COVERAGE -'+int(x.youtube_penalty)+'</span>':'')+'</div>'+(x.youtube_best_video_title?'<div class="content-history-proof"><span>BEST MATCHED CHANNEL RESULT</span><strong>'+esc(x.youtube_best_video_title)+'</strong><small>'+compactViews(x.youtube_best_video_views)+' views · '+breakout(x.youtube_best_video_breakout)+' breakout</small></div>':'')+'</section>'+
       '</div>'+
-      '<footer class="content-card-foot"><div class="content-rank-movement"><span>7D RANK MOVE</span><strong class="'+(Number(x.rank_move_7d)>0?'up':Number(x.rank_move_7d)<0?'down':'')+'">'+(Number(x.rank_move_7d)>0?'▲ ':Number(x.rank_move_7d)<0?'▼ ':'')+Math.abs(Number(x.rank_move_7d)||0)+'</strong><small>MARKET EDGE '+(x.market_gap==null?'—':(Number(x.market_gap)>0?'+':'')+x.market_gap)+'</small></div><div class="content-actions"><button type="button" class="small-btn" data-content-open="'+esc(x.player_key)+'">PLAYER WORKSPACE</button><button type="button" class="content-action secondary" data-content-queue="'+esc(x.player_key)+'" data-content-mode="short">QUEUE SHORT</button><button type="button" class="content-action primary" data-content-queue="'+esc(x.player_key)+'" data-content-mode="long_form">QUEUE VIDEO</button></div></footer>'+
+      '<footer class="content-card-foot"><div class="content-rank-movement"><span>7D RANK MOVE</span><strong class="'+(Number(x.rank_move_7d)>0?'up':Number(x.rank_move_7d)<0?'down':'')+'">'+(Number(x.rank_move_7d)>0?'▲ ':Number(x.rank_move_7d)<0?'▼ ':'')+Math.abs(Number(x.rank_move_7d)||0)+'</strong><small>MARKET EDGE '+(x.market_gap==null?'—':(Number(x.market_gap)>0?'+':'')+x.market_gap)+'</small></div><div class="content-actions"><button type="button" class="small-btn" data-content-open="'+esc(x.player_key)+'">PLAYER WORKSPACE</button>'+(scheduled?'<button type="button" class="content-action scheduled" disabled>ALREADY SCHEDULED</button>':'<button type="button" class="content-action secondary" data-content-queue="'+esc(x.player_key)+'" data-content-mode="short">QUEUE SHORT</button><button type="button" class="content-action primary" data-content-queue="'+esc(x.player_key)+'" data-content-mode="long_form">QUEUE VIDEO</button>')+'</div></footer>'+
     '</article>';
   }
 
@@ -264,6 +309,7 @@
   function render(){
     if(!contentLoaded||!contentIntel)return;
     renderSummary();
+    renderYoutubeDNA();
     renderRightNow();
     renderView();
     syncPreset();
@@ -378,13 +424,13 @@
   }
 
   function bindControls(){
-    ['#contentSearch','#contentPos','#contentFormat','#contentCoverage'].forEach(sel=>{
+    ['#contentSearch','#contentPos','#contentFormat','#contentCoverage','#contentYoutube'].forEach(sel=>{
       const el=$(sel);if(!el||el.dataset.contentBound==='1')return;
       el.dataset.contentBound='1';
       el.addEventListener(sel==='#contentSearch'?'input':'change',()=>{contentPreset='ALL';syncPreset();renderOpportunities();bindActions();hydrateArt()});
     });
     $('#contentClear')?.addEventListener('click',()=>{
-      $('#contentSearch').value='';$('#contentPos').value='ALL';$('#contentFormat').value='ALL';$('#contentCoverage').value='ALL';contentPreset='TOP';contentView='opportunities';render();
+      $('#contentSearch').value='';$('#contentPos').value='ALL';$('#contentFormat').value='ALL';$('#contentCoverage').value='ALL';if($('#contentYoutube'))$('#contentYoutube').value='ALL';contentPreset='TOP';contentView='opportunities';render();
     });
     $('#contentRefresh')?.addEventListener('click',()=>load(true));
     $$('[data-content-preset]').forEach(el=>{
