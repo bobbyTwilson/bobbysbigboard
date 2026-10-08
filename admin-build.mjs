@@ -59,7 +59,7 @@ await writeFile(`${out}/static/admin-design-system-v2.css`,adminDesignV2Css);
 const rankingIntelJs=await readFile('admin-ranking-intel-v2.js','utf8');
 const rankingIntelCss=await readFile('admin-ranking-intel-v2.css','utf8');
 new Function(rankingIntelJs);
-if(!rankingIntelCss.includes('#pageMoves .rank-intel-panel')){
+if(!rankingIntelCss.includes('#pageResearch .rank-intel-panel')){
   throw new Error('Ranking Intelligence CSS did not contain its main panel styles.');
 }
 await writeFile(`${out}/static/admin-ranking-intel-v2.js`,rankingIntelJs);
@@ -72,7 +72,7 @@ const adminStaticAssets=[...adminHtml.matchAll(/(?:src|href)="\/(admin-[^"?#]+\.
 for(const name of new Set(adminStaticAssets)){
   await access(`${out}/static/${name}`);
 }
-if(!adminHtml.includes('id="rankIntelGrid"') || !adminHtml.includes('id="rankIntelPanel"')){
+if(!adminHtml.includes('id="rankIntelGrid"') || !adminHtml.includes('id="rankIntelPanel"') || !adminHtml.includes('id="rankIntelDisclosure"')){
   throw new Error('Ranking Intelligence panel is missing from the deployed admin HTML.');
 }
 console.log('Verified '+new Set(adminStaticAssets).size+' Admin JS/CSS assets, including Ranking Intelligence V2.');
