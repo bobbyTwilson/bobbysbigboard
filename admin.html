@@ -1881,9 +1881,9 @@ body:after{
                 </div>
                 <div class="bbb-news-apply-source" id="newsApplySourceBox" aria-live="polite">
                   <div class="bbb-news-apply-source-copy">
-                    <span>SOURCE INTELLIGENCE · AUTOMATIC</span>
-                    <strong id="newsApplySourceStatus">Checking verified evidence…</strong>
-                    <small id="newsApplySourceDetails">BBB attaches source references to the player history automatically. You never need to paste a URL.</small>
+                    <span>REPORT ORIGIN · AUTOMATIC INGEST</span>
+                    <strong id="newsApplySourceStatus">Checking job report…</strong>
+                    <small id="newsApplySourceDetails">BBB keeps the source used by the ingest job. You do not need to paste a URL.</small>
                   </div>
                   <div class="bbb-news-apply-source-actions">
                     <a id="newsApplyOfficialLink" href="https://www.nfl.com/" target="_blank" rel="noopener noreferrer" hidden>VIEW SOURCE ↗</a>
@@ -1892,15 +1892,15 @@ body:after{
                 </div>
                 <div class="bbb-news-apply-context" aria-label="Football context from BBB data">
                   <div class="bbb-news-apply-context-head">
-                    <strong>What this update actually means</strong>
-                    <span id="newsApplyEvidenceLevel">SOURCE SIGNAL · NOT YET VERIFIED</span>
+                    <strong>Review incoming job report</strong>
+                    <span id="newsApplyEvidenceLevel">AWAITING YOUR DECISION</span>
                   </div>
                   <div class="bbb-news-apply-context-grid">
-                    <div><span>NEW REPORT</span><strong id="newsApplyNewSignal">—</strong></div>
-                    <div><span>PREVIOUS BBB CONTEXT</span><strong id="newsApplyPriorContext">—</strong></div>
-                    <div><span>RECENT VERIFIED USAGE</span><strong id="newsApplyUsageContext">—</strong></div>
+                    <div><span>JOB REPORT</span><strong id="newsApplyNewSignal">—</strong></div>
+                    <div><span>EXISTING BBB CONTEXT</span><strong id="newsApplyPriorContext">—</strong></div>
+                    <div><span>INGESTION JOB</span><strong id="newsApplyUsageContext">—</strong></div>
                   </div>
-                  <p id="newsApplyEvidenceCaveat">Only source-supported facts belong in a verified note.</p>
+                  <p id="newsApplyEvidenceCaveat">The jobs collect reports. You decide which ones to admit to BBB.</p>
                 </div>
                 <div class="bbb-news-apply-note">
                   <div class="bbb-news-apply-note-head">
@@ -1919,12 +1919,16 @@ body:after{
                 </div>
                 <label class="bbb-news-apply-check">
                   <input type="checkbox" id="newsApplyConfirmed" required/>
-                  <span>I reviewed this update and approve the sourced facts being saved to BBB. <strong>No dynasty ranking will move.</strong></span>
+                  <span>I reviewed the incoming job report and choose to admit this update to the player timeline. <strong>No dynasty rank will move.</strong></span>
+                </label>
+                <label class="bbb-news-apply-check">
+                  <input type="checkbox" id="newsApplyQueueRank"/>
+                  <span id="newsApplyQueueRankLabel">Also queue this player for a separate ranking review (optional)</span>
                 </label>
                 <div id="newsApplyStatus" class="bbb-news-apply-status" role="status" aria-live="polite"></div>
                 <div class="bbb-news-apply-footer">
                   <button type="button" id="newsApplyCancel">CANCEL</button>
-                  <button type="submit" id="newsApplySubmit">APPLY VERIFIED UPDATE</button>
+                  <button type="submit" id="newsApplySubmit">ADMIT REPORT TO BBB</button>
                 </div>
               </form>
             </div>
@@ -2448,7 +2452,7 @@ body:after{
   <script src="/admin-injury-v1.js?v=3"></script>
   <script src="/admin-content-v1.js?v=4"></script>
   <script src="/admin-dashboard-v2.js?v=4"></script>
-  <script src="/admin-automation-v1.js?v=11"></script>
+  <script src="/admin-automation-v1.js?v=12"></script>
   <script src="/admin-exceptions-v1.js?v=4"></script>
   <script src="/admin-ui-polish-v1.js?v=1"></script>
   <script src="/admin-ranking-intel-v2.js?v=3"></script>
