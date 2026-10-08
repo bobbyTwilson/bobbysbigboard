@@ -1,6 +1,6 @@
 /* BBB Automation Control Center v1 */
 (function(){
-  let autoData=null,autoLoaded=false,autoLoading=false,autoHealth=null,jobMetrics=[],autoIntel=null;
+  let autoData=null,autoLoaded=false,autoLoading=false,autoHealth=null,jobMetrics=[],autoIntel=null,newsCoverage=null;
 
   function arr(v){return Array.isArray(v)?v:[]}
   function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
@@ -121,7 +121,7 @@
     if($('#autoNavCount'))$('#autoNavCount').textContent=healthy+'/'+total;
     const state=$('#autoHealthState');
     if(state){
-      const bad=num(s.recent_failures)>0||healthy<total||autoHealth?.status_source_stale===true;
+      const bad=num(s.recent_failures)>0||healthy<total||autoHealth?.status_source_stale===true||newsCoverage?.recent_scan?.status!=='complete';
       state.className='hud-badge '+(bad?'warn':'good');
       state.textContent=bad?'ATTENTION':'ALL SYSTEMS HEALTHY';
     }
@@ -168,6 +168,41 @@
       '<div><button class="small-btn" type="button" data-auto-jump="injuries">OPEN INJURY CENTER</button>'+
       '<button class="small-btn" type="button" data-auto-jump="review">REVIEW EXCEPTIONS</button>'+
       '<button class="small-btn" type="button" data-auto-jump="prospects">PROSPECT LAB</button></div>';
+  }
+
+
+  function renderNewsCoverage(){
+    const cards=$('#autoNewsCoverage'),note=$('#autoNewsCoverageNote');
+    if(!cards)return;
+    const data=newsCoverage||{},scan=data.recent_scan||null;
+    const expected=num(data.expected)||500;
+    const checked=num(scan?.checked_count),verified=num(scan?.verified_count),changed=num(scan?.changed_count);
+    const lastComplete=data.last_complete_scan;
+    const windowStatus=scan?.status||'NOT STARTED';
+    cards.innerHTML=
+      readinessCard(scan?.status==='complete'?'good':'bad',
+        'LAST NEWS SCAN',scan?checked+'/'+expected:'0/'+expected+' VERIFIED',
+        scan?'Status '+String(windowStatus).toUpperCase()+' · '+centralStamp(scan.started_at):
+          'No auditable 500-player news scan has finished')+
+      readinessCard(scan?.status==='complete'?'good':'warn',
+        'SOURCE-VERIFIED IN RUN',verified+'/'+expected,
+        'Individual source-backed verification records; no blanket timestamp refresh')+
+      readinessCard('good','MEANINGFUL CHANGES',changed,
+        'Last audited run · unchanged facts do not create timeline entries')+
+      readinessCard(num(data.ranked_verified_24h)===expected?'good':'warn',
+        'PLAYER VERIFICATIONS · 24H',num(data.ranked_verified_24h)+'/'+expected,
+        'Last verified dates, including genuine unchanged reviews')+
+      readinessCard(lastComplete?'good':'bad',
+        'LAST FULL 500',lastComplete?rel(lastComplete):'NEVER VERIFIED',
+        lastComplete?centralStamp(lastComplete):'A complete scan requires evidence for every ranked player');
+    if(note){
+      const fail=scan?.status!=='complete';
+      const statusText=fail
+        ?'A data refresh is not a full news review. The last news scan has not demonstrated 500/500 source-verified players.'
+        :'Every ranked player had an evidence-backed check in the completed news scan.';
+      note.innerHTML='<span class="'+(fail?'auto-readiness-warning':'')+'">'+escv(statusText)+'</span>'+
+        '<span>Checked and verified are separate from publishing a news update. Rank changes remain manual.</span>';
+    }
   }
 
   function intelligencePlayer(x){
@@ -284,7 +319,7 @@
 
   function render(){
     if(!autoLoaded||!autoData)return;
-    renderSummary();renderReadiness();renderIntelligence();renderGuards();renderSources();renderJobs();renderRuns();renderLatestNews();bindActions();
+    renderSummary();renderReadiness();renderNewsCoverage();renderIntelligence();renderGuards();renderSources();renderJobs();renderRuns();renderLatestNews();bindActions();
   }
 
   async function load(force=false){
@@ -297,13 +332,15 @@
         rpc('admin_get_automation_control_center',{}),
         rpc('admin_get_data_health',{}),
         rpc('admin_get_job_run_health',{}),
-        rpc('admin_get_ops_intelligence',{})
+        rpc('admin_get_ops_intelligence',{}),
+        rpc('admin_get_news_scan_coverage',{})
       ]);
       if(results[0].status!=='fulfilled')throw results[0].reason;
       autoData=results[0].value||null;
       autoHealth=results[1].status==='fulfilled'?results[1].value:null;
       jobMetrics=results[2].status==='fulfilled'?arr(results[2].value?.jobs):[];
       autoIntel=results[3].status==='fulfilled'?results[3].value:null;
+      newsCoverage=results[4].status==='fulfilled'?results[4].value:null;
       autoLoaded=true;render();
     }catch(e){
       console.error('Automation Control Center failed',e);
