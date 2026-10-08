@@ -1866,7 +1866,7 @@ body:after{
                 <div id="newsApplyRosterRow" class="bbb-news-apply-field" hidden>
                   <label for="newsApplyDesignation">Exact roster designation</label>
                   <select id="newsApplyDesignation">
-                    <option value="">Choose verified designation…</option>
+                    <option value="">Choose reported roster designation…</option>
                     <option value="Practice Squad">Practice Squad</option>
                     <option value="Active Roster">Active Roster (53-man)</option>
                     <option value="Injured Reserve">Injured Reserve</option>
@@ -1876,7 +1876,7 @@ body:after{
                   </select>
                 </div>
                 <div class="bbb-news-apply-field">
-                  <label for="newsApplyDate">Report date · filled automatically when verified</label>
+                  <label for="newsApplyDate">Report date · from the ingestion job or linked team report</label>
                   <input type="date" id="newsApplyDate" required/>
                 </div>
                 <div class="bbb-news-apply-source" id="newsApplySourceBox" aria-live="polite">
@@ -1887,7 +1887,7 @@ body:after{
                   </div>
                   <div class="bbb-news-apply-source-actions">
                     <a id="newsApplyOfficialLink" href="https://www.nfl.com/" target="_blank" rel="noopener noreferrer" hidden>VIEW SOURCE ↗</a>
-                    <button id="newsApplyRequestSource" type="button" hidden>RESEARCH SOURCE</button>
+                    <button id="newsApplyRequestSource" type="button" hidden>CHECK TEAM SOURCE</button>
                   </div>
                 </div>
                 <div class="bbb-news-apply-context" aria-label="Football context from BBB data">
@@ -1907,7 +1907,7 @@ body:after{
                     <div><span>PLAYER TIMELINE</span><strong>Suggested football note</strong></div>
                     <button id="newsApplyEditNote" type="button" aria-expanded="false" aria-controls="newsApplyNoteEditor">EDIT NOTE</button>
                   </div>
-                  <p id="newsApplyNotePreview" class="bbb-news-apply-note-preview">Loading a source-aware summary…</p>
+                  <p id="newsApplyNotePreview" class="bbb-news-apply-note-preview">Loading proposed player note…</p>
                   <div id="newsApplyNoteEditor" class="bbb-news-apply-note-editor" hidden>
                     <label for="newsApplyNote">Edit the note before saving</label>
                     <textarea id="newsApplyNote" rows="6" minlength="45" maxlength="1200" required></textarea>
@@ -2452,7 +2452,7 @@ body:after{
   <script src="/admin-injury-v1.js?v=3"></script>
   <script src="/admin-content-v1.js?v=4"></script>
   <script src="/admin-dashboard-v2.js?v=4"></script>
-  <script src="/admin-automation-v1.js?v=12"></script>
+  <script src="/admin-automation-v1.js?v=13"></script>
   <script src="/admin-exceptions-v1.js?v=4"></script>
   <script src="/admin-ui-polish-v1.js?v=1"></script>
   <script src="/admin-ranking-intel-v2.js?v=3"></script>
