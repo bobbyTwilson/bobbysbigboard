@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { access, readFile, writeFile } from 'node:fs/promises';
 
 const out='.vercel/output';
 
@@ -53,6 +53,30 @@ await writeFile(`${out}/static/admin-ui-polish-v1.css`,uiPolishCss);
 await writeFile(`${out}/static/admin-ui-polish-v1.js`,uiPolishJs);
 const adminDesignV2Css=await readFile('admin-design-system-v2.css','utf8');
 await writeFile(`${out}/static/admin-design-system-v2.css`,adminDesignV2Css);
+
+/* Ship and verify the Ranking Intelligence assets referenced by Admin HTML.
+   Without these copies Vercel returns 404 while the admin page itself builds READY. */
+const rankingIntelJs=await readFile('admin-ranking-intel-v2.js','utf8');
+const rankingIntelCss=await readFile('admin-ranking-intel-v2.css','utf8');
+new Function(rankingIntelJs);
+if(!rankingIntelCss.includes('#pageMoves .rank-intel-panel')){
+  throw new Error('Ranking Intelligence CSS did not contain its main panel styles.');
+}
+await writeFile(`${out}/static/admin-ranking-intel-v2.js`,rankingIntelJs);
+await writeFile(`${out}/static/admin-ranking-intel-v2.css`,rankingIntelCss);
+
+/* Fail the build if any admin-specific JS or CSS link has no shipped file.
+   This keeps future Admin features from silently rendering as unstyled skeletons. */
+const adminStaticAssets=[...adminHtml.matchAll(/(?:src|href)="\/(admin-[^"?#]+\.(?:js|css))(?:\?[^"]*)?"/g)]
+  .map(match=>match[1]);
+for(const name of new Set(adminStaticAssets)){
+  await access(`${out}/static/${name}`);
+}
+if(!adminHtml.includes('id="rankIntelGrid"') || !adminHtml.includes('id="rankIntelPanel"')){
+  throw new Error('Ranking Intelligence panel is missing from the deployed admin HTML.');
+}
+console.log('Verified '+new Set(adminStaticAssets).size+' Admin JS/CSS assets, including Ranking Intelligence V2.');
+
 
 const config=JSON.parse(await readFile(`${out}/config.json`,'utf8'));
 config.routes=[
