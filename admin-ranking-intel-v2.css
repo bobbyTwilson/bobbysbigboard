@@ -200,3 +200,55 @@
   #pageMoves .rank-intel-card-head{grid-template-columns:40px minmax(0,1fr)}
   #pageMoves .rank-intel-signal{grid-column:2;justify-self:start}
 }
+
+
+/* Ranking Moves v2.1: replace inherited full-height accent stroke with quiet framing.
+   The research panel now loads from Vercel's static output with its own stylesheet. */
+#appView #pageMoves > .page-head::before{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+  box-shadow:none!important;
+}
+#appView #pageMoves > .page-head{
+  border-left:1px solid rgba(151,180,164,.20)!important;
+  margin-bottom:14px!important;
+}
+#appView #pageMoves .move-queue-hero{
+  margin-bottom:14px!important;
+}
+#appView #pageMoves .rank-intel-panel{
+  display:block!important;
+  margin:0 0 18px!important;
+  max-width:100%!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  border:1px solid rgba(111,204,162,.28)!important;
+  border-radius:16px!important;
+  background:linear-gradient(150deg,#17292b 0%,#132125 100%)!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.14)!important;
+}
+#appView #pageMoves .rank-intel-head{
+  align-items:flex-start!important;
+}
+#appView #pageMoves .rank-intel-head h2{
+  color:#f5fbf7!important;
+}
+#appView #pageMoves .rank-intel-overview{
+  min-height:64px;
+}
+#appView #pageMoves .rank-intel-grid>.empty{
+  grid-column:1/-1;
+  background:#13272a!important;
+  border:1px solid rgba(140,196,168,.14)!important;
+  border-radius:10px!important;
+  color:#bed1c4!important;
+  font-size:13px!important;
+}
+#appView #pageMoves #rankIntelCount{
+  color:#a9c7b7!important;
+  font-size:12px!important;
+}
+@media(max-width:900px){
+  #appView #pageMoves .rank-intel-panel{padding:15px!important}
+}
