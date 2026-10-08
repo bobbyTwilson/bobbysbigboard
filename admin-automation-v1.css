@@ -359,3 +359,25 @@
   #pageAutomations #newsIntelV3Search{width:100%}
   #pageAutomations .bbb-news-v3-bottom{flex-direction:column}
 }
+
+
+/* Source-backed numerical ranking proposals in News Intelligence v3.1. */
+#pageAutomations .bbb-news-v3-rank{
+  display:flex;align-items:flex-start;flex-wrap:wrap;column-gap:12px;row-gap:4px;
+  margin:0 14px 12px;padding:11px 13px;
+  border:1px solid rgba(95,206,173,.34);border-radius:10px;
+  background:linear-gradient(120deg,rgba(41,99,87,.32),rgba(32,68,72,.18));
+}
+#pageAutomations .bbb-news-v3-rank strong{
+  display:block;width:100%;color:#d4ffe7;font-size:15px;line-height:1.3;font-weight:850;
+}
+#pageAutomations .bbb-news-v3-rank small{
+  color:#bcd8c9;font-size:10px;line-height:1.5;font-weight:700;
+}
+#pageAutomations .bbb-news-v3-rank a{
+  font-size:10px;line-height:1.5;font-weight:850;
+  color:#a2e9d0;text-decoration:underline;text-underline-offset:2px;
+}
+#pageAutomations .bbb-news-v3-rank a:focus-visible{
+  outline:2px solid #9de5c6;outline-offset:2px;
+}
