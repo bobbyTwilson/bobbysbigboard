@@ -1212,7 +1212,7 @@ body:after{
   <link rel="stylesheet" href="/admin-injury-v2.css?v=2">
   <link rel="stylesheet" href="/admin-content-v1.css?v=4">
   <link rel="stylesheet" href="/admin-dashboard-v2.css?v=2">
-  <link rel="stylesheet" href="/admin-automation-v1.css?v=6">
+  <link rel="stylesheet" href="/admin-automation-v1.css?v=7">
   <link rel="stylesheet" href="/admin-exceptions-v1.css?v=2">
   <link rel="stylesheet" href="/admin-ui-polish-v1.css?v=5">
   <link rel="stylesheet" href="/admin-design-system-v2.css?v=6">
@@ -1879,10 +1879,16 @@ body:after{
                   <label for="newsApplyDate">Report date · confirm against official source</label>
                   <input type="date" id="newsApplyDate" required/>
                 </div>
-                <div class="bbb-news-apply-field">
-                  <label for="newsApplySource">Official NFL or team source URL</label>
-                  <input type="url" id="newsApplySource" placeholder="https://www.nfl.com/transactions/..." required/>
-                  <small>The original ESPN alert isn't enough to certify a player update. Open and confirm the official link first.</small>
+                <div class="bbb-news-apply-source" id="newsApplySourceBox" aria-live="polite">
+                  <div class="bbb-news-apply-source-copy">
+                    <span>SOURCE INTELLIGENCE · AUTOMATIC</span>
+                    <strong id="newsApplySourceStatus">Checking verified evidence…</strong>
+                    <small id="newsApplySourceDetails">BBB attaches source references to the player history automatically. You never need to paste a URL.</small>
+                  </div>
+                  <div class="bbb-news-apply-source-actions">
+                    <a id="newsApplyOfficialLink" href="https://www.nfl.com/" target="_blank" rel="noopener noreferrer" hidden>VIEW SOURCE ↗</a>
+                    <button id="newsApplyRequestSource" type="button" hidden>RESEARCH SOURCE</button>
+                  </div>
                 </div>
                 <div class="bbb-news-apply-context" aria-label="Football context from BBB data">
                   <div class="bbb-news-apply-context-head">
@@ -1913,7 +1919,7 @@ body:after{
                 </div>
                 <label class="bbb-news-apply-check">
                   <input type="checkbox" id="newsApplyConfirmed" required/>
-                  <span>I verified the <strong>player, date, team, designation and official source</strong> match this update.</span>
+                  <span>I reviewed this update and approve the sourced facts being saved to BBB. <strong>No dynasty ranking will move.</strong></span>
                 </label>
                 <div id="newsApplyStatus" class="bbb-news-apply-status" role="status" aria-live="polite"></div>
                 <div class="bbb-news-apply-footer">
@@ -2442,7 +2448,7 @@ body:after{
   <script src="/admin-injury-v1.js?v=3"></script>
   <script src="/admin-content-v1.js?v=4"></script>
   <script src="/admin-dashboard-v2.js?v=4"></script>
-  <script src="/admin-automation-v1.js?v=9"></script>
+  <script src="/admin-automation-v1.js?v=10"></script>
   <script src="/admin-exceptions-v1.js?v=4"></script>
   <script src="/admin-ui-polish-v1.js?v=1"></script>
   <script src="/admin-ranking-intel-v2.js?v=3"></script>
