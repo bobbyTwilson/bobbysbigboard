@@ -443,13 +443,29 @@
       const refs=Array.isArray(e.related_players)?e.related_players.slice(0,5):[];
       const related=refs.length?
         '<div class="bbb-news-v3-context">Same-position teammates to consider: '+refs.map(x=>escText(x.name)).join(', ')+'. This is opportunity context, not a verified role change.</div>':'';
+      const suggestion=Number.isInteger(Number(e.rank_suggestion))&&e.rank_suggestion!==null
+        ?Number(e.rank_suggestion):null;
+      const official=/^https:\/\/[a-z0-9.-]+\/[a-z0-9/?._%&=+~#-]*$/i.test(e.rank_official_url||'')
+        ?e.rank_official_url:null;
+      const rankLabel=suggestion===null?'AWAITING VERIFIED RANK TARGET':
+        suggestion===Number(e.overall_rank)?'HOLD · #'+suggestion:
+        'BBB #'+escText(e.overall_rank)+' → #'+suggestion+
+        ' ('+(suggestion<Number(e.overall_rank)?'MOVE UP ':'MOVE DOWN ')+
+        Math.abs(Number(e.overall_rank)-suggestion)+' SPOTS)';
+      const recommendation=e.in_rank_queue?
+        '<div class="bbb-news-v3-rank"><strong>'+rankLabel+'</strong>'+
+        '<small>'+escText(String(e.rank_confidence||'source-observed').toUpperCase())+
+        ' CONFIDENCE · '+(official?'OFFICIAL-SOURCE SUPPORTED':'OFFICIAL CORROBORATION PENDING')+
+        ' · MANUAL APPROVAL REQUIRED</small>'+
+        (official?'<a href="'+escText(official)+'" target="_blank" rel="noopener noreferrer">OFFICIAL REPORT ↗</a>':'')+
+        '</div>':'';
       const signal=String(e.signal||'unknown').replaceAll('_',' ');
       const busyNow=busy.has(id),state=e.review_status;
       return '<article class="bbb-news-v3-item" data-category="'+escText(e.category)+'" data-status="'+escText(state)+'">'+
         '<div class="bbb-news-v3-item-head"><strong>'+escText(e.name)+' <span style="color:#9bbdab;font-size:11px">#'+escText(e.overall_rank)+'</span></strong>'+
         '<span class="bbb-news-v3-tag '+(e.category==='Injury'?'injury':'')+'">'+escText(signal.toUpperCase())+'</span></div>'+
         '<div class="bbb-news-v3-item-meta">'+escText(e.team||'Team TBD')+' · '+escText(e.category)+' · '+escText(fmtTime(e.published_at))+' · '+escText(e.source.replaceAll('_',' ').toUpperCase())+'</div>'+
-        '<p>'+escText(e.description)+'</p>'+related+
+        '<p>'+escText(e.description)+'</p>'+related+recommendation+
         '<div class="bbb-news-v3-actions">'+
           '<button type="button" data-news-player="'+key+'">OPEN PLAYER</button>'+
           (safeUrl?'<a target="_blank" rel="noopener noreferrer" href="'+escText(safeUrl)+'">SOURCE ↗</a>':'')+
