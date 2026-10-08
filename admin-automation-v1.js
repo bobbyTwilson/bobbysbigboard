@@ -620,9 +620,18 @@
       const fresh=reportedInjuryStatus(e).toLowerCase();
       const previous=String(e.current_injury_status||'').trim();
       const reason=String(e.current_injury_note||'').trim();
-      const priorContext=previous?
-        ' BBB previously listed him as '+previous.toLowerCase()+
-        (reason&&reason.toLowerCase()!==previous.toLowerCase()?' ('+reason.replace(/[.]+$/,'')+')':'')+'.':'';
+      let priorContext='';
+      if(previous){
+        const priorWeek=reason.match(/Week\s*(\d+)/i)?.[1];
+        const oldBodyPart=previous.includes('—')?previous.split('—').slice(1).join('—').trim():
+          (reason.includes('—')?reason.split('—')[0].trim():'');
+        if(/^out\b/i.test(previous)&&priorWeek&&oldBodyPart){
+          priorContext=' BBB previously ruled him out for Week '+priorWeek+
+            ' with a '+oldBodyPart.toLowerCase()+' issue.';
+        }else{
+          priorContext=' BBB previously listed him as '+previous.toLowerCase()+'.';
+        }
+      }
       const recentUsage=usage? ' His most recent source-backed workload: '+usage+'.':'';
       const impact=/questionable|doubtful/.test(fresh)
         ?'His availability remains uncertain; this tag alone does not establish a long-term change in dynasty value.'
