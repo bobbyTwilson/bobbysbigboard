@@ -207,14 +207,26 @@
       }
     });
     $('#rankIntelSearch')?.addEventListener('input',()=>{visibleCount=12;render()});
+    // No network work until the owner deliberately opens the optional explorer.
+    const disclosure=$('#rankIntelDisclosure');
+    if(disclosure && disclosure.dataset.rankIntelToggleBound!=='1'){
+      disclosure.dataset.rankIntelToggleBound='1';
+      disclosure.addEventListener('toggle',()=>{
+        if(!disclosure.open)return;
+        if(!loaded&&!loading)void load(false);
+        else render();
+      });
+    }
   }
   const previousPage=page;
   page=function(name){
     previousPage(name);
-    if(name==='moves'){
+    if(name==='research'){
       bind();
-      if(!loaded&&!loading)void load(false);
-      else render();
+      if($('#rankIntelDisclosure')?.open){
+        if(!loaded&&!loading)void load(false);
+        else render();
+      }
     }
   };
   document.addEventListener('DOMContentLoaded',bind,{once:true});

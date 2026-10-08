@@ -1216,7 +1216,7 @@ body:after{
   <link rel="stylesheet" href="/admin-exceptions-v1.css?v=2">
   <link rel="stylesheet" href="/admin-ui-polish-v1.css?v=5">
   <link rel="stylesheet" href="/admin-design-system-v2.css?v=6">
-  <link rel="stylesheet" href="/admin-ranking-intel-v2.css?v=2">
+  <link rel="stylesheet" href="/admin-ranking-intel-v2.css?v=3">
 </head>
 <body>
   <section id="loginView" class="login-wrap">
@@ -1459,56 +1459,12 @@ body:after{
             <button class="refresh-btn" data-refresh>Refresh Queue</button>
           </div>
 
-          <section class="move-queue-hero">
-            <div>
-              <div class="panel-kicker">NO AUTO RANK MOVES</div>
-              <h2>The board only moves when you say so.</h2>
-              <p>Scanners, research passes, injury updates and manual flags can create recommendations. They cannot change the Top 500 from this queue without your approval.</p>
-            </div>
-            <div class="move-safety-lock" aria-hidden="true"><span>BBB</span><small>APPROVAL GATE</small></div>
-          </section>
-
           <div class="metric-grid move-queue-kpis">
             <div class="metric cyber-metric"><div class="metric-icon">◈</div><div><span>Pending Decisions</span><strong id="movePending">—</strong><small>WAITING ON YOU</small></div></div>
             <div class="metric cyber-metric"><div class="metric-icon">↑</div><div><span>Move Up</span><strong id="moveUp">—</strong><small>RECOMMENDED RISERS</small></div></div>
             <div class="metric cyber-metric"><div class="metric-icon">↓</div><div><span>Move Down</span><strong id="moveDown">—</strong><small>RECOMMENDED FALLERS</small></div></div>
             <div class="metric cyber-metric"><div class="metric-icon">?</div><div><span>Needs Target</span><strong id="moveTargetless">—</strong><small>REVIEW FLAG ONLY</small></div></div>
           </div>
-
-          <section id="rankIntelPanel" class="rank-intel-panel" aria-labelledby="rankIntelTitle">
-            <div class="rank-intel-head">
-              <div>
-                <span>DYNASTY RESEARCH ENGINE · V2 · APPROVAL-ONLY</span>
-                <h2 id="rankIntelTitle">The trend before the take.</h2>
-                <p>Four-week sourced NFL workload, two-week direction, snap/target share and the current market gap.
-                  A research signal is never an automatic rank change.</p>
-              </div>
-              <button id="rankIntelRefresh" type="button" class="refresh-btn">REFRESH RESEARCH</button>
-            </div>
-            <div id="rankIntelOverview" class="rank-intel-overview">
-              <span>READING USAGE HISTORY…</span>
-            </div>
-            <div class="rank-intel-toolbar">
-              <div id="rankIntelFilters" class="rank-intel-filters" role="group" aria-label="Filter research signals">
-                <button type="button" class="rank-intel-filter active" data-rintel-filter="ALL" aria-pressed="true">All signals</button>
-                <button type="button" class="rank-intel-filter" data-rintel-filter="RISING" aria-pressed="false">Rising workload</button>
-                <button type="button" class="rank-intel-filter" data-rintel-filter="DECLINE" aria-pressed="false">Role decline</button>
-                <button type="button" class="rank-intel-filter" data-rintel-filter="WATCH" aria-pressed="false">Watchlist</button>
-                <button type="button" class="rank-intel-filter" data-rintel-filter="DISMISSED" aria-pressed="false">Dismissed</button>
-              </div>
-              <label class="rank-intel-search-label">
-                <span class="sr-only">Search ranking research</span>
-                <input type="search" id="rankIntelSearch" class="input" placeholder="Search player or position…" autocomplete="off">
-              </label>
-            </div>
-            <div id="rankIntelGrid" class="rank-intel-grid" aria-live="polite">
-              <div class="research-loading"><span></span><strong>Loading multi-week signal evidence…</strong></div>
-            </div>
-            <div class="rank-intel-bottom">
-              <span id="rankIntelCount">Research never writes to the rankings.</span><button id="rankIntelMore" type="button" class="small-btn hide">SHOW MORE</button>
-              <span>Routes per run and verified depth chart context require separate sources; those are not estimated here.</span>
-            </div>
-          </section>
 
           <section class="panel move-queue-panel">
             <div id="moveQueueNotice" class="review-action-notice hide"></div>
@@ -2065,6 +2021,50 @@ body:after{
     </div>
   </section>
 
+  <details id="rankIntelDisclosure" class="rank-intel-disclosure">
+    <summary class="rank-intel-disclosure-summary">
+      <span class="rank-intel-disclosure-icon" aria-hidden="true">↗</span>
+      <span class="rank-intel-disclosure-label">
+        <strong>Four-Week Player Trends</strong>
+        <small>Optional workload signals and market gaps · open when you want deeper research</small>
+      </span>
+      <span class="rank-intel-disclosure-action" aria-hidden="true">EXPLORE SIGNALS <b>⌄</b></span>
+    </summary>
+    <section id="rankIntelPanel" class="rank-intel-panel" aria-labelledby="rankIntelTitle">
+                <div class="rank-intel-head">
+                  <div>
+                    <span>OPTIONAL · RESEARCH-ONLY SIGNALS</span>
+                    <h2 id="rankIntelTitle">Four-Week Player Trends</h2>
+                    <p>Explore recent player workload, opportunity changes, and market gaps. These signals are starting points for film review—not automatic dynasty ranking recommendations.</p>
+                  </div>
+                  <button id="rankIntelRefresh" type="button" class="refresh-btn">REFRESH RESEARCH</button>
+                </div>
+                <div id="rankIntelOverview" class="rank-intel-overview">
+                  <span>READING USAGE HISTORY…</span>
+                </div>
+                <div class="rank-intel-toolbar">
+                  <div id="rankIntelFilters" class="rank-intel-filters" role="group" aria-label="Filter research signals">
+                    <button type="button" class="rank-intel-filter active" data-rintel-filter="ALL" aria-pressed="true">All signals</button>
+                    <button type="button" class="rank-intel-filter" data-rintel-filter="RISING" aria-pressed="false">Rising workload</button>
+                    <button type="button" class="rank-intel-filter" data-rintel-filter="DECLINE" aria-pressed="false">Role decline</button>
+                    <button type="button" class="rank-intel-filter" data-rintel-filter="WATCH" aria-pressed="false">Watchlist</button>
+                    <button type="button" class="rank-intel-filter" data-rintel-filter="DISMISSED" aria-pressed="false">Dismissed</button>
+                  </div>
+                  <label class="rank-intel-search-label">
+                    <span class="sr-only">Search ranking research</span>
+                    <input type="search" id="rankIntelSearch" class="input" placeholder="Search player or position…" autocomplete="off">
+                  </label>
+                </div>
+                <div id="rankIntelGrid" class="rank-intel-grid" aria-live="polite">
+                  <div class="research-loading"><span></span><strong>Loading multi-week signal evidence…</strong></div>
+                </div>
+                <div class="rank-intel-bottom">
+                  <span id="rankIntelCount">Research never writes to the rankings.</span><button id="rankIntelMore" type="button" class="small-btn hide">SHOW MORE</button>
+                  <span>Routes per run and verified depth chart context require separate sources; those are not estimated here.</span>
+                </div>
+              </section>
+  </details>
+
   <div class="danger-note"><strong>Ranking safety:</strong> Research Queue can explain why a ranking deserves review, but it never moves a player. Every dynasty rank change still requires your command.</div>
 </section>
 
@@ -2329,7 +2329,7 @@ body:after{
   <script src="/admin-automation-v1.js?v=4"></script>
   <script src="/admin-exceptions-v1.js?v=4"></script>
   <script src="/admin-ui-polish-v1.js?v=1"></script>
-  <script src="/admin-ranking-intel-v2.js?v=2"></script>
+  <script src="/admin-ranking-intel-v2.js?v=3"></script>
 
   <style id="bbb-player-workspace-v1">
     body.pw-open{overflow:hidden}
