@@ -19,6 +19,7 @@
           return;
         }
         img.dataset.fallbackDone='1';
+        // NFL art occasionally lacks a pro render. College render is the secondary source.
         img.src=artUrl(img.dataset.nexusEspn,'college-football');
       };
     });
@@ -50,7 +51,7 @@
     if(move)return{
       kind:'ranking',eyebrow:'APPROVAL GATE',title:'Ranking decision waiting on you',
       player:move.name||move.player_name,detail:move.reason||'A ranking recommendation is waiting for approval.',
-      page:'moves',action:'OPEN RANKING MOVES',score:'P'+val(move.priority,'—'),key:move.player_key
+      page:'moves',action:'OPEN RANKING MOVES',score:'P'+val(move.priority,'—'),key:move.player_key,espn:move.espn_id
     };
     if(inj&&num(adminNexus?.injuries?.updated_today)>0)return{
       kind:'injury',eyebrow:'MEDICAL INTEL',title:(inj.name||'Player')+' has new injury information',
@@ -99,7 +100,12 @@
       const labels={ranking:['RANKING GATE','No pending moves'],injury:['INJURY WATCH','No active update'],scanner:['WEEKLY SCANNER','No signal'],content:['CONTENT RADAR','No opportunity']};
       return '<article class="nexus-signal-card '+kind+' empty-state"><div class="nexus-signal-icon">'+({ranking:'↕',injury:'＋',scanner:'⌁',content:'▶'}[kind])+'</div><div><span>'+labels[kind][0]+'</span><strong>'+labels[kind][1]+'</strong><p>Nothing urgent in this lane.</p></div></article>';
     }
-    if(kind==='ranking')return '<article class="nexus-signal-card ranking" data-nexus-page="moves"><div class="nexus-signal-icon">↕</div><div><span>RANKING GATE · P'+val(x.priority,'—')+'</span><strong>'+esc(x.name||x.player_name||'Player')+'</strong><p>'+esc(x.reason||'Ranking decision waiting.')+'</p><small>#'+val(x.current_rank,'—')+(x.recommended_rank?' → #'+x.recommended_rank:' · TARGET NEEDED')+'</small></div></article>';
+    if(kind==='ranking')return '<article class="nexus-signal-card ranking" data-nexus-page="moves">'+
+      (x.espn_id?art(x.espn_id,x.name||x.player_name):
+        '<div class="nexus-signal-icon" aria-hidden="true">↕</div>')+
+      '<div><span>RANKING GATE · P'+val(x.priority,'—')+'</span><strong>'+esc(x.name||x.player_name||'Player')+
+      '</strong><p>'+esc(x.reason||'Ranking decision waiting.')+'</p><small>#'+val(x.current_rank,'—')+
+      (x.recommended_rank?' → #'+x.recommended_rank:' · TARGET NEEDED')+'</small></div></article>';
     if(kind==='injury')return '<article class="nexus-signal-card injury" data-nexus-page="injuries">'+art(x.espn_id,x.name)+'<div><span>INJURY · '+esc(x.trend||'WATCH')+'</span><strong>'+esc(x.name||'Player')+'</strong><p>'+esc(x.latest_update_text||x.current_status||x.injury_note||'Availability update')+'</p><small>BBB #'+val(x.overall_rank,'—')+' · '+esc(x.return_window||'RETURN TBD')+'</small></div></article>';
     if(kind==='scanner')return '<article class="nexus-signal-card scanner" data-nexus-page="scanner">'+art(x.espn_id,x.name)+'<div><span>'+esc(x.signal||'WEEKLY SIGNAL')+' · SCORE '+Math.abs(num(x.signal_score))+'</span><strong>'+esc(x.name||'Player')+'</strong><p>'+esc(x.signal_reason||'Weekly usage signal')+'</p><small>BBB #'+val(x.overall_rank,'—')+' · '+pct(x.target_share)+' TARGET SHARE</small></div></article>';
     return '<article class="nexus-signal-card content" data-nexus-page="content">'+art(x.espn_id,x.name)+'<div><span>'+esc(x.recommended_format||'CONTENT')+' · '+val(x.content_score,'—')+'/100</span><strong>'+esc(x.name||'Player')+'</strong><p>'+esc(x.recommended_title||x.primary_signal||'Creator opportunity')+'</p><small>'+esc(x.coverage_status||'')+'</small></div></article>';
