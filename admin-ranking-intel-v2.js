@@ -1,7 +1,7 @@
 /* BBB Ranking Intelligence V2 — research only. No rankings or content are auto-edited. */
 (function(){
   'use strict';
-  let intel=null,loaded=false,loading=false,filter='ALL',busyKeys=new Set();
+  let intel=null,loaded=false,loading=false,filter='ALL',visibleCount=12,busyKeys=new Set();
 
   const $=s=>document.querySelector(s);
   const $$=s=>[...document.querySelectorAll(s)];
@@ -98,7 +98,7 @@
       host.innerHTML='<div class="empty">Ranking research is not available right now. No ranks were changed.</div>';
       return;
     }
-    const rows=dataRows(),all=list(intel.signals);
+    const matches=dataRows(),rows=matches.slice(0,visibleCount),all=list(intel.signals);
     if(over){
       const rising=all.filter(x=>category(x)==='RISING'&&x.disposition!=='dismiss').length;
       const falling=all.filter(x=>category(x)==='DECLINE'&&x.disposition!=='dismiss').length;
@@ -111,7 +111,12 @@
     }
     host.innerHTML=rows.length?rows.map(card).join(''):
       '<div class="empty">No players match this filter. Try another signal or clear the search.</div>';
-    if(count)count.textContent=rows.length+' of '+all.length+' research signals · no auto-rank moves';
+    if(count)count.textContent=rows.length+' of '+matches.length+' filtered research signals · '+all.length+' total · no auto-rank moves';
+    const more=$('#rankIntelMore');
+    if(more){
+      more.classList.toggle('hide',matches.length<=visibleCount);
+      more.textContent='SHOW MORE ('+(matches.length-visibleCount)+' LEFT)';
+    }
   }
   async function load(force=false){
     if(loading)return;
@@ -186,8 +191,9 @@
       const b=event.target.closest('button');
       if(!b||!panel.contains(b))return;
       if(b.id==='rankIntelRefresh'||b.matches('[data-rintel-retry]')){void load(true);return}
+      if(b.id==='rankIntelMore'){visibleCount+=12;render();return}
       if(b.hasAttribute('data-rintel-filter')){
-        filter=b.dataset.rintelFilter;render();return;
+        filter=b.dataset.rintelFilter;visibleCount=12;render();return;
       }
       if(b.dataset.rintelOpen){openPlayer(b.dataset.rintelOpen);return}
       if(b.dataset.rintelQueue){void queue(b.dataset.rintelQueue);return}
@@ -200,7 +206,7 @@
         void triage(b.dataset.rintelDismiss,x?.disposition==='dismiss'?'reset':'dismiss');
       }
     });
-    $('#rankIntelSearch')?.addEventListener('input',render);
+    $('#rankIntelSearch')?.addEventListener('input',()=>{visibleCount=12;render()});
   }
   const previousPage=page;
   page=function(name){
