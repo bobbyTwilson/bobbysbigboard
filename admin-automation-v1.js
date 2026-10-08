@@ -486,8 +486,8 @@
             '<button type="button" data-news-dismiss="'+id+'" '+(busyNow?'disabled':'')+'>DISMISS</button>'
            :state==='dismissed'?'<button type="button" data-news-reopen="'+id+'" '+(busyNow?'disabled':'')+'>REOPEN</button>':
             '<span class="bbb-news-v3-applied-label">PLAYER RECORD UPDATED</span>')+
-          '<button type="button" data-news-queue="'+id+'" '+(e.in_rank_queue||busyNow?'disabled':'')+'>'+
-          (e.in_rank_queue?'ALREADY IN MOVES':'QUEUE RANK REVIEW')+'</button>'+
+          '<button type="button" data-news-queue="'+id+'" '+(busyNow?'disabled':'')+'>'+
+          (e.in_rank_queue?'VIEW IN RANKING MOVES':'QUEUE RANK REVIEW')+'</button>'+
         '</div></article>';
     }).join(''):'<div class="bbb-news-v3-empty">No matching sourced signals in the current result set. This does not mean every player is verified.</div>';
     if(count)count.textContent=items.length+' shown / '+matches.length+' matching (first '+records().length+' fetched). '+
@@ -526,20 +526,41 @@
   }
   async function queue(id){
     const e=records().find(x=>Number(x.id)===id);
-    if(!e||e.in_rank_queue||busy.has(id))return;
+    if(!e||busy.has(id))return;
     busy.add(id);render();
+    let pendingCreated=false,createdId=null;
     try{
-      await rpc('admin_queue_ranking_move',{
-        p_player_key:e.player_key,p_recommended_rank:null,
-        p_reason:'NEWS SOURCE — confirm official team/NFL report before any rank action. '+e.description+
-          '. Source: '+e.source_url+'. No target rank suggested; evaluate dynasty relevance.',
-        p_priority:e.signal==='practice_squad_promotion'||e.signal==='injured_reserve'?2:3,
-        p_source:'nfl_news_v3_manual_review',p_confidence:'source-observed',p_trigger_update_id:null
-      });
-      e.in_rank_queue=true;
-      await load(true);
-    }catch(err){alert('Could not queue ranking review: '+err.message)}
-    finally{busy.delete(id);render()}
+      if(!e.in_rank_queue){
+        const queued=await rpc('admin_queue_ranking_move',{
+          p_player_key:e.player_key,p_recommended_rank:null,
+          p_reason:'NEWS SOURCE — confirm official team/NFL report before any rank action. '+e.description+
+            '. Source: '+e.source_url+'. No target rank suggested; evaluate dynasty relevance.',
+          p_priority:e.signal==='practice_squad_promotion'||e.signal==='injured_reserve'?2:3,
+          p_source:'nfl_news_v3_manual_review',p_confidence:'source-observed',p_trigger_update_id:null
+        });
+        if(queued?.status!=='pending'||!Number.isInteger(Number(queued.id))){
+          throw new Error('Ranking review was not confirmed by the database');
+        }
+        createdId=Number(queued.id);
+        e.in_rank_queue=true;
+        pendingCreated=true;
+      }
+      if(typeof window.BBBShowQueuedRankingMove!=='function'){
+        throw new Error('Ranking Moves navigation is unavailable. Reload the Admin page.');
+      }
+      // Confirm the queued item is actually present in the live decision queue,
+      // clear stale filters, and scroll straight to its approval card.
+      await window.BBBShowQueuedRankingMove(e.player_key,createdId);
+      void load(true);
+    }catch(err){
+      if(pendingCreated){
+        alert('Ranking review #'+createdId+' was SAVED, but its card could not be opened: '+
+          err.message+'. Refresh Ranking Moves to view it.');
+        void load(true);
+      }else{
+        alert('Could not open or queue the ranking review: '+err.message);
+      }
+    }finally{busy.delete(id);render()}
   }
 
   function closeApply(){
