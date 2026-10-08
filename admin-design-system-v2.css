@@ -1312,3 +1312,12 @@ body::after,#appView::before,#appView::after{
     font-size:10px!important;
   }
 }
+
+/* BBB Admin: remove the shared page-head accent stroke (previously escaped its header and crossed tabs). */
+#appView .admin-page > .page-head::before,
+#appView .admin-page > .page-head:before {
+  content:none!important;
+  display:none!important;
+  background:none!important;
+  box-shadow:none!important;
+}
