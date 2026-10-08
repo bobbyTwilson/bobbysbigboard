@@ -736,8 +736,8 @@
       'No recent source-backed usage available';
     $('#newsApplyEvidenceCaveat').textContent=
       e.category==='Injury'?
-        'The new feed may disagree with an older BBB injury entry. Prior injury details are historical context—not proof of the current injury or game designation. Confirm the current team report.':
-      teamChange?'Confirm the actual roster designation: practice squad, active 53, and injured reserve are different.':
+        'The new feed may disagree with an older BBB injury entry. Prior injury details are historical context, not proof of today's game designation. BBB will corroborate the current team's report before allowing Apply.':
+      teamChange?'BBB checks the precise designation: practice squad, active roster, and injured reserve are not interchangeable.':
       'This news signal is not proof of a permanent role or dynasty-value change.';
     $('#newsApplyConfirmed').checked=false;
     const status=$('#newsApplyStatus');
