@@ -400,7 +400,7 @@
   const $=s=>document.querySelector(s);
   const escText=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-  let evidence=null,loading=false,loaded=false,filter='all',busy=new Set(),shown=20;
+  let evidence=null,loading=false,loaded=false,filter='all',busy=new Set(),shown=20,selectedApply=null;
   const records=()=>Array.isArray(evidence?.events)?evidence.events:[];
   const fmtTime=x=>{
     if(!x)return 'NOT YET';
@@ -414,8 +414,9 @@
     const s=($('#newsIntelV3Search')?.value||'').trim().toLowerCase();
     return records().filter(e=>{
       const status=String(e.review_status||'unreviewed');
-      if(filter==='reviewed'){if(status==='unreviewed')return false}
-      else if(status!=='unreviewed')return false;
+      if(filter==='reviewed'){if(!['applied','dismissed','verified'].includes(status))return false}
+      else if(filter==='needs_research'){if(status!=='needs_research')return false}
+      else if(!['unreviewed','needs_research'].includes(status))return false;
       if(['Roster','Injury','News'].includes(filter)&&e.category!==filter)return false;
       return !s||(e.name+' '+e.team+' '+e.signal+' '+e.description).toLowerCase().includes(s);
     });
@@ -435,7 +436,7 @@
     if(kpis)kpis.innerHTML=
       '<div><span>ROSTER PRESENCE</span><strong>'+roster+' / '+Number(evidence.tracked_players||500)+'</strong><small>ESPN TEAM ROSTERS IN PAST 26H · NOT COMPLETE NEWS VERIFICATION</small></div>'+
       '<div><span>FEED INGESTION</span><strong>'+escText(run.sources_ok??'—')+' / 3</strong><small>TRANSACTIONS · INJURIES · NEWS</small></div>'+
-      '<div><span>SOURCED SIGNALS</span><strong>'+Number(evidence.pending_signals||0)+'</strong><small>WAITING FOR EDITORIAL REVIEW</small></div>'+
+      '<div><span>NEWS TO REVIEW</span><strong>'+Number(evidence.pending_signals||0)+'</strong><small>'+Number(evidence.needs_research||0)+' REQUIRE MORE RESEARCH · '+Number(evidence.applied_updates||0)+' APPLIED</small></div>'+
       '<div><span>LAST BACKEND SCAN</span><strong style="font-size:14px">'+escText(fmtTime(run.finished_at||run.started_at))+'</strong><small>'+escText((run.status||'unknown').toUpperCase())+' · NO AUTO RANK CHANGES</small></div>';
     const matches=selection(),items=matches.slice(0,shown);
     grid.innerHTML=items.length?items.map(e=>{
@@ -461,18 +462,30 @@
         '</div>':'';
       const signal=String(e.signal||'unknown').replaceAll('_',' ');
       const busyNow=busy.has(id),state=e.review_status;
+      const isTeamChange=e.category==='Roster'&&e.team&&e.current_team&&e.team!==e.current_team;
+      const stateText=state==='applied'?'APPLIED TO PROFILE':state==='needs_research'?'NEEDS MORE RESEARCH':
+        state==='dismissed'?'DISMISSED':state==='verified'?'OLD REVIEWED FLAG — PROFILE NOT UPDATED':null;
+      const teamRow=isTeamChange?
+        '<div class="bbb-news-v3-context">PROPOSED TEAM CHANGE · BBB '+escText(e.current_team)+
+        ' → '+escText(e.team)+' · '+escText(e.proposed_designation||'Designation requires confirmation')+'</div>':'';
+      const statusRow=stateText?'<div class="bbb-news-v3-review-state">'+escText(stateText)+
+        (state==='applied'&&e.applied_at?' · '+escText(fmtTime(e.applied_at)):'')+'</div>':'';
       return '<article class="bbb-news-v3-item" data-category="'+escText(e.category)+'" data-status="'+escText(state)+'">'+
         '<div class="bbb-news-v3-item-head"><strong>'+escText(e.name)+' <span style="color:#9bbdab;font-size:11px">#'+escText(e.overall_rank)+'</span></strong>'+
         '<span class="bbb-news-v3-tag '+(e.category==='Injury'?'injury':'')+'">'+escText(signal.toUpperCase())+'</span></div>'+
         '<div class="bbb-news-v3-item-meta">'+escText(e.team||'Team TBD')+' · '+escText(e.category)+' · '+escText(fmtTime(e.published_at))+' · '+escText(e.source.replaceAll('_',' ').toUpperCase())+'</div>'+
-        '<p>'+escText(e.description)+'</p>'+related+recommendation+
+        '<p>'+escText(e.description)+'</p>'+teamRow+related+recommendation+statusRow+
         '<div class="bbb-news-v3-actions">'+
           '<button type="button" data-news-player="'+key+'">OPEN PLAYER</button>'+
           (safeUrl?'<a target="_blank" rel="noopener noreferrer" href="'+escText(safeUrl)+'">SOURCE ↗</a>':'')+
-          (state==='unreviewed'
-          ?'<button type="button" data-news-reviewed="'+id+'" '+(busyNow?'disabled':'')+'>MARK REVIEWED</button>'+
-           '<button type="button" data-news-dismiss="'+id+'" '+(busyNow?'disabled':'')+'>DISMISS</button>'
-          :'<button type="button" data-news-reopen="'+id+'" '+(busyNow?'disabled':'')+'>REOPEN</button>')+
+          (['unreviewed','needs_research','verified'].includes(state)
+           ?'<button type="button" class="bbb-news-v3-apply" data-news-apply="'+id+'" '+(busyNow?'disabled':'')+'>APPLY VERIFIED UPDATE</button>'+
+            (state==='needs_research'?
+              '<button type="button" data-news-reopen="'+id+'" '+(busyNow?'disabled':'')+'>REOPEN</button>'
+              :'<button type="button" data-news-research="'+id+'" '+(busyNow?'disabled':'')+'>NEEDS MORE RESEARCH</button>')+
+            '<button type="button" data-news-dismiss="'+id+'" '+(busyNow?'disabled':'')+'>DISMISS</button>'
+           :state==='dismissed'?'<button type="button" data-news-reopen="'+id+'" '+(busyNow?'disabled':'')+'>REOPEN</button>':
+            '<span class="bbb-news-v3-applied-label">PLAYER RECORD UPDATED</span>')+
           '<button type="button" data-news-queue="'+id+'" '+(e.in_rank_queue||busyNow?'disabled':'')+'>'+
           (e.in_rank_queue?'ALREADY IN MOVES':'QUEUE RANK REVIEW')+'</button>'+
         '</div></article>';
@@ -539,9 +552,10 @@
       if(b.dataset.bbbNewsFilter){filter=b.dataset.bbbNewsFilter;shown=20;render();return}
       if(b.hasAttribute('data-news-more')){shown+=20;render();return}
       if(b.dataset.newsPlayer){window.openBBBPlayerWorkspace?.(b.dataset.newsPlayer,'activity');return}
-      for(const [key,action] of [['newsReviewed','reviewed'],['newsDismiss','dismiss'],['newsReopen','reopen']]){
+      for(const [key,action] of [['newsResearch','needs_research'],['newsDismiss','dismiss'],['newsReopen','reopen']]){
         if(b.dataset[key]){void review(Number(b.dataset[key]),action);return}
       }
+      if(b.dataset.newsApply){openApply(Number(b.dataset.newsApply));return}
       if(b.dataset.newsQueue){void queue(Number(b.dataset.newsQueue))}
     });
     $('#newsIntelV3Search')?.addEventListener('input',()=>{shown=20;render()});
