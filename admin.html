@@ -1212,7 +1212,7 @@ body:after{
   <link rel="stylesheet" href="/admin-injury-v2.css?v=2">
   <link rel="stylesheet" href="/admin-content-v1.css?v=4">
   <link rel="stylesheet" href="/admin-dashboard-v2.css?v=2">
-  <link rel="stylesheet" href="/admin-automation-v1.css?v=4">
+  <link rel="stylesheet" href="/admin-automation-v1.css?v=5">
   <link rel="stylesheet" href="/admin-exceptions-v1.css?v=2">
   <link rel="stylesheet" href="/admin-ui-polish-v1.css?v=5">
   <link rel="stylesheet" href="/admin-design-system-v2.css?v=6">
@@ -1830,7 +1830,8 @@ body:after{
                 <button type="button" data-bbb-news-filter="Roster" aria-pressed="false">Roster</button>
                 <button type="button" data-bbb-news-filter="Injury" aria-pressed="false">Injuries</button>
                 <button type="button" data-bbb-news-filter="News" aria-pressed="false">News</button>
-                <button type="button" data-bbb-news-filter="reviewed" aria-pressed="false">Reviewed</button>
+                <button type="button" data-bbb-news-filter="needs_research" aria-pressed="false">Needs Research</button>
+                <button type="button" data-bbb-news-filter="reviewed" aria-pressed="false">Applied / Closed</button>
               </div>
               <input id="newsIntelV3Search" class="input" type="search" placeholder="Search player or team…" aria-label="Search football news"/>
             </div>
@@ -1842,6 +1843,63 @@ body:after{
               <small>Official NFL/team links should corroborate ESPN signals. Source checks never overwrite your player notes or rankings.</small>
             </div>
           </section>
+
+
+          <div id="newsApplyOverlay" class="bbb-news-apply-overlay" hidden>
+            <div class="bbb-news-apply-dialog" role="dialog" aria-modal="true" aria-labelledby="newsApplyTitle" aria-describedby="newsApplyHelp" tabindex="-1">
+              <div class="bbb-news-apply-head">
+                <div>
+                  <span>NEWS INTELLIGENCE · CONFIRMED PLAYER UPDATE</span>
+                  <h2 id="newsApplyTitle">Review before applying</h2>
+                  <p id="newsApplyHelp">This action updates the player record, saves an evidence-linked timeline item and marks the signal applied—together in one transaction. Rankings will not change.</p>
+                </div>
+                <button type="button" id="newsApplyClose" aria-label="Close apply window">✕</button>
+              </div>
+              <form id="newsApplyForm">
+                <div class="bbb-news-apply-summary">
+                  <div><span>PLAYER</span><strong id="newsApplyPlayer">—</strong></div>
+                  <div><span>CURRENT TEAM</span><strong id="newsApplyOldTeam">—</strong></div>
+                  <div><span>PROPOSED TEAM</span><strong id="newsApplyProposedTeam">—</strong></div>
+                  <div><span>RANKING</span><strong id="newsApplyRank">UNCHANGED</strong></div>
+                </div>
+                <div id="newsApplyRosterRow" class="bbb-news-apply-field" hidden>
+                  <label for="newsApplyDesignation">Exact roster designation</label>
+                  <select id="newsApplyDesignation">
+                    <option value="">Choose verified designation…</option>
+                    <option value="Practice Squad">Practice Squad</option>
+                    <option value="Active Roster">Active Roster (53-man)</option>
+                    <option value="Injured Reserve">Injured Reserve</option>
+                    <option value="Reserve/PUP">Reserve/PUP</option>
+                    <option value="Free Agent">Free Agent</option>
+                    <option value="Other">Other / Unspecified</option>
+                  </select>
+                </div>
+                <div class="bbb-news-apply-field">
+                  <label for="newsApplyDate">Actual transaction/news date</label>
+                  <input type="date" id="newsApplyDate" required/>
+                </div>
+                <div class="bbb-news-apply-field">
+                  <label for="newsApplySource">Official NFL or team source URL</label>
+                  <input type="url" id="newsApplySource" placeholder="https://www.nfl.com/transactions/..." required/>
+                  <small>The original ESPN alert isn't enough to certify a player update. Open and confirm the official link first.</small>
+                </div>
+                <div class="bbb-news-apply-field">
+                  <label for="newsApplyNote">Dated player note — editable</label>
+                  <textarea id="newsApplyNote" rows="4" minlength="45" maxlength="1200" required></textarea>
+                  <small>Keep it factual. Practice-squad signing does not mean a 53-man roster promotion.</small>
+                </div>
+                <label class="bbb-news-apply-check">
+                  <input type="checkbox" id="newsApplyConfirmed" required/>
+                  <span>I verified the <strong>player, date, team, designation and official source</strong> match this update.</span>
+                </label>
+                <div id="newsApplyStatus" class="bbb-news-apply-status" role="status" aria-live="polite"></div>
+                <div class="bbb-news-apply-footer">
+                  <button type="button" id="newsApplyCancel">CANCEL</button>
+                  <button type="submit" id="newsApplySubmit">APPLY VERIFIED UPDATE</button>
+                </div>
+              </form>
+            </div>
+          </div>
 
           <section class="auto-readiness-panel" aria-labelledby="autoReadinessTitle">
             <div class="auto-section-head">
@@ -2361,7 +2419,7 @@ body:after{
   <script src="/admin-injury-v1.js?v=3"></script>
   <script src="/admin-content-v1.js?v=4"></script>
   <script src="/admin-dashboard-v2.js?v=4"></script>
-  <script src="/admin-automation-v1.js?v=6"></script>
+  <script src="/admin-automation-v1.js?v=7"></script>
   <script src="/admin-exceptions-v1.js?v=4"></script>
   <script src="/admin-ui-polish-v1.js?v=1"></script>
   <script src="/admin-ranking-intel-v2.js?v=3"></script>
