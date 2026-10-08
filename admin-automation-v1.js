@@ -688,8 +688,12 @@
     const target=(e.category==='Roster'&&e.team&&e.team!==oldTeam)
       ?String(e.team).trim().toUpperCase():oldTeam;
     const teamChange=target!==oldTeam;
-    const day=e.verified_official_date||newsCentralDay(e.published_at);
-    selectedApply={event:e,id,oldTeam,target,teamChange,draft:proposedNote(e,day)};
+    const official=e.auto_official_url||e.verified_official_url||e.rank_official_url||'';
+    const officialDay=e.auto_official_date||e.verified_official_date||'';
+    const hasSource=Boolean(official&&officialDay);
+    const day=officialDay||newsCentralDay(e.published_at);
+    selectedApply={event:e,id,oldTeam,target,teamChange,draft:proposedNote(e,day),
+      hasSource,officialDay,official};
     $('#newsApplyPlayer').textContent=e.name;
     $('#newsApplyOldTeam').textContent=oldTeam;
     $('#newsApplyProposedTeam').textContent=target+(teamChange?' · CHANGE PROPOSED':' · NO TEAM CHANGE');
@@ -700,14 +704,28 @@
     desig.value=teamChange?String(e.proposed_designation||''):'';
     $('#newsApplyDate').value=day;
     $('#newsApplyDate').max=new Date().toLocaleDateString('en-CA',{timeZone:'America/Chicago'});
-    const official=e.verified_official_url||e.rank_official_url||'';
-    $('#newsApplySource').value=official;
+    $('#newsApplyDate').readOnly=hasSource;
+    const link=$('#newsApplyOfficialLink');
+    link.hidden=!hasSource;
+    if(hasSource)link.href=official;
+    $('#newsApplySourceStatus').textContent=hasSource
+      ?'OFFICIAL SOURCE ATTACHED · '+newsReadableDate(officialDay)
+      :(e.source_research_status==='requested'
+        ?'SOURCE RESEARCH REQUESTED'
+        :'OFFICIAL CONFIRMATION NOT YET AVAILABLE');
+    $('#newsApplySourceDetails').textContent=hasSource
+      ?(e.official_evidence_summary||'BBB has saved a dated official team or NFL reference with this event. The link will be preserved in its audit trail.')
+      :'BBB has an observed news signal, but not an independently corroborated official report yet. You do not need to find a link—we can research it.';
+    const sourceBtn=$('#newsApplyRequestSource');
+    sourceBtn.hidden=hasSource;
+    sourceBtn.disabled=Boolean(e.source_research_status==='requested');
+    sourceBtn.textContent=e.source_research_status==='requested'?'RESEARCH QUEUED':'RESEARCH SOURCE';
     $('#newsApplyNote').value=selectedApply.draft;
     renderNewsApplyNotePreview();
     editNewsApplyNote(false);
     const sourceStatus=$('#newsApplyEvidenceLevel');
-    sourceStatus.textContent=official?'OFFICIAL LINK ATTACHED · CONFIRM DETAILS':'ESPN OBSERVATION · OFFICIAL SOURCE NEEDED';
-    sourceStatus.dataset.verified=official?'linked':'unconfirmed';
+    sourceStatus.textContent=hasSource?'OFFICIAL SOURCE RECORDED':'SOURCE REVIEW PENDING';
+    sourceStatus.dataset.verified=hasSource?'linked':'unconfirmed';
     $('#newsApplyNewSignal').textContent=
       e.category==='Injury'?'Injury report: '+reportedInjuryStatus(e):
       String(e.signal||e.category||'New signal').replaceAll('_',' ');
@@ -718,19 +736,24 @@
       'No recent source-backed usage available';
     $('#newsApplyEvidenceCaveat').textContent=
       e.category==='Injury'?
-        'The new feed may disagree with an older BBB injury entry. Prior injury details are historical context—not proof of the current injury or game designation. Confirm the current team report.':
-      teamChange?'Confirm the actual roster designation: practice squad, active 53, and injured reserve are different.':
+        'The new feed may disagree with an older BBB injury entry. Prior injury details are historical context, not proof of the current game designation. BBB will corroborate the current team report before allowing Apply.':
+      teamChange?'BBB checks the precise designation: practice squad, active roster, and injured reserve are not interchangeable.':
       'This news signal is not proof of a permanent role or dynasty-value change.';
     $('#newsApplyConfirmed').checked=false;
     const status=$('#newsApplyStatus');
-    status.textContent=official
-      ?'Review the official link and source-aware draft. Edit only if you need to correct or add verified detail.'
-      :'The draft is based on sourced feed data and existing BBB context. Check the current official NFL/team report before applying.';
+    status.textContent=hasSource
+      ?'Official evidence is attached automatically. Review the proposed note and approve if you agree—no link entry needed.'
+      :'This report still needs official corroboration. Request research; Apply stays disabled until evidence is attached.';
     status.dataset.state='info';
-    $('#newsApplySubmit').disabled=false;
-    $('#newsApplySubmit').textContent='APPLY VERIFIED UPDATE';
+    $('#newsApplySubmit').disabled=!hasSource;
+    $('#newsApplySubmit').textContent=hasSource?'APPLY VERIFIED UPDATE':'AWAITING VERIFIED SOURCE';
     overlay.hidden=false;
-    $('#newsApplySource').focus();
+    (hasSource?$('#newsApplyConfirmed'):sourceBtn).focus();
+    // Opening an unsourced news review is already a request to review it.
+    // Queue evidence gathering automatically, without another user step.
+    if(!hasSource&&!['requested','unavailable'].includes(e.source_research_status||'')){
+      void requestAutoSource();
+    }
   }
 
   async function refreshPlayerViews(){
@@ -744,6 +767,37 @@
       if(typeof renderReviewQueue==='function')renderReviewQueue();
       if(typeof renderCommandDashboard==='function')renderCommandDashboard();
     }catch(err){console.warn('Refresh player views after news apply:',err)}
+  }
+  async function requestAutoSource(){
+    if(!selectedApply||selectedApply.hasSource)return;
+    const {id,event:e}=selectedApply;
+    if(busy.has(id))return;
+    busy.add(id);
+    const button=$('#newsApplyRequestSource'),status=$('#newsApplyStatus');
+    button.disabled=true;
+    button.textContent='REQUESTING RESEARCH…';
+    try{
+      const result=await rpc('admin_request_news_source_v1',{p_event_id:id});
+      if(!['requested','already_sourced'].includes(result?.status))
+        throw new Error('Research request was not confirmed');
+      if(result.status==='already_sourced'){
+        await load(true);
+        const refreshed=records().find(x=>Number(x.id)===id);
+        if(refreshed){busy.delete(id);openApply(id);return;}
+      }
+      status.dataset.state='info';
+      status.textContent=e.name+' has been added to the official-source research queue. '+
+        'The scheduled news verification pass will check it; you can close this window.';
+      button.textContent='RESEARCH QUEUED';
+      const next=records().find(x=>Number(x.id)===id);
+      if(next)next.source_research_status='requested';
+      void load(true);
+    }catch(err){
+      button.disabled=false;
+      button.textContent='RETRY SOURCE RESEARCH';
+      status.dataset.state='error';
+      status.textContent='Could not queue source research: '+String(err.message||err);
+    }finally{busy.delete(id)}
   }
   async function submitApply(evt){
     evt.preventDefault();
@@ -760,10 +814,13 @@
       $('#newsApplyStatus').textContent='Choose the exact verified roster designation.';
       return;
     }
-    const url=$('#newsApplySource').value.trim();
     const day=$('#newsApplyDate').value;
     const note=$('#newsApplyNote').value.trim();
-    if(!url||!day||!note){$('#newsApplyStatus').textContent='Source, date and factual note are required.';return}
+    if(!selectedApply.hasSource){
+      $('#newsApplyStatus').textContent='Official evidence is still missing. Choose Research Source; BBB will collect it.';
+      return;
+    }
+    if(!day||!note){$('#newsApplyStatus').textContent='The sourced date and factual note are required.';return}
     const btn=$('#newsApplySubmit'),status=$('#newsApplyStatus');
     busy.add(id);
     btn.disabled=true;
@@ -771,12 +828,11 @@
     status.dataset.state='info';
     status.textContent='Saving the team, sourced timeline note, verification and audit record together…';
     try{
-      const result=await rpc('admin_apply_verified_news_v1',{
+      const result=await rpc('admin_apply_verified_news_v2',{
         p_event_id:id,
         p_expected_team:oldTeam,
         p_new_team:target,
         p_designation:designation,
-        p_official_url:url,
         p_event_date:day,
         p_update_note:note
       });
@@ -819,6 +875,7 @@
     });
     $('#newsIntelV3Search')?.addEventListener('input',()=>{shown=20;render()});
     $('#newsApplyForm')?.addEventListener('submit',evt=>{void submitApply(evt)});
+    $('#newsApplyRequestSource')?.addEventListener('click',()=>{void requestAutoSource()});
     $('#newsApplyEditNote')?.addEventListener('click',()=>editNewsApplyNote($('#newsApplyNoteEditor')?.hidden));
     $('#newsApplyResetNote')?.addEventListener('click',()=>{
       if(!selectedApply)return;
