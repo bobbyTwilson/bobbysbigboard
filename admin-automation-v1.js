@@ -332,8 +332,8 @@
 
   function bindActions(){
     $$('[data-auto-run]').forEach(b=>b.onclick=()=>runSource(b.dataset.autoRun,b));
-    $('[data-auto-player]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.autoPlayer,'activity'));
-    $('[data-auto-jump]').forEach(b=>b.onclick=()=>page(b.dataset.autoJump));
+    $$('[data-auto-player]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.autoPlayer,'activity'));
+    $$('[data-auto-jump]').forEach(b=>b.onclick=()=>page(b.dataset.autoJump));
   }
 
   $('#autoRefresh')?.addEventListener('click',()=>load(true));
