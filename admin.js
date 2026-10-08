@@ -73,7 +73,12 @@ async function loadAll(){
 async function loadBoard(){board=await rest('site_dynasty?select=rank,player_key,name,pos,pr,team,age,draft,market,gap,view,injury_status,injury_note,injury_updated,college,overview&order=rank.asc')||[]}
 async function loadProfiles(){const rows=await rest('site_profiles?select=player_key,name,pos,team,age,draft_year,college,overall_breakdown,injury_status,injury_note,injury_updated&order=name.asc')||[];profileMap=new Map(rows.map(x=>[x.player_key,x]))}
 async function loadReviewQueue(){reviewQueue=await rpc('admin_get_review_queue',{p_limit:500})||[]}
-async function loadRankingMoveQueue(){rankingMoveQueue=await rpc('admin_get_ranking_move_queue',{p_include_resolved:false,p_limit:500})||[]}
+async function loadRankingMoveQueue(){
+  const rows=await rpc('admin_get_ranking_move_queue',{p_include_resolved:false,p_limit:500});
+  if(!Array.isArray(rows))throw new Error('Ranking Move Queue returned an invalid response');
+  rankingMoveQueue=rows;
+  return rows;
+}
 async function loadProspectLab(){prospectLab=await rpc('admin_get_prospect_lab',{p_year:null,p_include_graded:true})||[]}
 async function loadDataHealth(){dataHealth=await rpc('admin_get_data_health',{})||{}}
 async function loadCounts(){const [r,p]=await Promise.all([rest('site_rookies?select=player_key'),rest('site_prospects?select=player_key')]);rookiesCount=r?.length??0;prospectsCount=p?.length??0}
@@ -1304,7 +1309,17 @@ function page(name){
   if(!target)return;
   target.classList.remove('hide');
   const titles={dashboard:'Dashboard',moves:'Ranking Move Queue',scanner:'Weekly Performance Scanner',rankings:'Rankings Manager',players:'Player Editor',prospects:'Prospect Lab',research:'Research Queue',eligibility:'Draft Class Audit',review:'Review Queue'};if($('#missionPageTitle'))$('#missionPageTitle').textContent=titles[name]||name;
-  if(name==='moves')renderRankingMoveQueue();
+  if(name==='moves'){
+    // A News Intelligence review may have been queued after the initial Admin load.
+    // Render immediately, then reconcile with the current database each time this tab opens.
+    renderRankingMoveQueue();
+    void loadRankingMoveQueue().then(()=>{
+      if(activeAdminPage==='moves')renderRankingMoveQueue();
+    }).catch(err=>{
+      console.error('Could not refresh live ranking moves:',err);
+      if(activeAdminPage==='moves')showMoveQueueNotice('Could not refresh ranking decisions. Use Refresh Queue to retry.',true);
+    });
+  }
   if(name==='scanner'){renderWeeklyScanner();if(!scannerLoaded&&!scannerLoading)void loadWeeklyScanner(false)}
   if(name==='rankings')renderRankings();
   if(name==='players')renderPlayers();
@@ -1314,6 +1329,39 @@ function page(name){
   if(name==='review'){renderReviewQueue();renderDataHealth()}
   if(name==='dashboard')renderCommandDashboard()
 }
+
+/* Public Admin bridge used by News Intelligence. Only navigates after a confirmed
+   pending review exists in the live RPC, not merely because a button was clicked. */
+window.BBBShowQueuedRankingMove=async function(playerKey,expectedId=null){
+  let rows=await loadRankingMoveQueue();
+  let review=rows.find(x=>x.status==='pending'&&x.player_key===playerKey&&
+    (expectedId==null||Number(x.id)===Number(expectedId)));
+  if(!review){
+    // Retry once in case a prior async refresh raced the queue transaction.
+    rows=await loadRankingMoveQueue();
+    review=rows.find(x=>x.status==='pending'&&x.player_key===playerKey&&
+      (expectedId==null||Number(x.id)===Number(expectedId)));
+  }
+  if(!review)throw new Error('The ranking review is not visible in the pending queue yet. Refresh Ranking Moves.');
+  if($('#moveSearch'))$('#moveSearch').value='';
+  if($('#movePriority'))$('#movePriority').value='ALL';
+  if($('#moveDirection'))$('#moveDirection').value='ALL';
+  page('moves');
+  renderRankingMoveQueue();
+  showMoveQueueNotice(review.name+' is in Ranking Moves ('+
+    (review.recommended_rank==null?'Needs Target':'suggested #'+review.recommended_rank)+
+    '). Nothing moves until you approve it.');
+  requestAnimationFrame(()=>{
+    const card=document.querySelector('[data-move-card="'+review.id+'"]');
+    if(card){
+      card.scrollIntoView({behavior:'smooth',block:'center'});
+      card.classList.add('move-just-queued');
+      setTimeout(()=>card.classList.remove('move-just-queued'),3200);
+    }
+  });
+  return review;
+};
+
 function bindControlGroup(name,fn){
   try{fn()}catch(e){console.error('BBB Admin '+name+' controls failed',e)}
 }
