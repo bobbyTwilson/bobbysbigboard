@@ -568,6 +568,108 @@
     if(overlay)overlay.hidden=true;
     selectedApply=null;
   }
+
+  function newsCentralDay(raw){
+    if(!raw)return '';
+    const d=new Date(raw);
+    if(!Number.isFinite(d.valueOf()))return String(raw).slice(0,10);
+    const tokens=new Intl.DateTimeFormat('en-US',{
+      timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'
+    }).formatToParts(d);
+    const part=k=>tokens.find(x=>x.type===k)?.value||'';
+    return part('year')+'-'+part('month')+'-'+part('day');
+  }
+  function newsReadableDate(iso){
+    const day=String(iso||'').slice(0,10);
+    const d=new Date(day+'T12:00:00Z');
+    return Number.isFinite(d.valueOf())?
+      new Intl.DateTimeFormat('en-US',{month:'long',day:'numeric',year:'numeric',timeZone:'UTC'}).format(d):
+      'the reported date';
+  }
+  function sentence(s){return String(s||'').trim().replace(/[.\s]+$/,'')+'.'}
+  function isTemplateNote(s){
+    return /confirm (the transaction|the.*roster designation)|before saving this note|confirm the .* against the official|nothing that changes my view by itself/i.test(String(s||''));
+  }
+  function formatSourcedUsage(e){
+    const week=Number(e.latest_sourced_week);
+    if(!Number.isInteger(week)||week<=0)return '';
+    const catches=Number(e.sourced_receptions)||0,targets=Number(e.sourced_targets)||0;
+    const yards=Number(e.sourced_receiving_yards)||0,carries=Number(e.sourced_carries)||0;
+    const rush=Number(e.sourced_rushing_yards)||0;
+    const parts=[];
+    if(targets>0||catches>0)parts.push(catches+' receptions for '+yards+' yards on '+targets+' targets');
+    if(carries>0)parts.push(carries+' carries for '+rush+' rushing yards');
+    return parts.length?'Week '+week+' · '+parts.join(' · '):'';
+  }
+  function reportedInjuryStatus(e){
+    const signal=String(e.signal||'').toLowerCase();
+    if(signal.startsWith('injury_')){
+      const token=signal.slice(7).replaceAll('_',' ');
+      return token?token[0].toUpperCase()+token.slice(1):'Status reported';
+    }
+    const match=String(e.description||'').match(/injury report:\s*([^()]+)/i);
+    return match?match[1].trim():'Status reported';
+  }
+  function proposedNote(e,day){
+    if(e.suggested_note&&!isTemplateNote(e.suggested_note)&&e.suggested_note.length>=45)
+      return e.suggested_note.trim();
+    const name=e.name,team=e.current_team||e.team||'NFL',date=newsReadableDate(day);
+    const category=String(e.category||'');
+    const usage=formatSourcedUsage(e);
+    if(category==='Injury'){
+      const fresh=reportedInjuryStatus(e).toLowerCase();
+      const previous=String(e.current_injury_status||'').trim();
+      const reason=String(e.current_injury_note||'').trim();
+      const priorContext=previous?
+        ' BBB previously listed him as '+previous.toLowerCase()+
+        (reason&&reason.toLowerCase()!==previous.toLowerCase()?' ('+reason.replace(/[.]+$/,'')+')':'')+'.':'';
+      const recentUsage=usage? ' His most recent source-backed workload: '+usage+'.':'';
+      const impact=/questionable|doubtful/.test(fresh)
+        ?'His availability remains uncertain; this tag alone does not establish a long-term change in dynasty value.'
+        :/out|reserve|injured/.test(fresh)
+          ?'His short-term availability is affected; the duration and long-term role still require confirmation.'
+          :'This status alone does not establish a new role or a long-term dynasty change.';
+      return name+' ('+team+') was listed as '+fresh+' in the '+date+' injury feed.'+
+        priorContext+recentUsage+' '+impact;
+    }
+    if(category==='Roster'){
+      const description=String(e.description||'')
+        .replace(/Verify an official transaction before editing\.?/gi,'')
+        .replace(/Confirm the .*? before saving this note\.?/gi,'').trim();
+      const change=e.team&&e.current_team&&e.team!==e.current_team;
+      if(change){
+        const proposed=String(e.proposed_designation||'').toLowerCase();
+        const role=proposed==='practice squad'?'practice squad':
+          proposed==='active roster'?'active roster':proposed==='injured reserve'?'injured reserve':'roster';
+        return name+' ('+(e.team||team)+') has a reported '+role+
+          ' placement as of '+date+'; BBB previously listed his team as '+e.current_team+'. '+
+          (proposed==='practice squad'?'A practice-squad spot is not a 53-man roster promotion. ':
+           'The exact game-day role is not established by a roster listing alone. ')+
+          'His dynasty outlook needs a separate role and playing-time evaluation.';
+      }
+      if(description)return name+' ('+team+'): '+sentence(description)+
+        ' The move may affect short-term roster opportunity; playing time and long-term dynasty value remain to be evaluated.';
+    }
+    if(category==='News'||category==='Role'){
+      const headline=String(e.description||'').trim().replace(/[.]+$/,'');
+      if(headline)return name+' ('+team+'): '+headline+
+        '. This update does not, by itself, confirm a lasting change to weekly usage or dynasty value.';
+    }
+    return name+' ('+team+') has a new '+category.toLowerCase()+
+      ' report dated '+date+'. The precise change in role or availability needs to be established before adjusting his long-term ranking.';
+  }
+  function renderNewsApplyNotePreview(){
+    const preview=$('#newsApplyNotePreview'),textarea=$('#newsApplyNote');
+    if(preview&&textarea)preview.textContent=textarea.value.trim()||'No draft note available yet. Enter source-supported details using Edit Note.';
+  }
+  function editNewsApplyNote(edit){
+    const editor=$('#newsApplyNoteEditor'),btn=$('#newsApplyEditNote');
+    if(!editor||!btn)return;
+    editor.hidden=!edit;
+    btn.setAttribute('aria-expanded',String(edit));
+    btn.textContent=edit?'CLOSE EDITOR':'EDIT NOTE';
+    if(edit)$('#newsApplyNote')?.focus();
+  }
   function openApply(id){
     const e=records().find(x=>Number(x.id)===id);
     if(!e||e.review_status==='applied'||e.review_status==='dismissed')return;
@@ -577,7 +679,8 @@
     const target=(e.category==='Roster'&&e.team&&e.team!==oldTeam)
       ?String(e.team).trim().toUpperCase():oldTeam;
     const teamChange=target!==oldTeam;
-    selectedApply={event:e,id,oldTeam,target,teamChange};
+    const day=e.verified_official_date||newsCentralDay(e.published_at);
+    selectedApply={event:e,id,oldTeam,target,teamChange,draft:proposedNote(e,day)};
     $('#newsApplyPlayer').textContent=e.name;
     $('#newsApplyOldTeam').textContent=oldTeam;
     $('#newsApplyProposedTeam').textContent=target+(teamChange?' · CHANGE PROPOSED':' · NO TEAM CHANGE');
@@ -586,24 +689,41 @@
     row.hidden=!teamChange;
     desig.required=teamChange;
     desig.value=teamChange?String(e.proposed_designation||''):'';
-    const date=String(e.verified_official_date||e.published_at||'').slice(0,10);
-    $('#newsApplyDate').value=date;
+    $('#newsApplyDate').value=day;
     $('#newsApplyDate').max=new Date().toLocaleDateString('en-CA',{timeZone:'America/Chicago'});
-    $('#newsApplySource').value=e.verified_official_url||e.rank_official_url||'';
-    $('#newsApplyNote').value=e.suggested_note||
-      (e.name+': '+e.description+
-      '. Confirm the transaction and current roster designation against the official NFL/team report before saving this note.');
+    const official=e.verified_official_url||e.rank_official_url||'';
+    $('#newsApplySource').value=official;
+    $('#newsApplyNote').value=selectedApply.draft;
+    renderNewsApplyNotePreview();
+    editNewsApplyNote(false);
+    const sourceStatus=$('#newsApplyEvidenceLevel');
+    sourceStatus.textContent=official?'OFFICIAL LINK ATTACHED · CONFIRM DETAILS':'ESPN OBSERVATION · OFFICIAL SOURCE NEEDED';
+    sourceStatus.dataset.verified=official?'linked':'unconfirmed';
+    $('#newsApplyNewSignal').textContent=
+      e.category==='Injury'?'Injury report: '+reportedInjuryStatus(e):
+      String(e.signal||e.category||'New signal').replaceAll('_',' ');
+    const prior=e.category==='Injury'?[e.current_injury_status,e.current_injury_note].filter(Boolean).join(' · '):
+      (e.current_player_note?String(e.current_player_note).slice(0,160):'No prior note recorded');
+    $('#newsApplyPriorContext').textContent=prior||'No prior injury status recorded';
+    $('#newsApplyUsageContext').textContent=formatSourcedUsage(e)||
+      'No recent source-backed usage available';
+    $('#newsApplyEvidenceCaveat').textContent=
+      e.category==='Injury'?
+        'The new feed may disagree with an older BBB injury entry. Prior injury details are historical context—not proof of the current injury or game designation. Confirm the current team report.':
+      teamChange?'Confirm the actual roster designation: practice squad, active 53, and injured reserve are different.':
+      'This news signal is not proof of a permanent role or dynasty-value change.';
     $('#newsApplyConfirmed').checked=false;
     const status=$('#newsApplyStatus');
-    status.textContent=e.verified_official_url
-      ?'Official source evidence found. Review the link, date, roster designation and note before applying.'
-      :'No official report confirmed for this signal. Find and enter the official transaction/source link and correct date; do not approve an ESPN-only alert.';
+    status.textContent=official
+      ?'Review the official link and source-aware draft. Edit only if you need to correct or add verified detail.'
+      :'The draft is based on sourced feed data and existing BBB context. Check the current official NFL/team report before applying.';
     status.dataset.state='info';
     $('#newsApplySubmit').disabled=false;
     $('#newsApplySubmit').textContent='APPLY VERIFIED UPDATE';
     overlay.hidden=false;
     $('#newsApplySource').focus();
   }
+
   async function refreshPlayerViews(){
     const jobs=[];
     if(typeof loadBoard==='function')jobs.push(loadBoard());
@@ -690,6 +810,14 @@
     });
     $('#newsIntelV3Search')?.addEventListener('input',()=>{shown=20;render()});
     $('#newsApplyForm')?.addEventListener('submit',evt=>{void submitApply(evt)});
+    $('#newsApplyEditNote')?.addEventListener('click',()=>editNewsApplyNote($('#newsApplyNoteEditor')?.hidden));
+    $('#newsApplyResetNote')?.addEventListener('click',()=>{
+      if(!selectedApply)return;
+      $('#newsApplyNote').value=selectedApply.draft;
+      renderNewsApplyNotePreview();
+      editNewsApplyNote(false);
+    });
+    $('#newsApplyNote')?.addEventListener('input',renderNewsApplyNotePreview);
     $('#newsApplyCancel')?.addEventListener('click',closeApply);
     $('#newsApplyClose')?.addEventListener('click',closeApply);
     $('#newsApplyOverlay')?.addEventListener('click',evt=>{
