@@ -463,7 +463,7 @@
       const signal=String(e.signal||'unknown').replaceAll('_',' ');
       const busyNow=busy.has(id),state=e.review_status;
       const isTeamChange=e.category==='Roster'&&e.team&&e.current_team&&e.team!==e.current_team;
-      const stateText=state==='applied'?'APPLIED TO PROFILE':state==='needs_research'?'NEEDS MORE RESEARCH':
+      const stateText=state==='applied'?'ADMITTED TO TIMELINE':state==='needs_research'?'SOURCE CHECK REQUESTED':
         state==='dismissed'?'DISMISSED':state==='verified'?'OLD REVIEWED FLAG — PROFILE NOT UPDATED':null;
       const teamRow=isTeamChange?
         '<div class="bbb-news-v3-context">PROPOSED TEAM CHANGE · BBB '+escText(e.current_team)+
@@ -474,9 +474,9 @@
         (e.verified_official_url&&e.verified_official_date));
       const sourceRow=['unreviewed','needs_research','verified'].includes(state)
         ?'<div class="bbb-news-v3-review-state">'+
-         (sourceReady?'✓ OFFICIAL TEAM/NFL REPORT ATTACHED · READY FOR APPROVAL':
-          e.source_research_status==='requested'?'SOURCE RESEARCH REQUESTED · NOT YET VERIFIED':
-          'OFFICIAL SOURCE NOT YET VERIFIED · NO PLAYER CHANGES')+'</div>':'';
+         (sourceReady?'TEAM REPORT LINKED · OPTIONAL CONTEXT':
+          e.source_research_status==='requested'?'TEAM SOURCE CHECK REQUESTED · REPORT READY TO REVIEW':
+          'JOB REPORT INGESTED · AWAITING YOUR DECISION')+'</div>':'';
       return '<article class="bbb-news-v3-item" data-category="'+escText(e.category)+'" data-status="'+escText(state)+'">'+
         '<div class="bbb-news-v3-item-head"><strong>'+escText(e.name)+' <span style="color:#9bbdab;font-size:11px">#'+escText(e.overall_rank)+'</span></strong>'+
         '<span class="bbb-news-v3-tag '+(e.category==='Injury'?'injury':'')+'">'+escText(signal.toUpperCase())+'</span></div>'+
@@ -486,15 +486,15 @@
           '<button type="button" data-news-player="'+key+'">OPEN PLAYER</button>'+
           (safeUrl?'<a target="_blank" rel="noopener noreferrer" href="'+escText(safeUrl)+'">SOURCE ↗</a>':'')+
           (['unreviewed','needs_research','verified'].includes(state)
-           ?'<button type="button" class="bbb-news-v3-apply" data-news-apply="'+id+'" '+(busyNow?'disabled':'')+'>'+(sourceReady?'REVIEW VERIFIED UPDATE':'REVIEW / REQUEST SOURCE')+'</button>'+
+           ?'<button type="button" class="bbb-news-v3-apply" data-news-apply="'+id+'" '+(busyNow?'disabled':'')+'>'+'REVIEW JOB REPORT'+'</button>'+
             (state==='needs_research'?
               '<button type="button" data-news-reopen="'+id+'" '+(busyNow?'disabled':'')+'>REOPEN</button>'
-              :'<button type="button" data-news-research="'+id+'" '+(busyNow?'disabled':'')+'>NEEDS MORE RESEARCH</button>')+
+              :'<button type="button" data-news-research="'+id+'" '+(busyNow?'disabled':'')+'>CHECK TEAM SOURCE</button>')+
             '<button type="button" data-news-dismiss="'+id+'" '+(busyNow?'disabled':'')+'>DISMISS</button>'
            :state==='dismissed'?'<button type="button" data-news-reopen="'+id+'" '+(busyNow?'disabled':'')+'>REOPEN</button>':
-            '<span class="bbb-news-v3-applied-label">PLAYER RECORD UPDATED</span>')+
-          '<button type="button" data-news-queue="'+id+'" '+(busyNow?'disabled':'')+'>'+
-          (e.in_rank_queue?'VIEW IN RANKING MOVES':'QUEUE RANK REVIEW')+'</button>'+
+            '<span class="bbb-news-v3-applied-label">REPORT ADMITTED</span>')+
+          ((state==='applied'||e.in_rank_queue)?'<button type="button" data-news-queue="'+id+'" '+(busyNow?'disabled':'')+'>':'')+
+          ((state==='applied'||e.in_rank_queue)?(e.in_rank_queue?'VIEW IN RANKING MOVES':'QUEUE RANK REVIEW')+'</button>':'')+
         '</div></article>';
     }).join(''):'<div class="bbb-news-v3-empty">No matching sourced signals in the current result set. This does not mean every player is verified.</div>';
     if(count)count.textContent=items.length+' shown / '+matches.length+' matching (first '+records().length+' fetched). '+
@@ -597,17 +597,6 @@
   function isTemplateNote(s){
     return /confirm (the transaction|the.*roster designation)|before saving this note|confirm the .* against the official|nothing that changes my view by itself/i.test(String(s||''));
   }
-  function formatSourcedUsage(e){
-    const week=Number(e.latest_sourced_week);
-    if(!Number.isInteger(week)||week<=0)return '';
-    const catches=Number(e.sourced_receptions)||0,targets=Number(e.sourced_targets)||0;
-    const yards=Number(e.sourced_receiving_yards)||0,carries=Number(e.sourced_carries)||0;
-    const rush=Number(e.sourced_rushing_yards)||0;
-    const parts=[];
-    if(targets>0||catches>0)parts.push(catches+' '+(catches===1?'catch':'catches')+' for '+yards+' yards on '+targets+' '+(targets===1?'target':'targets'));
-    if(carries>0)parts.push(carries+' carries for '+rush+' rushing yards');
-    return parts.length?'Week '+week+' · '+parts.join(' · '):'';
-  }
   function reportedInjuryStatus(e){
     const signal=String(e.signal||'').toLowerCase();
     if(signal.startsWith('injury_')){
@@ -622,7 +611,6 @@
       return e.suggested_note.trim();
     const name=e.name,team=e.current_team||e.team||'NFL',date=newsReadableDate(day);
     const category=String(e.category||'');
-    const usage=formatSourcedUsage(e);
     if(category==='Injury'){
       const fresh=reportedInjuryStatus(e).toLowerCase();
       const previous=String(e.current_injury_status||'').trim();
@@ -639,14 +627,13 @@
           priorContext=' BBB previously listed him as '+previous.toLowerCase()+'.';
         }
       }
-      const recentUsage=usage? ' His most recent source-backed workload: '+usage+'.':'';
       const impact=/questionable|doubtful/.test(fresh)
         ?'His availability remains uncertain; this tag alone does not establish a long-term change in dynasty value.'
         :/out|reserve|injured/.test(fresh)
           ?'His short-term availability is affected; the duration and long-term role still require confirmation.'
           :'This status alone does not establish a new role or a long-term dynasty change.';
       return name+' ('+team+') was listed as '+fresh+' in the '+date+' injury feed.'+
-        priorContext+recentUsage+' '+impact;
+        priorContext+' '+impact;
     }
     if(category==='Roster'){
       const description=String(e.description||'')
@@ -713,54 +700,51 @@
     $('#newsApplyDate').max=new Date().toLocaleDateString('en-CA',{timeZone:'America/Chicago'});
     $('#newsApplyDate').readOnly=hasSource;
     const link=$('#newsApplyOfficialLink');
-    link.hidden=!hasSource;
-    if(hasSource)link.href=official;
+    link.hidden=!(hasSource||e.source_url);
+    if(hasSource||e.source_url)link.href=hasSource?official:e.source_url;
+    link.textContent=hasSource?'VIEW TEAM REPORT ↗':'VIEW JOB SOURCE ↗';
     $('#newsApplySourceStatus').textContent=hasSource
-      ?'OFFICIAL SOURCE ATTACHED · '+newsReadableDate(officialDay)
-      :(e.source_research_status==='requested'
-        ?'SOURCE RESEARCH REQUESTED'
-        :'OFFICIAL CONFIRMATION NOT YET AVAILABLE');
+      ?'TEAM REPORT LINKED · '+newsReadableDate(officialDay)
+      :'INGEST JOB · '+newsReadableDate(day);
     $('#newsApplySourceDetails').textContent=hasSource
-      ?(e.official_evidence_summary||'BBB has saved a dated official team or NFL reference with this event. The link will be preserved in its audit trail.')
-      :'BBB has observed a news signal, but it has not yet been corroborated by an official team or NFL report. You never need to type in a source URL.';
+      ?(e.official_evidence_summary||'Related team report linked as optional context. You decide whether to admit this job report.')
+      :'Imported from '+String(e.source||'news job').replaceAll('_',' ')+' · '+fmtTime(e.published_at)+'. You review and approve the report; no URL required.';
     const sourceBtn=$('#newsApplyRequestSource');
     sourceBtn.hidden=hasSource;
     sourceBtn.disabled=Boolean(e.source_research_status==='requested');
-    sourceBtn.textContent=e.source_research_status==='requested'?'RESEARCH QUEUED':'RESEARCH SOURCE';
+    sourceBtn.textContent=e.source_research_status==='requested'?'SOURCE CHECK QUEUED':'CHECK TEAM SOURCE';
     $('#newsApplyNote').value=selectedApply.draft;
     renderNewsApplyNotePreview();
     editNewsApplyNote(false);
     const sourceStatus=$('#newsApplyEvidenceLevel');
-    sourceStatus.textContent=hasSource?'OFFICIAL SOURCE RECORDED':'SOURCE REVIEW PENDING';
-    sourceStatus.dataset.verified=hasSource?'linked':'unconfirmed';
+    sourceStatus.textContent='AWAITING YOUR DECISION';
+    sourceStatus.dataset.verified='linked';
     $('#newsApplyNewSignal').textContent=
       e.category==='Injury'?'Injury report: '+reportedInjuryStatus(e):
       String(e.signal||e.category||'New signal').replaceAll('_',' ');
     const prior=e.category==='Injury'?[e.current_injury_status,e.current_injury_note].filter(Boolean).join(' · '):
       (e.current_player_note?String(e.current_player_note).slice(0,160):'No prior note recorded');
     $('#newsApplyPriorContext').textContent=prior||'No prior injury status recorded';
-    $('#newsApplyUsageContext').textContent=formatSourcedUsage(e)||
-      'No recent source-backed usage available';
-    $('#newsApplyEvidenceCaveat').textContent=
-      e.category==='Injury'?
-        'The new feed may disagree with an older BBB injury entry. Prior injury details are historical context, not proof of the current game designation. BBB will corroborate the current team report before allowing Apply.':
-      teamChange?'BBB checks the precise designation: practice squad, active roster, and injured reserve are not interchangeable.':
-      'This news signal is not proof of a permanent role or dynasty-value change.';
+    $('#newsApplyUsageContext').textContent=String(e.source||'News ingestion').replaceAll('_',' ').toUpperCase()+' · '+fmtTime(e.published_at);
+    $('#newsApplyEvidenceCaveat').textContent=teamChange
+      ?'Changing a player team still needs supporting roster evidence; you control the final decision.'
+      :e.category==='Injury'
+       ?'This is a job signal, not necessarily the final game-day designation. Compare with BBB context and admit if you agree.'
+       :'An ingested report does not automatically establish a lasting role or dynasty-value change. You decide whether to admit it.';
     $('#newsApplyConfirmed').checked=false;
+    const rankToggle=$('#newsApplyQueueRank');
+    if(rankToggle){rankToggle.checked=false;rankToggle.disabled=Boolean(e.in_rank_queue);}
+    const rankLabel=$('#newsApplyQueueRankLabel');
+    if(rankLabel)rankLabel.textContent=e.in_rank_queue?'Already in Ranking Moves — existing review preserved':'Also queue this player for a separate ranking review (optional)';
     const status=$('#newsApplyStatus');
-    status.textContent=hasSource
-      ?'Official evidence is attached automatically. Review the proposed note and approve if you agree—no link entry needed.'
-      :'This report still needs official corroboration. Request research; Apply stays disabled until evidence is attached.';
+    status.textContent=teamChange&&!hasSource
+      ?'TEAM CHANGES need supporting roster evidence first. You can check the source above.'
+      :'Job report ready for YOUR review. Admit the note if you agree; a ranking review is optional.';
     status.dataset.state='info';
-    $('#newsApplySubmit').disabled=!hasSource;
-    $('#newsApplySubmit').textContent=hasSource?'APPLY VERIFIED UPDATE':'AWAITING VERIFIED SOURCE';
+    $('#newsApplySubmit').disabled=teamChange&&!hasSource;
+    $('#newsApplySubmit').textContent=teamChange&&!hasSource?'TEAM EVIDENCE NEEDED':'ADMIT REPORT TO BBB';
     overlay.hidden=false;
-    (hasSource?$('#newsApplyConfirmed'):sourceBtn).focus();
-    // Opening an unsourced news review is already a request to review it.
-    // Queue evidence gathering automatically, without another user step.
-    if(!hasSource&&!['requested','unavailable'].includes(e.source_research_status||'')){
-      void requestAutoSource();
-    }
+    $('#newsApplyConfirmed').focus();
   }
 
   async function refreshPlayerViews(){
@@ -793,8 +777,7 @@
         if(refreshed){busy.delete(id);openApply(id);return;}
       }
       status.dataset.state='info';
-      status.textContent=e.name+' has a recorded source-research request. '+
-        'This remains unverified until an official team or NFL report is attached; no profile or ranking change was made.';
+      status.textContent=e.name+' has a team-source check requested. The job report remains ready to review; no profile or ranking changes were made.';
       button.textContent='RESEARCH QUEUED';
       const next=records().find(x=>Number(x.id)===id);
       if(next)next.source_research_status='requested';
@@ -813,7 +796,7 @@
     if(busy.has(id))return;
     const confirmed=$('#newsApplyConfirmed');
     if(!confirmed?.checked){
-      $('#newsApplyStatus').textContent='Confirm the official source and player details before applying.';
+      $('#newsApplyStatus').textContent='Confirm that you reviewed the incoming report before admitting it.';
       return;
     }
     const designation=teamChange?$('#newsApplyDesignation').value:null;
@@ -823,40 +806,42 @@
     }
     const day=$('#newsApplyDate').value;
     const note=$('#newsApplyNote').value.trim();
-    if(!selectedApply.hasSource){
-      $('#newsApplyStatus').textContent='Official evidence is still missing. Choose Research Source; BBB will collect it.';
+    if(teamChange&&!selectedApply.hasSource){
+      $('#newsApplyStatus').textContent='Changing a player team requires roster evidence. Use Check Team Source.';
       return;
     }
     if(!day||!note){$('#newsApplyStatus').textContent='The sourced date and factual note are required.';return}
     const btn=$('#newsApplySubmit'),status=$('#newsApplyStatus');
     busy.add(id);
     btn.disabled=true;
-    btn.textContent='APPLYING…';
+    btn.textContent='ADMITTING…';
     status.dataset.state='info';
-    status.textContent='Saving the team, sourced timeline note, verification and audit record together…';
+    status.textContent='Recording your approved job report in the player timeline; dynasty rankings will not move…';
     try{
-      const result=await rpc('admin_apply_verified_news_v2',{
+      const result=await rpc('admin_admit_news_from_jobs_v1',{
         p_event_id:id,
         p_expected_team:oldTeam,
         p_new_team:target,
         p_designation:designation,
         p_event_date:day,
-        p_update_note:note
+        p_update_note:note,
+        p_queue_rank:Boolean($('#newsApplyQueueRank')?.checked)
       });
       if(!['applied','already_applied'].includes(result?.status))throw new Error('No confirmed apply result returned');
       closeApply();
       await Promise.allSettled([load(true),refreshPlayerViews()]);
       const message=result.status==='already_applied'
-        ?e.name+' was already applied; the existing update was reused.'
-        :e.name+' updated: '+oldTeam+' → '+target+'. Dated note and source saved; ranking unchanged.';
+        ?e.name+' was already admitted; the existing timeline update was reused.'
+        :e.name+' admitted to the player timeline. Job source/date saved; dynasty rank unchanged.';
+      const queueSuffix=result.rank_review_queued?' Ranking review #'+result.rank_queue_id+' is in Ranking Moves.':'';
       const notice=$('#newsIntelV3Notice');
-      if(notice){notice.hidden=false;notice.textContent=message}
-      else alert(message);
+      if(notice){notice.hidden=false;notice.textContent=message+queueSuffix}
+      else alert(message+queueSuffix);
     }catch(err){
       status.dataset.state='error';
       status.textContent='Nothing was applied: '+String(err.message||err);
       btn.disabled=false;
-      btn.textContent='APPLY VERIFIED UPDATE';
+      btn.textContent='ADMIT REPORT TO BBB';
     }finally{
       busy.delete(id);
       render();
