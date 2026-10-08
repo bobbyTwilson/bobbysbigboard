@@ -462,10 +462,10 @@ function renderRankingMoveQueue(){
     '</article>';
   }).join(''):'<div class="move-queue-empty"><div class="move-empty-orb">✓</div><strong>No ranking decisions waiting.</strong><span>Future scanner recommendations and manual ranking reviews will land here instead of moving the board automatically.</span></div>';
 
-  $('[data-move-open]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.moveOpen,'dynasty'));
-  $('[data-move-approve]').forEach(b=>b.onclick=()=>resolveRankingMove(Number(b.dataset.moveApprove),'approve',b));
-  $('[data-move-reject]').forEach(b=>b.onclick=()=>resolveRankingMove(Number(b.dataset.moveReject),'reject',b));
-  $('[data-move-keep]').forEach(b=>b.onclick=()=>{
+  $$('[data-move-open]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.moveOpen,'dynasty'));
+  $$('[data-move-approve]').forEach(b=>b.onclick=()=>resolveRankingMove(Number(b.dataset.moveApprove),'approve',b));
+  $$('[data-move-reject]').forEach(b=>b.onclick=()=>resolveRankingMove(Number(b.dataset.moveReject),'reject',b));
+  $$('[data-move-keep]').forEach(b=>b.onclick=()=>{
     const id=Number(b.dataset.moveKeep),input=$('[data-move-target="'+id+'"]');
     if(input)input.value=b.dataset.currentRank;
     resolveRankingMove(id,'approve',b,Number(b.dataset.currentRank));
@@ -668,8 +668,8 @@ function renderWeeklyScanner(){
     '</article>';
   }).join(''):'<div class="move-queue-empty"><div class="move-empty-orb">◎</div><strong>No players match this scanner view.</strong><span>Try All Players, another position, or clear the signal filter.</span></div>';
 
-  $('[data-scanner-open]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.scannerOpen,'stats'));
-  $('[data-scanner-queue]').forEach(b=>b.onclick=()=>queueScannerReview(b.dataset.scannerQueue,b));
+  $$('[data-scanner-open]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.scannerOpen,'stats'));
+  $$('[data-scanner-queue]').forEach(b=>b.onclick=()=>queueScannerReview(b.dataset.scannerQueue,b));
 }
 async function queueScannerReview(key,btn){
   const x=scannerRows().find(v=>v.player_key===key);if(!x)return;
