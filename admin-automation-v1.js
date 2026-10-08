@@ -470,16 +470,23 @@
         ' → '+escText(e.team)+' · '+escText(e.proposed_designation||'Designation requires confirmation')+'</div>':'';
       const statusRow=stateText?'<div class="bbb-news-v3-review-state">'+escText(stateText)+
         (state==='applied'&&e.applied_at?' · '+escText(fmtTime(e.applied_at)):'')+'</div>':'';
+      const sourceReady=Boolean((e.auto_official_url&&e.auto_official_date)||
+        (e.verified_official_url&&e.verified_official_date));
+      const sourceRow=['unreviewed','needs_research','verified'].includes(state)
+        ?'<div class="bbb-news-v3-review-state">'+
+         (sourceReady?'✓ OFFICIAL TEAM/NFL REPORT ATTACHED · READY FOR APPROVAL':
+          e.source_research_status==='requested'?'SOURCE RESEARCH REQUESTED · NOT YET VERIFIED':
+          'OFFICIAL SOURCE NOT YET VERIFIED · NO PLAYER CHANGES')+'</div>':'';
       return '<article class="bbb-news-v3-item" data-category="'+escText(e.category)+'" data-status="'+escText(state)+'">'+
         '<div class="bbb-news-v3-item-head"><strong>'+escText(e.name)+' <span style="color:#9bbdab;font-size:11px">#'+escText(e.overall_rank)+'</span></strong>'+
         '<span class="bbb-news-v3-tag '+(e.category==='Injury'?'injury':'')+'">'+escText(signal.toUpperCase())+'</span></div>'+
         '<div class="bbb-news-v3-item-meta">'+escText(e.team||'Team TBD')+' · '+escText(e.category)+' · '+escText(fmtTime(e.published_at))+' · '+escText(e.source.replaceAll('_',' ').toUpperCase())+'</div>'+
-        '<p>'+escText(e.description)+'</p>'+teamRow+related+recommendation+statusRow+
+        '<p>'+escText(e.description)+'</p>'+teamRow+related+recommendation+statusRow+sourceRow+
         '<div class="bbb-news-v3-actions">'+
           '<button type="button" data-news-player="'+key+'">OPEN PLAYER</button>'+
           (safeUrl?'<a target="_blank" rel="noopener noreferrer" href="'+escText(safeUrl)+'">SOURCE ↗</a>':'')+
           (['unreviewed','needs_research','verified'].includes(state)
-           ?'<button type="button" class="bbb-news-v3-apply" data-news-apply="'+id+'" '+(busyNow?'disabled':'')+'>APPLY VERIFIED UPDATE</button>'+
+           ?'<button type="button" class="bbb-news-v3-apply" data-news-apply="'+id+'" '+(busyNow?'disabled':'')+'>'+(sourceReady?'REVIEW VERIFIED UPDATE':'REVIEW / REQUEST SOURCE')+'</button>'+
             (state==='needs_research'?
               '<button type="button" data-news-reopen="'+id+'" '+(busyNow?'disabled':'')+'>REOPEN</button>'
               :'<button type="button" data-news-research="'+id+'" '+(busyNow?'disabled':'')+'>NEEDS MORE RESEARCH</button>')+
@@ -715,7 +722,7 @@
         :'OFFICIAL CONFIRMATION NOT YET AVAILABLE');
     $('#newsApplySourceDetails').textContent=hasSource
       ?(e.official_evidence_summary||'BBB has saved a dated official team or NFL reference with this event. The link will be preserved in its audit trail.')
-      :'BBB has an observed news signal, but not an independently corroborated official report yet. You do not need to find a link—we can research it.';
+      :'BBB has observed a news signal, but it has not yet been corroborated by an official team or NFL report. You never need to type in a source URL.';
     const sourceBtn=$('#newsApplyRequestSource');
     sourceBtn.hidden=hasSource;
     sourceBtn.disabled=Boolean(e.source_research_status==='requested');
@@ -786,8 +793,8 @@
         if(refreshed){busy.delete(id);openApply(id);return;}
       }
       status.dataset.state='info';
-      status.textContent=e.name+' has been added to the official-source research queue. '+
-        'The scheduled news verification pass will check it; you can close this window.';
+      status.textContent=e.name+' has a recorded source-research request. '+
+        'This remains unverified until an official team or NFL report is attached; no profile or ranking change was made.';
       button.textContent='RESEARCH QUEUED';
       const next=records().find(x=>Number(x.id)===id);
       if(next)next.source_research_status='requested';
