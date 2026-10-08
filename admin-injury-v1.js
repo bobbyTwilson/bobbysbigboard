@@ -226,7 +226,7 @@
             '<div><small>OLDER SNAPSHOT STATUS</small><b>'+esc(x.snapshot_status||'Not reported')+'</b><em>'+esc(centralTime(x.snapshot_refreshed_at))+'</em></div>'+
           '</div>'+
           (x.team_disagreement?'<p class="inj-recon-note">Team review: BBB '+esc(x.bbb_team||'FA')+' vs source '+esc(x.snapshot_team||'FA')+'</p>':'')+
-          (x.latest_logged_text?'<p class="inj-recon-note"><b>Most recent logged injury intel:</b> '+esc(String(x.latest_logged_text).slice(0,250))+'</p>':'')+
+          (x.latest_logged_text?'<p class="inj-recon-note"><b>Latest linked player update:</b> '+esc(String(x.latest_logged_text).slice(0,250))+'</p>':'')+
         '</div>'+
         '<div class="inj-recon-buttons">'+source+
           '<button type="button" class="small-btn" data-recon-open="'+esc(x.player_key)+'">OPEN PLAYER</button>'+
