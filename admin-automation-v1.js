@@ -597,7 +597,7 @@
     const yards=Number(e.sourced_receiving_yards)||0,carries=Number(e.sourced_carries)||0;
     const rush=Number(e.sourced_rushing_yards)||0;
     const parts=[];
-    if(targets>0||catches>0)parts.push(catches+' receptions for '+yards+' yards on '+targets+' targets');
+    if(targets>0||catches>0)parts.push(catches+' '+(catches===1?'catch':'catches')+' for '+yards+' yards on '+targets+' '+(targets===1?'target':'targets'));
     if(carries>0)parts.push(carries+' carries for '+rush+' rushing yards');
     return parts.length?'Week '+week+' · '+parts.join(' · '):'';
   }
