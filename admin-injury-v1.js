@@ -226,7 +226,7 @@
             '<div><small>OLDER SNAPSHOT STATUS</small><b>'+esc(x.snapshot_status||'Not reported')+'</b><em>'+esc(centralTime(x.snapshot_refreshed_at))+'</em></div>'+
           '</div>'+
           (x.team_disagreement?'<p class="inj-recon-note">Team review: BBB '+esc(x.bbb_team||'FA')+' vs source '+esc(x.snapshot_team||'FA')+'</p>':'')+
-          (x.latest_logged_text?'<p class="inj-recon-note"><b>Most recent logged injury intel:</b> '+esc(String(x.latest_logged_text).slice(0,250))+'</p>':'')+
+          (x.latest_logged_text?'<p class="inj-recon-note"><b>Latest linked player update:</b> '+esc(String(x.latest_logged_text).slice(0,250))+'</p>':'')+
         '</div>'+
         '<div class="inj-recon-buttons">'+source+
           '<button type="button" class="small-btn" data-recon-open="'+esc(x.player_key)+'">OPEN PLAYER</button>'+
@@ -237,10 +237,12 @@
       expand.classList.toggle('hide',c.length<=12);
       expand.textContent=reconExpanded?'SHOW LESS':'SHOW ALL ('+c.length+')';
     }
-    $('[data-recon-open]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.reconOpen,'activity'));
+    // Click handlers live on the stable page root; do not rebind rendered nodes.
+    // The old single-element $ selector here threw TypeError and aborted rendering.
   }
   async function loadRecon(force=false){
-    if(reconLoading||(reconLoaded&&!force))return;
+    if(reconLoading)return;
+    if(reconLoaded&&!force){renderRecon();return}
     reconLoading=true;
     try{
       reconData=await rpc('admin_get_status_reconciliation',{p_limit:75});
@@ -293,7 +295,36 @@
     $$('[data-inj-open]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.injOpen,'activity'));
     $$('[data-inj-queue]').forEach(b=>b.onclick=()=>queueReview(b.dataset.injQueue,b));
   }
+  // Event delegation survives every reconciliation and filter re-render.
+  function bindReconActions(){
+    const host=$('#pageInjuries');
+    if(!host||host.dataset.reconActionsBound==='1')return;
+    host.dataset.reconActionsBound='1';
+    host.addEventListener('click',event=>{
+      const target=event.target.closest('button,a');
+      if(!target||!host.contains(target))return;
+      if(target.id==='injuryReconRefresh'){
+        event.preventDefault();void loadRecon(true);return;
+      }
+      if(target.id==='injuryReconExpand'){
+        event.preventDefault();reconExpanded=!reconExpanded;renderRecon();return;
+      }
+      if(target.matches('[data-recon-open]')){
+        event.preventDefault();
+        const key=target.dataset.reconOpen;
+        if(typeof window.openBBBPlayerWorkspace==='function'){
+          window.openBBBPlayerWorkspace(key,'activity');
+        }else{
+          // Existing native player editor is the fallback if the workspace is not ready.
+          page('players');
+          const search=$('#playerAdminSearch');
+          if(search){search.value=key.replaceAll('-',' ');search.dispatchEvent(new Event('input',{bubbles:true}))}
+        }
+      }
+    });
+  }
   function bindControls(){
+    bindReconActions();
     ['#injurySearch','#injuryPos','#injuryStatus','#injuryTrend','#injuryScope'].forEach(sel=>{
       const el=$(sel);if(!el||el.dataset.injBound==='1')return;
       el.dataset.injBound='1';
@@ -303,8 +334,6 @@
       $('#injurySearch').value='';$('#injuryPos').value='ALL';$('#injuryStatus').value='ALL';$('#injuryTrend').value='ALL';$('#injuryScope').value='TOP500';injuryPreset='ACTIVE';render();
     });
     $('#injuryRefresh')?.addEventListener('click',()=>load(true));
-    $('#injuryReconRefresh')?.addEventListener('click',()=>loadRecon(true));
-    $('#injuryReconExpand')?.addEventListener('click',()=>{reconExpanded=!reconExpanded;renderRecon()});
     $$('[data-inj-preset]').forEach(el=>{
       el.onclick=()=>{injuryPreset=el.dataset.injPreset;render()};
       el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();injuryPreset=el.dataset.injPreset;render()}};
