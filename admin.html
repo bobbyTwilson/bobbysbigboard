@@ -1212,7 +1212,7 @@ body:after{
   <link rel="stylesheet" href="/admin-injury-v2.css?v=2">
   <link rel="stylesheet" href="/admin-content-v1.css?v=4">
   <link rel="stylesheet" href="/admin-dashboard-v2.css?v=2">
-  <link rel="stylesheet" href="/admin-automation-v1.css?v=2">
+  <link rel="stylesheet" href="/admin-automation-v1.css?v=3">
   <link rel="stylesheet" href="/admin-exceptions-v1.css?v=2">
   <link rel="stylesheet" href="/admin-ui-polish-v1.css?v=5">
   <link rel="stylesheet" href="/admin-design-system-v2.css?v=6">
@@ -1808,6 +1808,41 @@ body:after{
             <div class="auto-kpi lock"><span>RANKING AUTOMATION</span><strong id="autoRankLock">MANUAL ONLY</strong><small>NO SCHEDULED RANK MOVES</small></div>
           </div>
 
+
+          <section id="newsIntelV3" class="bbb-news-v3" aria-labelledby="newsIntelV3Title">
+            <div class="bbb-news-v3-head">
+              <div>
+                <span>NEWS INTELLIGENCE V3 · NFL TRANSACTIONS + INJURIES + ROSTER PRESENCE</span>
+                <h2 id="newsIntelV3Title">Source-backed football changes.</h2>
+                <p>New roster moves, injuries, related teammates, and ranking-review candidates—separate from statistical refresh jobs. ESPN feed signals require independent official confirmation before you change a ranking.</p>
+              </div>
+              <button class="refresh-btn" id="newsIntelV3Refresh" type="button">REFRESH NEWS</button>
+            </div>
+            <div class="bbb-news-v3-kpis" id="newsIntelV3Stats">
+              <div><span>ROSTER EVIDENCE</span><strong>— / 500</strong><small>NOT A FULL NEWS VERIFICATION</small></div>
+              <div><span>NEWS SOURCE STATUS</span><strong>LOADING</strong><small>FEED INGESTION</small></div>
+              <div><span>NEEDS REVIEW</span><strong>—</strong><small>NEW SOURCED SIGNALS</small></div>
+              <div><span>LAST FEED RUN</span><strong>—</strong><small>NOT THE VERIFIED DATE</small></div>
+            </div>
+            <div class="bbb-news-v3-toolbar">
+              <div class="bbb-news-v3-filters" role="group" aria-label="Filter football news">
+                <button type="button" data-bbb-news-filter="all" class="active" aria-pressed="true">All Signals</button>
+                <button type="button" data-bbb-news-filter="Roster" aria-pressed="false">Roster</button>
+                <button type="button" data-bbb-news-filter="Injury" aria-pressed="false">Injuries</button>
+                <button type="button" data-bbb-news-filter="News" aria-pressed="false">News</button>
+                <button type="button" data-bbb-news-filter="reviewed" aria-pressed="false">Reviewed</button>
+              </div>
+              <input id="newsIntelV3Search" class="input" type="search" placeholder="Search player or team…" aria-label="Search football news"/>
+            </div>
+            <div id="newsIntelV3Grid" class="bbb-news-v3-grid" aria-live="polite">
+              <div class="bbb-news-v3-empty">Loading source evidence and matching it to the Top 500…</div>
+            </div>
+            <div class="bbb-news-v3-bottom">
+              <span id="newsIntelV3Count">Sources checked ≠ all 500 players verified.</span>
+              <small>Official NFL/team links should corroborate ESPN signals. Source checks never overwrite your player notes or rankings.</small>
+            </div>
+          </section>
+
           <section class="auto-readiness-panel" aria-labelledby="autoReadinessTitle">
             <div class="auto-section-head">
               <div><span>OPERATIONS READINESS · LIVE CHECK</span><strong id="autoReadinessTitle">What's current, what's stale, and what needs attention</strong></div>
@@ -2326,7 +2361,7 @@ body:after{
   <script src="/admin-injury-v1.js?v=3"></script>
   <script src="/admin-content-v1.js?v=4"></script>
   <script src="/admin-dashboard-v2.js?v=3"></script>
-  <script src="/admin-automation-v1.js?v=4"></script>
+  <script src="/admin-automation-v1.js?v=5"></script>
   <script src="/admin-exceptions-v1.js?v=4"></script>
   <script src="/admin-ui-polish-v1.js?v=1"></script>
   <script src="/admin-ranking-intel-v2.js?v=3"></script>
