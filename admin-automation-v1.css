@@ -625,3 +625,52 @@
   #pageAutomations .bbb-news-apply-note,#pageAutomations .bbb-news-apply-context{padding:12px}
   #pageAutomations .bbb-news-apply-note-preview{font-size:13px!important}
 }
+
+
+/* V3.4: server-attached official evidence; no manual URL entry. */
+#pageAutomations .bbb-news-apply-source{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:13px;margin:15px 0;padding:14px 16px;
+  background:rgba(44,96,78,.20);
+  border:1px solid rgba(115,205,163,.35);
+  border-radius:11px;
+}
+#pageAutomations .bbb-news-apply-source-copy{
+  min-width:0;flex:1 1 270px;
+}
+#pageAutomations .bbb-news-apply-source-copy>span{
+  display:block;font-size:10px;letter-spacing:.07em;
+  font-weight:850;color:#a5e1c0;margin-bottom:5px;
+}
+#pageAutomations .bbb-news-apply-source-copy>strong{
+  display:block;line-height:1.35;font-weight:850;
+  font-size:14px;color:#eefaf2;margin-bottom:5px;
+}
+#pageAutomations .bbb-news-apply-source-copy>small{
+  display:block;color:#b4d0c0;font-size:11px;line-height:1.6;
+}
+#pageAutomations .bbb-news-apply-source-actions{
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px;
+}
+#pageAutomations .bbb-news-apply-source-actions a,
+#pageAutomations .bbb-news-apply-source-actions button{
+  display:inline-flex;min-height:38px;align-items:center;justify-content:center;
+  padding:9px 12px;cursor:pointer;text-decoration:none;
+  background:#294d41;color:#d8ffe9;border-radius:8px;
+  font-size:11px;font-weight:850;border:1px solid rgba(118,216,168,.45);
+}
+#pageAutomations .bbb-news-apply-source-actions button:disabled{
+  opacity:.7;cursor:default;
+}
+#pageAutomations .bbb-news-apply-source-actions [hidden]{display:none!important}
+#pageAutomations .bbb-news-apply-source-actions a:focus-visible,
+#pageAutomations .bbb-news-apply-source-actions button:focus-visible{
+  outline:2px solid #9feaca;outline-offset:3px;
+}
+#pageAutomations #newsApplyDate[readonly]{
+  background:#1b3632;color:#d4f2df;cursor:default;
+}
+#pageAutomations #newsApplySubmit:disabled{
+  color:#b9d7c5;background:#31433d;border-color:rgba(125,170,144,.29);
+  cursor:not-allowed;
+}
