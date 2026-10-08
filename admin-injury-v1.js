@@ -1,6 +1,7 @@
 /* BBB Injury Command Center v1 */
 (function(){
   let injuryCenter=null,injuryLoaded=false,injuryLoading=false,injuryPreset='ACTIVE';
+  let reconData=null,reconLoaded=false,reconLoading=false,reconExpanded=false;
 
   function artUrl(id,sport='nfl'){
     if(!id)return '';
@@ -35,6 +36,31 @@
     if(Number.isNaN(d.getTime()))return null;
     return Math.max(0,Math.floor((now-d)/86400000));
   }
+
+  // Never equate a historical practice snapshot with a current injury report.
+  function practiceStale(x){
+    if(!x.practice_refreshed_at)return true;
+    const t=new Date(x.practice_refreshed_at).getTime();
+    return !Number.isFinite(t)||Date.now()-t>48*60*60*1000||
+      x.practice_is_stale===true||String(x.practice_is_stale)==='true';
+  }
+  function centralTime(v){
+    if(!v)return 'NEVER';
+    const d=new Date(v);
+    return Number.isNaN(d.getTime())?'UNKNOWN':
+      d.toLocaleString('en-US',{
+        timeZone:'America/Chicago',month:'short',day:'numeric',
+        hour:'numeric',minute:'2-digit',timeZoneName:'short'
+      });
+  }
+  function trustedSourceUrl(value){
+    if(typeof value!=='string')return '';
+    try{
+      const url=new URL(value);
+      return url.protocol==='https:' && url.hostname ? url.href : '';
+    }catch(_){return ''}
+  }
+
   function statusGroup(x){
     const s=String(x.current_status||'').toLowerCase();
     if(x.recent_return||Number(x.current_score)===0)return 'RETURNING';
@@ -58,7 +84,7 @@
   }
   function practiceBlock(x){
     const history=Array.isArray(x.practice_history)?x.practice_history:[];
-    const stale=String(x.practice_is_stale)==='true'||x.practice_is_stale===true;
+    const stale=practiceStale(x);
     const current=x.practice_participation||'—';
     const age=daysOld(x.practice_refreshed_at);
     const freshness=!x.practice_refreshed_at?'NO FEED':stale?'STALE '+(age==null?'':age+'D'):'CURRENT';
@@ -93,7 +119,7 @@
       if(injuryPreset==='TOP100'&&(Number(x.current_score)<=0||Number(x.overall_rank)>100))return false;
       if(injuryPreset==='RESERVE'&&statusGroup(x)!=='RESERVE')return false;
       if(injuryPreset==='RETURNING'&&!x.recent_return)return false;
-      if(injuryPreset==='DNP'&&!(String(x.practice_participation||'').toLowerCase()==='dnp'&&!x.practice_is_stale))return false;
+      if(injuryPreset==='DNP'&&!(String(x.practice_participation||'').toLowerCase()==='dnp'&&!practiceStale(x)))return false;
       if(injuryPreset==='ACTIVE'&&Number(x.current_score)<=0)return false;
       const hay=(x.name+' '+(x.team||'')+' '+(x.position||'')+' '+(x.current_status||'')+' '+(x.injury_note||'')+' '+(x.latest_update_text||'')).toLowerCase();
       return !q||hay.includes(q);
@@ -123,7 +149,7 @@
     const list=filtered();
     if($('#injuryResultCount'))$('#injuryResultCount').textContent=list.length+' players shown';
     grid.innerHTML=list.length?list.map(x=>{
-      const st=statusGroup(x),stCls=st.toLowerCase(),trend=trendClass(x),isQueued=queued(x),stale=x.practice_is_stale===true||String(x.practice_is_stale)==='true';
+      const st=statusGroup(x),stCls=st.toLowerCase(),trend=trendClass(x),isQueued=queued(x),stale=practiceStale(x);
       return '<article class="inj-card '+stCls+'">'+
         '<div class="inj-card-accent"></div>'+
         '<div class="inj-card-head">'+
@@ -160,14 +186,75 @@
       $('#injuryPracticeFresh').textContent=s.practice_feed_freshness?'PRACTICE FEED '+dateText(s.practice_feed_freshness).toUpperCase()+(age?' · '+age+'D OLD':''):'PRACTICE FEED —';
       $('#injuryPracticeFresh').classList.toggle('stale',age!=null&&age>1);
     }
-    if($('#injuryDnpCount'))$('#injuryDnpCount').textContent=(s.dnp_current??0)+' CURRENT DNP';
+    if($('#injuryDnpCount'))$('#injuryDnpCount').textContent=rows().filter(x=>Number(x.current_score)>0&&String(x.practice_participation||'').toLowerCase()==='dnp'&&!practiceStale(x)).length+' VERIFIED CURRENT DNP';
   }
   function syncPreset(){
     $$('[data-inj-preset]').forEach(el=>el.classList.toggle('active',el.dataset.injPreset===injuryPreset));
   }
+
+  function reconStatistic(label,value,sub,type){
+    return '<div class="inj-recon-stat '+(type||'')+'"><span>'+esc(label)+'</span>'+
+      '<strong>'+esc(String(value??'—'))+'</strong><small>'+esc(sub)+'</small></div>';
+  }
+  function renderRecon(){
+    const stats=$('#injuryReconStats'),rowsHost=$('#injuryReconRows'),count=$('#injuryReconCount'),expand=$('#injuryReconExpand');
+    if(!stats||!rowsHost)return;
+    if(!reconData){
+      stats.innerHTML='<div class="empty">Snapshot reconciliation is temporarily unavailable. Your current player notes have not been changed.</div>';
+      rowsHost.innerHTML='';
+      return;
+    }
+    const a=reconData.summary||{},c=Array.isArray(reconData.candidates)?reconData.candidates:[];
+    const stale=Number(a.stale_snapshots||0),total=Number(a.ranked||0);
+    stats.innerHTML=
+      reconStatistic('STALE / MISSING SNAPSHOTS',stale+'/'+total,'Older than 48 hours or absent',stale?'bad':'good')+
+      reconStatistic('AVAILABILITY DIFFERENCES',a.availability_disagreements,'Profile severity vs. old feed','warn')+
+      reconStatistic('TEAM DIFFERENCES',a.team_disagreements,'Confirm transaction before editing','warn')+
+      reconStatistic('NEWER EDITORIAL NOTES',a.editorial_newer,'Do not overwrite these updates','good')+
+      reconStatistic('LATEST HISTORICAL SNAPSHOT',a.snapshot_last_refreshed?centralTime(a.snapshot_last_refreshed):'NEVER','Historical status source · not a live injury report',stale?'bad':'good');
+    const subset=reconExpanded?c:c.slice(0,12);
+    rowsHost.innerHTML=subset.length?subset.map(x=>{
+      const kind=String(x.issue_type||'EDITORIAL UPDATE NEWER');
+      const important=kind==='AVAILABILITY DISAGREEMENT'||kind==='TEAM DISAGREEMENT'||kind==='MISSING SNAPSHOT';
+      const href=trustedSourceUrl(x.latest_source_url)||trustedSourceUrl(x.alternate_source_url);
+      const source=href?'<a class="inj-recon-source" href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">VIEW LOGGED SOURCE ↗</a>':'';
+      return '<article class="inj-recon-item '+(important?'attention':'informational')+'">'+
+        '<div class="inj-recon-player"><strong>#'+esc(String(x.overall_rank))+' '+esc(x.name||x.player_key)+'</strong>'+
+          '<span>'+esc(x.position||'')+' · '+esc(x.bbb_team||'FA')+' · '+esc(kind)+'</span>'+
+          '<div class="inj-recon-compare">'+
+            '<div><small>BBB EDITORIAL STATUS</small><b>'+esc(x.bbb_status||'Healthy')+'</b><em>'+esc(x.bbb_injury_updated||'No dated edit')+'</em></div>'+
+            '<div><small>OLDER SNAPSHOT STATUS</small><b>'+esc(x.snapshot_status||'Not reported')+'</b><em>'+esc(centralTime(x.snapshot_refreshed_at))+'</em></div>'+
+          '</div>'+
+          (x.team_disagreement?'<p class="inj-recon-note">Team review: BBB '+esc(x.bbb_team||'FA')+' vs source '+esc(x.snapshot_team||'FA')+'</p>':'')+
+          (x.latest_logged_text?'<p class="inj-recon-note"><b>Most recent logged injury intel:</b> '+esc(String(x.latest_logged_text).slice(0,250))+'</p>':'')+
+        '</div>'+
+        '<div class="inj-recon-buttons">'+source+
+          '<button type="button" class="small-btn" data-recon-open="'+esc(x.player_key)+'">OPEN PLAYER</button>'+
+        '</div></article>';
+    }).join(''):'<div class="empty">No discrepancies or newer editorial updates currently qualify for review.</div>';
+    if(count)count.textContent=c.length+' prioritized players · '+(reconExpanded?c.length:Math.min(12,c.length))+' shown · review only';
+    if(expand){
+      expand.classList.toggle('hide',c.length<=12);
+      expand.textContent=reconExpanded?'SHOW LESS':'SHOW ALL ('+c.length+')';
+    }
+    $('[data-recon-open]').forEach(b=>b.onclick=()=>window.openBBBPlayerWorkspace?.(b.dataset.reconOpen,'activity'));
+  }
+  async function loadRecon(force=false){
+    if(reconLoading||(reconLoaded&&!force))return;
+    reconLoading=true;
+    try{
+      reconData=await rpc('admin_get_status_reconciliation',{p_limit:75});
+      reconLoaded=true;renderRecon();
+    }catch(e){
+      console.error('Status Reconciliation failed',e);
+      const h=$('#injuryReconRows');
+      if(h)h.innerHTML='<div class="empty">Reconciliation could not be loaded. No player data was changed. '+esc(e.message||'')+'</div>';
+    }finally{reconLoading=false}
+  }
+
   function render(){
     if(!injuryLoaded||!injuryCenter)return;
-    renderSummary();renderPriorityBoard();renderCards();syncPreset();
+    renderSummary();renderPriorityBoard();renderCards();renderRecon();syncPreset();
   }
   async function load(force=false){
     if(injuryLoading)return;
@@ -178,6 +265,7 @@
       injuryCenter=await rpc('admin_get_injury_command_center',{p_limit:500})||null;
       injuryLoaded=true;
       render();
+      void loadRecon(force);
     }catch(e){
       console.error('BBB Injury Command Center failed',e);
       const grid=$('#injuryGrid');if(grid)grid.innerHTML='<div class="scanner-error"><span>!</span><strong>Injury Command Center failed to load.</strong><small>'+esc(e.message||'Unknown error')+'</small><button id="injuryRetry" class="small-btn">TRY AGAIN</button></div>';
@@ -215,6 +303,8 @@
       $('#injurySearch').value='';$('#injuryPos').value='ALL';$('#injuryStatus').value='ALL';$('#injuryTrend').value='ALL';$('#injuryScope').value='TOP500';injuryPreset='ACTIVE';render();
     });
     $('#injuryRefresh')?.addEventListener('click',()=>load(true));
+    $('#injuryReconRefresh')?.addEventListener('click',()=>loadRecon(true));
+    $('#injuryReconExpand')?.addEventListener('click',()=>{reconExpanded=!reconExpanded;renderRecon()});
     $$('[data-inj-preset]').forEach(el=>{
       el.onclick=()=>{injuryPreset=el.dataset.injPreset;render()};
       el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();injuryPreset=el.dataset.injPreset;render()}};
@@ -228,6 +318,7 @@
       if($('#missionPageTitle'))$('#missionPageTitle').textContent='Injury Command Center';
       bindControls();
       if(!injuryLoaded&&!injuryLoading)void load(false); else render();
+      if(!reconLoaded&&!reconLoading)void loadRecon(false);
     }
   };
 

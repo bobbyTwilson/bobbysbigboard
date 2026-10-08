@@ -1208,7 +1208,7 @@ body:after{
 </style>
   <link rel="stylesheet" href="/admin-scanner-v2.css?v=2">
   <link rel="stylesheet" href="/admin-scanner-v3.css?v=3">
-  <link rel="stylesheet" href="/admin-injury-v1.css?v=1">
+  <link rel="stylesheet" href="/admin-injury-v1.css?v=2">
   <link rel="stylesheet" href="/admin-injury-v2.css?v=2">
   <link rel="stylesheet" href="/admin-content-v1.css?v=4">
   <link rel="stylesheet" href="/admin-dashboard-v2.css?v=2">
@@ -1612,6 +1612,29 @@ body:after{
             <span id="injuryPracticeFresh">PRACTICE FEED —</span>
             <span id="injuryDnpCount">— CURRENT DNP</span>
             <p>Current player notes are the source of truth. Older practice data is visibly marked stale instead of being treated like today's report.</p>
+          </section>
+
+          <section class="inj-reconciliation" aria-labelledby="injuryReconTitle">
+            <div class="inj-recon-head">
+              <div>
+                <span>STATUS RECONCILIATION · DATA PROVENANCE</span>
+                <strong id="injuryReconTitle">Editorial player updates vs. historical status feed</strong>
+                <p>Newer BBB notes remain authoritative. Old availability snapshots are for comparison only and will never silently overwrite your work.</p>
+              </div>
+              <button type="button" class="small-btn" id="injuryReconRefresh">RECHECK</button>
+            </div>
+            <div id="injuryReconStats" class="inj-recon-stats" aria-live="polite">
+              <div class="research-loading"><span></span><strong>Comparing source and player records…</strong></div>
+            </div>
+            <div class="inj-recon-list-head">
+              <strong>Actionable differences</strong>
+              <span>Review newer evidence before changing a player profile.</span>
+            </div>
+            <div id="injuryReconRows" class="inj-recon-rows"><div class="research-loading"><span></span><strong>Loading discrepancies…</strong></div></div>
+            <div class="inj-recon-footer">
+              <span id="injuryReconCount">Loading…</span>
+              <button id="injuryReconExpand" type="button" class="small-btn hide">SHOW MORE</button>
+            </div>
           </section>
 
           <section class="inj-priority">
