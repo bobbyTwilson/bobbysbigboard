@@ -749,6 +749,11 @@
     $('#newsApplySubmit').textContent=hasSource?'APPLY VERIFIED UPDATE':'AWAITING VERIFIED SOURCE';
     overlay.hidden=false;
     (hasSource?$('#newsApplyConfirmed'):sourceBtn).focus();
+    // Opening an unsourced news review is already a request to review it.
+    // Queue evidence gathering automatically, without another user step.
+    if(!hasSource&&!['requested','unavailable'].includes(e.source_research_status||'')){
+      void requestAutoSource();
+    }
   }
 
   async function refreshPlayerViews(){
