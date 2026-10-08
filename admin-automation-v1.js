@@ -393,3 +393,152 @@
 
   window.BBBAutomationCenter={load,render};
 })();
+
+/* News Intelligence v3: separate source-evidence lane, no automatic ranking writes. */
+(function(){
+  'use strict';
+  const $=s=>document.querySelector(s);
+  const escText=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  let evidence=null,loading=false,loaded=false,filter='all',busy=new Set(),shown=20;
+  const records=()=>Array.isArray(evidence?.events)?evidence.events:[];
+  const fmtTime=x=>{
+    if(!x)return 'NOT YET';
+    const d=new Date(x);
+    return Number.isNaN(d.valueOf())?'—':d.toLocaleString('en-US',{
+      timeZone:'America/Chicago',month:'short',day:'numeric',
+      hour:'numeric',minute:'2-digit',timeZoneName:'short'
+    });
+  };
+  function selection(){
+    const s=($('#newsIntelV3Search')?.value||'').trim().toLowerCase();
+    return records().filter(e=>{
+      const status=String(e.review_status||'unreviewed');
+      if(filter==='reviewed'){if(status==='unreviewed')return false}
+      else if(status!=='unreviewed')return false;
+      if(['Roster','Injury','News'].includes(filter)&&e.category!==filter)return false;
+      return !s||(e.name+' '+e.team+' '+e.signal+' '+e.description).toLowerCase().includes(s);
+    });
+  }
+  function render(){
+    const grid=$('#newsIntelV3Grid'),kpis=$('#newsIntelV3Stats'),count=$('#newsIntelV3Count');
+    if(!grid)return;
+    if(!evidence){
+      grid.innerHTML='<div class="bbb-news-v3-empty">The live news feed is not available. Existing player data and ranks were not changed. <button type="button" data-news-retry>Try again</button></div>';
+      return;
+    }
+    document.querySelectorAll('[data-bbb-news-filter]').forEach(b=>{
+      const on=b.dataset.bbbNewsFilter===filter;
+      b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on));
+    });
+    const run=evidence.recent_run||{},roster=Number(evidence.roster_checked||0);
+    if(kpis)kpis.innerHTML=
+      '<div><span>ROSTER PRESENCE</span><strong>'+roster+' / '+Number(evidence.tracked_players||500)+'</strong><small>ESPN TEAM ROSTERS IN PAST 26H · NOT COMPLETE NEWS VERIFICATION</small></div>'+
+      '<div><span>FEED INGESTION</span><strong>'+escText(run.sources_ok??'—')+' / 3</strong><small>TRANSACTIONS · INJURIES · NEWS</small></div>'+
+      '<div><span>SOURCED SIGNALS</span><strong>'+Number(evidence.pending_signals||0)+'</strong><small>WAITING FOR EDITORIAL REVIEW</small></div>'+
+      '<div><span>LAST BACKEND SCAN</span><strong style="font-size:14px">'+escText(fmtTime(run.finished_at||run.started_at))+'</strong><small>'+escText((run.status||'unknown').toUpperCase())+' · NO AUTO RANK CHANGES</small></div>';
+    const matches=selection(),items=matches.slice(0,shown);
+    grid.innerHTML=items.length?items.map(e=>{
+      const id=Number(e.id)||0,key=escText(e.player_key),safeUrl=/^https:\/\/(www\.espn\.com|site\.api\.espn\.com)\//i.test(e.source_url||'')?e.source_url:'';
+      const refs=Array.isArray(e.related_players)?e.related_players.slice(0,5):[];
+      const related=refs.length?
+        '<div class="bbb-news-v3-context">Same-position teammates to consider: '+refs.map(x=>escText(x.name)).join(', ')+'. This is opportunity context, not a verified role change.</div>':'';
+      const signal=String(e.signal||'unknown').replaceAll('_',' ');
+      const busyNow=busy.has(id),state=e.review_status;
+      return '<article class="bbb-news-v3-item" data-category="'+escText(e.category)+'" data-status="'+escText(state)+'">'+
+        '<div class="bbb-news-v3-item-head"><strong>'+escText(e.name)+' <span style="color:#9bbdab;font-size:11px">#'+escText(e.overall_rank)+'</span></strong>'+
+        '<span class="bbb-news-v3-tag '+(e.category==='Injury'?'injury':'')+'">'+escText(signal.toUpperCase())+'</span></div>'+
+        '<div class="bbb-news-v3-item-meta">'+escText(e.team||'Team TBD')+' · '+escText(e.category)+' · '+escText(fmtTime(e.published_at))+' · '+escText(e.source.replaceAll('_',' ').toUpperCase())+'</div>'+
+        '<p>'+escText(e.description)+'</p>'+related+
+        '<div class="bbb-news-v3-actions">'+
+          '<button type="button" data-news-player="'+key+'">OPEN PLAYER</button>'+
+          (safeUrl?'<a target="_blank" rel="noopener noreferrer" href="'+escText(safeUrl)+'">SOURCE ↗</a>':'')+
+          (state==='unreviewed'
+          ?'<button type="button" data-news-reviewed="'+id+'" '+(busyNow?'disabled':'')+'>MARK REVIEWED</button>'+
+           '<button type="button" data-news-dismiss="'+id+'" '+(busyNow?'disabled':'')+'>DISMISS</button>'
+          :'<button type="button" data-news-reopen="'+id+'" '+(busyNow?'disabled':'')+'>REOPEN</button>')+
+          '<button type="button" data-news-queue="'+id+'" '+(e.in_rank_queue||busyNow?'disabled':'')+'>'+
+          (e.in_rank_queue?'ALREADY IN MOVES':'QUEUE RANK REVIEW')+'</button>'+
+        '</div></article>';
+    }).join(''):'<div class="bbb-news-v3-empty">No matching sourced signals in the current result set. This does not mean every player is verified.</div>';
+    if(count)count.textContent=items.length+' shown / '+matches.length+' matching (first '+records().length+' fetched). '+
+      Number(evidence.roster_conflicts||0)+' roster-team conflicts require verification.';
+    if(matches.length>shown){
+      grid.insertAdjacentHTML('beforeend','<div class="bbb-news-v3-empty"><button type="button" class="small-btn" data-news-more>SHOW MORE SIGNALS</button></div>');
+    }
+  }
+  async function load(force=false){
+    if(loading)return;
+    if(loaded&&!force){render();return}
+    loading=true;
+    const btn=$('#newsIntelV3Refresh');
+    if(btn){btn.disabled=true;btn.textContent='CHECKING FEEDS…'}
+    try{
+      const next=await rpc('admin_get_news_intelligence_v3',{p_limit:100});
+      if(!next||!Array.isArray(next.events))throw new Error('Incomplete news response');
+      evidence=next;loaded=true;render();
+    }catch(e){
+      console.error('News Intelligence V3:',e);
+      const host=$('#newsIntelV3Grid');
+      if(host)host.innerHTML='<div class="bbb-news-v3-empty">Unable to read backend evidence: '+escText(e.message)+'. <button data-news-retry type="button">RETRY</button></div>';
+    }finally{
+      loading=false;
+      if(btn){btn.disabled=false;btn.textContent='REFRESH NEWS'}
+    }
+  }
+  async function review(id,action){
+    if(busy.has(id))return;
+    busy.add(id);render();
+    try{
+      await rpc('admin_set_news_signal_state_v3',{p_event_id:id,p_action:action});
+      await load(true);
+    }catch(e){alert('Could not update source signal: '+e.message)}
+    finally{busy.delete(id);render()}
+  }
+  async function queue(id){
+    const e=records().find(x=>Number(x.id)===id);
+    if(!e||e.in_rank_queue||busy.has(id))return;
+    busy.add(id);render();
+    try{
+      await rpc('admin_queue_ranking_move',{
+        p_player_key:e.player_key,p_recommended_rank:null,
+        p_reason:'NEWS SOURCE — confirm official team/NFL report before any rank action. '+e.description+
+          '. Source: '+e.source_url+'. No target rank suggested; evaluate dynasty relevance.',
+        p_priority:e.signal==='practice_squad_promotion'||e.signal==='injured_reserve'?2:3,
+        p_source:'nfl_news_v3_manual_review',p_confidence:'source-observed',p_trigger_update_id:null
+      });
+      e.in_rank_queue=true;
+      await load(true);
+    }catch(err){alert('Could not queue ranking review: '+err.message)}
+    finally{busy.delete(id);render()}
+  }
+  function bind(){
+    const panel=$('#newsIntelV3');
+    if(!panel||panel.dataset.newsIntelBound==='1')return;
+    panel.dataset.newsIntelBound='1';
+    panel.addEventListener('click',evt=>{
+      const b=evt.target.closest('button');
+      if(!b||!panel.contains(b))return;
+      if(b.id==='newsIntelV3Refresh'||b.hasAttribute('data-news-retry')){void load(true);return}
+      if(b.dataset.bbbNewsFilter){filter=b.dataset.bbbNewsFilter;shown=20;render();return}
+      if(b.hasAttribute('data-news-more')){shown+=20;render();return}
+      if(b.dataset.newsPlayer){window.openBBBPlayerWorkspace?.(b.dataset.newsPlayer,'activity');return}
+      for(const [key,action] of [['newsReviewed','reviewed'],['newsDismiss','dismiss'],['newsReopen','reopen']]){
+        if(b.dataset[key]){void review(Number(b.dataset[key]),action);return}
+      }
+      if(b.dataset.newsQueue){void queue(Number(b.dataset.newsQueue))}
+    });
+    $('#newsIntelV3Search')?.addEventListener('input',()=>{shown=20;render()});
+  }
+  const beforePage=page;
+  page=function(name){
+    beforePage(name);
+    if(name==='automations'){
+      bind();
+      if(!loaded&&!loading)void load(false);
+      else render();
+    }
+  };
+  document.addEventListener('DOMContentLoaded',bind,{once:true});
+  window.BBBNewsIntelligenceV3={load,render};
+})();
