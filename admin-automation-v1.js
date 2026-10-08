@@ -541,6 +541,115 @@
     }catch(err){alert('Could not queue ranking review: '+err.message)}
     finally{busy.delete(id);render()}
   }
+
+  function closeApply(){
+    const overlay=$('#newsApplyOverlay');
+    if(overlay)overlay.hidden=true;
+    selectedApply=null;
+  }
+  function openApply(id){
+    const e=records().find(x=>Number(x.id)===id);
+    if(!e||e.review_status==='applied'||e.review_status==='dismissed')return;
+    const overlay=$('#newsApplyOverlay');
+    if(!overlay)return;
+    const oldTeam=String(e.current_team||'FA').trim().toUpperCase();
+    const target=(e.category==='Roster'&&e.team&&e.team!==oldTeam)
+      ?String(e.team).trim().toUpperCase():oldTeam;
+    const teamChange=target!==oldTeam;
+    selectedApply={event:e,id,oldTeam,target,teamChange};
+    $('#newsApplyPlayer').textContent=e.name;
+    $('#newsApplyOldTeam').textContent=oldTeam;
+    $('#newsApplyProposedTeam').textContent=target+(teamChange?' · CHANGE PROPOSED':' · NO TEAM CHANGE');
+    $('#newsApplyRank').textContent='#'+e.overall_rank+' · WILL NOT MOVE';
+    const row=$('#newsApplyRosterRow'),desig=$('#newsApplyDesignation');
+    row.hidden=!teamChange;
+    desig.required=teamChange;
+    desig.value=teamChange?String(e.proposed_designation||''):'';
+    const date=String(e.verified_official_date||e.published_at||'').slice(0,10);
+    $('#newsApplyDate').value=date;
+    $('#newsApplyDate').max=new Date().toLocaleDateString('en-CA',{timeZone:'America/Chicago'});
+    $('#newsApplySource').value=e.verified_official_url||e.rank_official_url||'';
+    $('#newsApplyNote').value=e.suggested_note||
+      (e.name+': '+e.description+
+      '. Confirm the transaction and current roster designation against the official NFL/team report before saving this note.');
+    $('#newsApplyConfirmed').checked=false;
+    const status=$('#newsApplyStatus');
+    status.textContent=e.verified_official_url
+      ?'Official source evidence found. Review the link, date, roster designation and note before applying.'
+      :'No official report confirmed for this signal. Find and enter the official transaction/source link and correct date; do not approve an ESPN-only alert.';
+    status.dataset.state='info';
+    $('#newsApplySubmit').disabled=false;
+    $('#newsApplySubmit').textContent='APPLY VERIFIED UPDATE';
+    overlay.hidden=false;
+    $('#newsApplySource').focus();
+  }
+  async function refreshPlayerViews(){
+    const jobs=[];
+    if(typeof loadBoard==='function')jobs.push(loadBoard());
+    if(typeof loadProfiles==='function')jobs.push(loadProfiles());
+    if(typeof loadReviewQueue==='function')jobs.push(loadReviewQueue());
+    await Promise.allSettled(jobs);
+    try{
+      if(typeof renderPlayers==='function')renderPlayers();
+      if(typeof renderReviewQueue==='function')renderReviewQueue();
+      if(typeof renderCommandDashboard==='function')renderCommandDashboard();
+    }catch(err){console.warn('Refresh player views after news apply:',err)}
+  }
+  async function submitApply(evt){
+    evt.preventDefault();
+    if(!selectedApply)return;
+    const {event:e,id,oldTeam,target,teamChange}=selectedApply;
+    if(busy.has(id))return;
+    const confirmed=$('#newsApplyConfirmed');
+    if(!confirmed?.checked){
+      $('#newsApplyStatus').textContent='Confirm the official source and player details before applying.';
+      return;
+    }
+    const designation=teamChange?$('#newsApplyDesignation').value:null;
+    if(teamChange&&!designation){
+      $('#newsApplyStatus').textContent='Choose the exact verified roster designation.';
+      return;
+    }
+    const url=$('#newsApplySource').value.trim();
+    const day=$('#newsApplyDate').value;
+    const note=$('#newsApplyNote').value.trim();
+    if(!url||!day||!note){$('#newsApplyStatus').textContent='Source, date and factual note are required.';return}
+    const btn=$('#newsApplySubmit'),status=$('#newsApplyStatus');
+    busy.add(id);
+    btn.disabled=true;
+    btn.textContent='APPLYING…';
+    status.dataset.state='info';
+    status.textContent='Saving the team, sourced timeline note, verification and audit record together…';
+    try{
+      const result=await rpc('admin_apply_verified_news_v1',{
+        p_event_id:id,
+        p_expected_team:oldTeam,
+        p_new_team:target,
+        p_designation:designation,
+        p_official_url:url,
+        p_event_date:day,
+        p_update_note:note
+      });
+      if(!['applied','already_applied'].includes(result?.status))throw new Error('No confirmed apply result returned');
+      closeApply();
+      await Promise.allSettled([load(true),refreshPlayerViews()]);
+      const message=result.status==='already_applied'
+        ?e.name+' was already applied; the existing update was reused.'
+        :e.name+' updated: '+oldTeam+' → '+target+'. Dated note and source saved; ranking unchanged.';
+      const notice=$('#newsIntelV3Notice');
+      if(notice){notice.hidden=false;notice.textContent=message}
+      else alert(message);
+    }catch(err){
+      status.dataset.state='error';
+      status.textContent='Nothing was applied: '+String(err.message||err);
+      btn.disabled=false;
+      btn.textContent='APPLY VERIFIED UPDATE';
+    }finally{
+      busy.delete(id);
+      render();
+    }
+  }
+
   function bind(){
     const panel=$('#newsIntelV3');
     if(!panel||panel.dataset.newsIntelBound==='1')return;
@@ -559,6 +668,15 @@
       if(b.dataset.newsQueue){void queue(Number(b.dataset.newsQueue))}
     });
     $('#newsIntelV3Search')?.addEventListener('input',()=>{shown=20;render()});
+    $('#newsApplyForm')?.addEventListener('submit',evt=>{void submitApply(evt)});
+    $('#newsApplyCancel')?.addEventListener('click',closeApply);
+    $('#newsApplyClose')?.addEventListener('click',closeApply);
+    $('#newsApplyOverlay')?.addEventListener('click',evt=>{
+      if(evt.target===$('#newsApplyOverlay'))closeApply();
+    });
+    document.addEventListener('keydown',evt=>{
+      if(evt.key==='Escape'&&!$('#newsApplyOverlay')?.hidden)closeApply();
+    });
   }
   const beforePage=page;
   page=function(name){
