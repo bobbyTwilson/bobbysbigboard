@@ -484,43 +484,87 @@ function showMoveQueueNotice(message,warn=false){
   clearTimeout(showMoveQueueNotice.timer);
   showMoveQueueNotice.timer=setTimeout(()=>el.classList.add('hide'),6500);
 }
+let rankingDecisionSaving=false;
+
 async function refreshRankingDecisionState(){
+  // The database commit is already complete. Refresh only the relevant board
+  // and queue here; the dashboard/brief must never delay an approval result.
   commandBrief=null;
-  await Promise.all([loadBoard(),loadRankingMoveQueue(),loadReviewQueue(),loadActivity(),loadDataHealth()]);
-  await loadCommandBrief(true);
-  renderRankings();renderPlayers();renderRankingMoveQueue();renderReviewQueue();renderDataHealth();renderCommandDashboard();
+  const results=await Promise.allSettled([loadBoard(),loadRankingMoveQueue()]);
+  if(results[0].status==='fulfilled'){
+    renderRankings();renderPlayers();
+  }else{
+    console.warn('BBB ranking board refresh after saved decision failed',results[0].reason);
+  }
+  if(results[1].status==='fulfilled')renderRankingMoveQueue();
+  else console.warn('BBB ranking queue refresh after saved decision failed',results[1].reason);
+  renderCommandDashboard();
+  // The broad review list is noncritical. Keep it current without blocking ranking actions.
+  void loadReviewQueue().then(()=>renderReviewQueue()).catch(e=>console.warn('BBB background review refresh',e));
 }
+
 async function resolveRankingMove(id,action,btn,overrideRank){
-  const x=rankingMoveQueue.find(v=>Number(v.id)===Number(id));if(!x)return;
+  if(rankingDecisionSaving)return;
+  const x=rankingMoveQueue.find(v=>Number(v.id)===Number(id));
+  if(!x||x.status!=='pending')return;
   let finalRank=null;
   if(action==='approve'){
     const input=$('[data-move-target="'+id+'"]');
     finalRank=Number.isInteger(overrideRank)?overrideRank:Number(input?.value);
     if(!Number.isInteger(finalRank)||finalRank<1||finalRank>board.length){
-      alert('Choose a final rank from 1 to '+board.length+'.');
+      showMoveQueueNotice('Choose a final rank from 1 to '+board.length+'.',true);
       input?.focus();
       return;
     }
   }
+  rankingDecisionSaving=true;
   const old=btn?.textContent;
-  if(btn){btn.disabled=true;btn.textContent=action==='approve'?'APPLYING…':'REJECTING…'}
+  if(btn){btn.disabled=true;btn.textContent=action==='approve'?'SAVING RANK…':'SAVING DECISION…';}
+  const finish=(savedAction,savedRank,alreadySaved=false)=>{
+    // A confirmed database commit is the success boundary—not six more
+    // independent network requests. Only remove an item on confirmation.
+    rankingMoveQueue=rankingMoveQueue.filter(v=>Number(v.id)!==Number(id));
+    renderRankingMoveQueue();
+    const rank=Number(savedRank);
+    const prefix=alreadySaved?'Already saved: ':'Saved: ';
+    if(savedAction==='approve'){
+      showMoveQueueNotice(prefix+x.name+(rank===Number(x.current_rank)?' held at #'+rank:' approved at #'+rank)+'. Ranking queue updated.');
+    }else{
+      showMoveQueueNotice(prefix+x.name+' recommendation rejected. No move made.');
+    }
+    void refreshRankingDecisionState().catch(e=>console.warn('BBB nonblocking post-decision refresh',e));
+  };
   try{
     const modified=action==='approve'&&x.recommended_rank!=null&&Number(x.recommended_rank)!==finalRank;
     const note=modified?'Approved with modified target: recommended #'+x.recommended_rank+', final #'+finalRank:null;
     const result=await rpc('admin_resolve_ranking_move',{p_id:id,p_action:action,p_final_rank:finalRank,p_note:note});
-    await refreshRankingDecisionState();
-    if(action==='approve'){
-      const oldRank=Number(result?.old_rank??x.current_rank),newRank=Number(result?.final_rank??finalRank);
-      showMoveQueueNotice(newRank===oldRank?x.name+' held at #'+newRank+' — decision resolved.':x.name+' moved from #'+oldRank+' to #'+newRank+' and the queue item is resolved.');
-    }else{
-      showMoveQueueNotice(x.name+' recommendation rejected. The live rank stayed at #'+x.current_rank+'.');
+    if(result?.status!=='applied'&&result?.status!=='already_resolved'){
+      throw new Error('The database did not confirm the ranking decision.');
     }
-  }catch(e){
-    alert(e.message);
-    if(btn){btn.disabled=false;btn.textContent=old}
+    if(result.action!==action)throw new Error('A different ranking decision was already saved; refresh the queue.');
+    finish(result.action,result.final_rank,result.status==='already_resolved');
+  }catch(error){
+    // Network timeouts are ambiguous: the server may have committed already.
+    // Reconcile with the actual recorded decision before allowing a retry.
+    let status=null;
+    try{
+      const records=await rpc('admin_get_ranking_move_queue',{p_include_resolved:true,p_limit:500});
+      status=Array.isArray(records)?records.find(v=>Number(v.id)===Number(id)):null;
+    }catch(recheckError){console.warn('BBB ranking decision recheck failed',recheckError);}
+    if(status&&status.status!=='pending'){
+      finish(status.status==='approved'?'approve':'reject',status.resolved_rank,true);
+    }else{
+      if(btn){btn.disabled=false;btn.textContent=old;}
+      const confirmedPending=status?.status==='pending';
+      showMoveQueueNotice(confirmedPending
+        ?'The decision was not saved. Please try again. '+String(error.message||error)
+        :'Connection interrupted. Could not confirm whether the decision was saved. Use Refresh Queue before retrying.',true);
+      console.error('BBB ranking approval failed or could not be verified',error);
+    }
+  }finally{
+    rankingDecisionSaving=false;
   }
 }
-
 
 function scannerPct(v,digits=1){
   const n=Number(v);return Number.isFinite(n)?(n*100).toFixed(digits)+'%':'—';
