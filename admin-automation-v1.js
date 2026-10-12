@@ -956,7 +956,8 @@
       '<div id="bbbIntelActionMessage" class="bbb-intel-action-message" role="status" hidden></div>'+      '<div class="bbb-intel-content" id="bbbIntelContent" aria-live="polite"></div>'+
       '<div class="bbb-intel-footer"><span id="bbbIntelCount"></span>'+
       '<button class="bbb-intel-button bbb-intel-more" id="bbbIntelMore" type="button" hidden>Show more</button></div></div>'+
-      '<div class="bbb-intel-trust"><strong>Owner control:</strong> Research and dismissal actions only change the review workflow. Only a confirmed official source plus your explicit approval can apply a player note; rankings still require separate approval.</div>'+      '<div class="bbb-intel-apply-overlay" id="bbbIntelApplyOverlay" hidden>'+      '<form class="bbb-intel-apply-dialog" id="bbbIntelApplyForm" aria-label="Review verified player update">'+      '<div class="bbb-intel-apply-title"><div><span class="bbb-intel-eyebrow">OFFICIAL SOURCE REVIEW</span><h3 id="bbbIntelApplyName">Review player update</h3></div><button type="button" data-intel-close="1" class="bbb-intel-button">Close</button></div>'+      '<p id="bbbIntelApplyDescription" class="bbb-intel-apply-description"></p>'+      '<div class="bbb-intel-apply-meta"><span id="bbbIntelApplyTeam"></span><span id="bbbIntelApplyDate"></span><a id="bbbIntelApplySource" target="_blank" rel="noopener noreferrer">Open official source ↗</a></div>'+      '<label class="bbb-intel-apply-label" for="bbbIntelApplyNote">Verified player note (you can edit before applying)</label>'+      '<textarea id="bbbIntelApplyNote" rows="6" maxlength="1200" minlength="45" required></textarea>'+      '<p class="bbb-intel-apply-hint">This saves a source-backed player update. It does not change the player’s team, roster designation, or dynasty ranking. Review the dated official report first.</p>'+      '<p id="bbbIntelApplyStatus" class="bbb-intel-apply-status" role="status"></p>'+      '<div class="bbb-intel-apply-buttons"><button type="button" data-intel-close="1" class="bbb-intel-button">Cancel</button><button type="submit" class="bbb-intel-button bbb-intel-button-primary" id="bbbIntelApplySubmit">Apply verified note</button></div></form></div>';
+      '<div class="bbb-intel-trust"><strong>Owner control:</strong> Research and dismissal actions only change the review workflow. Only a confirmed official source plus your explicit approval can apply a player note; rankings still require separate approval.</div>'+      '<div class="bbb-intel-apply-overlay" id="bbbIntelApplyOverlay" hidden>'+      '<form class="bbb-intel-apply-dialog" id="bbbIntelApplyForm" aria-label="Review verified player update">'+      '<div class="bbb-intel-apply-title"><div><span class="bbb-intel-eyebrow">OFFICIAL SOURCE REVIEW</span><h3 id="bbbIntelApplyName">Review player update</h3></div><button type="button" data-intel-close="1" class="bbb-intel-button">Close</button></div>'+      '<p id="bbbIntelApplyDescription" class="bbb-intel-apply-description"></p>'+      '<div class="bbb-intel-apply-meta"><span id="bbbIntelApplyTeam"></span><span id="bbbIntelApplyDate"></span><a id="bbbIntelApplySource" target="_blank" rel="noopener noreferrer">Open official source ↗</a></div>'+      '<div class="bbb-intel-current"><strong>Current latest player note</strong><p id="bbbIntelCurrentNote">Loading the latest note…</p></div>'+ 
+       '<label class="bbb-intel-apply-label" for="bbbIntelApplyNote">New latest note — edit this before approving</label>'+      '<textarea id="bbbIntelApplyNote" rows="6" maxlength="1200" minlength="45" required></textarea>'+      '<p class="bbb-intel-apply-hint" id="bbbIntelReplaceHint">Approval replaces the latest player note and also saves a sourced timeline entry. Rankings and roster assignments stay unchanged.</p>'+      '<p id="bbbIntelApplyStatus" class="bbb-intel-apply-status" role="status"></p>'+      '<div class="bbb-intel-apply-buttons"><button type="button" data-intel-close="1" class="bbb-intel-button">Cancel</button><button type="submit" class="bbb-intel-button bbb-intel-button-primary" id="bbbIntelApplySubmit">Approve as latest note</button></div></form></div>';
     metrics.insertAdjacentElement('afterend',root);
     root.addEventListener('click',function(ev){
       var b=ev.target.closest('button');if(!b)return;
@@ -983,7 +984,10 @@
       var ready=arr(data&&data.ready_official_reports).map(function(a){
         return {name:a.name,player_key:a.player_key,event_id:a.event_id,detail:a.description,
           date:a.published_at,source:a.source,source_url:a.official_url,official:true,
-          secondary:'Official report dated '+a.official_date+' · review the player note before applying'};
+          stale:Boolean(a.latest_note_date&&a.official_date<a.latest_note_date),
+          secondary:a.latest_note_date&&a.official_date<a.latest_note_date
+            ?'Official report dated '+a.official_date+' is older than the current latest note ('+a.latest_note_date+'). Won’t overwrite newer news.'
+            :'Official report dated '+a.official_date+' · approval replaces the current latest note'};
       });
       var alerts=arr(data&&data.alerts).map(function(a){
         return {name:a.name,player_key:a.player_key||null,event_id:a.event_id,
@@ -1030,14 +1034,16 @@
     var mode=tab==='verification'||tab==='dismissed';
     var icon=item.official?'OFFICIAL DOCUMENT ATTACHED':item.dismissed?'DISMISSED REPORT':
       mode?'INDEPENDENT SOURCE CHECK':tab==='rankings'?'EVIDENCE RECHECK':'ROLE WATCH';
-    var status=item.official?'Ready for review':item.dismissed?'Dismissed':
+    var status=item.official?(item.stale?'Older source':'Ready for review'):item.dismissed?'Dismissed':
       tab==='verification'?(item.research_status==='requested'?'Research requested':
       item.research_status==='unavailable'?'Cannot verify automatically':'Unverified'):
       tab==='rankings'?'Previously resolved':'Monitoring';
-    var tone=item.official?'good':item.dismissed?'neutral':tab==='teammates'?'cyan':'amber';
+    var tone=item.official?(item.stale?'neutral':'good'):item.dismissed?'neutral':tab==='teammates'?'cyan':'amber';
     var actions='';
     if(tab==='verification'){
-      if(item.official)actions='<button type="button" data-intel-apply="'+Number(item.event_id)+'" class="bbb-intel-strong-action">Review &amp; apply note</button>';
+      if(item.official)actions=item.stale
+        ?'<span class="bbb-intel-small-label">Newer latest note already exists · historical source only</span>'
+        :'<button type="button" data-intel-apply="'+Number(item.event_id)+'" class="bbb-intel-strong-action">Review &amp; replace latest note</button>';
       else if(item.event_id){
         if(item.research_status==='unavailable' && item.research_attempts>=4){
           actions+='<span class="bbb-intel-small-label">Repeated research exhausted</span>';
@@ -1186,10 +1192,63 @@
     }catch(err){notify(err&&err.message||'Failed to update the report',true)}
     finally{busy=false}
   }
+  function composeHumanFootballNote(report){
+    // This is an evidence-led editorial draft, not a claim of new medical findings.
+    // All numeric facts come from genuine sourced Week 5 rows returned by BBB.
+    var teamNames={
+      ARI:'Cardinals',ATL:'Falcons',BAL:'Ravens',BUF:'Bills',CAR:'Panthers',CHI:'Bears',
+      CIN:'Bengals',CLE:'Browns',DAL:'Cowboys',DEN:'Broncos',DET:'Lions',GB:'Packers',
+      HOU:'Texans',IND:'Colts',JAX:'Jaguars',KC:'Chiefs',LAC:'Chargers',LAR:'Rams',
+      LV:'Raiders',MIA:'Dolphins',MIN:'Vikings',NE:'Patriots',NO:'Saints',NYG:'Giants',
+      NYJ:'Jets',PHI:'Eagles',PIT:'Steelers',SEA:'Seahawks',SF:'49ers',TB:'Buccaneers',
+      TEN:'Titans',WAS:'Commanders'
+    };
+    var name=String(report.name||'The player');
+    var team=teamNames[report.current_team]||String(report.current_team||'team');
+    var date=String(report.official_date||'').split('-');
+    var month=Number(date[1]),day=Number(date[2]);
+    var months=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var displayedDate=(months[month]||'Recent')+' '+(day||'');
+    var suggested=String(report.suggested_note||'');
+    var injury=(suggested.match(/with ([A-Za-z][A-Za-z\s/-]{1,60}?) listed as the injury/i)||[])[1];
+    if(injury)injury=injury.toLowerCase().replace(/\s*\/\s*/g,' and ').replace(/\s+/g,' ').trim();
+    var role=String(report.position||'').toUpperCase();
+    var condition=injury?(injury.includes(' and ')?injury+' issues':injury+' issue'):'injury concern';
+    var game=report.recent_game||null;
+    var lead=injury?
+      name+' is dealing with a '+condition+' and appeared on the '+team+"' "+displayedDate+' injury report.':
+      name+' showed up on the '+team+"' "+displayedDate+' injury report, so his next-game availability is worth checking.';
+    var stats='';
+    if(game&&Number(game.week)===5){
+      var pct=game.snap_share!=null?Math.round(Number(game.snap_share)*100):null;
+      var snaps=pct!=null&&Number.isFinite(pct)?' while playing '+pct+'% of the offensive snaps':'';
+      if(role==='WR'||role==='TE'){
+        stats='In Week 5, he drew '+(Number(game.targets)||0)+' targets and caught '+(Number(game.receptions)||0)+
+          ' passes for '+(Number(game.receiving_yards)||0)+' yards'+snaps+'.';
+      }else if(role==='RB'){
+        stats='His Week 5 workload was '+(Number(game.carries)||0)+' carries for '+
+          (Number(game.rushing_yards)||0)+' yards plus '+(Number(game.receptions)||0)+
+          ' catches on '+(Number(game.targets)||0)+' targets'+snaps+'.';
+      }else if(role==='QB'&&game.passing_yards!=null){
+        stats='In Week 5, he threw for '+Number(game.passing_yards)+' yards and '+
+           (Number(game.passing_tds)||0)+' touchdowns'+snaps+'.';
+      }
+    }
+    var follow=role==='RB'?
+      'I’m watching the next practice report and his availability before projecting what happens to his backfield workload.':
+      role==='QB'?
+      'The next practice update and official designation should tell us more about his availability; I wouldn’t assume a missed start from the injury listing alone.':
+      'I’d keep an eye on his next practice participation before making any assumptions about his availability or target volume.';
+    if(String(report.signal||'').includes('injury_out')&&!stats){
+      follow='The next update to watch is whether he gets back on the practice field before the following game, rather than assuming this is a long-term absence.';
+    }
+    return [lead,stats,follow].filter(Boolean).join(' ').slice(0,1200);
+  }
   function openOfficialReview(id){
     if(busy||!data)return;
     var report=arr(data.ready_official_reports).find(function(r){return Number(r.event_id)===id});
-    if(!report || !https(report.official_url) || !report.official_date ||
+    if(!report || (report.latest_note_date&&report.official_date<report.latest_note_date) ||
+      !https(report.official_url) || !report.official_date ||
       !/^[A-Z]{2,3}$/.test(String(report.current_team||''))){
       notify('This report is not ready for a safe official-source apply. Refresh or open News Intelligence.',true);
       return;
@@ -1201,12 +1260,10 @@
     root.querySelector('#bbbIntelApplyTeam').textContent='Current team: '+report.current_team+' (no team change)';
     root.querySelector('#bbbIntelApplyDate').textContent='Official report date: '+report.official_date;
     root.querySelector('#bbbIntelApplySource').href=https(report.official_url);
-    var note=String(report.suggested_note||'').trim();
-    if(note.length<45||note.length>1200||!note.toLowerCase().includes(String(report.name||'').toLowerCase())){
-      note=report.name+' — dated official report ('+report.official_date+'): '+
-        String(report.description||'Injury/availability update')+
-        '. Review the linked source for current availability before considering a dynasty ranking move.';
-    }
+    var note=composeHumanFootballNote(report);
+    root.querySelector('#bbbIntelCurrentNote').textContent=String(report.latest_note||'No previous latest note was saved.');
+    root.querySelector('#bbbIntelReplaceHint').textContent=
+       'On approval, this exact text becomes the player’s latest note (replacing the previous note) and a verified timeline entry. The ranking and team remain unchanged.';
     root.querySelector('#bbbIntelApplyNote').value=note.slice(0,1200);
     root.querySelector('#bbbIntelApplyStatus').textContent='';
     overlay.hidden=false;
@@ -1227,23 +1284,22 @@
       status.textContent='Please use a factual note between 45 and 1,200 characters containing the player’s name.';
       return;
     }
-    if(!window.confirm('Apply this official-source player note for '+report.name+'? This will not change the dynasty ranking.'))return;
+    if(!window.confirm('Replace '+report.name+'’s latest note with your approved wording? A sourced history entry is also saved. Dynasty ranking stays unchanged.'))return;
     busy=true;button.disabled=true;button.textContent='Saving verified update…';status.textContent='Checking the current team and source date…';
     try{
-      var response=await rpc('admin_apply_verified_news_v2',{
+      var response=await rpc('admin_apply_top500_latest_note_v5',{
         p_event_id:Number(report.event_id),p_expected_team:report.current_team,
-        p_new_team:report.current_team,p_designation:'',p_event_date:report.official_date,
-        p_update_note:note
+        p_event_date:report.official_date,p_update_note:note
       });
-      if(!['applied','already_applied'].includes(response&&response.status))throw new Error('BBB did not confirm the player update.');
+      if(response?.is_latest_note!==true)throw new Error('BBB did not confirm that the exact approved text became the latest note.');
       busy=false;closeOfficialReview();
-      notify(report.name+' — source-backed note applied. Dynasty ranking unchanged. Open Ranking Moves to review potential impact.',false);
+      notify(report.name+' — your approved wording is now the player’s latest note. It is also saved to the verified timeline. Dynasty ranking unchanged.',false);
       if(window.BBBNewsIntelligenceV3&&typeof window.BBBNewsIntelligenceV3.load==='function'){
         void window.BBBNewsIntelligenceV3.load(true);
       }
       await load(true);
     }catch(err){status.textContent=err&&err.message||'Could not save the update';notify('Could not apply the report. See the source-review form for details.',true)}
-    finally{busy=false;button.disabled=false;button.textContent='Apply verified note'}
+    finally{busy=false;button.disabled=false;button.textContent='Approve as latest note'}
   }
   function attach(){
     init();
