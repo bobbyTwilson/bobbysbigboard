@@ -897,3 +897,236 @@
   document.addEventListener('DOMContentLoaded',bind,{once:true});
   window.BBBNewsIntelligenceV3={load,render};
 })();
+
+
+/* BBB Top 500 Intelligence V4 — read-only, owner-authorized dashboard.
+   Reuses the existing admin RPC session and never writes rankings or injury data. */
+(function(){
+  'use strict';
+  var root=null, data=null, loading=false, loaded=false, tab='verification', query='', limit=12;
+  var titles={verification:'Verification queue',teammates:'Teammate impacts',rankings:'Ranking evidence',coverage:'Source coverage'};
+  function safe(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+  function arr(value){return Array.isArray(value)?value:[]}
+  function n(value){var v=Number(value);return Number.isFinite(v)?v:0}
+  function number(value){return value==null?'—':n(value).toLocaleString()}
+  function when(value){
+    if(!value)return 'Time not supplied';
+    var d=new Date(value);if(Number.isNaN(d.getTime()))return 'Time not supplied';
+    return d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  }
+  function https(value){
+    try{var u=new URL(value);return u.protocol==='https:'?u.href:null}catch(_){return null}
+  }
+  function tag(text,level){
+    return '<span class="bbb-intel-tag bbb-intel-tag--'+safe(level||'neutral')+'">'+safe(text)+'</span>';
+  }
+  function metric(name,value,detail,level){
+    return '<div class="bbb-intel-metric"><span>'+safe(name)+'</span><strong class="'+safe(level||'')+'">'+number(value)+'</strong><small>'+safe(detail)+'</small></div>';
+  }
+  function openPlayer(key){
+    if(typeof window.openBBBPlayerWorkspace==='function'){
+      window.openBBBPlayerWorkspace(key,'activity');
+    }else if(typeof page==='function'){page('players')}
+  }
+  function init(){
+    if(root)return;
+    var pageEl=document.querySelector('#pageAutomations');
+    var metrics=pageEl&&pageEl.querySelector('.auto-kpis');
+    if(!metrics)return;
+    root=document.createElement('section');
+    root.id='bbbIntelOpsV4';
+    root.className='bbb-intel-ops';
+    root.setAttribute('aria-label','Top 500 Intelligence');
+    root.innerHTML='<div class="bbb-intel-head">'+
+      '<div><div class="bbb-intel-eyebrow">AUTOMATION CENTER / INTELLIGENCE</div>'+
+      '<h2>Top 500 <span>Intelligence</span></h2>'+
+      '<p>Verified sources, real player impact, and decisions that remain yours.</p></div>'+
+      '<div class="bbb-intel-head-actions"><span id="bbbIntelFreshness" class="bbb-intel-fresh">NOT LOADED</span>'+
+      '<button class="bbb-intel-button" id="bbbIntelRefresh" type="button">Refresh intelligence</button></div></div>'+
+      '<div class="bbb-intel-metrics" id="bbbIntelMetrics" aria-live="polite">'+
+      '<div class="bbb-intel-empty">Opening the live intelligence feed…</div></div>'+
+      '<div class="bbb-intel-main"><div class="bbb-intel-main-head"><div><h3>Research &amp; player impact</h3>'+
+      '<p>Unverified reports stay separate from confirmed information and ranking approvals.</p></div>'+
+      '<input id="bbbIntelSearch" type="search" aria-label="Filter intelligence results" placeholder="Search players or reports…"></div>'+
+      '<div class="bbb-intel-tabs" id="bbbIntelTabs" role="tablist" aria-label="Intelligence sections">'+
+      '<button type="button" data-intel-tab="verification" aria-selected="true">Verify reports</button>'+
+      '<button type="button" data-intel-tab="teammates" aria-selected="false">Teammate impact</button>'+
+      '<button type="button" data-intel-tab="rankings" aria-selected="false">Ranking audits</button>'+
+      '<button type="button" data-intel-tab="coverage" aria-selected="false">Source coverage</button></div>'+
+      '<div class="bbb-intel-content" id="bbbIntelContent" aria-live="polite"></div>'+
+      '<div class="bbb-intel-footer"><span id="bbbIntelCount"></span>'+
+      '<button class="bbb-intel-button bbb-intel-more" id="bbbIntelMore" type="button" hidden>Show more</button></div></div>'+
+      '<div class="bbb-intel-trust"><strong>Owner control:</strong> This dashboard only reads intelligence. Unverified headlines never become facts here, and ranking moves still need your approval.</div>';
+    metrics.insertAdjacentElement('afterend',root);
+    root.addEventListener('click',function(ev){
+      var b=ev.target.closest('button');if(!b)return;
+      if(b.id==='bbbIntelRefresh'){void load(true);return}
+      if(b.dataset.intelTab){tab=b.dataset.intelTab;limit=12;draw();return}
+      if(b.dataset.intelPlayer){openPlayer(b.dataset.intelPlayer);return}
+      if(b.dataset.intelMoves){if(typeof page==='function')page('moves');return}
+      if(b.id==='bbbIntelMore'){limit+=12;draw();return}
+    });
+    root.querySelector('#bbbIntelSearch').addEventListener('input',function(ev){
+      query=ev.target.value.toLowerCase().trim();limit=12;draw();
+    });
+    var mainRefresh=document.getElementById('autoRefresh');
+    if(mainRefresh)mainRefresh.addEventListener('click',function(){void load(true)});
+  }
+  function getItems(){
+    var entries=[];
+    if(tab==='verification')entries=arr(data&&data.alerts).map(function(a){
+      return {name:a.name,player_key:null,detail:a.description||a.reason||'New report',date:a.published_at,
+        priority:a.priority,source:a.source,source_url:a.source_url,secondary:a.reason};
+    });
+    if(tab==='teammates')entries=arr(data&&data.teammate_impacts).map(function(x){
+      return {name:x.name,player_key:x.player_key,detail:x.context,secondary:x.affected_player?
+        'Affected player: '+x.affected_player:'Potential teammate impact',date:x.trigger_date,
+        priority:x.impact_type==='injury_opportunity'?1:2,source:x.impact_type,
+        status:x.state,rank:x.current_rank_at_detection,move:x.suggested_rank};
+    });
+    if(tab==='rankings')entries=arr(data&&data.evidence_corrections).map(function(x){
+      return {name:x.name,detail:'The earlier Week '+x.week+' recommendation needs a closer look: '+
+        x.current_opportunities+' opportunities in Week '+x.week+' versus '+
+        x.previous_opportunities+' in Week '+x.comparison_week+'.',
+        secondary:'Previously #'+x.queued_from_rank+' → resolved #'+x.resolved_rank+
+        '. Your existing decision is preserved.',source:x.evidence_check,priority:1,
+        status:x.status};
+    });
+    return entries.filter(function(x){
+      if(!query)return true;
+      return [x.name,x.detail,x.secondary,x.source,x.status].join(' ').toLowerCase().includes(query);
+    });
+  }
+  function alertCard(item){
+    var sourceUrl=https(item.source_url);
+    var link=sourceUrl?'<a href="'+safe(sourceUrl)+'" target="_blank" rel="noopener noreferrer" class="bbb-intel-source-link">View source ↗</a>':'';
+    var icon=tab==='verification'?'SOURCE CHECK NEEDED':tab==='rankings'?'EVIDENCE RECHECK':'ROLE WATCH';
+    var status=tab==='verification'?'Unverified':tab==='rankings'?'Previously resolved':'Monitoring';
+    var statusTone=tab==='verification'?'amber':tab==='rankings'?'amber':'cyan';
+    return '<article class="bbb-intel-item"><div class="bbb-intel-item-top"><div class="bbb-intel-person">'+
+      '<span class="bbb-intel-small-label">'+safe(icon)+'</span><h4>'+safe(item.name||'Player report')+'</h4></div>'+
+      tag(status,statusTone)+'</div><p class="bbb-intel-detail">'+safe(item.detail||'No summary provided')+'</p>'+
+      (item.secondary?'<div class="bbb-intel-context">'+safe(item.secondary)+'</div>':'')+
+      '<div class="bbb-intel-meta"><span>'+safe(item.source||'BBB intelligence')+'</span>'+
+      (item.date?'<span>'+safe(when(item.date))+'</span>':'')+
+      (item.rank?'<span>Rank #'+number(item.rank)+'</span>':'')+
+      '<span class="bbb-intel-actions">'+link+
+      (item.player_key?'<button type="button" data-intel-player="'+safe(item.player_key)+'">Open player ↗</button>':'')+
+      (tab==='rankings'?'<button type="button" data-intel-moves="1">Ranking Moves ↗</button>':'')+
+      '</span></div></article>';
+  }
+  function coverageHtml(){
+    var week=data&&data.week_source_readiness||{};
+    var job=data&&data.latest_job||{};
+    var s=job.details||{};
+    var count=data&&data.verification_breakdown||{};
+    var expected=week.scheduled_games;
+    var games=week.sourced_games;
+    var percent=expected?n(games)/Math.max(1,n(expected))*100:0;
+    var coverageGood=week.status==='all_scheduled_games_in_source';
+    var lines=[
+      ['Latest week',week.season&&week.week?String(week.season)+' • Week '+week.week:'Unavailable'],
+      ['Scheduled games sourced',expected!=null?games+' of '+expected:'Schedule not confirmed'],
+      ['Ranked players with current-week stats',number(week.current_week_ranked_players)],
+      ['Ranked players with previous-week-only stats',number(week.prior_week_only_ranked_players)],
+      ['Players with no recent sourced game',number(week.no_current_or_prior_week_ranked_players)],
+      ['Last game-stat ingestion',week.last_stats_refresh?when(week.last_stats_refresh):'Not reported'],
+      ['Latest Top 500 job',job.run_at?when(job.run_at):'Not reported']
+    ];
+    var row=lines.map(function(pair){return '<div class="bbb-intel-coverage-row"><span>'+safe(pair[0])+'</span><strong>'+safe(pair[1])+'</strong></div>'}).join('');
+    var breakdown=Object.keys(count).sort().map(function(key){
+      var label=key.replaceAll('_',' ');
+      return '<div class="bbb-intel-breakdown"><span>'+safe(label)+'</span><strong>'+number(count[key])+'</strong></div>';
+    }).join('');
+    return '<div class="bbb-intel-coverage"><div class="bbb-intel-readiness"><span>'+
+      tag(coverageGood?'ALL SCHEDULED GAMES SOURCED':'PARTIAL / VERIFY COVERAGE',coverageGood?'good':'amber')+
+      '</span><h4>Week '+safe(week.week||'—')+' source readiness</h4>'+
+      '<p>Checking all 500 rankings does not mean every player has played, or that every scheduled game is present.</p>'+
+      '<div class="bbb-intel-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+
+      Math.min(100,Math.round(percent))+'"><i style="width:'+Math.min(100,percent)+'%"></i></div>'+
+      '<span class="bbb-intel-small-label">'+safe(week.missing_games==null?'Schedule validation still needed':
+        week.missing_games+' scheduled game(s) not yet sourced')+'</span></div>'+
+      '<div class="bbb-intel-coverage-table">'+row+'</div>'+
+      '<div class="bbb-intel-breakdown-wrap"><h4>How incoming alerts are classified</h4>'+
+      (breakdown||'<p>No verification breakdown available.</p>')+'</div></div>';
+  }
+  function draw(){
+    if(!root)return;
+    var metrics=root.querySelector('#bbbIntelMetrics'),content=root.querySelector('#bbbIntelContent');
+    var freshness=root.querySelector('#bbbIntelFreshness');
+    if(!data){
+      if(!loading)content.innerHTML='<div class="bbb-intel-empty">No intelligence data loaded. Use Refresh intelligence to reconnect.</div>';
+      return;
+    }
+    var last=data.latest_job||{};
+    freshness.textContent=last.success?'LAST SUCCESS • '+when(last.run_at):'CHECK JOB STATUS';
+    freshness.classList.toggle('bbb-intel-fresh--warn',!last.success);
+    metrics.innerHTML=
+      metric('Ranked players tracked',data.players_tracked,'of '+number(data.ranked_count)+' on the board')+
+      metric('Notes updated • 24h',data.notes_written_last_24h,'source-backed note history')+
+      metric('Reports needing research',data.unverified_material_alerts,'unverified • no auto rank move','bbb-intel-amber')+
+      metric('Teammate role watches',data.teammate_impact_watches,'awaiting post-event usage')+
+      metric('Rank moves to approve',data.awaiting_rank_approval,'manual approval required')+
+      metric('Older rank evidence to recheck',data.evidence_corrections_needing_review,'past decisions not reversed');
+    root.querySelectorAll('[data-intel-tab]').forEach(function(b){
+      var active=b.dataset.intelTab===tab;
+      b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');
+    });
+    if(tab==='coverage'){
+      content.innerHTML=coverageHtml();
+      root.querySelector('#bbbIntelCount').textContent='Source completeness and audit state';
+      root.querySelector('#bbbIntelMore').hidden=true;
+      return;
+    }
+    var items=getItems();
+    var visible=items.slice(0,limit);
+    content.innerHTML=visible.length?'<div class="bbb-intel-list">'+visible.map(alertCard).join('')+'</div>':
+      '<div class="bbb-intel-empty">No '+safe(titles[tab].toLowerCase())+
+      (query?' matching that search.':' currently listed here.')+'</div>';
+    root.querySelector('#bbbIntelCount').textContent='Showing '+visible.length+' of '+items.length+
+      (tab==='verification'?' research items (limited to latest 80)':'')+
+      (tab==='teammates'?' tracked teammate situations':'');
+    root.querySelector('#bbbIntelMore').hidden=visible.length>=items.length;
+  }
+  async function load(force){
+    init();if(!root||loading)return;
+    if(loaded&&!force){draw();return}
+    loading=true;
+    root.querySelector('#bbbIntelRefresh').disabled=true;
+    root.querySelector('#bbbIntelContent').innerHTML='<div class="bbb-intel-empty">Retrieving owner-only intelligence data…</div>';
+    try{
+      if(typeof rpc!=='function')throw new Error('Admin session has not initialized.');
+      var result=await rpc('admin_get_top500_intelligence_v2',{p_limit:80});
+      if(!result||typeof result!=='object')throw new Error('Unexpected intelligence response.');
+      data=result;loaded=true;draw();
+    }catch(err){
+      console.error('BBB Intelligence V4 unavailable',err);
+      root.querySelector('#bbbIntelContent').innerHTML=
+       '<div class="bbb-intel-error"><strong>Intelligence feed unavailable</strong>'+
+       '<p>'+safe(err&&err.message||'Could not load from the database.')+'</p>'+
+       '<button type="button" id="bbbIntelRefresh" class="bbb-intel-button">Retry connection</button></div>';
+      var failed=root.querySelector('#bbbIntelRefresh');
+      if(failed){failed.id='bbbIntelInlineRetry';failed.addEventListener('click',function(){void load(true)})}
+    }finally{
+      loading=false;
+      var refresh=root.querySelector('.bbb-intel-head-actions button');
+      if(refresh)refresh.disabled=false;
+    }
+  }
+  function attach(){
+    init();
+    if(typeof page!=='function')return;
+    if(page.__bbbIntelV4Wrapped)return;
+    var existingPage=page;
+    page=function(name){
+      var value=existingPage.apply(this,arguments);
+      if(name==='automations')void load(false);
+      return value;
+    };
+    page.__bbbIntelV4Wrapped=true;
+    if(document.querySelector('#pageAutomations:not(.hide)'))void load(false);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',attach,{once:true});
+  else attach();
+  window.BBBTop500Intelligence={load:load,refresh:function(){return load(true)}};
+})();
