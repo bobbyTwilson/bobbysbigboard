@@ -1219,18 +1219,18 @@
       name+' is dealing with '+(injury.includes(' and ')?condition:'a '+condition)+' and appeared on the '+team+"' "+displayedDate+' injury report.':
       name+' showed up on the '+team+"' "+displayedDate+' injury report, so his next-game availability is worth checking.';
     var stats='';
-    if(game&&Number(game.week)===5){
+    if(game&&Number.isInteger(Number(game.week))&&Number(game.week)>=1){
       var pct=game.snap_share!=null?Math.round(Number(game.snap_share)*100):null;
       var snaps=pct!=null&&Number.isFinite(pct)?' while playing '+pct+'% of the offensive snaps':'';
       if(role==='WR'||role==='TE'){
-        stats='In Week 5, he drew '+(Number(game.targets)||0)+' targets and caught '+(Number(game.receptions)||0)+
+        stats='In Week '+Number(game.week)+', he drew '+(Number(game.targets)||0)+' targets and caught '+(Number(game.receptions)||0)+
           ' passes for '+(Number(game.receiving_yards)||0)+' yards'+snaps+'.';
       }else if(role==='RB'){
-        stats='His Week 5 workload was '+(Number(game.carries)||0)+' carries for '+
+        stats='His Week '+Number(game.week)+' workload was '+(Number(game.carries)||0)+' carries for '+
           (Number(game.rushing_yards)||0)+' yards plus '+(Number(game.receptions)||0)+
           ' catches on '+(Number(game.targets)||0)+' targets'+snaps+'.';
       }else if(role==='QB'&&game.passing_yards!=null){
-        stats='In Week 5, he threw for '+Number(game.passing_yards)+' yards and '+
+        stats='In Week '+Number(game.week)+', he threw for '+Number(game.passing_yards)+' yards and '+
            (Number(game.passing_tds)||0)+' touchdowns'+snaps+'.';
       }
     }
