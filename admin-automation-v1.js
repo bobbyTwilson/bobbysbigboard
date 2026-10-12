@@ -899,12 +899,12 @@
 })();
 
 
-/* BBB Top 500 Intelligence V4 — read-only, owner-authorized dashboard.
-   Reuses the existing admin RPC session and never writes rankings or injury data. */
+/* BBB Top 500 Intelligence V4 — controlled admin research and official-note workflow.
+   All writes use owner-authorized server RPCs; ranking order is never edited here. */
 (function(){
   'use strict';
-  var root=null, data=null, loading=false, loaded=false, tab='verification', query='', limit=12;
-  var titles={verification:'Verification queue',teammates:'Teammate impacts',rankings:'Ranking evidence',coverage:'Source coverage'};
+  var root=null, data=null, loading=false, loaded=false, tab='verification', query='', limit=12, busy=false, selectedReport=null;
+  var titles={verification:'Verification queue',dismissed:'Dismissed reports',teammates:'Teammate impacts',rankings:'Ranking evidence',coverage:'Source coverage'};
   function safe(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
   function arr(value){return Array.isArray(value)?value:[]}
   function n(value){var v=Number(value);return Number.isFinite(v)?v:0}
@@ -952,20 +952,25 @@
       '<button type="button" data-intel-tab="verification" aria-selected="true">Verify reports</button>'+
       '<button type="button" data-intel-tab="teammates" aria-selected="false">Teammate impact</button>'+
       '<button type="button" data-intel-tab="rankings" aria-selected="false">Ranking audits</button>'+
-      '<button type="button" data-intel-tab="coverage" aria-selected="false">Source coverage</button></div>'+
-      '<div class="bbb-intel-content" id="bbbIntelContent" aria-live="polite"></div>'+
+      '<button type="button" data-intel-tab="coverage" aria-selected="false">Source coverage</button>'+      '<button type="button" data-intel-tab="dismissed" aria-selected="false">Dismissed</button></div>'+
+      '<div id="bbbIntelActionMessage" class="bbb-intel-action-message" role="status" hidden></div>'+      '<div class="bbb-intel-content" id="bbbIntelContent" aria-live="polite"></div>'+
       '<div class="bbb-intel-footer"><span id="bbbIntelCount"></span>'+
       '<button class="bbb-intel-button bbb-intel-more" id="bbbIntelMore" type="button" hidden>Show more</button></div></div>'+
-      '<div class="bbb-intel-trust"><strong>Owner control:</strong> This dashboard only reads intelligence. Unverified headlines never become facts here, and ranking moves still need your approval.</div>';
+      '<div class="bbb-intel-trust"><strong>Owner control:</strong> Research and dismissal actions only change the review workflow. Only a confirmed official source plus your explicit approval can apply a player note; rankings still require separate approval.</div>'+      '<div class="bbb-intel-apply-overlay" id="bbbIntelApplyOverlay" hidden>'+      '<form class="bbb-intel-apply-dialog" id="bbbIntelApplyForm" aria-label="Review verified player update">'+      '<div class="bbb-intel-apply-title"><div><span class="bbb-intel-eyebrow">OFFICIAL SOURCE REVIEW</span><h3 id="bbbIntelApplyName">Review player update</h3></div><button type="button" data-intel-close="1" class="bbb-intel-button">Close</button></div>'+      '<p id="bbbIntelApplyDescription" class="bbb-intel-apply-description"></p>'+      '<div class="bbb-intel-apply-meta"><span id="bbbIntelApplyTeam"></span><span id="bbbIntelApplyDate"></span><a id="bbbIntelApplySource" target="_blank" rel="noopener noreferrer">Open official source ↗</a></div>'+      '<label class="bbb-intel-apply-label" for="bbbIntelApplyNote">Verified player note (you can edit before applying)</label>'+      '<textarea id="bbbIntelApplyNote" rows="6" maxlength="1200" minlength="45" required></textarea>'+      '<p class="bbb-intel-apply-hint">This saves a source-backed player update. It does not change the player’s team, roster designation, or dynasty ranking. Review the dated official report first.</p>'+      '<p id="bbbIntelApplyStatus" class="bbb-intel-apply-status" role="status"></p>'+      '<div class="bbb-intel-apply-buttons"><button type="button" data-intel-close="1" class="bbb-intel-button">Cancel</button><button type="submit" class="bbb-intel-button bbb-intel-button-primary" id="bbbIntelApplySubmit">Apply verified note</button></div></form></div>';
     metrics.insertAdjacentElement('afterend',root);
     root.addEventListener('click',function(ev){
       var b=ev.target.closest('button');if(!b)return;
       if(b.id==='bbbIntelRefresh'||b.dataset.intelRetry){void load(true);return}
       if(b.dataset.intelTab){tab=b.dataset.intelTab;limit=12;draw();return}
+      if(b.dataset.intelAction){void triage(Number(b.dataset.intelEvent),b.dataset.intelAction);return}
+      if(b.dataset.intelApply){openOfficialReview(Number(b.dataset.intelApply));return}
+      if(b.dataset.intelClose){closeOfficialReview();return}
       if(b.dataset.intelPlayer){openPlayer(b.dataset.intelPlayer);return}
       if(b.dataset.intelMoves){if(typeof page==='function')page('moves');return}
       if(b.id==='bbbIntelMore'){limit+=12;draw();return}
     });
+    root.querySelector('#bbbIntelApplyForm').addEventListener('submit',function(ev){ev.preventDefault();void applyVerifiedNote()});
+    root.querySelector('#bbbIntelApplyOverlay').addEventListener('click',function(ev){if(ev.target===this)closeOfficialReview()});
     root.querySelector('#bbbIntelSearch').addEventListener('input',function(ev){
       query=ev.target.value.toLowerCase().trim();limit=12;draw();
     });
@@ -974,9 +979,30 @@
   }
   function getItems(){
     var entries=[];
-    if(tab==='verification')entries=arr(data&&data.alerts).map(function(a){
-      return {name:a.name,player_key:a.player_key||null,detail:a.description||a.reason||'New report',date:a.published_at,
-        priority:a.priority,source:a.source,source_url:a.source_url,secondary:a.reason};
+    if(tab==='verification'){
+      var ready=arr(data&&data.ready_official_reports).map(function(a){
+        return {name:a.name,player_key:a.player_key,event_id:a.event_id,detail:a.description,
+          date:a.published_at,source:a.source,source_url:a.official_url,official:true,
+          secondary:'Official report dated '+a.official_date+' · review the player note before applying'};
+      });
+      var alerts=arr(data&&data.alerts).map(function(a){
+        return {name:a.name,player_key:a.player_key||null,event_id:a.event_id,
+          detail:a.description||a.reason||'New report',date:a.published_at,
+          priority:a.priority,source:a.source,source_url:a.source_url,
+          research_status:a.research_status,research_attempts:Number(a.research_attempts||0),
+          secondary:a.research_status==='unavailable'
+            ?'Historical report could not be corroborated from the official source. Do not treat as confirmed.'
+            :a.research_status==='requested'
+              ?'Source research has been requested. Do not apply until official evidence is attached.'
+              :(a.reason||'Awaiting independent verification')};
+      });
+      var ids=new Set(ready.map(function(x){return Number(x.event_id)}));
+      entries=ready.concat(alerts.filter(function(x){return !ids.has(Number(x.event_id))}));
+    }
+    if(tab==='dismissed')entries=arr(data&&data.recent_dismissed).map(function(a){
+      return {name:a.name,player_key:a.player_key,event_id:a.event_id,
+        detail:a.description,date:a.published_at,source:a.source,source_url:a.source_url,
+        secondary:'Dismissed · restore to the verification queue if fresh evidence appears',dismissed:true};
     });
     if(tab==='teammates')entries=arr(data&&data.teammate_impacts).map(function(x){
       return {name:x.name,player_key:x.player_key,detail:x.context,secondary:x.affected_player?
@@ -999,13 +1025,35 @@
   }
   function alertCard(item){
     var sourceUrl=https(item.source_url);
-    var link=sourceUrl?'<a href="'+safe(sourceUrl)+'" target="_blank" rel="noopener noreferrer" class="bbb-intel-source-link">View source ↗</a>':'';
-    var icon=tab==='verification'?'SOURCE CHECK NEEDED':tab==='rankings'?'EVIDENCE RECHECK':'ROLE WATCH';
-    var status=tab==='verification'?'Unverified':tab==='rankings'?'Previously resolved':'Monitoring';
-    var statusTone=tab==='verification'?'amber':tab==='rankings'?'amber':'cyan';
+    var link=sourceUrl?'<a href="'+safe(sourceUrl)+'" target="_blank" rel="noopener noreferrer" class="bbb-intel-source-link">'+
+      (item.official?'Official report ↗':'View source ↗')+'</a>':'';
+    var mode=tab==='verification'||tab==='dismissed';
+    var icon=item.official?'OFFICIAL DOCUMENT ATTACHED':item.dismissed?'DISMISSED REPORT':
+      mode?'INDEPENDENT SOURCE CHECK':tab==='rankings'?'EVIDENCE RECHECK':'ROLE WATCH';
+    var status=item.official?'Ready for review':item.dismissed?'Dismissed':
+      tab==='verification'?(item.research_status==='requested'?'Research requested':
+      item.research_status==='unavailable'?'Cannot verify automatically':'Unverified'):
+      tab==='rankings'?'Previously resolved':'Monitoring';
+    var tone=item.official?'good':item.dismissed?'neutral':tab==='teammates'?'cyan':'amber';
+    var actions='';
+    if(tab==='verification'){
+      if(item.official)actions='<button type="button" data-intel-apply="'+Number(item.event_id)+'" class="bbb-intel-strong-action">Review &amp; apply note</button>';
+      else if(item.event_id){
+        if(item.research_status==='unavailable' && item.research_attempts>=4){
+          actions+='<span class="bbb-intel-small-label">Repeated research exhausted</span>';
+        }else if(item.research_status==='requested'){
+          actions+='<span class="bbb-intel-small-label">Research queued</span>';
+        }else{
+          actions+='<button type="button" data-intel-action="research" data-intel-event="'+Number(item.event_id)+'">Request source research</button>';
+        }
+        actions+='<button type="button" data-intel-action="dismiss" data-intel-event="'+Number(item.event_id)+'">Dismiss</button>';
+      }
+    }else if(tab==='dismissed' && item.event_id){
+      actions='<button type="button" data-intel-action="reopen" data-intel-event="'+Number(item.event_id)+'">Reopen report</button>';
+    }
     return '<article class="bbb-intel-item"><div class="bbb-intel-item-top"><div class="bbb-intel-person">'+
       '<span class="bbb-intel-small-label">'+safe(icon)+'</span><h4>'+safe(item.name||'Player report')+'</h4></div>'+
-      tag(status,statusTone)+'</div><p class="bbb-intel-detail">'+safe(item.detail||'No summary provided')+'</p>'+
+      tag(status,tone)+'</div><p class="bbb-intel-detail">'+safe(item.detail||'No summary provided')+'</p>'+
       (item.secondary?'<div class="bbb-intel-context">'+safe(item.secondary)+'</div>':'')+
       '<div class="bbb-intel-meta"><span>'+safe(item.source||'BBB intelligence')+'</span>'+
       (item.date?'<span>'+safe(when(item.date))+'</span>':'')+
@@ -1013,7 +1061,7 @@
       '<span class="bbb-intel-actions">'+link+
       (item.player_key?'<button type="button" data-intel-player="'+safe(item.player_key)+'">Open player ↗</button>':'')+
       (tab==='rankings'?'<button type="button" data-intel-moves="1">Ranking Moves ↗</button>':'')+
-      '</span></div></article>';
+      actions+'</span></div></article>';
   }
   function coverageHtml(){
     var week=data&&data.week_source_readiness||{};
@@ -1065,9 +1113,11 @@
       metric('Ranked players tracked',data.players_tracked,'of '+number(data.ranked_count)+' on the board')+
       metric('Notes updated • 24h',data.notes_written_last_24h,'source-backed note history')+
       metric('Reports needing research',data.unverified_material_alerts,'unverified • no auto rank move','bbb-intel-amber')+
+      metric('Official reports ready',data.ready_official_report_count,'require your note approval')+
       metric('Teammate role watches',data.teammate_impact_watches,'awaiting post-event usage')+
       metric('Rank moves to approve',data.awaiting_rank_approval,'manual approval required')+
-      metric('Older rank evidence to recheck',data.evidence_corrections_needing_review,'past decisions not reversed');
+      metric('Older rank evidence to recheck',data.evidence_corrections_needing_review,'past decisions not reversed')+
+      metric('Media articles checked',data.media_reports_source_matched,'not official team designations');
     root.querySelectorAll('[data-intel-tab]').forEach(function(b){
       var active=b.dataset.intelTab===tab;
       b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');
@@ -1084,7 +1134,7 @@
       '<div class="bbb-intel-empty">No '+safe(titles[tab].toLowerCase())+
       (query?' matching that search.':' currently listed here.')+'</div>';
     root.querySelector('#bbbIntelCount').textContent='Showing '+visible.length+' of '+items.length+
-      (tab==='verification'?' research items (limited to latest 80)':'')+
+      (tab==='verification'?' official-source or research items':'')+
       (tab==='teammates'?' tracked teammate situations':'');
     root.querySelector('#bbbIntelMore').hidden=visible.length>=items.length;
   }
@@ -1111,6 +1161,89 @@
       var refresh=root.querySelector('.bbb-intel-head-actions button');
       if(refresh)refresh.disabled=false;
     }
+  }
+  function notify(message,error){
+    if(!root)return;
+    var el=root.querySelector('#bbbIntelActionMessage');
+    if(!el)return;
+    el.hidden=false;el.classList.toggle('is-error',!!error);el.textContent=message;
+  }
+  async function triage(id,action){
+    if(busy || !Number.isSafeInteger(id) || id<=0)return;
+    if(action==='dismiss'&&!window.confirm('Dismiss this report from the verification queue? You can reopen it later.'))return;
+    busy=true;notify(action==='research'?'Requesting a dated official source…':'Updating the review queue…',false);
+    try{
+      var result=await rpc('admin_triage_top500_intelligence_v4',{p_event_id:id,p_action:action});
+      if(!result||result.action!==action)throw new Error('The action was not confirmed by BBB.');
+      notify(action==='research'?
+        (result.source_research&&result.source_research.status==='already_sourced'
+          ?'Official evidence is already attached. Refresh the ready-for-review reports.'
+          :'Source research requested. No player note or ranking was changed.') :
+        action==='dismiss'?'Report dismissed. It can be reopened from the Dismissed tab.':
+          'Report reopened for source verification.',false);
+      if(action==='reopen')tab='verification';
+      await load(true);
+    }catch(err){notify(err&&err.message||'Failed to update the report',true)}
+    finally{busy=false}
+  }
+  function openOfficialReview(id){
+    if(busy||!data)return;
+    var report=arr(data.ready_official_reports).find(function(r){return Number(r.event_id)===id});
+    if(!report || !https(report.official_url) || !report.official_date ||
+      !/^[A-Z]{2,3}$/.test(String(report.current_team||''))){
+      notify('This report is not ready for a safe official-source apply. Refresh or open News Intelligence.',true);
+      return;
+    }
+    selectedReport=report;
+    var overlay=root.querySelector('#bbbIntelApplyOverlay');
+    root.querySelector('#bbbIntelApplyName').textContent=report.name;
+    root.querySelector('#bbbIntelApplyDescription').textContent=report.description||'Dated official report';
+    root.querySelector('#bbbIntelApplyTeam').textContent='Current team: '+report.current_team+' (no team change)';
+    root.querySelector('#bbbIntelApplyDate').textContent='Official report date: '+report.official_date;
+    root.querySelector('#bbbIntelApplySource').href=https(report.official_url);
+    var note=String(report.suggested_note||'').trim();
+    if(note.length<45||note.length>1200||!note.toLowerCase().includes(String(report.name||'').toLowerCase())){
+      note=report.name+' — dated official report ('+report.official_date+'): '+
+        String(report.description||'Injury/availability update')+
+        '. Review the linked source for current availability before considering a dynasty ranking move.';
+    }
+    root.querySelector('#bbbIntelApplyNote').value=note.slice(0,1200);
+    root.querySelector('#bbbIntelApplyStatus').textContent='';
+    overlay.hidden=false;
+    root.querySelector('#bbbIntelApplyNote').focus();
+  }
+  function closeOfficialReview(){
+    if(busy)return;
+    selectedReport=null;
+    var overlay=root&&root.querySelector('#bbbIntelApplyOverlay');
+    if(overlay)overlay.hidden=true;
+  }
+  async function applyVerifiedNote(){
+    if(busy||!selectedReport)return;
+    var report=selectedReport,button=root.querySelector('#bbbIntelApplySubmit');
+    var note=root.querySelector('#bbbIntelApplyNote').value.trim();
+    var status=root.querySelector('#bbbIntelApplyStatus');
+    if(note.length<45||note.length>1200 || !note.toLowerCase().includes(String(report.name).toLowerCase())){
+      status.textContent='Please use a factual note between 45 and 1,200 characters containing the player’s name.';
+      return;
+    }
+    if(!window.confirm('Apply this official-source player note for '+report.name+'? This will not change the dynasty ranking.'))return;
+    busy=true;button.disabled=true;button.textContent='Saving verified update…';status.textContent='Checking the current team and source date…';
+    try{
+      var response=await rpc('admin_apply_verified_news_v2',{
+        p_event_id:Number(report.event_id),p_expected_team:report.current_team,
+        p_new_team:report.current_team,p_designation:'',p_event_date:report.official_date,
+        p_update_note:note
+      });
+      if(!['applied','already_applied'].includes(response&&response.status))throw new Error('BBB did not confirm the player update.');
+      busy=false;closeOfficialReview();
+      notify(report.name+' — source-backed note applied. Dynasty ranking unchanged. Open Ranking Moves to review potential impact.',false);
+      if(window.BBBNewsIntelligenceV3&&typeof window.BBBNewsIntelligenceV3.load==='function'){
+        void window.BBBNewsIntelligenceV3.load(true);
+      }
+      await load(true);
+    }catch(err){status.textContent=err&&err.message||'Could not save the update';notify('Could not apply the report. See the source-review form for details.',true)}
+    finally{busy=false;button.disabled=false;button.textContent='Apply verified note'}
   }
   function attach(){
     init();
