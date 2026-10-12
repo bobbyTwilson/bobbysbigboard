@@ -1216,7 +1216,7 @@
     var condition=injury?(injury.includes(' and ')?injury+' issues':injury+' issue'):'injury concern';
     var game=report.recent_game||null;
     var lead=injury?
-      name+' is dealing with a '+condition+' and appeared on the '+team+"' "+displayedDate+' injury report.':
+      name+' is dealing with '+(injury.includes(' and ')?condition:'a '+condition)+' and appeared on the '+team+"' "+displayedDate+' injury report.':
       name+' showed up on the '+team+"' "+displayedDate+' injury report, so his next-game availability is worth checking.';
     var stats='';
     if(game&&Number(game.week)===5){
