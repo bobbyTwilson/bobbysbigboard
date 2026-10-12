@@ -94,6 +94,8 @@ function renderRow(p){
  '<div class="cov-cell">'+badge(game[0],game[1])+'<p>'+esc(line)+'</p></div>'+
  '<div class="cov-cell">'+badge(roster[0],roster[1])+
  '<p>Note: '+esc(d(p.weekly_update_date))+' · '+esc(p.injury_status||'No status listed')+'</p>'+
+ (p.reviewed_marker?'<p class="cov-note-preview">'+esc(p.reviewed_marker)+'</p>':'')+
+ (p.open_reports&&p.news_description?'<p class="cov-news-preview">Open report: '+esc(p.news_description)+'</p>':'')+
  (reasons.length?'<div class="cov-issues">'+reasons.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'')+
  (p.open_reports?'<small>'+fmt(p.open_reports)+' unverified report(s)</small>':'')+'</div>'+
  '<div class="cov-actions"><button type="button" data-cov-player="'+esc(p.player_key)+'" class="cov-btn">Player workspace</button>'+
@@ -176,7 +178,10 @@ async function resolve(id,action){
 function attach(){
  init();if(typeof page!=='function')return;if(page.__bbbCoverageTracker)return;
  const prev=page;
- page=function(name){const result=prev.apply(this,arguments);if(name==='coverage')void load(false);return result};
+ page=function(name){const result=prev.apply(this,arguments);if(name==='coverage'){
+  const title=document.querySelector('#missionPageTitle');if(title)title.textContent='Top 500 Coverage';
+  void load(false);
+ }return result};
  page.__bbbCoverageTracker=true;
  try{if(typeof ADMIN_COMMANDS!=='undefined'&&!ADMIN_COMMANDS.some(x=>x.id==='coverage')){
   const i=ADMIN_COMMANDS.findIndex(x=>x.id==='automations');
