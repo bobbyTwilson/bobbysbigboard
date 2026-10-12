@@ -43,6 +43,15 @@ const automationCss=await readFile('admin-automation-v1.css','utf8');
 const automationJs=await readFile('admin-automation-v1.js','utf8');
 await writeFile(`${out}/static/admin-automation-v1.css`,automationCss);
 await writeFile(`${out}/static/admin-automation-v1.js`,automationJs);
+/* Coverage Tracker must be shipped and syntax-checked, not just linked in HTML. */
+const coverageJs=await readFile('admin-coverage-v1.js','utf8');
+const coverageCss=await readFile('admin-coverage-v1.css','utf8');
+new Function(coverageJs);
+if(!coverageCss.includes('#pageCoverage .cov-hero'))throw new Error('Coverage CSS missing its core styles.');
+if(!adminHtml.includes('id="pageCoverage"')||!adminHtml.includes('data-page="coverage"'))
+ throw new Error('Coverage navigation or page missing from deployed Admin HTML.');
+await writeFile(`${out}/static/admin-coverage-v1.js`,coverageJs);
+await writeFile(`${out}/static/admin-coverage-v1.css`,coverageCss);
 const exceptionCss=await readFile('admin-exceptions-v1.css','utf8');
 const exceptionJs=await readFile('admin-exceptions-v1.js','utf8');
 await writeFile(`${out}/static/admin-exceptions-v1.css`,exceptionCss);
