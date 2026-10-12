@@ -4612,5 +4612,119 @@ body:after{
 }
 </style>
 
+
+<style id="bbb-rank-recommendations-v1-css">
+  #bbbRankRecommendations{margin:16px 0 22px;border:1px solid rgba(72,191,205,.35);background:linear-gradient(145deg,rgba(11,31,40,.98),rgba(10,24,31,.96));border-radius:16px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+  #bbbRankRecommendations .brh{padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid rgba(84,179,199,.18)}
+  #bbbRankRecommendations .brh h2{color:#f0fbff;font-size:21px;letter-spacing:-.02em;margin:5px 0 0}
+  #bbbRankRecommendations .brh p{color:#afced8;font-size:12px;line-height:1.6;margin:7px 0 0;max-width:690px}
+  #bbbRankRecommendations .brlabel{color:#7be5ea;font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+  #bbbRankRecommendations .brref{border:1px solid #338d98;background:#163e4b;color:#d1faff;padding:10px 13px;border-radius:9px;font-size:11px;font-weight:850}
+  #bbbRankRecommendations .brref:disabled{opacity:.5}
+  #bbbRankRecommendations .brstat{padding:12px 22px;font-size:12px;color:#bde4de;background:rgba(27,81,89,.18)}
+  #bbbRankRecommendations .brgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:17px}
+  #bbbRankRecommendations .brcard{border:1px solid #35535c;background:#102730;border-radius:13px;padding:16px;min-width:0}
+  #bbbRankRecommendations .brtitle{display:flex;justify-content:space-between;align-items:start;gap:12px}
+  #bbbRankRecommendations .brtitle strong{font-size:16px;color:#edfaff;display:block}
+  #bbbRankRecommendations .brtitle small{color:#a1bfc8;font-size:11px;display:block;margin-top:4px}
+  #bbbRankRecommendations .brmove{font-size:16px;color:#d4faf1;font-weight:950;white-space:nowrap}
+  #bbbRankRecommendations .brmove.up{color:#75e6c4}
+  #bbbRankRecommendations .brmove.down{color:#ffbf9c}
+  #bbbRankRecommendations .brsignal{display:inline-block;margin:12px 0 8px;color:#9ae1eb;font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
+  #bbbRankRecommendations .brreason{font-size:12px;color:#c5dce1;line-height:1.58;margin:0 0 15px}
+  #bbbRankRecommendations .bractions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  #bbbRankRecommendations .bractions button{border:1px solid #416873;background:#17343e;color:#d8f1f2;border-radius:8px;padding:9px 11px;font-size:11px;font-weight:850}
+  #bbbRankRecommendations .bractions button.brqueue{background:#137885;border-color:#269aab;color:#fff}
+  #bbbRankRecommendations .bractions button:disabled{opacity:.6;cursor:wait}
+  #bbbRankRecommendations .brfooter{padding:0 22px 16px;font-size:11px;color:#9fbbc4}
+  @media(max-width:860px){#bbbRankRecommendations .brgrid{grid-template-columns:1fr}#bbbRankRecommendations .brh{align-items:flex-start;flex-direction:column}}
+</style>
+<script id="bbb-rank-recommendations-v1-js">
+(function(){
+ 'use strict';
+ let model=null,loading=false,expanded=false;
+ const byId=id=>document.getElementById(id);
+ const safe=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function install(){
+  if(byId('bbbRankRecommendations'))return;
+  const anchor=byId('rankIntelDisclosure');
+  if(!anchor)return;
+  const host=document.createElement('section');host.id='bbbRankRecommendations';
+  host.innerHTML='<div class="brh"><div><span class="brlabel">BBB DYNASTY · APPROVAL FIRST</span><h2>Weekly Ranking Recommendations</h2><p>Automatically scans sourced NFL usage and significant receiving-room changes across all 500 ranked players. Suggested targets are conservative; nothing moves without your approval.</p></div><button class="brref" data-br-refresh type="button">REFRESH SUGGESTIONS</button></div><div class="brstat" id="bbbRankRecsStatus">Open Research Queue to load candidate rankings.</div><div class="brgrid" id="bbbRankRecsGrid"></div><div class="brfooter">Research candidates only · Click Queue Review to send a target to Ranking Moves. No automatic changes to your board.</div>';
+  anchor.parentNode.insertBefore(host,anchor);
+  host.addEventListener('click',e=>{
+   const btn=e.target.closest('button');if(!btn)return;
+   if(btn.hasAttribute('data-br-refresh')){void load(true);return}
+   if(btn.hasAttribute('data-br-more')){expanded=true;render();return}
+   const key=btn.getAttribute('data-br-queue')||btn.getAttribute('data-br-dismiss')||btn.getAttribute('data-br-open');
+   if(!key)return;
+   const row=(model?.candidates||[]).find(v=>v.player_key===key);
+   if(!row)return;
+   if(btn.hasAttribute('data-br-open')){
+    if(typeof window.openBBBPlayerWorkspace==='function')window.openBBBPlayerWorkspace(key,'dynasty');
+    return;
+   }
+   if(btn.hasAttribute('data-br-queue'))void queue(row,btn);
+   if(btn.hasAttribute('data-br-dismiss'))void dismiss(row,btn);
+  });
+ }
+ function render(){
+  const area=byId('bbbRankRecsGrid'),status=byId('bbbRankRecsStatus');
+  if(!area||!status)return;
+  const all=Array.isArray(model?.candidates)?model.candidates:[];
+  const shown=expanded?all:all.slice(0,8);
+  status.textContent='2026 Week '+(model?.week||'—')+' · '+all.length+' potential reviews · '+all.filter(v=>v.signal==='TARGET COMPETITION').length+' team-change signals · rankings unchanged';
+  area.innerHTML=shown.map(row=>{
+   const old=Number(row.current_rank),n=Number(row.suggested_rank),up=n<old;
+   const arrow=n===old?'→':up?'▲':'▼';
+   const q=row.already_queued===true;
+   return '<article class="brcard"><div class="brtitle"><div><strong>'+safe(row.name)+'</strong><small>'+safe(row.position)+' · '+safe(row.team)+' · BBB #'+safe(old)+'</small></div><div class="brmove '+(up?'up':'down')+'">'+arrow+' #'+safe(n)+'</div></div><span class="brsignal">'+safe(row.signal)+' · '+safe(row.confidence)+' CONFIDENCE</span><p class="brreason">'+safe(row.reason)+'</p><div class="bractions"><button class="brqueue" type="button" data-br-queue="'+safe(row.player_key)+'" '+(q?'disabled':'')+'>'+(q?'ALREADY QUEUED ✓':'QUEUE REVIEW AT #'+safe(n))+'</button><button type="button" data-br-open="'+safe(row.player_key)+'">PLAYER PROFILE</button><button type="button" data-br-dismiss="'+safe(row.player_key)+'">DISMISS</button></div></article>';
+  }).join('')+(all.length>shown.length?'<div style="grid-column:1/-1;text-align:center"><button class="brref" type="button" data-br-more>SHOW ALL '+all.length+' RECOMMENDATIONS</button></div>':'');
+  if(!all.length)area.innerHTML='<div class="empty" style="grid-column:1/-1">No unreviewed suggestions currently pass the evidence threshold. Ranking data remains unchanged.</div>';
+ }
+ async function load(refresh){
+  install();
+  if(loading)return;loading=true;
+  const btn=document.querySelector('[data-br-refresh]'),stat=byId('bbbRankRecsStatus');
+  if(btn){btn.disabled=true;btn.textContent='CHECKING…'}
+  try{
+   if(refresh)await rpc('admin_refresh_rank_suggestions_v1',{});
+   const result=await rpc('admin_get_rank_suggestions_v1',{p_limit:100});
+   if(!result||!Array.isArray(result.candidates))throw Error('Invalid ranking suggestions response');
+   model=result;render();
+  }catch(e){if(stat)stat.textContent='Could not load ranking suggestions: '+(e?.message||e);console.warn('BBB rank suggestion load failed',e)}
+  finally{loading=false;if(btn){btn.disabled=false;btn.textContent='REFRESH SUGGESTIONS'}}
+ }
+ async function queue(row,btn){
+  if(btn.disabled)return;btn.disabled=true;btn.textContent='QUEUING…';
+  try{
+   await rpc('admin_queue_ranking_move',{p_player_key:row.player_key,p_recommended_rank:row.suggested_rank,
+     p_reason:'WEEKLY SCAN · '+row.reason+' Suggested current #'+row.current_rank+' → #'+row.suggested_rank+'. Requires owner approval.',
+     p_priority:row.priority||2,p_source:'bbb_weekly_recommendations_v1',p_confidence:row.confidence||'low',p_trigger_update_id:null});
+   row.already_queued=true;render();
+   if(typeof loadRankingMoveQueue==='function')void loadRankingMoveQueue().then(()=>{if(typeof renderRankingMoveQueue==='function')renderRankingMoveQueue()}).catch(()=>{});
+  }catch(e){alert('Could not queue ranking review: '+(e?.message||e));btn.disabled=false;btn.textContent='QUEUE REVIEW'}
+ }
+ async function dismiss(row,btn){
+  if(btn.disabled)return;btn.disabled=true;btn.textContent='SAVING…';
+  try{
+   await rpc('admin_set_rank_suggestion_disposition_v1',{p_player_key:row.player_key,p_season:row.season,p_week:row.week,p_signal:row.signal,p_action:'dismissed'});
+   model.candidates=model.candidates.filter(v=>v!==row);render();
+  }catch(e){alert('Could not dismiss recommendation: '+(e?.message||e));btn.disabled=false;btn.textContent='DISMISS'}
+ }
+ function bind(){
+  install();
+  if(typeof page!=='function')return;
+  if(page.__bbbRankSuggestionsV1)return;
+  const previous=page;
+  const next=function(name){const r=previous.apply(this,arguments);if(name==='research')void load(false);return r};
+  next.__bbbRankSuggestionsV1=true;page=next;
+  if(byId('pageResearch')&&!byId('pageResearch').classList.contains('hide'))void load(false);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
+ window.BBBRankSuggestions={load};
+})();
+</script>
+
 </body>
 </html>
