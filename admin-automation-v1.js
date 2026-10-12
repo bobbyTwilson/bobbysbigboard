@@ -960,7 +960,7 @@
     metrics.insertAdjacentElement('afterend',root);
     root.addEventListener('click',function(ev){
       var b=ev.target.closest('button');if(!b)return;
-      if(b.id==='bbbIntelRefresh'){void load(true);return}
+      if(b.id==='bbbIntelRefresh'||b.dataset.intelRetry){void load(true);return}
       if(b.dataset.intelTab){tab=b.dataset.intelTab;limit=12;draw();return}
       if(b.dataset.intelPlayer){openPlayer(b.dataset.intelPlayer);return}
       if(b.dataset.intelMoves){if(typeof page==='function')page('moves');return}
@@ -975,7 +975,7 @@
   function getItems(){
     var entries=[];
     if(tab==='verification')entries=arr(data&&data.alerts).map(function(a){
-      return {name:a.name,player_key:null,detail:a.description||a.reason||'New report',date:a.published_at,
+      return {name:a.name,player_key:a.player_key||null,detail:a.description||a.reason||'New report',date:a.published_at,
         priority:a.priority,source:a.source,source_url:a.source_url,secondary:a.reason};
     });
     if(tab==='teammates')entries=arr(data&&data.teammate_impacts).map(function(x){
@@ -1104,9 +1104,8 @@
       root.querySelector('#bbbIntelContent').innerHTML=
        '<div class="bbb-intel-error"><strong>Intelligence feed unavailable</strong>'+
        '<p>'+safe(err&&err.message||'Could not load from the database.')+'</p>'+
-       '<button type="button" id="bbbIntelRefresh" class="bbb-intel-button">Retry connection</button></div>';
-      var failed=root.querySelector('#bbbIntelRefresh');
-      if(failed){failed.id='bbbIntelInlineRetry';failed.addEventListener('click',function(){void load(true)})}
+       '<button type="button" data-intel-retry="1" class="bbb-intel-button">Retry connection</button></div>';
+
     }finally{
       loading=false;
       var refresh=root.querySelector('.bbb-intel-head-actions button');
