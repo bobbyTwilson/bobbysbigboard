@@ -50,9 +50,8 @@ window.BBB_PROFILE_V5 = async function(ctx){
   (fieldTraits.length?'<div class="sp-grading-list">'+fieldTraits.map(bar).join('')+'</div>':'<div class="sp-no-data">No individual prospect grades have been recorded for this player. Film notes and season data are still available.</div>')+
   (capTrait?'<div class="sp-grading-context">'+bar(capTrait)+'</div>':'')+
   '<p class="sp-caption">Speed, Acceleration and Analytics use 10-point scales; other recorded traits use 5-point scales. Draft capital is shown separately because it is not an on-field skill.</p></div>';
- const film=()=>'<div class="sp-panel"><div class="sp-panel-head"><div><div class="sp-kicker">BBB FILM ROOM</div><h2>Film & scouting notes.</h2><p>Published breakdowns and annotated observations, when available.</p></div></div>'+
-  (videos.length?'<div class="sp-film-cards">'+videos.map(v=>'<a class="sp-film-card" href="https://www.youtube.com/watch?v='+encodeURIComponent(v.video_id)+'" target="_blank" rel="noopener noreferrer"><img src="https://i.ytimg.com/vi/'+encodeURIComponent(v.video_id)+'/hqdefault.jpg" alt=""><span><strong>'+esc(v.title)+'</strong><small>Watch the film breakdown ↗</small></span></a>').join('')+'</div>':'<div class="sp-no-data">No published BBB film breakdown has been linked to this player yet.</div>')+
-  (sample?.clips?.length?'<div class="sp-film-notes"><h3>Film notebook <span>Editorial draft</span></h3>'+sample.clips.map((clip,i)=>'<div class="sp-film-clip"><span>PLAY '+(i+1)+' · '+esc(clip[0])+'</span><strong>'+esc(clip[1])+'</strong><p>'+esc(clip[2])+'</p></div>').join('')+'</div>':'')+'</div>';
+ const film=()=>window.BBB_FILM_ROOM.profileMarkup(videos,p,esc)+
+  (sample?.clips?.length?'<div class="sp-panel sp-film-notes" style="margin-top:15px"><div class="sp-kicker">EDITORIAL NOTEBOOK</div><h3>Selected play observations <span>Draft only</span></h3><p class="sp-caption">These notes have not been published as a final scouting evaluation.</p>'+sample.clips.map((clip,i)=>'<div class="sp-film-clip"><span>PLAY '+(i+1)+' · '+esc(clip[0])+'</span><strong>'+esc(clip[1])+'</strong><p>'+esc(clip[2])+'</p></div>').join('')+'</div>':'');
  const emptyStats=()=>'<div class="sp-no-data">No NFL statistics are recorded yet for this player. Draft prospects will receive an NFL game log once they enter the league.</div>';
  const statsUI=()=>'<div class="sp-panel"><div class="sp-panel-head"><div><div class="sp-kicker">ON-FIELD PRODUCTION</div><h2>Season stats & game logs.</h2><p>Season-by-season production, plus weekly game detail when available.</p></div></div><div id="spStats">'+(isProspect?emptyStats():'Loading recorded NFL seasons…')+'</div><div id="spWeeks"></div></div>';
  const dyn=()=>'<div class="sp-panel"><div class="sp-panel-head"><div><div class="sp-kicker">MARKET CONTEXT</div><h2>Dynasty evaluation.</h2><p>Dynasty rankings are separate from scouting grades.</p></div></div>'+
@@ -68,6 +67,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
   '<div class="sp-tab-content" data-content="advanced" role="tabpanel"><div class="sp-panel" id="spAdvancedPanel"><div class="sp-muted">Loading recorded NFL advanced receiving metrics…</div></div></div>'+
   '<div class="sp-tab-content" data-content="dynasty" role="tabpanel">'+dyn()+'</div>'+
   '</div></section>';
+ window.BBB_FILM_ROOM.bindProfile(app,videos,esc);
  const tabs=Array.from(app.querySelectorAll(".sp-tab"));
  const showTab=tab=>{
   tabs.forEach(el=>{const on=el.dataset.tab===tab;el.classList.toggle("active",on);el.setAttribute("aria-selected",String(on))});
