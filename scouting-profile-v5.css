@@ -104,3 +104,12 @@
 @media(max-width:700px){.sp-profile{padding-top:21px}.sp-hero{gap:9px;min-height:130px}.sp-portrait{width:110px;height:130px}.sp-hero h1{font-size:clamp(30px,8vw,47px);letter-spacing:-.05em}.sp-kicker{font-size:9px}.sp-identity{font-size:11px;line-height:1.5}.sp-hero-tags{gap:5px}.sp-hero-tags>span{font-size:9px;padding:6px 7px}.sp-hero-tags strong{font-size:10px}.sp-tabs{margin-top:9px}.sp-tab{font-size:12px;padding:11px 12px}.sp-panel{padding:18px}.sp-overview-sidebar{grid-template-columns:repeat(2,1fr)}.sp-grading-list,.sp-athletic-chart{grid-template-columns:1fr}.sp-physical{grid-template-columns:repeat(2,1fr)}.sp-panel-head{flex-wrap:wrap}.sp-season-highlights,.sp-three{grid-template-columns:repeat(2,1fr)}.sp-film-cards{grid-template-columns:1fr}}
 @media(max-width:380px){.sp-portrait{width:83px;height:122px}.sp-hero h1{font-size:32px}.sp-overview-sidebar{gap:0 8px}.sp-film-card img{width:105px}}
 @media(prefers-reduced-motion:reduce){.sp-tab,.bbb-directory-row{transition:none!important}}
+
+.sp-movement{margin-top:24px;padding-top:21px;border-top:1px solid #3b5a42}
+.sp-movement h3{margin:6px 0 5px;color:#e6f2e2;letter-spacing:-.035em;font-size:18px}
+.sp-movement .sp-grading-list{margin-top:18px}
+.sp-athletics .sp-movement .sp-grade-track{height:9px}
+.sp-panel .sp-no-data+.sp-movement{margin-top:20px}
+.sp-hero .sp-portrait img{object-position:center bottom}
+@media(max-width:760px){.sp-movement .sp-grading-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px){.sp-movement .sp-grading-list{grid-template-columns:1fr}}
