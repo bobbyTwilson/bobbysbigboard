@@ -48,7 +48,6 @@ await copyFile('scouting-youtube-meta.mjs',metadataFunctionDir+'/index.mjs');
 await writeFile(metadataFunctionDir+'/.vc-config.json',JSON.stringify({runtime:'nodejs22.x',handler:'index.mjs',launcherType:'Nodejs',maxDuration:10,shouldAddHelpers:true}));
 let config=JSON.parse(await readFile('.vercel/output/config.json','utf8'));
 config.routes=[
- {src:'/api/youtube-meta',dest:'/api/youtube-meta'},
  {src:'/players/?',dest:'/index.html'},
  {src:'/film/?',dest:'/index.html'},
  {src:'/draft/?',dest:'/index.html'},
