@@ -11,6 +11,7 @@ const get=async(path,ms=6000)=>{
 };
 const fetchDb=async(table,params)=>get(url+'/rest/v1/'+table+'?'+params,8000).catch(()=>[]);
 let outMap={},log={nfl:0,college:0,matchedNfl:0,matchedCollege:0,unavailable:[]};
+try{const seeds=JSON.parse(await readFile('scouting-espn-seeds.json','utf8'));outMap={...(seeds.players||{})};log.confirmedProfiles=Object.keys(outMap).length;}catch(error){console.warn('Could not load ESPN identity matches',error.message)}
 if(!url||!apikey){await writeFile(out,JSON.stringify({players:outMap,metadata:log}));process.exit(0)}
 async function readPublic(table,query){const r=await fetch(url+'/rest/v1/'+table+'?'+query,{headers:{apikey}});if(!r.ok)throw Error('Supabase '+table+' '+r.status);return await r.json()}
 const [players,prospects]=await Promise.all([readPublic('site_profiles','select=player_key,name,pos,team,college,draft_year&limit=1000'),readPublic('site_prospects','select=player_key,year&limit=300')]);
