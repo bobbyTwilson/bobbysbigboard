@@ -14,7 +14,7 @@ window.BBB_SCOUTING_V6 = {
    return {name,grade:val,max,pct:val/max}
   }).filter(x=>Number.isFinite(x.grade)&&x.grade>=0&&!/draft capital/i.test(x.name));
   all.sort((a,b)=>b.pct-a.pct||b.grade-a.grade);
-  const strengths=all.slice(0,3);
+  const strengths=all.filter(v=>!/^(analytics|dawg factor)$/i.test(v.name)).slice(0,3);
   const watch=all.slice(-2).reverse();
   const label=(v)=>v.max===10?v.grade.toFixed(1)+"/10":v.grade.toFixed(1)+"/5";
   const row=(x,i)=>'<div class="sp-scout-item"><span class="sp-scout-index">'+(i+1).toString().padStart(2,"0")+'</span><div><strong>'+esc(x.name)+'</strong><small>BBB graded '+label(x)+'</small></div></div>';
@@ -40,7 +40,7 @@ window.BBB_SCOUTING_V6 = {
    ['Avg. weekly air-yard share',n('average_weekly_air_yards_share_pct',1)+'%','Unweighted average of reported weekly air-yard shares']
   ];
   if(compact){
-   const found=arr.filter(x=>x[1]!=='—').slice(0,3);
+   const found=[arr[0],arr[1],arr[4]].filter(x=>x[1]!=='—');
    return '<div class="sp-pulse-stats">'+found.map(x=>'<div><strong>'+esc(x[1])+'</strong><small>'+esc(x[0])+'</small></div>').join('')+'</div><p class="sp-caption">2026 through '+esc(row.weekly_rows)+' recorded games · nflverse/BBB weekly data</p>';
   }
   const ypr=row.targets?Number(row.receiving_yards)/Number(row.targets):null;
