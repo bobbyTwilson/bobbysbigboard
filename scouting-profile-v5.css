@@ -113,3 +113,12 @@
 .sp-hero .sp-portrait img{object-position:center bottom}
 @media(max-width:760px){.sp-movement .sp-grading-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:500px){.sp-movement .sp-grading-list{grid-template-columns:1fr}}
+
+/* Persistent at-a-glance measurables: also visible from the Overview tab. */
+.sp-measure-strip{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:0 0 14px}
+.sp-measure-quick{display:flex;align-items:baseline;gap:8px;padding:0 16px 0 0;margin-right:16px;border-right:1px solid #517054}
+.sp-measure-quick:last-child{margin:0;padding:0;border-right:0}
+.sp-measure-quick span{font-size:10px;font-weight:900;letter-spacing:.10em;color:#a6c5a7}
+.sp-measure-quick strong{font-size:16px;line-height:1.4;font-weight:900;color:#f3f8ec}
+@media(max-width:700px){.sp-measure-strip{margin-bottom:9px;gap:5px 0}.sp-measure-quick{margin-right:11px;padding-right:11px;gap:5px}.sp-measure-quick span{font-size:9px}.sp-measure-quick strong{font-size:13px}}
+@media(max-width:390px){.sp-measure-quick{margin-right:8px;padding-right:8px}.sp-measure-quick span{font-size:8px}.sp-measure-quick strong{font-size:12px}}
