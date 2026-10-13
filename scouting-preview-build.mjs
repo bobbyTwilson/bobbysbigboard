@@ -41,8 +41,14 @@ for(const name of await readdir(profileDir)){
 }
 console.log('Prepared '+embedded+' original BBB profiles for header-free scouting embeds.');
 try{await import('./scouting-espn-headshots.mjs')}catch(e){console.warn('ESPN headshots unavailable during preview build:',e.message);await writeFile(root+'/scouting-headshots.json','{"players":{},"metadata":{"error":"provider unavailable"}}')}
+/* Auth-free public YouTube oEmbed metadata, fixed-domain HTTPS request only; no API key or vidIQ. */
+const metadataFunctionDir='.vercel/output/functions/api/youtube-meta.func';
+await mkdir(metadataFunctionDir,{recursive:true});
+await copyFile('scouting-youtube-meta.mjs',metadataFunctionDir+'/index.mjs');
+await writeFile(metadataFunctionDir+'/.vc-config.json',JSON.stringify({runtime:'nodejs22.x',handler:'index.mjs',launcherType:'Nodejs',maxDuration:10,shouldAddHelpers:true}));
 let config=JSON.parse(await readFile('.vercel/output/config.json','utf8'));
 config.routes=[
+ {src:'/api/youtube-meta',dest:'/api/youtube-meta'},
  {src:'/players/?',dest:'/index.html'},
  {src:'/film/?',dest:'/index.html'},
  {src:'/draft/?',dest:'/index.html'},
