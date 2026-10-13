@@ -74,7 +74,7 @@ async function detail(slug){
  const p=D.profiles.find(x=>x.player_key===slug);
  if(!p){app.innerHTML='<section class="section"><div class="wrap"><div class="empty">Player not found. <a href="/players">Back to directory</a></div></div></section>';return}
  const related=D.videos.filter(v=>v.player_key===slug&&v.privacy_status==="public"&&v.video_type==="long"&&/film breakdown|film study|breakout/i.test(v.title||""));
- return window.BBB_PROFILE_V5({app,p,r:R.get(slug),g:P.get(slug),a:A.get(slug),s:S.get(slug),sample:SAMPLES[slug],photo:portrait(p),videos:related,esc,stat,section,bbbDb,setTitle});
+ return window.BBB_PROFILE_V5({app,p,r:R.get(slug),g:P.get(slug),a:A.get(slug),s:S.get(slug),sample:SAMPLES[slug],photo:portrait(p),videos:related,prospects:D.prospects,esc,stat,section,bbbDb,setTitle});
 }
 
 /* Native head-to-head removes the old #compare routing race entirely. */
