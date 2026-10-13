@@ -22,6 +22,8 @@ await copyFile('scouting-preview.js',root+'/scouting-preview.js');
 await copyFile('scouting-samples.js',root+'/scouting-samples.js');
 await copyFile('scouting-green.css',root+'/scouting-green.css');
 await copyFile('scouting-directory.css',root+'/scouting-directory.css');
+await copyFile('scouting-profile-v5.js',root+'/scouting-profile-v5.js');
+await copyFile('scouting-profile-v5.css',root+'/scouting-profile-v5.css');
 /* The existing BBB rich profile UI is available inside scouting pages without a second site header. */
 const embed='<script>if(new URLSearchParams(location.search).get("bbbEmbed")==="1")document.documentElement.classList.add("bbb-embed")</script><style>html.bbb-embed .site-header,html.bbb-embed .mobile-subnav,html.bbb-embed .footer,html.bbb-embed .youtube-strip,html.bbb-embed footer,html.bbb-embed .footer-inner{display:none!important}html.bbb-embed body{background:#102218!important}html.bbb-embed .profile-card{border-color:#395c43!important}html.bbb-embed .profile-loading{min-height:300px}html.bbb-embed .profile-route-active{min-height:0!important}html.bbb-embed .profile-header,html.bbb-embed .profile-hero{padding-top:26px!important}</style>';
 const profileDir=root+'/seo/players';
