@@ -1,7 +1,7 @@
 /* BBB Scouting V5 — native editorial profile, no embedded legacy site.
    Standalone initializer invoked from scouting-preview.js inside its existing scope. */
 window.BBB_PROFILE_V5 = async function(ctx){
- const {app,p,r,g,a,s,sample,photo,videos,esc,stat,section,bbbDb,setTitle}=ctx;
+ const {app,p,r,g,a,s,sample,photo,videos,prospects,esc,stat,section,bbbDb,setTitle}=ctx;
  setTitle(p.name+" | Scouting & Film");
  const hasGrade=g?.grade!=null&&Number.isFinite(Number(g.grade));
  const gradeText=hasGrade?Number(g.grade).toFixed(1):"Not graded";
@@ -11,6 +11,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
  const capTrait=traits.find(x=>/projected draft capital/i.test(x.name));
  const statsLabel=p.pos==="QB"?"Passing yards":p.pos==="RB"?"Rushing yards":"Receiving yards";
  const isProspect=(Number(g?.year||p.draft_year)>=2027);
+ const V6=window.BBB_SCOUTING_V6;
  const report=s?.scouting_summary||p.overall_breakdown||"A complete player scouting evaluation has not been published yet. Statistics and film will be added as they are verified.";
  const height=x=>x==null?"Not recorded":Math.floor(Number(x)/12)+"′"+(Number(x)%12)+"″";
  const display=n=>n==null?"—":Number(n).toLocaleString("en-US",{maximumFractionDigits:1});
@@ -40,6 +41,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
   return '<div class="sp-panel sp-athletics"><div class="sp-panel-head"><div><div class="sp-kicker">TESTING PROFILE</div><h2>How he measures up.</h2><p>Verified measurements, presented on labeled display scales.</p></div></div>'+
    '<div class="sp-physical"><div>'+profileTag("HEIGHT",height(a?.height_in))+'</div><div>'+profileTag("WEIGHT",a?.weight_lb==null?"Not recorded":display(a.weight_lb)+" lbs")+'</div><div>'+profileTag("HAND",a?.hand_in==null?"Not recorded":display(a.hand_in)+" in")+'</div><div>'+profileTag("ARM",a?.arm_in==null?"Not recorded":display(a.arm_in)+" in")+'</div></div>'+
    (tested.length?'<div class="sp-athletic-chart">'+metrics+'</div>':'<div class="sp-no-data">No verified timed/jump drill results are recorded. This is expected for many college prospects before the NFL Combine.</div>')+
+   (a?.forty_seconds&&a?.weight_lb?'<div class="sp-speed-score"><strong>'+(Number(a.weight_lb)*200/Math.pow(Number(a.forty_seconds),4)).toFixed(1)+'</strong><span><b>Weight-adjusted Speed Score</b><br>Calculated from weight × 200 ÷ 40 time⁴ (Barnwell formula). Independent BBB calculation, not a PlayerProfiler percentile.</span></div>':'')+
    (movementTraits.length?'<div class="sp-movement"><div class="sp-kicker">FILM-BASED ATHLETIC TRAITS</div><h3>Movement evaluation</h3><p class="sp-caption" style="margin:0 0 18px">BBB scouting grades, not measured combine times.</p><div class="sp-grading-list">'+movementTraits.map(bar).join('')+'</div></div>':'')+
    '<p class="sp-caption">Bar position shows a measurement within its labeled display range, <b>not a player percentile or athleticism score.</b> Faster times appear farther right. <span class="sp-test-source">'+(a?imageSource:'Source pending')+'</span></p></div>';
  };
@@ -56,12 +58,13 @@ window.BBB_PROFILE_V5 = async function(ctx){
   (r?'<div class="sp-three">'+profileTag("BBB OVERALL RANK","#"+r.rank)+profileTag("POSITION RANK",p.pos+(r.pr||"—"))+profileTag("MARKET RANK",r.market!=null?"#"+r.market:"Not recorded")+'</div><p class="sp-caption">Rankings can change independently of a player’s scouting evaluation.</p><a href="/dynasty/rankings" class="sp-link">Open Top 500 dynasty rankings →</a>':'<div class="sp-no-data">Not currently on the dynasty Top 500. This does not mean the player lacks scouting value.</div>')+'</div>';
  app.innerHTML='<section class="sp-profile"><div class="wrap"><div class="sp-crumb"><a href="/players">Players</a> <span>›</span> '+esc(p.pos||"")+' <span>›</span> '+esc(p.name)+'</div>'+
   '<div class="sp-hero"><div class="sp-portrait">'+head+'<span class="sp-portrait-fallback">'+esc(initials)+'</span></div><div class="sp-hero-content"><div class="sp-kicker">PLAYER EVALUATION · BOBBY’S BIG BOARD</div><h1>'+esc(p.name)+'</h1><p class="sp-identity">'+esc(p.pos||"")+' <span>·</span> '+esc(p.team||"Draft Prospect")+' <span>·</span> '+esc(p.college||"College not recorded")+'</p><div class="sp-hero-tags"><span class="sp-overall-chip">PROSPECT GRADE <strong>'+esc(gradeText)+'</strong></span>'+(g?.comp?'<span>PRO COMP <strong>'+esc(g.comp)+'</strong></span>':'')+(g?.year?'<span>CLASS <strong>'+esc(g.year)+'</strong></span>':'')+(r?'<span>DYNASTY <strong>#'+esc(r.rank)+'</strong></span>':'')+'</div></div></div>'+
-  '<div class="sp-tabs" role="tablist" aria-label="Player profile sections"><button type="button" class="sp-tab active" data-tab="overview" role="tab" aria-selected="true">Overview</button><button type="button" class="sp-tab" data-tab="traits" role="tab" aria-selected="false">Prospect Grades</button><button type="button" class="sp-tab" data-tab="athletic" role="tab" aria-selected="false">Athletic Profile</button><button type="button" class="sp-tab" data-tab="film" role="tab" aria-selected="false">Film Room</button><button type="button" class="sp-tab" data-tab="stats" role="tab" aria-selected="false">Stats & Logs</button><button type="button" class="sp-tab" data-tab="dynasty" role="tab" aria-selected="false">Dynasty</button></div>'+
-  '<div class="sp-tab-content active" data-content="overview" role="tabpanel"><div class="sp-overview-grid"><div class="sp-panel"><div class="sp-kicker">SCOUTING REPORT</div><h2>Player evaluation.</h2><p class="sp-report">'+esc(report)+'</p>'+(s?.development_areas?.length?'<h3>Development areas</h3><p class="sp-report">'+esc(s.development_areas.join(" · "))+'</p>':'')+(p.latest_weekly_update?'<div class="sp-latest"><strong>Latest player update</strong><p>'+esc(p.latest_weekly_update)+'</p></div>':'')+'</div><div class="sp-overview-sidebar">'+profileTag("POSITION",p.pos||"—")+profileTag("COLLEGE",p.college||"Not recorded")+profileTag("HEIGHT",height(a?.height_in))+profileTag("WEIGHT",a?.weight_lb==null?"Not recorded":display(a.weight_lb)+" lbs")+profileTag("PROSPECT GRADE",gradeText)+profileTag("PRO COMP",g?.comp||"Not recorded")+'</div></div><div class="sp-overview-bottom">'+grading()+athletics()+'</div></div>'+
+  '<div class="sp-tabs" role="tablist" aria-label="Player profile sections"><button type="button" class="sp-tab active" data-tab="overview" role="tab" aria-selected="true">Overview</button><button type="button" class="sp-tab" data-tab="traits" role="tab" aria-selected="false">Prospect Grades</button><button type="button" class="sp-tab" data-tab="athletic" role="tab" aria-selected="false">Athletic Profile</button><button type="button" class="sp-tab" data-tab="film" role="tab" aria-selected="false">Film Room</button><button type="button" class="sp-tab" data-tab="stats" role="tab" aria-selected="false">Stats & Logs</button><button type="button" class="sp-tab" data-tab="advanced" role="tab" aria-selected="false">Advanced Stats</button><button type="button" class="sp-tab" data-tab="dynasty" role="tab" aria-selected="false">Dynasty</button></div>'+
+  '<div class="sp-tab-content active" data-content="overview" role="tabpanel">'+V6.overview({p,g,s,report,r,sample,prospects,videos,esc})+'</div>'+
   '<div class="sp-tab-content" data-content="traits" role="tabpanel">'+grading()+'</div>'+
   '<div class="sp-tab-content" data-content="athletic" role="tabpanel">'+athletics()+'</div>'+
   '<div class="sp-tab-content" data-content="film" role="tabpanel">'+film()+'</div>'+
   '<div class="sp-tab-content" data-content="stats" role="tabpanel">'+statsUI()+'</div>'+
+  '<div class="sp-tab-content" data-content="advanced" role="tabpanel"><div class="sp-panel" id="spAdvancedPanel"><div class="sp-muted">Loading recorded NFL advanced receiving metrics…</div></div></div>'+
   '<div class="sp-tab-content" data-content="dynasty" role="tabpanel">'+dyn()+'</div>'+
   '</div></section>';
  const tabs=Array.from(app.querySelectorAll(".sp-tab"));
@@ -69,8 +72,21 @@ window.BBB_PROFILE_V5 = async function(ctx){
   tabs.forEach(el=>{const on=el.dataset.tab===tab;el.classList.toggle("active",on);el.setAttribute("aria-selected",String(on))});
   app.querySelectorAll(".sp-tab-content").forEach(el=>el.classList.toggle("active",el.dataset.content===tab));
  };
- tabs.forEach(button=>button.addEventListener("click",()=>{showTab(button.dataset.tab);if(button.dataset.tab==="stats")loadStats();}));
+ tabs.forEach(button=>button.addEventListener("click",()=>{showTab(button.dataset.tab);if(button.dataset.tab==="stats")loadStats();if(button.dataset.tab==="advanced")loadAdvanced();}));
+ app.querySelectorAll("[data-profile-tab]").forEach(button=>button.addEventListener("click",()=>{const target=button.dataset.profileTab;showTab(target);if(target==="advanced")loadAdvanced();if(target==="stats")loadStats();app.querySelector(".sp-tabs")?.scrollIntoView({behavior:"smooth",block:"start"});}));
  let loaded=false;
+ let advancedLoaded=false;
+ const loadAdvanced=async()=>{
+  if(advancedLoaded)return;advancedLoaded=true;
+  const quick=app.querySelector("#spOverviewAdvanced"),full=app.querySelector("#spAdvancedPanel");
+  try{
+   const rows=await bbbDb("site_player_advanced_season","select=*&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=1");
+   const row=rows?.[0]||null;
+   if(quick)quick.innerHTML=V6.advancedHTML(row,esc,true);
+   if(full)full.innerHTML=V6.advancedHTML(row,esc,false);
+  }catch(err){console.warn("Advanced stats unavailable",err);if(quick)quick.innerHTML='<div class="sp-muted">Recorded advanced stats are temporarily unavailable.</div>';if(full)full.innerHTML='<div class="sp-no-data">Advanced stats are temporarily unavailable.</div>'}
+ };
+ loadAdvanced();
  const loadStats=async()=>{
   if(loaded)return;loaded=true;
   const mount=app.querySelector("#spStats"),weeks=app.querySelector("#spWeeks");if(!mount)return;
@@ -81,8 +97,8 @@ window.BBB_PROFILE_V5 = async function(ctx){
     p.pos==="RB"?[["Season","season"],["Games","games"],["Carries","carries"],["Rush Yds","rushing_yards"],["Rush TDs","rushing_tds"],["Rec","receptions"],["Rec Yds","receiving_yards"]]:
     [["Season","season"],["Games","games"],["Targets","targets"],["Receptions","receptions"],["Rec Yds","receiving_yards"],["Rec TDs","receiving_tds"]];
    const current=ss[0];
-   mount.innerHTML='<div class="sp-season-highlights">'+profileTag("SEASON",current.season)+profileTag("GAMES",display(current.games))+profileTag(statsLabel,display(current[p.pos==="QB"?"passing_yards":p.pos==="RB"?"rushing_yards":"receiving_yards"]))+profileTag(p.pos==="QB"?"PASS TD":p.pos==="RB"?"RUSH TD":"REC TD",display(current[p.pos==="QB"?"passing_tds":p.pos==="RB"?"rushing_tds":"receiving_tds"]))+'</div>'+
-    '<div class="sp-tablewrap"><table class="sp-table"><thead><tr>'+columns.map(([label])=>'<th>'+esc(label)+'</th>').join('')+'</tr></thead><tbody>'+ss.map(row=>'<tr>'+columns.map(([,k])=>'<td>'+esc(display(row[k]))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+   mount.innerHTML='<div class="sp-season-highlights">'+profileTag("SEASON",String(current.season))+profileTag("GAMES",display(current.games))+profileTag(statsLabel,display(current[p.pos==="QB"?"passing_yards":p.pos==="RB"?"rushing_yards":"receiving_yards"]))+profileTag(p.pos==="QB"?"PASS TD":p.pos==="RB"?"RUSH TD":"REC TD",display(current[p.pos==="QB"?"passing_tds":p.pos==="RB"?"rushing_tds":"receiving_tds"]))+'</div>'+
+    '<div class="sp-tablewrap"><table class="sp-table"><thead><tr>'+columns.map(([label])=>'<th>'+esc(label)+'</th>').join('')+'</tr></thead><tbody>'+ss.map(row=>'<tr>'+columns.map(([,k])=>'<td>'+esc(k==="season"?String(row[k]??"—"):display(row[k]))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
    try{
     const recent=await bbbDb("site_player_weekly_stats","select=season,week,opponent_team,targets,receptions,receiving_yards,receiving_tds,rushing_yards,passing_yards,target_share,air_yards_share&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc,week.desc&limit=18");
     if(!recent?.length)return;
@@ -91,5 +107,5 @@ window.BBB_PROFILE_V5 = async function(ctx){
    }catch(e){console.warn("Game log data unavailable",e)}
   }catch(e){mount.innerHTML='<div class="sp-no-data">Season stats could not be loaded right now.</div>';console.warn(e)}
  };
- if(location.hash){const requested=location.hash.slice(1);if(["overview","traits","athletic","film","stats","dynasty"].includes(requested)){showTab(requested);if(requested==="stats")loadStats()}}
+ if(location.hash){const requested=location.hash.slice(1);if(["overview","traits","athletic","film","stats","advanced","dynasty"].includes(requested)){showTab(requested);if(requested==="stats")loadStats();if(requested==="advanced")loadAdvanced()}}
 };
