@@ -32,13 +32,15 @@ window.BBB_PROFILE_V5 = async function(ctx){
  };
  const athletics=()=>{
   let tested=measured.filter(d=>a?.[d.key]!=null);
+  const movementTraits=fieldTraits.filter(x=>/^(speed|acceleration|agility|change of direction|deceleration)$/i.test(x.name));
   const metrics=tested.map(d=>{
    const value=Number(a[d.key]),pct=d.reverse?(d.hi-value)/(d.hi-d.lo):(value-d.lo)/(d.hi-d.lo),safe=Math.max(0,Math.min(100,pct*100));
    return '<div class="sp-athletic-row"><div class="sp-athletic-number"><span>'+esc(d.label)+'</span><strong>'+esc(d.format(value))+' <small>'+esc(d.unit)+'</small></strong></div><div class="sp-athletic-range"><div class="sp-athletic-marker" style="left:'+safe.toFixed(2)+'%"></div><div class="sp-range-fill" style="width:'+safe.toFixed(2)+'%"></div></div><div class="sp-range-ends"><span>'+d.lo+'</span><span>'+d.hi+'</span></div></div>';
   }).join("");
   return '<div class="sp-panel sp-athletics"><div class="sp-panel-head"><div><div class="sp-kicker">TESTING PROFILE</div><h2>How he measures up.</h2><p>Verified measurements, presented on labeled display scales.</p></div></div>'+
    '<div class="sp-physical"><div>'+profileTag("HEIGHT",height(a?.height_in))+'</div><div>'+profileTag("WEIGHT",a?.weight_lb==null?"Not recorded":display(a.weight_lb)+" lbs")+'</div><div>'+profileTag("HAND",a?.hand_in==null?"Not recorded":display(a.hand_in)+" in")+'</div><div>'+profileTag("ARM",a?.arm_in==null?"Not recorded":display(a.arm_in)+" in")+'</div></div>'+
-   (tested.length?'<div class="sp-athletic-chart">'+metrics+'</div>':'<div class="sp-no-data">No verified athletic test results on file for this player yet. We will not substitute estimated numbers or unrelated testing results.</div>')+
+   (tested.length?'<div class="sp-athletic-chart">'+metrics+'</div>':'<div class="sp-no-data">No verified timed/jump drill results are recorded. This is expected for many college prospects before the NFL Combine.</div>')+
+   (movementTraits.length?'<div class="sp-movement"><div class="sp-kicker">FILM-BASED ATHLETIC TRAITS</div><h3>Movement evaluation</h3><p class="sp-caption" style="margin:0 0 18px">BBB scouting grades, not measured combine times.</p><div class="sp-grading-list">'+movementTraits.map(bar).join('')+'</div></div>':'')+
    '<p class="sp-caption">Bar position shows a measurement within its labeled display range, <b>not a player percentile or athleticism score.</b> Faster times appear farther right. <span class="sp-test-source">'+(a?imageSource:'Source pending')+'</span></p></div>';
  };
  const grading=()=>'<div class="sp-panel"><div class="sp-panel-head"><div><div class="sp-kicker">BBB PLAYER EVALUATION</div><h2>Individual prospect grades.</h2><p>Recorded scouting traits from Bobby’s Big Board, kept on their original grading scales.</p></div><div class="sp-overall-grade"><span>OVERALL GRADE</span><strong>'+esc(gradeText)+'</strong></div></div>'+
@@ -85,7 +87,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
     const recent=await bbbDb("site_player_weekly_stats","select=season,week,opponent_team,targets,receptions,receiving_yards,receiving_tds,rushing_yards,passing_yards,target_share,air_yards_share&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc,week.desc&limit=18");
     if(!recent?.length)return;
     const c=p.pos==="QB"?[["Week","week"],["Opp","opponent_team"],["Pass Yds","passing_yards"]]:p.pos==="RB"?[["Week","week"],["Opp","opponent_team"],["Rush Yds","rushing_yards"],["Rec Yds","receiving_yards"]]:[["Week","week"],["Opp","opponent_team"],["Tgt","targets"],["Rec","receptions"],["Yds","receiving_yards"],["TD","receiving_tds"],["Tgt Share","target_share"]];
-    weeks.innerHTML='<h3 class="sp-weeks-title">Recent game log</h3><div class="sp-tablewrap"><table class="sp-table"><thead><tr>'+c.map(([l])=>'<th>'+esc(l)+'</th>').join('')+'</tr></thead><tbody>'+recent.map(row=>'<tr>'+c.map(([l,k])=>'<td>'+esc(k==="target_share"&&row[k]!=null?Number(row[k]).toFixed(1)+"%":row[k]??"—")+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+    weeks.innerHTML='<h3 class="sp-weeks-title">Recent game log</h3><div class="sp-tablewrap"><table class="sp-table"><thead><tr>'+c.map(([l])=>'<th>'+esc(l)+'</th>').join('')+'</tr></thead><tbody>'+recent.map(row=>'<tr>'+c.map(([l,k])=>'<td>'+esc(k==="target_share"&&row[k]!=null?(Number(row[k])<=1?Number(row[k])*100:Number(row[k])).toFixed(1)+"%":row[k]??"—")+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
    }catch(e){console.warn("Game log data unavailable",e)}
   }catch(e){mount.innerHTML='<div class="sp-no-data">Season stats could not be loaded right now.</div>';console.warn(e)}
  };
