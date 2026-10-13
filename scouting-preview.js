@@ -109,6 +109,55 @@ async function detail(slug){
  });
 }
 
+/* Native head-to-head removes the old #compare routing race entirely. */
+function nativeCompare(){
+ setTitle("Compare Players");const choices=D.ranks.map(r=>r.name).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+ app.innerHTML='<section class="section"><div class="wrap">'+section("BBB DYNASTY COMPARISON","Compare two players.","Independent BBB rankings, market context, existing prospect grades and linked scouting profiles.")+
+ '<div class="bbb-compare-layout"><div class="bbb-compare-pick"><label for="cmpA">PLAYER A</label><input id="cmpA" list="bbbCompareChoices" placeholder="Start typing a player name…" autocomplete="off"><div id="cmpSummaryA" class="bbb-compare-help">Choose the first player.</div></div>'+
+ '<div class="bbb-compare-pick"><label for="cmpB">PLAYER B</label><input id="cmpB" list="bbbCompareChoices" placeholder="Start typing a player name…" autocomplete="off"><div id="cmpSummaryB" class="bbb-compare-help">Choose the second player.</div></div></div>'+
+ '<datalist id="bbbCompareChoices">'+choices.map(x=>'<option value="'+esc(x)+'"></option>').join("")+'</datalist>'+
+ '<div id="cmpOutput" class="bbb-compare-table"><div class="bbb-compare-help">Select two ranked players to see a head-to-head comparison.</div></div>'+
+ '<div class="bbb-compare-note">Prospect grades represent your saved film evaluations, not a universal score across every position. A missing grade means you have not graded that player in BBB.</div>'+
+ '</div></section>';
+ const parse=text=>D.ranks.find(r=>String(r.name||"").trim().toLowerCase()===text.trim().toLowerCase())||null;
+ const detailHtml=r=>{
+  if(!r)return '<p class="note">Select an exact name from the suggestions.</p>';
+  const p=D.profiles.find(p=>p.player_key===r.player_key),g=P.get(r.player_key);
+  return '<h3 class="bbb-compare-playername">'+esc(r.name)+'</h3><p>'+esc(r.pos||"")+' · '+esc(r.team||"")+(p?.college?' · '+esc(p.college):'')+'</p>'+
+  '<div class="bbb-profile-grade-row"><span class="bbb-plain-pill">BBB #'+esc(r.rank)+'</span><span class="bbb-plain-pill">Prospect grade: <b>'+(g?.grade!=null?esc(g.grade):"Not graded")+'</b></span></div>'+
+  '<a class="sectionlink" href="'+purl(r)+'">Full player profile →</a>';
+ };
+ const val=(r,field)=>r&&r[field]!=null?r[field]:"—";
+ const render=()=>{
+  const l=parse(document.getElementById("cmpA").value),r=parse(document.getElementById("cmpB").value);
+  document.getElementById("cmpSummaryA").innerHTML=detailHtml(l);
+  document.getElementById("cmpSummaryB").innerHTML=detailHtml(r);
+  if(!l||!r){document.getElementById("cmpOutput").innerHTML='<div class="bbb-compare-help">Choose two players from the dropdown suggestions to compare their BBB evaluations.</div>';return}
+  if(l.player_key===r.player_key){document.getElementById("cmpOutput").innerHTML='<div class="bbb-compare-help">Choose two different players.</div>';return}
+  const lg=P.get(l.player_key),rg=P.get(r.player_key);
+  const pa=D.profiles.find(x=>x.player_key===l.player_key),pb=D.profiles.find(x=>x.player_key===r.player_key);
+  const grade=g=>g?.grade!=null?Number(g.grade).toFixed(1):"Not graded";
+  const rows=[
+   ["BBB overall rank","#"+l.rank,"#"+r.rank],
+   ["Position rank",l.pos+(l.pr||"—"),r.pos+(r.pr||"—")],
+   ["Team",val(l,"team"),val(r,"team")],
+   ["Age",val(l,"age"),val(r,"age")],
+   ["Market rank",l.market!=null?"#"+l.market:"—",r.market!=null?"#"+r.market:"—"],
+   ["BBB vs market",val(l,"gap"),val(r,"gap")],
+   ["College",pa?.college||"—",pb?.college||"—"],
+   ["Prospect grade",grade(lg),grade(rg)],
+   ["Draft class",lg?.year||"—",rg?.year||"—"],
+   ["Pro comparison",lg?.comp||"—",rg?.comp||"—"]
+  ];
+  document.getElementById("cmpOutput").innerHTML=rows.map((x,i)=>'<div class="bbb-compare-line"><strong>'+esc(x[1])+'</strong><span>'+esc(x[0])+'</span><strong>'+esc(x[2])+'</strong></div>').join("");
+ };
+ for(const id of ["cmpA","cmpB"]){document.getElementById(id).addEventListener("input",render);document.getElementById(id).addEventListener("change",render)}
+ const sp=new URLSearchParams(location.search);const initial=[sp.get("left"),sp.get("right")];
+ if(initial[0]){const x=D.ranks.find(r=>r.player_key===initial[0]);if(x)document.getElementById("cmpA").value=x.name}
+ if(initial[1]){const x=D.ranks.find(r=>r.player_key===initial[1]);if(x)document.getElementById("cmpB").value=x.name}
+ render();
+}
+
 /* Unified Dynasty tab: the original working tool engine remains embedded inside the
    shared BBB navigation without showing another website header or resetting its state. */
 function dynastyTool(key){
@@ -134,6 +183,6 @@ function dynastyTool(key){
 async function load(){let queries=[["profiles","site_profiles","select=player_key,name,pos,team,age,college,draft_year,overall_breakdown&order=name.asc&limit=1000"],["ranks","site_dynasty","select=player_key,rank,pr,name,pos,team,age,market,gap&order=rank.asc&limit=500"],["prospects","site_prospects","select=player_key,name,pos,year,grade,comp&limit=300"],["athletics","bbb_player_athletics","select=*&limit=1000"],["scouting","bbb_player_scouting","select=*&limit=1000"],["videos","bbb_youtube_videos","select=video_id,player_key,title,video_type,privacy_status,published_at&order=published_at.desc&limit=250"]];
 await Promise.all(queries.map(async q=>{try{D[q[0]]=await bbbDb(q[1],q[2])||[]}catch(x){console.warn("Failed loading "+q[0],x);D[q[0]]=[]}}));D.ranks.forEach(x=>R.set(x.player_key,x));D.prospects.forEach(x=>P.set(x.player_key,x));D.athletics.forEach(x=>A.set(x.player_key,x));D.scouting.forEach(x=>S.set(x.player_key,x));
 try{const images=await fetch("/scouting-headshots.json",{cache:"force-cache"}).then(r=>r.ok?r.json():null);D.media=images?.players||{}}catch(e){console.warn("ESPN images unavailable",e)}
-const path=decodeURIComponent(location.pathname).replace(/\/+$/,"")||"/";if(path==="/players")directory(false);else if(path==="/draft")directory(true);else if(path==="/film")filmRoom();else if(path.startsWith("/scouting/"))await detail(path.split("/").slice(2).join("/"));else if(path.startsWith("/dynasty"))dynastyTool(path.split("/")[2]||"rankings");else home()
+const path=decodeURIComponent(location.pathname).replace(/\/+$/,"")||"/";if(path==="/players")directory(false);else if(path==="/draft")directory(true);else if(path==="/film")filmRoom();else if(path.startsWith("/scouting/"))await detail(path.split("/").slice(2).join("/"));else if(path==="/dynasty/compare")nativeCompare();else if(path.startsWith("/dynasty"))dynastyTool(path.split("/")[2]||"rankings");else home()
 }load().catch(e=>{console.error(e);app.innerHTML='<section class="section"><div class="wrap"><div class="empty">Unable to load scouting data. Refresh to try again.</div></div></section>'});
 })();
