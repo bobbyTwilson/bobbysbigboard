@@ -3,7 +3,7 @@ const root='.vercel/output/static';
 const original=await readFile(root+'/index.html','utf8');
 await mkdir(root+'/dynasty-engine',{recursive:true});
 /* Legacy dynasty tools are a component inside the new scouting shell, not a second visible website. */
-const styles=\`<style>
+const styles=`<style>
 .site-header,.mobile-subnav,footer,.footer,.youtube-strip{display:none!important}
 html,body{background:#0b180f!important;color:#eef4ed!important}
 .hero,.trade-hero{padding:27px 0 32px!important;background:linear-gradient(125deg,#15281a,#0d1b11)!important}
@@ -14,7 +14,7 @@ a:hover,.rank-cell{color:#8bdfa0!important}
 .section{padding:32px 0!important}
 .shell{width:min(1150px,calc(100% - 22px))!important}
 @media(max-width:650px){.shell{width:calc(100% - 16px)!important}.section{padding:24px 0!important}.hero{padding:19px 0!important}}
-</style>\`;
+</style>`;
 await writeFile(root+'/dynasty-engine/index.html',original.replace('</head>', '<meta name="robots" content="noindex,nofollow">'+styles+'</head>'));
 const preview=await readFile('scouting-preview.html','utf8');
 await writeFile(root+'/index.html',preview);
