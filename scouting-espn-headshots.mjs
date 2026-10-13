@@ -6,16 +6,13 @@ const url=process.env.BBB_SUPABASE_URL,key=process.env.BBB_SUPABASE_KEY;
 const validId=v=>/^[0-9]{4,12}$/.test(String(v||''));
 const out={},meta={nflFromVerifiedMappings:0,collegeCandidates:0,errors:[]};
 try{
- if(!url||!key)throw Error('BBB read-only Supabase credentials not provided');
- const r=await fetch(url+'/rest/v1/player_external_ids?select=player_key,external_id,confidence&provider=eq.espn&confidence=gte.0.9&limit=1000',{headers:{apikey:key}});
- if(!r.ok)throw Error('Player ID lookup '+r.status);
- const rows=await r.json();
- for(const p of rows){
-  if(!p.player_key||!validId(p.external_id))continue;
-  out[p.player_key]={url:'https://a.espncdn.com/i/headshots/nfl/players/full/'+p.external_id+'.png',id:p.external_id,league:'nfl',source:'Existing verified BBB ESPN identifier',confidence:'verified'};
+ const existing=JSON.parse(await readFile('scouting-espn-verified-ids.json','utf8'));
+ for(const [playerKey,id] of Object.entries(existing.players||{})){
+  if(!playerKey||!validId(id))continue;
+  out[playerKey]={url:'https://a.espncdn.com/i/headshots/nfl/players/full/'+id+'.png',id,league:'nfl',source:'Existing verified BBB ESPN identifier',confidence:'verified'};
   meta.nflFromVerifiedMappings++;
  }
-}catch(e){meta.errors.push(String(e.message))}
+}catch(e){meta.errors.push('Existing ESPN mapping file: '+String(e.message))}
 try{
  const seed=JSON.parse(await readFile('scouting-espn-seeds.json','utf8'));
  for(const [slug,p] of Object.entries(seed.players||{})){
