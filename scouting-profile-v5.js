@@ -21,6 +21,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
  const imageSource=a?.source_url?'<a target="_blank" rel="noopener noreferrer" href="'+esc(a.source_url)+'">'+esc(a.source_name||"Testing source")+' ↗</a>':esc(a?.source_name||"BBB verified testing database");
  const measured=[
   {key:"forty_seconds",label:"40-YARD DASH",unit:"sec",format:v=>Number(v).toFixed(2),lo:4,hi:6,reverse:true},
+  {key:"ten_split_seconds",label:"10-YD SPLIT",unit:"sec",format:v=>Number(v).toFixed(2),lo:1.3,hi:1.9,reverse:true},
   {key:"vertical_in",label:"VERTICAL JUMP",unit:"in",format:v=>display(v),lo:20,hi:45},
   {key:"broad_in",label:"BROAD JUMP",unit:"in",format:v=>display(v),lo:95,hi:145},
   {key:"three_cone_seconds",label:"3-CONE",unit:"sec",format:v=>Number(v).toFixed(2),lo:6.5,hi:8.5,reverse:true},
