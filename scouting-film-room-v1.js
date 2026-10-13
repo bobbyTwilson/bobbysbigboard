@@ -10,30 +10,24 @@ const thumb=id=>"https://i.ytimg.com/vi/"+encodeURIComponent(id)+"/hqdefault.jpg
 const safeId=id=>valid(id)?encodeURIComponent(id):"";
 const categoryLabels={prospect:"Draft Prospect",rookie:"Rookie Film",nfl:"NFL Film Study"};
 function catalog(approved,channel,profiles,prospects){
- const publicVideos=new Map((channel||[]).filter(v=>valid(v.video_id)&&v.video_type==="long"&&v.privacy_status==="public").map(v=>[v.video_id,v]));
  const playerMap=new Map((profiles||[]).map(p=>[p.player_key,p]));
  const prospectMap=new Map((prospects||[]).map(p=>[p.player_key,p]));
  const seen=new Set(),entries=[];
- function add(v,registry){
-  if(!v||!v.player_key||seen.has(v.video_id)||!publicVideos.has(v.video_id))return;
-  const p=playerMap.get(v.player_key);if(!p)return;
+ for(const v of approved||[]){
+  const id=v.youtube_video_id||v.video_id;
+  if(v.editorial_status!=="approved"||!valid(id)||seen.has(id)||!v.player_key)continue;
+  const p=playerMap.get(v.player_key);
+  if(!p)continue;
   const prospect=prospectMap.get(v.player_key),draftYear=Number(prospect?.year||p.draft_year||0);
-  const category=registry?.video_type==="prospect_breakdown"||draftYear>=2027?"prospect":
-   registry?.video_type==="rookie_film"||draftYear>=2025&&draftYear<=2026?"rookie":"nfl";
-  seen.add(v.video_id);
-  entries.push({...v,title:v.title||registry?.title||"Film Breakdown",player_name:p.name,player_position:p.pos,
-   player_college:p.college,player_team:p.team,category,category_label:categoryLabels[category],
-   draft_year:draftYear||null});
- }
- for(const record of approved||[]){
-  if(record.editorial_status!=="approved"||!valid(record.youtube_video_id))continue;
-  const video=publicVideos.get(record.youtube_video_id);
-  if(video)add({...video,player_key:record.player_key},record);
- }
- for(const video of publicVideos.values()){
-  if(!video.player_key||seen.has(video.video_id))continue;
-  if(!/film breakdown|film study|scouting report|scouting breakdown|player evaluation/i.test(video.title||""))continue;
-  add(video,null);
+  const category=v.video_type==="prospect_breakdown"||draftYear>=2027?"prospect":
+   v.video_type==="rookie_film"||draftYear>=2025&&draftYear<=2026?"rookie":"nfl";
+  seen.add(id);
+  entries.push({
+   video_id:id,player_key:v.player_key,title:v.title||"Film Breakdown",
+   published_at:v.published_at||v.created_at||v.updated_at||null,
+   player_name:p.name,player_position:p.pos,player_college:p.college,player_team:p.team,
+   category,category_label:categoryLabels[category],draft_year:draftYear||null
+  });
  }
  entries.sort((a,b)=>Date.parse(b.published_at||0)-Date.parse(a.published_at||0));
  return entries;
