@@ -184,6 +184,13 @@
   by('filmAdminLibraryStatus').addEventListener('change',libraryRender);
   const nav=document.querySelector('[data-page="film"]');
   nav?.addEventListener('click',()=>page('film'));
+  const contentActions=document.querySelector('#pageContent .content-head-actions');
+  if(contentActions&&!by('filmAdminContentShortcut')){
+   const shortcut=document.createElement('button');
+   shortcut.id='filmAdminContentShortcut';shortcut.type='button';shortcut.className='refresh-btn';
+   shortcut.textContent='+ Add Film Breakdown';shortcut.addEventListener('click',()=>page('film'));
+   contentActions.appendChild(shortcut);
+  }
  }
  if(typeof page==='function'){
   const original=page;
