@@ -72,41 +72,9 @@ const height=v=>v?Math.floor(Number(v)/12)+"′"+Number(v)%12+"″":"—";
 function measurements(a){if(!a)return '<p class="note">Verified combine testing is not yet available for this player. Missing drills are never estimated.</p>';let rows=[["Height",height(a.height_in)],["Weight",a.weight_lb?a.weight_lb+" lb":"—"],["40-yard dash",a.forty_seconds?a.forty_seconds+"s":"Not recorded"],["Vertical jump",a.vertical_in?a.vertical_in+"″":"Not recorded"],["Broad jump",a.broad_in?a.broad_in+"″":"Not recorded"],["3-cone",a.three_cone_seconds?a.three_cone_seconds+"s":"Not recorded"]];return '<div class="measureGrid">'+rows.map(x=>'<div class="measure"><span>'+x[0]+'</span><strong>'+esc(x[1])+'</strong></div>').join("")+'</div><p class="tiny" style="margin-top:15px"><a class="sectionlink" href="'+esc(a.source_url||"#")+'" target="_blank" rel="noopener">Source: '+esc(a.source_name||"Verified testing")+' ↗</a></p>'}
 async function detail(slug){
  const p=D.profiles.find(x=>x.player_key===slug);
- if(!p){app.innerHTML='<section class="section"><div class="wrap"><div class="empty">Player not found. <a href="/players">Return to player directory</a></div></div></section>';return}
- setTitle(p.name+" Scouting");
- const r=R.get(slug),g=P.get(slug),a=A.get(slug),s=S.get(slug),sample=SAMPLES[slug],photo=portrait(p);
- const approvedVideo=D.videos.filter(v=>v.player_key===slug&&v.privacy_status==="public"&&v.video_type==="long"&&/film breakdown|film study/i.test(v.title||""));
- const hasGrade=g&&g.grade!=null&&Number.isFinite(Number(g.grade));
- const gradeLabel=hasGrade?Number(g.grade).toFixed(1):"Not graded";
- const isProspect=!!g&&Number(g.year)>=2027;
- const summary=s?.scouting_summary||p.overall_breakdown||"This player is in the BBB database. A detailed film-based scouting report has not been published yet.";
- const pic=photo?'<div class="portraitWrap"><img src="'+esc(photo)+'" alt="ESPN player headshot" onerror="this.parentElement.remove()"></div>':'';
- app.innerHTML='<section class="profileHead"><div class="wrap"><div class="breadcrumbs"><a href="/players">Players</a> / '+esc(p.pos||"")+' / '+esc(p.name)+'</div>'+
- '<div class="bbb-profile-scorecard">'+pic+'<div><div class="eyebrow">PLAYER SCOUTING PROFILE</div><h1 class="profileName">'+esc(p.name)+'</h1><div class="profileSub">'+esc(p.pos||"")+" · "+esc(p.team||"Prospect")+" · "+esc(p.college||"College not recorded")+'</div>'+
- '<div class="bbb-profile-grade-row"><span class="bbb-plain-pill">Prospect grade: <b>'+gradeLabel+'</b></span>'+(r?'<span class="bbb-plain-pill">Dynasty rank: <b>#'+esc(r.rank)+'</b></span>':'')+(g?.comp?'<span class="bbb-plain-pill">Pro comp: <b>'+esc(g.comp)+'</b></span>':'')+(isProspect?'<span class="bbb-plain-pill">Class: <b>'+esc(g.year)+'</b></span>':'')+'</div></div></div>'+
- '<p class="bbb-profile-maincopy">'+esc(summary)+'</p></div></section>'+
- '<section class="section line" style="padding-top:32px"><div class="wrap">'+
- '<div class="bbb-profile-topline"><div><div class="eyebrow">YOUR ORIGINAL BBB PROFILE</div><strong>Detailed player breakdown & statistics</strong></div><span>Preserving the current BBB player-profile layout and its tabs</span></div>'+
- '<div class="bbb-profile-native-shell"><iframe class="bbb-profile-frame" title="Full BBB player profile for '+esc(p.name)+'" id="bbbFullProfile" loading="eager" src="/player/'+encodeURIComponent(slug)+'?bbbEmbed=1"></iframe></div>'+
- '<p class="bbb-native-desc">This is the existing BBB player profile embedded inside the new scouting layout; rankings, game logs, prospect traits and player timelines remain intact.</p></div></section>'+
- '<section class="section line"><div class="wrap">'+section("SCOUTING VIDEO LIBRARY","Film breakdowns","Published Bobby’s Big Board videos linked to the player.")+
- '<div class="filmList">'+(approvedVideo.length?approvedVideo.map(v=>'<a class="filmItem" href="https://youtu.be/'+encodeURIComponent(v.video_id)+'" target="_blank" rel="noopener"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/'+encodeURIComponent(v.video_id)+'/hqdefault.jpg"><div><span class="tag">FILM BREAKDOWN</span><h4>'+esc(v.title)+'</h4><p>Watch the full analysis ↗</p></div></a>').join(""):'<p class="note">No published BBB film breakdown is linked to this player yet.</p>')+'</div>'+
- (sample?'<div style="margin-top:26px"><h3>Film notebook · Draft only</h3><p class="note">Work-in-progress film observations, not an approved scouting report.</p>'+sample.clips.map((c,i)=>'<div class="playrow"><span class="n">PLAY '+(i+1)+' · '+esc(c[0])+'</span><b style="display:block;margin-top:6px">'+esc(c[1])+'</b><p>'+esc(c[2])+'</p></div>').join("")+'</div>':'')+
- '</div></section>'+
- '<section class="section"><div class="wrap">'+section("MEASURABLES","Verified athletic profile","Combine and athletic measurements are displayed only when recorded; no estimated numbers.")+
- '<div class="panel" style="max-width:700px">'+measurements(a)+'</div></div></section>';
- const iframe=document.getElementById("bbbFullProfile");
- iframe.addEventListener("load",()=>{
-  try{
-   const doc=iframe.contentDocument;
-   if(!doc)return;
-   let t=false;
-   const update=()=>{if(t)return;t=true;requestAnimationFrame(()=>{t=false;iframe.style.height=Math.max(760,doc.documentElement.scrollHeight+15,doc.body?.scrollHeight+15)+"px"})};
-   update();
-   if(window.ResizeObserver){const obs=new ResizeObserver(update);obs.observe(doc.body);obs.observe(doc.documentElement)}
-   setTimeout(update,1200);setTimeout(update,3200);
-  }catch(err){console.warn("BBB profile embed sizing",err)}
- });
+ if(!p){app.innerHTML='<section class="section"><div class="wrap"><div class="empty">Player not found. <a href="/players">Back to directory</a></div></div></section>';return}
+ const related=D.videos.filter(v=>v.player_key===slug&&v.privacy_status==="public"&&v.video_type==="long"&&/film breakdown|film study|breakout/i.test(v.title||""));
+ return window.BBB_PROFILE_V5({app,p,r:R.get(slug),g:P.get(slug),a:A.get(slug),s:S.get(slug),sample:SAMPLES[slug],photo:portrait(p),videos:related,esc,stat,section,bbbDb,setTitle});
 }
 
 /* Native head-to-head removes the old #compare routing race entirely. */
@@ -180,7 +148,7 @@ function dynastyTool(key){
  });
 }
 
-async function load(){let queries=[["profiles","site_profiles","select=player_key,name,pos,team,age,college,draft_year,overall_breakdown&order=name.asc&limit=1000"],["ranks","site_dynasty","select=player_key,rank,pr,name,pos,team,age,market,gap&order=rank.asc&limit=500"],["prospects","site_prospects","select=player_key,name,pos,year,grade,comp&limit=300"],["athletics","bbb_player_athletics","select=*&limit=1000"],["scouting","bbb_player_scouting","select=*&limit=1000"],["videos","bbb_youtube_videos","select=video_id,player_key,title,video_type,privacy_status,published_at&order=published_at.desc&limit=250"]];
+async function load(){let queries=[["profiles","site_profiles","select=player_key,name,pos,team,age,college,draft_year,overall_breakdown,latest_weekly_update,injury_status&order=name.asc&limit=1000"],["ranks","site_dynasty","select=player_key,rank,pr,name,pos,team,age,market,gap&order=rank.asc&limit=500"],["prospects","site_prospects","select=player_key,name,pos,year,grade,comp,traits&limit=300"],["athletics","bbb_player_athletics","select=*&limit=1000"],["scouting","bbb_player_scouting","select=*&limit=1000"],["videos","bbb_youtube_videos","select=video_id,player_key,title,video_type,privacy_status,published_at&order=published_at.desc&limit=250"]];
 await Promise.all(queries.map(async q=>{try{D[q[0]]=await bbbDb(q[1],q[2])||[]}catch(x){console.warn("Failed loading "+q[0],x);D[q[0]]=[]}}));D.ranks.forEach(x=>R.set(x.player_key,x));D.prospects.forEach(x=>P.set(x.player_key,x));D.athletics.forEach(x=>A.set(x.player_key,x));D.scouting.forEach(x=>S.set(x.player_key,x));
 try{const images=await fetch("/scouting-headshots.json",{cache:"force-cache"}).then(r=>r.ok?r.json():null);D.media=images?.players||{}}catch(e){console.warn("ESPN images unavailable",e)}
 const path=decodeURIComponent(location.pathname).replace(/\/+$/,"")||"/";if(path==="/players")directory(false);else if(path==="/draft")directory(true);else if(path==="/film")filmRoom();else if(path.startsWith("/scouting/"))await detail(path.split("/").slice(2).join("/"));else if(path==="/dynasty/compare")nativeCompare();else if(path.startsWith("/dynasty"))dynastyTool(path.split("/")[2]||"rankings");else home()
