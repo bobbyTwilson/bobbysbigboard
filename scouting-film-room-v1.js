@@ -6,7 +6,19 @@
 "use strict";
 const valid=id=>/^[A-Za-z0-9_-]{11}$/.test(String(id||""));
 const fallbackEsc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const thumb=id=>"https://i.ytimg.com/vi/"+encodeURIComponent(id)+"/hqdefault.jpg";
+const thumb=(id,quality="hqdefault")=>"https://i.ytimg.com/vi/"+encodeURIComponent(id)+"/"+quality+".jpg";
+function upgradePoster(img){
+ if(!img)return;
+ const id=img.dataset.videoId;
+ if(!valid(id))return;
+ const qualities=["maxresdefault","sddefault","hqdefault"];
+ let index=0;
+ const fallback=()=>{if(index>=qualities.length-1)return;index++;img.src=thumb(id,qualities[index]);};
+ img.addEventListener("error",fallback);
+ img.addEventListener("load",()=>{if(img.naturalWidth<400)fallback();});
+ img.src=thumb(id,qualities[0]);
+}
+
 const safeId=id=>valid(id)?encodeURIComponent(id):"";
 const categoryLabels={prospect:"Draft Prospect",rookie:"Rookie Film",nfl:"NFL Film Study"};
 function catalog(approved,channel,profiles,prospects){
@@ -38,19 +50,20 @@ function frame(id,esc){
 function screen(video,playing,esc){
  if(!video)return '<div class="bbb-film-placeholder">No matching film breakdown selected.</div>';
  if(playing)return frame(video.video_id,esc);
- return '<div class="bbb-film-poster" style="background-image:linear-gradient(0deg,rgba(0,0,0,.70),rgba(0,0,0,.09)),url(&quot;'+thumb(video.video_id)+'&quot;)"><button class="bbb-film-bigplay" type="button" data-film-play aria-label="Play '+esc(video.title)+'">▶</button><div class="bbb-film-poster-info"><span>'+esc(video.category_label)+'</span><strong>'+esc(video.title)+'</strong></div></div>';
+ return '<div class="bbb-film-poster"><img class="bbb-film-poster-image" data-video-id="'+safeId(video.video_id)+'" alt="" decoding="async"><div class="bbb-film-poster-shade"></div><button class="bbb-film-bigplay" type="button" data-film-play aria-label="Play '+esc(video.title)+'">▶</button><div class="bbb-film-poster-info"><span>'+esc(video.category_label)+'</span><strong>'+esc(video.title)+'</strong></div></div>';
 }
-function detail(video,esc,profileLink){
+function detail(video,esc,profileLink,isProfile){
  return video?'<div class="bbb-film-info-head"><div><span class="bbb-film-eyebrow">'+esc(video.category_label)+'</span><h2>'+esc(video.title)+'</h2><p>'+esc(video.player_name)+(video.player_college?" · "+esc(video.player_college):"")+'</p></div></div>'+
-  '<div class="bbb-film-meta-actions"><a href="'+profileLink(video.player_key)+'" class="bbb-film-profile-link">View '+esc(video.player_name)+"'s scouting profile →</a>"+
+  '<div class="bbb-film-meta-actions"><a href="'+profileLink(video.player_key,video)+'" class="bbb-film-profile-link">'+(isProfile?'Explore the Film Room →':'View '+esc(video.player_name)+"'s scouting profile →")+'</a>'+
   '<a href="https://www.youtube.com/watch?v='+safeId(video.video_id)+'" target="_blank" rel="noopener noreferrer" class="bbb-film-youtube-link">Open on YouTube ↗</a></div>':"";
 }
-function attach(root,list,initialId,esc,profileLink){
+function attach(root,list,initialId,esc,profileLink,isProfile=false){
  let chosen=list.find(v=>v.video_id===initialId)||list[0]||null,playing=false;
  const screenNode=root.querySelector("[data-film-screen]"),infoNode=root.querySelector("[data-film-info]");
  const repaint=()=>{
   if(screenNode)screenNode.innerHTML=screen(chosen,playing,esc);
-  if(infoNode)infoNode.innerHTML=detail(chosen,esc,profileLink);
+  if(infoNode)infoNode.innerHTML=detail(chosen,esc,profileLink,isProfile);
+  upgradePoster(screenNode?.querySelector(".bbb-film-poster-image"));
   root.querySelectorAll("[data-film-select]").forEach(el=>el.setAttribute("aria-pressed",String(!!chosen&&el.dataset.filmSelect===chosen.video_id)));
  };
  const pick=(id,autoPlay)=>{
@@ -127,16 +140,27 @@ function render(app,videos,ctx){
  app.querySelector("[data-film-search]").addEventListener("input",e=>{search=e.target.value.toLowerCase().trim();draw()});
  draw();
 }
+function playlistItem(video,index,esc){
+ return '<button type="button" class="bbb-film-queue-item" data-film-select="'+safeId(video.video_id)+'" aria-pressed="false">'+
+ '<span class="bbb-film-queue-art"><img src="'+thumb(video.video_id,'mqdefault')+'" loading="lazy" alt=""><span class="bbb-film-queue-play" aria-hidden="true">▶</span></span>'+
+ '<span class="bbb-film-queue-copy"><small>VIDEO '+String(index+1).padStart(2,'0')+' · '+esc(video.category_label)+'</small>'+
+ '<strong>'+esc(video.title)+'</strong></span></button>';
+}
 function profileMarkup(videos,player,esc){
  if(!videos.length)return '<div class="sp-panel"><div class="sp-panel-head"><div><div class="sp-kicker">BBB FILM ROOM</div><h2>Film & scouting notes.</h2></div></div><div class="sp-no-data">No public film breakdown linked to '+esc(player.name)+' yet.</div></div>';
- return '<div class="sp-panel bbb-film-profile" data-bbb-profile-film><div class="sp-panel-head"><div><div class="sp-kicker">PLAYER FILM STUDIES</div><h2>Watch '+esc(player.name)+' on film.</h2><p>Play BBB breakdowns here without leaving the scouting profile.</p></div></div>'+
- '<div class="bbb-film-screen" data-film-screen></div><div class="bbb-film-stage-info" data-film-info></div>'+
- (videos.length>1?'<div class="bbb-film-profile-list">'+videos.map(v=>filmTile(v,esc)).join("")+'</div>':'')+
- '</div>';
+ const multi=videos.length>1;
+ return '<div class="sp-panel bbb-film-profile" data-bbb-profile-film><div class="sp-panel-head"><div><div class="sp-kicker">PLAYER FILM STUDIES</div><h2>Watch '+esc(player.name)+' on film.</h2><p>Watch the full breakdown here. Switch between studies without leaving this profile.</p></div><span class="bbb-film-profile-count">'+videos.length+' VIDEO'+(multi?'S':'')+'</span></div>'+
+ '<div class="bbb-film-profile-layout">'+
+ '<div class="bbb-film-profile-main"><div class="bbb-film-screen" data-film-screen></div><div class="bbb-film-stage-info" data-film-info></div></div>'+
+ '<aside class="bbb-film-profile-rail">'+
+ (multi?'<div class="bbb-film-rail-label">MORE FILM ON '+esc(player.name.toUpperCase())+'</div><div class="bbb-film-queue" role="group" aria-label="Select a '+esc(player.name)+' film breakdown">'+videos.map((v,i)=>playlistItem(v,i,esc)).join('')+'</div>':
+ '<div class="bbb-film-rail-label">PLAYER FILM COLLECTION</div><h3>One breakdown. More to come.</h3><p>This film study is linked to '+esc(player.name)+"'s scouting report. Any future videos you publish for this player will be added here automatically.</p>"+
+ '<a class="bbb-film-rail-link" href="/film">Explore all BBB film →</a>')+
+ '</aside></div></div>';
 }
 function bindProfile(app,videos,esc){
  const root=app.querySelector("[data-bbb-profile-film]");
- if(root&&videos.length)attach(root,videos,null,esc,slug=>"/scouting/"+encodeURIComponent(slug));
+ if(root&&videos.length)attach(root,videos,null,esc,(_slug,video)=>"/film?video="+encodeURIComponent(video.video_id),true);
 }
 window.BBB_FILM_ROOM={catalog,render,profileMarkup,bindProfile};
 })();
