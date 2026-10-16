@@ -1,0 +1,54 @@
+/* Scouting intelligence V6: overview is a report, not another copy of the trait/test tabs. */
+.sp-overview-v6{display:grid;gap:18px}
+.sp-overview-top{display:grid;grid-template-columns:minmax(0,1.48fr) minmax(300px,.86fr);gap:17px;align-items:stretch}
+.sp-verdict{min-height:285px;padding:29px!important}
+.sp-verdict h2{font-size:30px!important;letter-spacing:-.04em;margin:9px 0 12px!important}
+.sp-verdict .sp-report{max-width:70ch;font-size:15px;line-height:1.82;color:#dfebdb}
+.sp-report-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:25px}
+.sp-quicklink{border:1px solid #527b54;background:#21402a;color:#d5efcf;font-weight:830;border-radius:8px;padding:10px 13px;font-size:12px;cursor:pointer;display:inline-flex;justify-content:center;align-items:center;text-decoration:none}
+.sp-quicklink:hover,.sp-quicklink:focus-visible{background:#315d39;color:#f7fff4;outline:2px solid #80b583}
+.sp-overview-right{display:flex;flex-direction:column;gap:13px}
+.sp-draft-rank,.sp-overview-pulse,.sp-insight-card,.sp-overview-foot{border:1px solid #405d46;background:#172b1d;border-radius:12px;padding:20px}
+.sp-draft-rank{background:linear-gradient(120deg,#1d3925,#13271b)}
+.sp-rank-values{display:flex;gap:15px;flex-wrap:wrap;align-items:baseline;margin:9px 0}
+.sp-rank-values strong{font-size:38px;font-weight:950;color:#def4d4;letter-spacing:-.07em;line-height:1.1}
+.sp-rank-values span{font-size:19px;font-weight:800;color:#d6e6c8}
+.sp-draft-rank p,.sp-overview-pulse p,.sp-overview-foot p{color:#bfd3bd;font-size:12px;line-height:1.6;margin:9px 0}
+.sp-draft-rank a{display:inline-block;font-size:12px;color:#a6e5ab;font-weight:800;margin-top:9px}
+.sp-overview-pulse{flex:1}
+.sp-overview-pulse h3{font-size:19px;color:#eff6e9;margin:5px 0 8px}
+.sp-pulse-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:16px 0}
+.sp-pulse-stats div{background:#223c29;border:1px solid #49624a;border-radius:8px;padding:9px}
+.sp-pulse-stats strong{display:block;font-size:21px;color:#dfefc6;line-height:1.1;white-space:nowrap}
+.sp-pulse-stats small{font-size:10px;color:#c1d4b9;display:block;margin-top:5px;line-height:1.35}
+.sp-muted{font-size:12px;color:#b9ceb9;line-height:1.6;margin:10px 0 16px}
+.sp-insights{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sp-insight-head h3,.sp-insight-card>h3{font-size:23px;margin:6px 0 7px;color:#f0f6e9}
+.sp-insight-head p{margin:0 0 14px;font-size:12px;color:#bfcdb9;line-height:1.5}
+.sp-insight-card.watch{border-color:#736249;background:#262c1e}
+.sp-insight-card.watch .sp-kicker{color:#efce8e!important}
+.sp-scout-items{display:grid;gap:8px}
+.sp-scout-item{display:flex;gap:13px;align-items:center;background:#203b28;border:1px solid #405f47;border-radius:8px;padding:12px}
+.watch .sp-scout-item{background:#342e21;border-color:#6a614b}
+.sp-scout-index{font-size:13px;font-weight:850;color:#91c99a}
+.watch .sp-scout-index{color:#dbba87}
+.sp-scout-item strong{font-size:14px;color:#ecf5e9;display:block}
+.sp-scout-item small{display:block;font-size:11px;color:#b9ccb6;margin-top:4px}
+.sp-simple-list{margin:18px 0 5px;padding-left:19px;color:#d4e6d0;font-size:14px;line-height:1.9}
+.sp-simple-list li{padding-left:3px}
+.sp-overview-foot{display:flex;justify-content:space-between;align-items:center;gap:20px;background:#122a1a;padding:18px 24px}
+.sp-overview-foot h3{font-size:19px;margin:5px 0;color:#eff8e9}
+.sp-overview-foot p{margin:0}
+.sp-advanced-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.sp-adv-heading h2{font-size:28px;margin:6px 0}
+.sp-adv-heading p{font-size:13px;color:#bed0ba;margin-bottom:22px}
+.sp-adv-metric{background:#1a3022;border:1px solid #426247;border-radius:10px;padding:18px 15px;min-height:135px}
+.sp-adv-metric span{display:block;font-weight:850;font-size:11px;color:#b8d0b2;line-height:1.5}
+.sp-adv-metric strong{display:block;font-size:31px;color:#d4f0c7;line-height:1.2;margin:8px 0;letter-spacing:-.04em}
+.sp-adv-metric small{display:block;color:#aabfa6;font-size:10px;line-height:1.5}
+.sp-speed-score{border:1px solid #496d4d;background:#1b3624;border-radius:10px;padding:13px 18px;margin:14px 0;display:flex;align-items:center;gap:15px}
+.sp-speed-score strong{font-size:27px;color:#e0f5d4}
+.sp-speed-score span{font-size:12px;color:#c3dec0;line-height:1.6}
+@media(max-width:1050px){.sp-overview-top{grid-template-columns:1fr}.sp-overview-right{display:grid;grid-template-columns:1fr 1fr}.sp-advanced-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.sp-insights,.sp-overview-right{grid-template-columns:1fr}.sp-pulse-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.sp-overview-foot{flex-direction:column;align-items:flex-start}.sp-verdict{padding:20px!important;min-height:0}.sp-adv-metric{min-height:115px}.sp-adv-metric strong{font-size:25px}}
+@media(max-width:420px){.sp-pulse-stats{grid-template-columns:repeat(2,1fr)}.sp-advanced-grid{grid-template-columns:1fr 1fr;gap:8px}.sp-adv-metric{padding:12px}.sp-adv-metric strong{font-size:23px}.sp-speed-score{align-items:flex-start}}

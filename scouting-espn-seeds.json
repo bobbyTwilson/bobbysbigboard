@@ -1,0 +1,138 @@
+{
+  "note": "Preview-only ESPN profile identity matches obtained from ESPN public player URLs. CDN URLs are conventional headshot endpoints; image may be unavailable. Commercial reuse terms require review.",
+  "players": {
+    "christian-watson": {
+      "id": "4248528",
+      "league": "nfl",
+      "url": "https://a.espncdn.com/i/headshots/nfl/players/full/4248528.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/nfl/player/_/id/4248528/christian-watson"
+    },
+    "parker-washington": {
+      "id": "4432620",
+      "league": "nfl",
+      "url": "https://a.espncdn.com/i/headshots/nfl/players/full/4432620.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/nfl/player/_/id/4432620/parker-washington"
+    },
+    "matthew-golden": {
+      "id": "4701936",
+      "league": "nfl",
+      "url": "https://a.espncdn.com/i/headshots/nfl/players/full/4701936.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/nfl/player/_/id/4701936/matthew-golden"
+    },
+    "denzel-boston": {
+      "id": "4832800",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4832800.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/4832800/denzel-boston"
+    },
+    "jeremiah-smith": {
+      "id": "5079720",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079720.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/5079720/jeremiah-smith"
+    },
+    "ahmad-hardy": {
+      "id": "5197065",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5197065.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/5197065/ahmad-hardy"
+    },
+    "jadan-baugh": {
+      "id": "5079322",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079322.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/5079322/jadan-baugh"
+    },
+    "arch-manning": {
+      "id": "4870906",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870906.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/4870906/arch-manning"
+    },
+    "cam-coleman": {
+      "id": "5079376",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079376.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/5079376/cam-coleman"
+    },
+    "julian-sayin": {
+      "id": "5079712",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079712.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/5079712/julian-sayin"
+    },
+    "trey-dez-green": {
+      "id": "5079420",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079420.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/5079420/trey-dez-green"
+    },
+    "kewan-lacy": {
+      "id": "5086388",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5086388.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/5086388/kewan-lacy"
+    },
+    "charlie-becker": {
+      "id": "5146735",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5146735.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/5146735/charlie-becker"
+    },
+    "nate-frazier": {
+      "id": "5084047",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5084047.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/5084047/nate-frazier"
+    },
+    "kj-duff": {
+      "id": "5084771",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5084771.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/5084771/kj-duff"
+    },
+    "lanorris-sellers": {
+      "id": "4875127",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4875127.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/4875127/lanorris-sellers"
+    },
+    "justice-haynes": {
+      "id": "4870760",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870760.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/4870760/justice-haynes"
+    },
+    "john-mateer": {
+      "id": "4915980",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4915980.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/4915980/john-mateer"
+    },
+    "dante-moore": {
+      "id": "4870921",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870921.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/4870921/dante-moore"
+    }
+  }
+}
