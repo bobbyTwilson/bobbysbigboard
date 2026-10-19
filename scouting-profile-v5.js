@@ -79,7 +79,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
   '<div class="sp-tab-content" data-content="athletic" role="tabpanel">'+athletics()+'</div>'+
   '<div class="sp-tab-content" data-content="film" role="tabpanel">'+film()+'</div>'+
   '<div class="sp-tab-content" data-content="stats" role="tabpanel">'+statsUI()+'</div>'+
-  '<div class="sp-tab-content" data-content="advanced" role="tabpanel"><div class="sp-panel" id="spAdvancedPanel"><div class="sp-muted">Loading recorded NFL advanced receiving metrics…</div></div></div>'+
+  '<div class="sp-tab-content" data-content="advanced" role="tabpanel"><div class="sp-panel" id="spAdvancedPanel"><div class="sp-muted">Loading advanced NFL production metrics…</div></div></div>'+
   '<div class="sp-tab-content" data-content="dynasty" role="tabpanel">'+dyn()+'</div>'+
   '</div></section>';
  window.BBB_FILM_ROOM.bindProfile(app,videos,esc);
@@ -88,22 +88,66 @@ window.BBB_PROFILE_V5 = async function(ctx){
   tabs.forEach(el=>{const on=el.dataset.tab===tab;el.classList.toggle("active",on);el.setAttribute("aria-selected",String(on))});
   app.querySelectorAll(".sp-tab-content").forEach(el=>el.classList.toggle("active",el.dataset.content===tab));
  };
- tabs.forEach(button=>button.addEventListener("click",()=>{showTab(button.dataset.tab);if(button.dataset.tab==="stats")loadStats();if(button.dataset.tab==="advanced")loadAdvanced();}));
- app.querySelectorAll("[data-profile-tab]").forEach(button=>button.addEventListener("click",()=>{const target=button.dataset.profileTab;showTab(target);if(target==="advanced")loadAdvanced();if(target==="stats")loadStats();app.querySelector(".sp-tabs")?.scrollIntoView({behavior:"smooth",block:"start"});}));
+ tabs.forEach(button=>button.addEventListener("click",()=>{showTab(button.dataset.tab);if(button.dataset.tab==="stats")loadStats();if(button.dataset.tab==="advanced")loadRushingPeers();}));
+ app.querySelectorAll("[data-profile-tab]").forEach(button=>button.addEventListener("click",()=>{const target=button.dataset.profileTab;showTab(target);if(target==="advanced")loadRushingPeers();if(target==="stats")loadStats();app.querySelector(".sp-tabs")?.scrollIntoView({behavior:"smooth",block:"start"});}));
  let loaded=false;
- let advancedLoaded=false;
+ let advancedLoaded=false,advancedResult=null,rushingPeersLoaded=false;
+ const renderAdvanced=(peers=[])=>{
+  if(!advancedResult)return;
+  const {row,receivingPeers,rushing}=advancedResult;
+  const quick=app.querySelector("#spOverviewAdvanced"),full=app.querySelector("#spAdvancedPanel");
+  if(quick)quick.innerHTML=p.pos==="RB"&&rushing?V6.rushingHTML(rushing,esc,true):V6.advancedHTML(row,esc,true,receivingPeers,p.pos);
+  if(full)full.innerHTML=(p.pos==="RB"&&rushing?V6.rushingHTML(rushing,esc,false,peers):"")+
+    (row?'<section class="sp-advanced-receiving">'+V6.advancedHTML(row,esc,false,receivingPeers,p.pos)+'</section>':'<div class="sp-no-data">Receiving advanced data is not currently recorded for this player.</div>');
+ };
  const loadAdvanced=async()=>{
-  if(advancedLoaded)return;advancedLoaded=true;
+  if(advancedLoaded)return;
+  advancedLoaded=true;
   const quick=app.querySelector("#spOverviewAdvanced"),full=app.querySelector("#spAdvancedPanel");
   try{
-   const rows=await bbbDb("site_player_advanced_season","select=*&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=1");
-   const row=rows?.[0]||null;
-   let peers=[];if(row)try{peers=await bbbDb("site_player_advanced_season","select=*&season=eq."+encodeURIComponent(row.season)+"&limit=1000")}catch(e){console.warn("Advanced peers unavailable",e)}
-   const positionByKey=new Map((profiles||[]).map(x=>[x.player_key,x.pos]));
-   const peersAtPosition=peers.filter(x=>positionByKey.get(x.player_key)===p.pos);
-   if(quick)quick.innerHTML=V6.advancedHTML(row,esc,true,peersAtPosition,p.pos);
-   if(full)full.innerHTML=V6.advancedHTML(row,esc,false,peersAtPosition,p.pos);
-  }catch(err){console.warn("Advanced stats unavailable",err);if(quick)quick.innerHTML='<div class="sp-muted">Recorded advanced stats are temporarily unavailable.</div>';if(full)full.innerHTML='<div class="sp-no-data">Advanced stats are temporarily unavailable.</div>'}
+   const results=await Promise.all([
+    bbbDb("site_player_advanced_season","select=*&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=1").catch(e=>{console.warn("Receiving metrics unavailable",e);return []}),
+    p.pos==="RB"?bbbDb("player_weekly_stats","select=player_key,season,week,carries,rushing_yards,rushing_tds,targets,rushing_first_downs,rushing_epa,offense_snap_pct,updated_at&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc,week.desc&limit=30").catch(e=>{console.warn("Rushing metrics unavailable",e);return []}):Promise.resolve([])
+   ]);
+   const row=results[0]?.[0]||null;
+   const rushing=p.pos==="RB"?V6.rushingAggregate(results[1]):null;
+   // Fetch only the existing receiving comparison data here; rush peer rows wait for the Advanced tab.
+   let receivingPeers=[];
+   if(row)try{
+    const all=await bbbDb("site_player_advanced_season","select=*&season=eq."+encodeURIComponent(row.season)+"&limit=1000");
+    const positions=new Map((profiles||[]).map(x=>[x.player_key,x.pos]));
+    receivingPeers=all.filter(x=>positions.get(x.player_key)===p.pos);
+   }catch(e){console.warn("Receiving peers unavailable",e)}
+   advancedResult={row,rushing,receivingPeers};
+   renderAdvanced();
+  }catch(e){
+   console.warn("Advanced metrics temporarily unavailable",e);
+   if(quick)quick.innerHTML='<div class="sp-muted">Advanced metrics are temporarily unavailable.</div>';
+   if(full)full.innerHTML='<div class="sp-no-data">Advanced metrics are temporarily unavailable.</div>';
+  }
+ };
+ const loadRushingPeers=async()=>{
+  await loadAdvanced();
+  if(p.pos!=="RB"||!advancedResult?.rushing||rushingPeersLoaded)return;
+  rushingPeersLoaded=true;
+  const year=advancedResult.rushing.season,all=[];
+  try{
+   // PostgREST has a per-response row cap. Page until complete; never rank an incomplete peer sample.
+   for(let offset=0;offset<6000;offset+=1000){
+    const page=await bbbDb("player_weekly_stats","select=player_key,season,week,carries,rushing_yards,rushing_tds,targets,rushing_first_downs,rushing_epa,offense_snap_pct,updated_at&position=eq.RB&season=eq."+encodeURIComponent(year)+"&order=player_key.asc,week.asc&limit=1000&offset="+offset);
+    all.push(...page);
+    if(page.length<1000)break;
+    if(offset===5000)throw Error("Rushing peer dataset exceeded comparison limit");
+   }
+   const byPlayer=new Map();
+   for(const record of all){
+    const key=record.player_key;if(!key)continue;
+    if(!byPlayer.has(key))byPlayer.set(key,[]);
+    byPlayer.get(key).push(record);
+   }
+   const aggregates=[...byPlayer.values()].map(rows=>V6.rushingAggregate(rows)).filter(Boolean);
+   renderAdvanced(aggregates);
+  }catch(e){console.warn("Advanced rushing comparisons unavailable",e);renderAdvanced()}
  };
  loadAdvanced();
  const loadStats=async()=>{
@@ -171,5 +215,5 @@ window.BBB_PROFILE_V5 = async function(ctx){
    }catch(err){console.warn("Weekly game stats unavailable",err);weeks.innerHTML='<div class="sp-no-data">Weekly game logs are temporarily unavailable. Career season totals above are still usable.</div>'}
   }catch(err){console.warn("Season stats unavailable",err);mount.innerHTML='<div class="sp-no-data">NFL season stats could not be loaded right now.</div>'}
  };
- if(location.hash){const requested=location.hash.slice(1);if(["overview","traits","athletic","film","stats","advanced","dynasty"].includes(requested)){showTab(requested);if(requested==="stats")loadStats();if(requested==="advanced")loadAdvanced()}}
+ if(location.hash){const requested=location.hash.slice(1);if(["overview","traits","athletic","film","stats","advanced","dynasty"].includes(requested)){showTab(requested);if(requested==="stats")loadStats();if(requested==="advanced")loadRushingPeers()}}
 };

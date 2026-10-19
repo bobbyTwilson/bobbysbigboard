@@ -42,6 +42,70 @@ window.BBB_SCOUTING_V6 = {
   return '<div class="sp-overview-v6"><div class="sp-overview-top"><div class="sp-panel sp-verdict"><div class="sp-kicker">THE BBB SCOUTING REPORT</div><h2>What the film tells us.</h2><p class="sp-report">'+esc(report)+'</p>'+(p.latest_weekly_update?'<div class="sp-latest"><strong>Latest update</strong><p>'+esc(window.BBB_PUBLIC_COPY.clean(p.latest_weekly_update))+'</p></div>':'')+'<div class="sp-report-actions"><button class="sp-quicklink" data-profile-tab="film" type="button">Review Film Room →</button><button class="sp-quicklink" data-profile-tab="traits" type="button">View Individual Grades →</button></div></div><div class="sp-overview-right">'+ranks+'<div class="sp-overview-pulse"><div class="sp-kicker">SEASON INTELLIGENCE</div><h3>Inside the numbers.</h3><div id="spOverviewAdvanced"><div class="sp-muted">NFL advanced data loads when available. College prospects will have a separate college-stat pipeline.</div></div><button class="sp-quicklink" type="button" data-profile-tab="advanced">Full advanced statistics →</button></div></div></div><div class="sp-insights">'+pros+cons+'</div>'+
   '<div class="sp-overview-foot"><div><div class="sp-kicker">FILM LIBRARY</div><h3>'+(hasVideo?'Breakdowns are ready to watch.':'The scouting film room is growing.')+'</h3><p>'+(hasVideo?videos.length+' published film video'+(videos.length===1?'':'s')+' attached to this player.':'No published film breakdown is attached yet. New videos will appear when released.')+'</p></div><button class="sp-quicklink" type="button" data-profile-tab="film">Explore Film Room →</button></div></div>';
  },
+
+ // A strictly derived BBB view over recorded nflverse weekly fields. No licensed scores inferred.
+ rushingAggregate(weeks){
+  if(!Array.isArray(weeks)||!weeks.length)return null;
+  const records=weeks.filter(w=>Number.isFinite(Number(w.season)));
+  if(!records.length)return null;
+  const season=Math.max(...records.map(w=>Number(w.season)));
+  const rows=records.filter(w=>Number(w.season)===season);
+  const sum=key=>rows.reduce((total,w)=>total+(w[key]==null?0:Number(w[key])||0),0);
+  const valid=key=>rows.filter(w=>w[key]!=null&&Number.isFinite(Number(w[key]))).length;
+  const safe=key=>valid(key)===rows.length?sum(key):null;
+  const games=rows.length,carries=sum("carries"),yards=sum("rushing_yards"),firstDowns=safe("rushing_first_downs"),epa=safe("rushing_epa");
+  const snaps=rows.filter(w=>w.offense_snap_pct!=null&&Number.isFinite(Number(w.offense_snap_pct)));
+  const snapPct=snaps.length?snaps.reduce((s,w)=>s+(Number(w.offense_snap_pct)<=1?Number(w.offense_snap_pct)*100:Number(w.offense_snap_pct)),0)/snaps.length:null;
+  const timestamps=rows.map(w=>Date.parse(w.updated_at||"")).filter(Number.isFinite);
+  return {
+   season,games,carries,rushing_yards:yards,rushing_tds:safe("rushing_tds"),
+   yards_per_carry:carries>0?yards/carries:null,
+   carries_per_game:games>0?carries/games:null,
+   rush_first_downs:firstDowns,first_down_rate:firstDowns!=null&&carries>0?100*firstDowns/carries:null,
+   rushing_epa:epa,epa_per_carry:epa!=null&&carries>0?epa/carries:null,
+   opportunities_per_game:games>0?(carries+sum("targets"))/games:null,
+   avg_offense_snap_pct:snapPct,
+   rushing_epa_weeks:valid("rushing_epa"),rushing_first_down_weeks:valid("rushing_first_downs"),
+   snap_weeks:snaps.length,updated_at:timestamps.length?new Date(Math.max(...timestamps)).toISOString():null
+  };
+ },
+ rushingHTML(row,esc,compact,peerRows=[]){
+  if(!row)return '<div class="sp-muted">Rushing metrics have not been recorded for this season.</div>';
+  const fmt=(value,dec=1)=>value==null?"—":Number(value).toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:dec});
+  const eligible=(peerRows||[]).filter(x=>x.carries>=25&&x.games>=3&&x.season===row.season);
+  const rank=key=>{
+   if(row[key]==null)return null;
+   const matching=eligible.filter(x=>x[key]!=null&&Number.isFinite(Number(x[key])));
+   if(matching.length<8)return null;
+   const number=Number(row[key]);
+   return {position:matching.filter(x=>Number(x[key])>number).length+1,total:matching.length};
+  };
+  const fields=[
+   ["yards_per_carry","Yards per carry",2,"Rushing yards ÷ carries"],
+   ["epa_per_carry","Rushing EPA / carry",2,"Rushing EPA divided by carries"],
+   ["rushing_epa","Total rushing EPA",2,"Expected points added on rushing plays"],
+   ["rush_first_downs","Rushing first downs",0,"Recorded first downs gained on runs"],
+   ["first_down_rate","First downs / carry",1,"Percentage of carries earning a first down","%"],
+   ["carries_per_game","Carries per game",1,"Recorded carries divided by games"],
+   ["opportunities_per_game","Opportunities / game",1,"Carries plus targets per recorded game"],
+   ["avg_offense_snap_pct","Avg. offensive snap share",1,"Unweighted average of recorded weekly snap shares","%"]
+  ];
+  const metric=(key,label,precision,note,suffix="")=>{
+   const v=row[key],r=rank(key);
+   return '<div class="sp-adv-metric sp-rush-metric"><span>'+esc(label)+'</span><strong>'+esc(fmt(v,precision))+(v==null?"":suffix)+'</strong>'+
+    (r?'<div class="sp-adv-rank">#'+r.position+' <small>of '+r.total+' qualifying RBs</small></div>':"")+
+    '<small>'+esc(note)+'</small></div>';
+  };
+  if(compact){
+   const quick=[fields[0],fields[1],fields[3]];
+   return '<div class="sp-pulse-stats">'+quick.map(field=>'<div><strong>'+esc(fmt(row[field[0]],field[2]))+'</strong><small>'+esc(field[1])+'</small></div>').join("")+'</div>'+
+    '<p class="sp-caption">'+esc(row.season)+' · '+esc(row.games)+' games · rushing stats updated '+esc(row.updated_at?new Date(row.updated_at).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"date unavailable")+'</p>';
+  }
+  return '<section class="sp-advanced-rushing"><div class="sp-adv-heading"><div><span class="sp-kicker">RUSHING EFFICIENCY & WORKLOAD</span><h2>'+esc(row.season)+' rushing advanced stats</h2><p>Actual NFL weekly rushing data, through '+esc(row.games)+' recorded games. '+(eligible.length?"Position ranks compare RBs with at least 25 carries and three games.":"Peer rankings load when available.")+'</p></div></div>'+
+   '<div class="sp-advanced-grid">'+fields.map(([key,label,precision,note,suffix])=>metric(key,label,precision,note,suffix)).join("")+'</div>'+
+   '<div class="sp-adv-coverage"><span>Rushing data coverage</span><p>Rushing EPA: '+row.rushing_epa_weeks+'/'+row.games+' weeks · Rushing first downs: '+row.rushing_first_down_weeks+'/'+row.games+' weeks · Snap share: '+row.snap_weeks+'/'+row.games+' weeks'+(row.updated_at?' · Updated '+esc(new Date(row.updated_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})):"")+'</p></div>'+
+   '<p class="sp-caption">EPA and first-down season totals are shown only when all recorded weeks have that field. BBB peer ranks require at least eight qualifying RBs with the relevant metric; these are not PlayerProfiler rankings. Yards after contact, missed tackles forced, yards over expected and true rushing success rate are not currently tracked.</p></section>';
+ },
  advancedHTML(row,esc,compact,peers=[],position=""){
   if(!row)return '<div class="sp-no-data">Advanced NFL receiving metrics are not available for this player yet.</div>';
   const n=(key,dec=0)=>row[key]==null?"—":Number(row[key]).toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:dec});

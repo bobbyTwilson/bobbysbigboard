@@ -58,3 +58,11 @@
 .sp-adv-coverage{border:1px solid #47624a;border-radius:8px;background:#1c3323;margin-top:17px;padding:13px 16px}
 .sp-adv-coverage span{font-size:11px;color:#b9e3bb;font-weight:900}
 .sp-adv-coverage p{font-size:12px;color:#d2e0ce;margin:4px 0 0;line-height:1.6}
+
+/* Separate rushing and receiving sections without reviving the oversized Stats & Logs cards. */
+.sp-advanced-rushing{padding-bottom:27px;margin-bottom:29px;border-bottom:1px solid #486449}
+.sp-advanced-rushing .sp-adv-heading h2{color:#d5f1d4}
+.sp-advanced-rushing .sp-rush-metric{min-height:127px}
+.sp-advanced-receiving .sp-adv-heading{margin-top:3px}
+.sp-advanced-rushing .sp-adv-rank{max-width:100%;white-space:normal}
+@media(max-width:660px){.sp-advanced-rushing{padding-bottom:18px;margin-bottom:19px}.sp-advanced-rushing .sp-rush-metric{min-height:105px}}
