@@ -8,7 +8,8 @@ const purl=p=>"/scouting/"+encodeURIComponent(p.player_key);
 const section=(k,t,s)=>'<div class="sectionHead"><div><div class="eyebrow">'+esc(k)+'</div><h2>'+esc(t)+'</h2><p>'+esc(s)+'</p></div></div>';
 const stat=(k,v)=>'<div class="grade"><small>'+esc(k)+'</small><strong>'+esc(v)+'</strong></div>';
 const chip=t=>'<span class="pill">'+esc(t)+'</span>';
-const filmList=()=>window.BBB_FILM_ROOM.catalog(D.films,D.videos,D.profiles,D.prospects);
+let publishedFilms=[];
+const filmList=()=>publishedFilms;
 function setTitle(x){document.title=x+" | Bobby's Big Board";const k=location.pathname.startsWith("/scouting/")?"players":location.pathname.split("/")[1]||"home";document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("active",a.dataset.nav===k))}
 function portrait(p){const m=D.media[p.player_key];return m&&/^https:\/\/(a\.)?espncdn\.com\//.test(m.url||"")?m.url:""}
 function playerCard(p){
@@ -28,8 +29,9 @@ function playerCard(p){
 }
 function videoCard(v){return '<a class="card" href="/film?video='+encodeURIComponent(v.video_id)+'" style="padding:12px"><div class="featureImage"><img loading="lazy" src="https://i.ytimg.com/vi/'+encodeURIComponent(v.video_id)+'/hqdefault.jpg" alt="'+esc(v.title)+'"></div><div style="padding:12px 4px"><span class="tag">'+esc(v.category_label||"FILM STUDY")+'</span><h3 style="font-size:17px;margin:10px 0">'+esc(v.title)+'</h3><span class="arrow">Watch inside the Film Room →</span></div></a>'}
 function home(){setTitle("Scouting & Film");const picks=["denzel-boston","christian-watson","parker-washington","matthew-golden"].map(k=>D.profiles.find(p=>p.player_key===k)).filter(Boolean);
-app.innerHTML='<section class="hero"><div class="wrap heroGrid"><div><div class="eyebrow">A NEW ERA OF BOBBY’S BIG BOARD</div><h1>THE FILM<br>BEHIND <em>THE PLAYER.</em></h1><p class="lead">Scouting reports, verified athletic testing, real NFL production and independent film breakdowns—all in one place. Rankings are still here. Now the football comes first.</p><div class="actions"><a class="primary" href="/players">Explore Player Profiles →</a><a class="secondary" href="/film">Enter the Film Room ↗</a></div></div><div class="heroPanel"><a href="/film?video=ZpO1nYUEsqE"><div class="featureImage"><img src="https://i.ytimg.com/vi/ZpO1nYUEsqE/maxresdefault.jpg" alt="Parker Washington Film Breakdown"></div></a><div class="featureMeta"><span>FEATURED FILM STUDY</span><span>BBB ORIGINAL</span></div><h3>Parker Washington: Better Than You Think</h3><p>Route releases, leverage, ball skills and the details that turn production into evaluation.</p><a class="sectionlink" href="/film?video=ZpO1nYUEsqE">Watch inside the Film Room →</a></div></div></section>'+
-'<div class="statsstrip"><div class="wrap statgrid"><div class="micro"><b>'+num(D.profiles.length)+'</b> player records</div><div class="micro"><b>'+num(D.prospects.length)+'</b> draft prospect records</div><div class="micro"><b>'+num(filmList().length)+'</b> film videos</div><div class="micro"><b>500</b> dynasty rankings</div></div></div>'+
+const featured=filmList()[0]||null,featuredLink=featured?"/film?video="+encodeURIComponent(featured.video_id):"/film",featuredTitle=featured?.title||"Explore the BBB Film Room",featuredPlayer=featured?.player_name||"Bobby's Big Board",featuredId=featured?.video_id||"";
+app.innerHTML='<section class="hero"><div class="wrap heroGrid"><div><div class="eyebrow">A NEW ERA OF BOBBY’S BIG BOARD</div><h1>THE FILM<br>BEHIND <em>THE PLAYER.</em></h1><p class="lead">Scouting reports, verified athletic testing, real NFL production and independent film breakdowns—all in one place. Rankings are still here. Now the football comes first.</p><div class="actions"><a class="primary" href="/players">Explore Player Profiles →</a><a class="secondary" href="/film">Enter the Film Room ↗</a></div></div><div class="heroPanel"><a href="'+esc(featuredLink)+'"><div class="featureImage">'+(featuredId?'<img src="https://i.ytimg.com/vi/'+encodeURIComponent(featuredId)+'/hqdefault.jpg" alt="'+esc(featuredTitle)+'">':'<div class="bbb-feature-fallback">BBB FILM ROOM</div>')+'</div></a><div class="featureMeta"><span>LATEST APPROVED FILM STUDY</span><span>BBB ORIGINAL</span></div><h3>'+esc(featuredTitle)+'</h3><p>'+esc(featuredPlayer)+' · Watch player evaluation and scouting on film.</p><a class="sectionlink" href="'+esc(featuredLink)+'">Watch inside the Film Room →</a></div></div></section>'+
+'<div class="statsstrip"><div class="wrap statgrid"><div class="micro"><b>'+num(D.profiles.length)+'</b> player records</div><div class="micro"><b>'+num(D.prospects.length)+'</b> draft prospect records</div><div class="micro"><b>'+num(filmList().length)+'</b> film videos</div><div class="micro"><b>'+num(D.ranks.length)+'</b> dynasty rankings</div></div></div>'+
 '<section class="section"><div class="wrap">'+section("PLAYER LAB","Scouting spotlights","Player evaluations built on production and actual film.")+'<div class="bbb-directory-rows">'+picks.map(playerCard).join("")+'</div></div></section>'+
 '<section class="section line"><div class="wrap">'+section("WATCH THE TAPE","Featured film breakdowns","From release technique to ball tracking, go deeper than highlights.")+'<div class="cards">'+filmList().slice(0,3).map(videoCard).join("")+'</div><p style="margin-top:22px"><a class="sectionlink" href="/film">Browse the Film Room →</a></p></div></section>'+
 '<section class="section"><div class="wrap">'+section("CONNECTED TO THE EVALUATION","One platform. More ways to study.","Film-first during the season, prospect scouting before the draft, dynasty tools whenever you need them.")+'<div class="cards"><a class="card" href="/players"><span class="tag">01 / NFL PLAYERS</span><h3>Scouting profiles</h3><p>How they win, size and testing, game production and video evaluations.</p><span class="arrow">Open directory →</span></a><a class="card" href="/draft"><span class="tag">02 / DRAFT</span><h3>Prospects and comps</h3><p>Grades, projections and film reports for future NFL talent.</p><span class="arrow">Explore prospects →</span></a><a class="card" href="/dynasty/rankings"><span class="tag">03 / DYNASTY</span><h3>Top 500 and trade tools</h3><p>Your existing rankings, trade calculator and comparisons are preserved.</p><span class="arrow">Go to dynasty →</span></a></div></div></section>'}
@@ -56,7 +58,7 @@ function directory(isDraft){
  document.getElementById("loadMore").addEventListener("click",()=>{limit+=40;draw()});draw();
 }
 function draw(){
- const videos=new Set(D.videos.filter(x=>x.video_type==="long"&&x.privacy_status==="public").map(x=>x.player_key));
+ const videos=new Set(filmList().map(x=>x.player_key));
  let rows=window.BBB_DIR.filter(p=>(!isDraftMode||draftYearFilter==="ALL"||String(P.get(p.player_key)?.year||"")===draftYearFilter)&&(position==="ALL"||p.pos===position)&&(!filter||[p.name,p.team,p.college].join(" ").toLowerCase().includes(filter)));
  const grade=p=>{const g=P.get(p.player_key)?.grade;return g!=null&&Number.isFinite(Number(g))?Number(g):-1};
  const rank=p=>Number(R.get(p.player_key)?.rank||9999);
@@ -148,9 +150,50 @@ function dynastyTool(key){
  });
 }
 
-async function load(){let queries=[["profiles","site_profiles","select=player_key,name,pos,team,age,college,draft_year,overall_breakdown,latest_weekly_update,injury_status&order=name.asc&limit=1000"],["ranks","site_dynasty","select=player_key,rank,pr,name,pos,team,age,market,gap&order=rank.asc&limit=500"],["prospects","site_prospects","select=player_key,name,pos,year,grade,comp,traits&limit=300"],["athletics","bbb_player_athletics","select=*&limit=1000"],["scouting","bbb_player_scouting","select=*&limit=1000"],["videos","bbb_youtube_videos","select=video_id,player_key,title,video_type,content_archetype,privacy_status,published_at&order=published_at.desc&limit=250"],["films","site_bbb_film_catalog","select=video_id,player_key,title,video_type,editorial_status,published_at,created_at,updated_at&order=created_at.desc&limit=500"]];
-await Promise.all(queries.map(async q=>{try{D[q[0]]=await bbbDb(q[1],q[2])||[]}catch(x){console.warn("Failed loading "+q[0],x);D[q[0]]=[]}}));D.ranks.forEach(x=>R.set(x.player_key,x));D.prospects.forEach(x=>P.set(x.player_key,x));D.athletics.forEach(x=>A.set(x.player_key,x));D.scouting.forEach(x=>S.set(x.player_key,x));
+
+/* Site-wide quick find uses public scouting rows already loaded for this page;
+   no new API requests, and no access to private video/admin tables. */
+function setupGlobalSearch(){
+ const box=document.getElementById("bbbGlobalSearch"),input=document.getElementById("bbbSiteSearch"),list=document.getElementById("bbbSiteResults");
+ if(!box||!input||!list)return;
+ let current=-1;
+ const close=()=>{list.hidden=true;input.setAttribute("aria-expanded","false");current=-1};
+ const links=()=>Array.from(list.querySelectorAll("a.bbb-search-hit"));
+ function drawSearch(){
+  const q=input.value.toLocaleLowerCase().trim();
+  if(q.length<2){close();return}
+  const terms=q.split(/\s+/).filter(Boolean);
+  const matches=(...values)=>terms.every(term=>values.join(" ").toLocaleLowerCase().includes(term));
+  const players=D.profiles.filter(p=>matches(p.name||"",p.team||"",p.college||"",p.pos||""))
+   .sort((a,b)=>{const rank=p=>Number(R.get(p.player_key)?.rank||9999);const aName=a.name?.toLocaleLowerCase()||"",bName=b.name?.toLocaleLowerCase()||"";return Number(bName.startsWith(q))-Number(aName.startsWith(q))||rank(a)-rank(b)||a.name.localeCompare(b.name)}).slice(0,7);
+  const videos=filmList().filter(v=>matches(v.title||"",v.player_name||"",v.player_college||"")).slice(0,3);
+  const playerRows=players.map(p=>'<a class="bbb-search-hit" role="option" href="'+purl(p)+'"><span class="bbb-search-icon">#'+esc(R.get(p.player_key)?.rank||"–")+'</span><span><strong>'+esc(p.name)+'</strong><small>'+esc(p.pos||"")+' · '+esc(p.team||p.college||"Prospect")+'</small></span><span class="bbb-search-arrow">→</span></a>').join("");
+  const filmRows=videos.map(v=>'<a class="bbb-search-hit" role="option" href="/film?video='+encodeURIComponent(v.video_id)+'"><span class="bbb-search-icon">▶</span><span><strong>'+esc(v.title)+'</strong><small>Film Room · '+esc(v.player_name)+'</small></span><span class="bbb-search-arrow">→</span></a>').join("");
+  list.innerHTML=(players.length?'<div class="bbb-search-category">PLAYERS</div>'+playerRows:"")+(videos.length?'<div class="bbb-search-category">FILM STUDIES</div>'+filmRows:"")||'<div class="bbb-search-empty">No matches. Try a player, team, college or video title.</div>';
+  current=-1;list.hidden=false;input.setAttribute("aria-expanded","true");
+ }
+ input.addEventListener("input",drawSearch);
+ input.addEventListener("focus",()=>{if(input.value.trim().length>=2)drawSearch()});
+ input.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){close();input.blur();return}
+  const options=links();if(!options.length)return;
+  if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+   e.preventDefault();current=(current+(e.key==="ArrowDown"?1:-1)+options.length)%options.length;
+   options.forEach((el,i)=>el.classList.toggle("focused",i===current));
+   options[current].scrollIntoView({block:"nearest"});return
+  }
+  if(e.key==="Enter"){e.preventDefault();options[Math.max(0,current)].click()}
+ });
+ list.addEventListener("click",e=>{if(e.target.closest("a"))close()});
+ document.addEventListener("click",e=>{if(!box.contains(e.target))close()});
+}
+
+async function load(){let queries=[["profiles","site_profiles","select=player_key,name,pos,team,age,college,draft_year,overall_breakdown,latest_weekly_update,injury_status&order=name.asc&limit=1000"],["ranks","site_dynasty","select=player_key,rank,pr,name,pos,team,age,market,gap&order=rank.asc&limit=500"],["prospects","site_prospects","select=player_key,name,pos,year,grade,comp,traits&limit=300"],["athletics","bbb_player_athletics","select=*&limit=1000"],["scouting","bbb_player_scouting","select=*&limit=1000"],["films","site_bbb_film_catalog","select=video_id,player_key,title,video_type,editorial_status,published_at,created_at,updated_at&order=created_at.desc&limit=500"]];
+await Promise.all(queries.map(async q=>{try{D[q[0]]=await bbbDb(q[1],q[2])||[]}catch(x){console.warn("Failed loading "+q[0],x);D[q[0]]=[]}}));if(!D.profiles.length)throw Error("Player directory is unavailable");
+publishedFilms=window.BBB_FILM_ROOM.catalog(D.films,[],D.profiles,D.prospects);
+D.ranks.forEach(x=>R.set(x.player_key,x));D.prospects.forEach(x=>P.set(x.player_key,x));D.athletics.forEach(x=>A.set(x.player_key,x));D.scouting.forEach(x=>S.set(x.player_key,x));
 try{const images=await fetch("/scouting-headshots.json",{cache:"force-cache"}).then(r=>r.ok?r.json():null);D.media=images?.players||{}}catch(e){console.warn("ESPN images unavailable",e)}
+setupGlobalSearch();
 const path=decodeURIComponent(location.pathname).replace(/\/+$/,"")||"/";if(path==="/players")directory(false);else if(path==="/draft")directory(true);else if(path==="/film")filmRoom();else if(path.startsWith("/scouting/"))await detail(path.split("/").slice(2).join("/"));else if(path==="/dynasty/compare")nativeCompare();else if(path.startsWith("/dynasty"))dynastyTool(path.split("/")[2]||"rankings");else home()
-}load().catch(e=>{console.error(e);app.innerHTML='<section class="section"><div class="wrap"><div class="empty">Unable to load scouting data. Refresh to try again.</div></div></section>'});
+}load().catch(e=>{console.error(e);app.innerHTML='<section class="section"><div class="wrap"><div class="empty">The player directory is temporarily unavailable. <button type="button" class="secondary" onclick="location.reload()">Retry loading</button></div></div></section>'});
 })();
