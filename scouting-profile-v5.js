@@ -91,7 +91,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
  tabs.forEach(button=>button.addEventListener("click",()=>{showTab(button.dataset.tab);if(button.dataset.tab==="stats")loadStats();if(button.dataset.tab==="advanced")loadRushingPeers();}));
  app.querySelectorAll("[data-profile-tab]").forEach(button=>button.addEventListener("click",()=>{const target=button.dataset.profileTab;showTab(target);if(target==="advanced")loadRushingPeers();if(target==="stats")loadStats();app.querySelector(".sp-tabs")?.scrollIntoView({behavior:"smooth",block:"start"});}));
  let loaded=false;
- let advancedLoaded=false,advancedResult=null,rushingPeersLoaded=false;
+ let advancedPromise=null,advancedResult=null,rushingPeersLoaded=false;
  const renderAdvanced=(peers=[])=>{
   if(!advancedResult)return;
   const {row,receivingPeers,rushing}=advancedResult;
@@ -100,9 +100,9 @@ window.BBB_PROFILE_V5 = async function(ctx){
   if(full)full.innerHTML=(p.pos==="RB"&&rushing?V6.rushingHTML(rushing,esc,false,peers):"")+
     (row?'<section class="sp-advanced-receiving">'+V6.advancedHTML(row,esc,false,receivingPeers,p.pos)+'</section>':'<div class="sp-no-data">Receiving advanced data is not currently recorded for this player.</div>');
  };
- const loadAdvanced=async()=>{
-  if(advancedLoaded)return;
-  advancedLoaded=true;
+ const loadAdvanced=()=>{
+  if(advancedPromise)return advancedPromise;
+  advancedPromise=(async()=>{
   const quick=app.querySelector("#spOverviewAdvanced"),full=app.querySelector("#spAdvancedPanel");
   try{
    const results=await Promise.all([
@@ -125,6 +125,8 @@ window.BBB_PROFILE_V5 = async function(ctx){
    if(quick)quick.innerHTML='<div class="sp-muted">Advanced metrics are temporarily unavailable.</div>';
    if(full)full.innerHTML='<div class="sp-no-data">Advanced metrics are temporarily unavailable.</div>';
   }
+  })();
+  return advancedPromise;
  };
  const loadRushingPeers=async()=>{
   await loadAdvanced();
