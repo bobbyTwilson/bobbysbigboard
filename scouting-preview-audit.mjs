@@ -12,4 +12,6 @@ if(js.includes('"bbb_youtube_videos"'))throw Error("Preview must not access priv
 const routes=["/players/?","/film/?","/draft/?","/scouting/([^/]+)/?","/dynasty/(rankings|trade|compare|rookies|movers|updates)/?"];
 for(const route of routes)if(!config.routes.some(r=>r.src===route))throw Error("Preview routing missing "+route);
 if(!(await readFile(root+"robots.txt","utf8")).includes("Disallow: /"))throw Error("Preview must remain noindexed");
-console.log("BBB scouting preview regression gates PASS: search, routes, film catalog, assets and JS syntax.");
+const filmJs=await readFile(root+"scouting-film-room-v1.js","utf8");
+for(const marker of ['"cdERkoRmnH0"',"mustWatchExternally(video.video_id)","bbb-film-external-button","Watch on YouTube"])if(!filmJs.includes(marker))throw Error("Blocked-video fallback is missing: "+marker);
+console.log("BBB scouting preview regression gates PASS: search, routes, film catalog, assets, restricted-video fallback and JS syntax.");

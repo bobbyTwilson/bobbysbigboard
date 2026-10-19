@@ -20,6 +20,12 @@ function upgradePoster(img){
 }
 
 const safeId=id=>valid(id)?encodeURIComponent(id):"";
+/* Confirmed by NFL rightsholder's embedded-player error on the BBB preview.
+   Keep affected films discoverable without retrying a blocked third-party iframe.
+   Add future cases only after verifying their playback restrictions. */
+const externalOnlyIds=new Set(["cdERkoRmnH0"]);
+const mustWatchExternally=id=>externalOnlyIds.has(String(id||""));
+const youtubeUrl=id=>"https://www.youtube.com/watch?v="+safeId(id);
 const categoryLabels={prospect:"Draft Prospect",rookie:"Rookie Film",nfl:"NFL Film Study"};
 function catalog(approved,channel,profiles,prospects){
  const playerMap=new Map((profiles||[]).map(p=>[p.player_key,p]));
@@ -49,13 +55,14 @@ function frame(id,esc){
 }
 function screen(video,playing,esc){
  if(!video)return '<div class="bbb-film-placeholder">No matching film breakdown selected.</div>';
+ if(mustWatchExternally(video.video_id))return '<div class="bbb-film-external"><img class="bbb-film-external-art" src="'+thumb(video.video_id)+'" alt="" loading="lazy"><div class="bbb-film-external-shade"></div><div class="bbb-film-external-message"><span>VIEW ON YOUTUBE</span><h3>Playback is restricted on other websites.</h3><p>The NFL has blocked this video from playing in embedded players. The film breakdown is still linked to this profile.</p><a class="bbb-film-external-button" href="'+youtubeUrl(video.video_id)+'" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a></div></div>';
  if(playing)return frame(video.video_id,esc);
  return '<div class="bbb-film-poster"><img class="bbb-film-poster-image" data-video-id="'+safeId(video.video_id)+'" alt="" decoding="async"><div class="bbb-film-poster-shade"></div><button class="bbb-film-bigplay" type="button" data-film-play aria-label="Play '+esc(video.title)+'">▶</button><div class="bbb-film-poster-info"><span>'+esc(video.category_label)+'</span><strong>'+esc(video.title)+'</strong></div></div>';
 }
 function detail(video,esc,profileLink,isProfile){
  return video?'<div class="bbb-film-info-head"><div><span class="bbb-film-eyebrow">'+esc(video.category_label)+'</span><h2>'+esc(video.title)+'</h2><p>'+esc(video.player_name)+(video.player_college?" · "+esc(video.player_college):"")+'</p></div></div>'+
   '<div class="bbb-film-meta-actions"><a href="'+profileLink(video.player_key,video)+'" class="bbb-film-profile-link">'+(isProfile?'Explore the Film Room →':'View '+esc(video.player_name)+"'s scouting profile →")+'</a>'+
-  '<a href="https://www.youtube.com/watch?v='+safeId(video.video_id)+'" target="_blank" rel="noopener noreferrer" class="bbb-film-youtube-link">Open on YouTube ↗</a></div>':"";
+  '<a href="'+youtubeUrl(video.video_id)+'" target="_blank" rel="noopener noreferrer" class="bbb-film-youtube-link">'+(mustWatchExternally(video.video_id)?'Watch on YouTube ↗':'Open on YouTube ↗')+'</a></div>':"";
 }
 function attach(root,list,initialId,esc,profileLink,isProfile=false){
  let chosen=list.find(v=>v.video_id===initialId)||list[0]||null,playing=false;
@@ -86,7 +93,7 @@ function filmTile(video,esc){
  return '<button type="button" class="bbb-film-library-tile" data-film-select="'+safeId(video.video_id)+'" aria-pressed="false">'+
  '<span class="bbb-film-tile-image"><img loading="lazy" src="'+thumb(video.video_id)+'" alt=""><span class="bbb-film-tile-play" aria-hidden="true">▶</span></span>'+
  '<span class="bbb-film-tile-copy"><small>'+esc(video.category_label)+' · '+esc(video.player_position||"Player")+'</small>'+
- '<strong>'+esc(video.title)+'</strong><span>'+esc(video.player_name)+'</span></span></button>';
+ '<strong>'+esc(video.title)+'</strong><span>'+esc(video.player_name)+'</span>'+(mustWatchExternally(video.video_id)?'<span class="bbb-film-external-label">YouTube playback only</span>':'')+'</span></button>';
 }
 function render(app,videos,ctx){
  const esc=ctx.esc||fallbackEsc;
@@ -144,7 +151,7 @@ function playlistItem(video,index,esc){
  return '<button type="button" class="bbb-film-queue-item" data-film-select="'+safeId(video.video_id)+'" aria-pressed="false">'+
  '<span class="bbb-film-queue-art"><img src="'+thumb(video.video_id,'mqdefault')+'" loading="lazy" alt=""><span class="bbb-film-queue-play" aria-hidden="true">▶</span></span>'+
  '<span class="bbb-film-queue-copy"><small>VIDEO '+String(index+1).padStart(2,'0')+' · '+esc(video.category_label)+'</small>'+
- '<strong>'+esc(video.title)+'</strong></span></button>';
+ '<strong>'+esc(video.title)+'</strong>'+(mustWatchExternally(video.video_id)?'<span class="bbb-film-external-label">YouTube only</span>':'')+'</span></button>';
 }
 function profileMarkup(videos,player,esc){
  if(!videos.length)return '<div class="sp-panel"><div class="sp-panel-head"><div><div class="sp-kicker">BBB FILM ROOM</div><h2>Film & scouting notes.</h2></div></div><div class="sp-no-data">No public film breakdown linked to '+esc(player.name)+' yet.</div></div>';
