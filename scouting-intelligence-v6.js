@@ -5,7 +5,8 @@ window.BBB_PUBLIC_COPY = {
   let s=String(value||"").trim();
   s=s.replace(/^Week\s+\d+\s+(?:owner[- ]approved\s+ranking\s+update|ranking\s+approved|ranking\s+update)\s*:\s*/i,"");
   s=s.replace(/^BBB\s+(?:owner[- ]approved|approved)\s+ranking\s+update\s*:\s*/i,"");
-  s=s.replace(/\s*Current BBB rank #(\d+)\s*\(previously #(\d+)\)\.?\s*$/i,(_,now,old)=>"");
+  s=s.replace(/\s*Current BBB rank #(\d+)\s*\(previously #(\d+)\)\.?\s*$/i,(_,now,old)=>" BBB now ranks him #"+now+(Number(now)>Number(old)?", down from #"+old:Number(now)<Number(old)?", up from #"+old:", unchanged from #"+old)+".");
+  s=s.replace(/\bBBB owner approved\b/gi,"BBB made");
   s=s.replace(/\bBBB moved from #(\d+) to #(\d+)\.?/gi,(_,from,to)=>Number(to)<Number(from)?"His BBB dynasty ranking moved up from #"+from+" to #"+to+".":"His BBB dynasty ranking moved from #"+from+" to #"+to+".");
   return s.trim();
  }

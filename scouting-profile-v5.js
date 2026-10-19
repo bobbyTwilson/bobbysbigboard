@@ -124,7 +124,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
    ]:[
     ["RECEIVING","targets","TGT"],["RECEIVING","receptions","REC"],["RECEIVING","receiving_yards","REC YDS"],["RECEIVING","receiving_tds","REC TD"],
     ["RUSHING","carries","CAR"],["RUSHING","rushing_yards","RUSH YDS"],["RUSHING","rushing_tds","RUSH TD"]
-   ]);
+   ]).filter(([group])=>group!=="RUSHING"||isQB||isRB||seasons.some(s=>Number(s.carries||0)>0));
    const maxByKey={};for(const row of seasons)for(const [,key] of statDefs){const n=Number(row[key]);if(row[key]!=null&&Number.isFinite(n))maxByKey[key]=Math.max(maxByKey[key]??-Infinity,n)}
    const tone=(key,value,maximum)=>{if(value==null||!Number.isFinite(Number(value)))return "";const n=Number(value);if(/_tds$/.test(key)&&n===0)return "sp-stat-zero";if(maximum!=null&&n===maximum&&n>0)return "sp-stat-best";if(/_tds$/.test(key)&&n>0)return "sp-stat-positive";return ""};
    const cell=(key,label,value,max)=>'<div class="sp-stat-cell '+tone(key,value,max)+'"><span>'+esc(label)+'</span><strong>'+esc(fmt(value,key==="fantasy_points_ppr"?1:0))+'</strong></div>';
@@ -132,7 +132,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
     const groups=[...new Set(statDefs.map(x=>x[0]))].map(group=>'<div class="sp-season-group"><div class="sp-stat-group-title">'+esc(group)+'</div><div class="sp-season-metrics">'+statDefs.filter(x=>x[0]===group).map(([,key,label])=>cell(key,label,row[key],maxByKey[key])).join("")+'</div></div>').join("");
     return '<article class="sp-season-card"><div class="sp-season-cardhead"><div><strong>'+esc(row.season)+'</strong><span>'+esc(fmt(row.games))+' games'+(row.position_finish!=null?' · '+esc(pos)+esc(row.position_finish)+' PPR finish':'')+'</span></div><div class="sp-season-ppr">PPR <b>'+esc(fmt(row.fantasy_points_ppr,1))+'</b></div></div>'+groups+'</article>';
    };
-   const current=seasons[0],heroFields=isQB?[["passing_yards","PASS YDS"],["passing_tds","PASS TD"],["rushing_yards","RUSH YDS"],["rushing_tds","RUSH TD"]]:[["rushing_yards","RUSH YDS"],["rushing_tds","RUSH TD"],["receiving_yards","REC YDS"],["receiving_tds","REC TD"]];
+   const current=seasons[0],heroFields=isQB?[["passing_yards","PASS YDS"],["passing_tds","PASS TD"],["rushing_yards","RUSH YDS"],["rushing_tds","RUSH TD"]]:isRB?[["rushing_yards","RUSH YDS"],["rushing_tds","RUSH TD"],["receiving_yards","REC YDS"],["receiving_tds","REC TD"]]:[["targets","TARGETS"],["receptions","RECEPTIONS"],["receiving_yards","REC YDS"],["receiving_tds","REC TD"]];
    mount.innerHTML='<div class="sp-season-lead"><span class="sp-kicker">'+esc(current.season)+' · LATEST RECORDED SEASON</span><div class="sp-season-quick">'+heroFields.map(([key,label])=>cell(key,label,current[key],maxByKey[key])).join("")+'</div></div><div class="sp-stats-legend"><span class="sp-legend-best">● Season high</span><span class="sp-legend-positive">● Other TD total</span><span class="sp-legend-zero">● Zero touchdowns</span><span>— Not recorded</span></div><div class="sp-season-list">'+seasons.map(seasonCard).join("")+'</div><p class="sp-caption">Green is this player’s highest recorded season for that category, not a league percentile. Current seasons may be incomplete. Zero TDs are red; unavailable stats are never treated as zero.</p>';
    if(!weeks)return;
    try{
@@ -140,7 +140,6 @@ window.BBB_PROFILE_V5 = async function(ctx){
     if(!games?.length){weeks.innerHTML='<div class="sp-no-data">No NFL weekly game logs are available yet.</div>';return}
     const statMax={};for(const game of games)for(const key of ["passing_yards","passing_tds","rushing_yards","rushing_tds","receiving_yards","receiving_tds"]){const n=Number(game[key]);if(game[key]!=null&&Number.isFinite(n))statMax[key]=Math.max(statMax[key]??-Infinity,n)}
     const mini=(key,label,value)=>cell(key,label,value,statMax[key]);
-    const group=(name,fields)=>'<div class="sp-game-statgroup"><div class="sp-stat-group-title">'+name+'</div><div class="sp-game-metrics">'+fields.map(([key,label])=>mini(key,label,key==="completions"&&isQB?null:null)).join("")+'</div></div>';
     const gameCard=game=>{
      const groups=isQB?[
       ["PASSING",[["completions","CMP"],["attempts","ATT"],["passing_yards","YDS"],["passing_tds","TD"],["interceptions","INT"]]],
@@ -152,8 +151,9 @@ window.BBB_PROFILE_V5 = async function(ctx){
       ["RECEIVING",[["targets","TGT"],["receptions","REC"],["receiving_yards","YDS"],["receiving_tds","TD"]]],
       ["RUSHING",[["carries","CAR"],["rushing_yards","YDS"],["rushing_tds","TD"]]]
      ];
+     const visibleGroups=groups.filter(([name])=>name!=="RUSHING"||isQB||isRB||Number(game.carries||0)>0);
      return '<article class="sp-game-card"><header class="sp-game-head"><div><small>'+esc(game.season)+' SEASON</small><h4>Week '+esc(game.week)+' <span>vs '+esc(game.opponent_team||"—")+'</span></h4></div><div class="sp-game-ppr"><span>PPR POINTS</span><strong>'+esc(fmt(game.fantasy_points_ppr,1))+'</strong>'+(game.weekly_position_finish!=null?'<small>'+esc(pos)+esc(game.weekly_position_finish)+' WEEKLY FINISH</small>':'')+'</div></header>'+
-      groups.map(([name,fields])=>'<div class="sp-game-statgroup"><div class="sp-stat-group-title">'+name+'</div><div class="sp-game-metrics">'+fields.map(([key,label])=>mini(key,label,game[key])).join("")+'</div></div>').join("")+'</article>';
+      visibleGroups.map(([name,fields])=>'<div class="sp-game-statgroup"><div class="sp-stat-group-title">'+name+'</div><div class="sp-game-metrics">'+fields.map(([key,label])=>mini(key,label,game[key])).join("")+'</div></div>').join("")+'</article>';
     };
     weeks.innerHTML='<div class="sp-games-heading"><div><div class="sp-kicker">WEEK BY WEEK</div><h3>Recent game logs</h3><p>Targets, catches, carries, yards, touchdowns and fantasy points — no sideways scrolling.</p></div><span>'+games.length+' recorded games</span></div><div class="sp-game-list">'+games.map(gameCard).join("")+'</div><p class="sp-caption">Green weekly values mark the highest of the games shown; zero TDs are red. Game logs show recorded production only.</p>';
    }catch(error){console.warn("Game logs unavailable",error);weeks.innerHTML='<div class="sp-no-data">Game-by-game statistics are temporarily unavailable. Season numbers above are unaffected.</div>'}
