@@ -108,56 +108,68 @@ window.BBB_PROFILE_V5 = async function(ctx){
  loadAdvanced();
  const loadStats=async()=>{
   if(loaded)return;loaded=true;
-  const mount=app.querySelector("#spStats"),weeks=app.querySelector("#spWeeks");if(!mount)return;
+  const mount=app.querySelector("#spStats"),weeks=app.querySelector("#spWeeks");
+  if(!mount)return;
+  const fmt=(v,d=0)=>v==null||v===""?"—":Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+  const pos=p.pos||"WR",isQB=pos==="QB",isRB=pos==="RB";
+  // Match the compact year-by-year and weekly tables on the existing BBB player profile.
+  // Color is information, not decoration: best recorded nonzero result = green; 0 TD = muted red.
+  const configs={
+   QB:{
+    season:[["SEASON","season"],["GP","games"],["CMP","completions"],["ATT","attempts"],["PASS YDS","passing_yards"],["PASS TD","passing_tds"],["INT","interceptions"],["RUSH YDS","rushing_yards"],["RUSH TD","rushing_tds"],["PPR","fantasy_points_ppr"],["FIN","position_finish"]],
+    weekly:[["WK","week"],["OPP","opponent_team"],["CMP/ATT","cmpatt"],["PASS YDS","passing_yards"],["PASS TD","passing_tds"],["INT","interceptions"],["RUSH YDS","rushing_yards"],["RUSH TD","rushing_tds"],["PPR","fantasy_points_ppr"],["RANK","weekly_position_finish"]]
+   },
+   RB:{
+    season:[["SEASON","season"],["GP","games"],["CAR","carries"],["RUSH YDS","rushing_yards"],["RUSH TD","rushing_tds"],["TGT","targets"],["REC","receptions"],["REC YDS","receiving_yards"],["REC TD","receiving_tds"],["PPR","fantasy_points_ppr"],["FIN","position_finish"]],
+    weekly:[["WK","week"],["OPP","opponent_team"],["CAR","carries"],["RUSH YDS","rushing_yards"],["RUSH TD","rushing_tds"],["TGT","targets"],["REC","receptions"],["REC YDS","receiving_yards"],["REC TD","receiving_tds"],["PPR","fantasy_points_ppr"],["RANK","weekly_position_finish"]]
+   },
+   WR:{
+    season:[["SEASON","season"],["GP","games"],["TGT","targets"],["REC","receptions"],["REC YDS","receiving_yards"],["REC TD","receiving_tds"],["CAR","carries"],["RUSH YDS","rushing_yards"],["RUSH TD","rushing_tds"],["PPR","fantasy_points_ppr"],["FIN","position_finish"]],
+    weekly:[["WK","week"],["OPP","opponent_team"],["TGT","targets"],["REC","receptions"],["REC YDS","receiving_yards"],["REC TD","receiving_tds"],["CAR","carries"],["RUSH YDS","rushing_yards"],["RUSH TD","rushing_tds"],["PPR","fantasy_points_ppr"],["RANK","weekly_position_finish"]]
+   }
+  };
+  const cols=configs[isQB?"QB":isRB?"RB":"WR"];
+  const relevantKeys=new Set(["passing_yards","passing_tds","rushing_yards","rushing_tds","receiving_yards","receiving_tds","fantasy_points_ppr"]);
+  const maxValues=(rows)=>{const maxima={};for(const row of rows)for(const key of relevantKeys)if(row[key]!=null&&Number.isFinite(Number(row[key])))maxima[key]=Math.max(maxima[key]??-Infinity,Number(row[key]));return maxima};
+  const cell=(row,key,maxima)=>{
+   if(key==="season")return '<strong>'+esc(row.season)+'</strong>';
+   if(key==="week")return '<strong>W'+esc(row.week)+'</strong>';
+   if(key==="opponent_team")return esc(row.opponent_team||"—");
+   if(key==="cmpatt")return esc(fmt(row.completions))+'/'+esc(fmt(row.attempts));
+   if(key==="position_finish"||key==="weekly_position_finish")return row[key]!=null&&Number(row[key])>0?'<span class="sp-compact-rank">'+esc(pos)+esc(row[key])+'</span>':"—";
+   const value=row[key],td=/_tds$/.test(key),numeric=value!=null&&Number.isFinite(Number(value)),n=Number(value);
+   const className=!numeric?"":td&&n===0?" sp-compact-zero":relevantKeys.has(key)&&n>0&&maxima[key]===n?" sp-compact-best":td&&n>0?" sp-compact-td":"";
+   const decimals=key==="fantasy_points_ppr"?1:0;
+   return '<span class="sp-compact-value'+className+'">'+esc(fmt(value,decimals))+'</span>';
+  };
+  const table=(columns,rows,maxima,title)=>{
+   const header='<thead><tr>'+columns.map(([label],i)=>'<th scope="col"'+(i===0?' class="sp-sticky-cell"':'')+'>'+esc(label)+'</th>').join("")+'</tr></thead>';
+   const body='<tbody>'+rows.map(row=>'<tr>'+columns.map(([,key],i)=>'<td'+(i===0?' class="sp-sticky-cell"':'')+'>'+cell(row,key,maxima)+'</td>').join("")+'</tr>').join("")+'</tbody>';
+   return '<div class="sp-compact-table-scroll" role="region" tabindex="0" aria-label="'+esc(title)+'"><table class="sp-compact-table">'+header+body+'</table></div>';
+  };
+  const legend='<div class="sp-compact-legend"><span><i class="sp-swatch-best"></i> Personal high</span><span><i class="sp-swatch-td"></i> Other TDs</span><span><i class="sp-swatch-zero"></i> Zero TDs</span><span>— Not recorded</span></div>';
   try{
-   const seasons=await bbbDb("site_player_season_stats","select=season,games,targets,receptions,receiving_yards,receiving_tds,carries,rushing_yards,rushing_tds,passing_yards,passing_tds,attempts,completions,interceptions,fantasy_points_ppr,position_finish&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=18");
+   const seasons=await bbbDb("site_player_season_stats","select=season,games,targets,receptions,receiving_yards,receiving_tds,carries,rushing_yards,rushing_tds,passing_yards,passing_tds,attempts,completions,interceptions,fantasy_points_ppr,position_finish&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=25");
    if(!seasons?.length){mount.innerHTML=emptyStats();return}
-   const fmt=(value,dec=0)=>value==null?"—":Number(value).toLocaleString("en-US",{maximumFractionDigits:dec});
-   const pos=p.pos||"WR";
-   const isQB=pos==="QB",isRB=pos==="RB";
-   const statDefs=(isQB?[
-    ["PASSING","completions","CMP"],["PASSING","attempts","ATT"],["PASSING","passing_yards","PASS YDS"],["PASSING","passing_tds","PASS TD"],["PASSING","interceptions","INT"],
-    ["RUSHING","carries","CAR"],["RUSHING","rushing_yards","RUSH YDS"],["RUSHING","rushing_tds","RUSH TD"]
-   ]:isRB?[
-    ["RUSHING","carries","CAR"],["RUSHING","rushing_yards","RUSH YDS"],["RUSHING","rushing_tds","RUSH TD"],
-    ["RECEIVING","targets","TGT"],["RECEIVING","receptions","REC"],["RECEIVING","receiving_yards","REC YDS"],["RECEIVING","receiving_tds","REC TD"]
-   ]:[
-    ["RECEIVING","targets","TGT"],["RECEIVING","receptions","REC"],["RECEIVING","receiving_yards","REC YDS"],["RECEIVING","receiving_tds","REC TD"],
-    ["RUSHING","carries","CAR"],["RUSHING","rushing_yards","RUSH YDS"],["RUSHING","rushing_tds","RUSH TD"]
-   ]).filter(([group])=>group!=="RUSHING"||isQB||isRB||seasons.some(s=>Number(s.carries||0)>0));
-   const maxByKey={};for(const row of seasons)for(const [,key] of statDefs){const n=Number(row[key]);if(row[key]!=null&&Number.isFinite(n))maxByKey[key]=Math.max(maxByKey[key]??-Infinity,n)}
-   const tone=(key,value,maximum)=>{if(value==null||!Number.isFinite(Number(value)))return "";const n=Number(value);if(/_tds$/.test(key)&&n===0)return "sp-stat-zero";if(maximum!=null&&n===maximum&&n>0)return "sp-stat-best";if(/_tds$/.test(key)&&n>0)return "sp-stat-positive";return ""};
-   const cell=(key,label,value,max)=>'<div class="sp-stat-cell '+tone(key,value,max)+'"><span>'+esc(label)+'</span><strong>'+esc(fmt(value,key==="fantasy_points_ppr"?1:0))+'</strong></div>';
-   const seasonCard=row=>{
-    const groups=[...new Set(statDefs.map(x=>x[0]))].map(group=>'<div class="sp-season-group"><div class="sp-stat-group-title">'+esc(group)+'</div><div class="sp-season-metrics">'+statDefs.filter(x=>x[0]===group).map(([,key,label])=>cell(key,label,row[key],maxByKey[key])).join("")+'</div></div>').join("");
-    return '<article class="sp-season-card"><div class="sp-season-cardhead"><div><strong>'+esc(row.season)+'</strong><span>'+esc(fmt(row.games))+' games'+(row.position_finish!=null?' · '+esc(pos)+esc(row.position_finish)+' PPR finish':'')+'</span></div><div class="sp-season-ppr">PPR <b>'+esc(fmt(row.fantasy_points_ppr,1))+'</b></div></div>'+groups+'</article>';
-   };
-   const current=seasons[0],heroFields=isQB?[["passing_yards","PASS YDS"],["passing_tds","PASS TD"],["rushing_yards","RUSH YDS"],["rushing_tds","RUSH TD"]]:isRB?[["rushing_yards","RUSH YDS"],["rushing_tds","RUSH TD"],["receiving_yards","REC YDS"],["receiving_tds","REC TD"]]:[["targets","TARGETS"],["receptions","RECEPTIONS"],["receiving_yards","REC YDS"],["receiving_tds","REC TD"]];
-   mount.innerHTML='<div class="sp-season-lead"><span class="sp-kicker">'+esc(current.season)+' · LATEST RECORDED SEASON</span><div class="sp-season-quick">'+heroFields.map(([key,label])=>cell(key,label,current[key],maxByKey[key])).join("")+'</div></div><div class="sp-stats-legend"><span class="sp-legend-best">● Season high</span><span class="sp-legend-positive">● Other TD total</span><span class="sp-legend-zero">● Zero touchdowns</span><span>— Not recorded</span></div><div class="sp-season-list">'+seasons.map(seasonCard).join("")+'</div><p class="sp-caption">Green is this player’s highest recorded season for that category, not a league percentile. Current seasons may be incomplete. Zero TDs are red; unavailable stats are never treated as zero.</p>';
+   const current=seasons[0],total=Number(current.fantasy_points_ppr||0),games=Number(current.games||0),year=Number(current.season);
+   const seasonMax=maxValues(seasons);
+   const main= '<div class="sp-compact-seasonbar"><div class="sp-compact-seasonbar-title"><span class="sp-kicker">FANTASY PRODUCTION</span><strong>'+esc(year)+' season</strong><small>'+(year===new Date().getFullYear()?"In progress · ":"")+esc(fmt(current.games))+' games recorded</small></div><div class="sp-compact-seasonbar-stat"><span>PPR POINTS</span><strong>'+esc(fmt(current.fantasy_points_ppr,1))+'</strong></div><div class="sp-compact-seasonbar-stat"><span>POINTS/GAME</span><strong>'+esc(games?(total/games).toFixed(1):"—")+'</strong></div><div class="sp-compact-seasonbar-stat"><span>POS FINISH</span><strong>'+esc(current.position_finish!=null&&Number(current.position_finish)>0?pos+current.position_finish:"—")+'</strong></div></div>';
+   mount.innerHTML=main+'<div class="sp-compact-section-title"><div><h3>Career season totals</h3><p>Same quick comparison as the classic BBB profile, with receiving touchdowns included for RBs.</p></div></div>'+table(cols.season,seasons,seasonMax,"Career season totals")+legend+'<p class="sp-caption">Green marks the player’s highest recorded nonzero season for that stat (ties included). Current-year totals may be incomplete. A red zero is shown only for recorded touchdowns, never missing stats.</p>';
    if(!weeks)return;
    try{
-    const games=await bbbDb("site_player_weekly_stats","select=season,week,opponent_team,completions,attempts,passing_yards,passing_tds,interceptions,carries,rushing_yards,rushing_tds,targets,receptions,receiving_yards,receiving_tds,fantasy_points_ppr,weekly_position_finish&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc,week.desc&limit=18");
-    if(!games?.length){weeks.innerHTML='<div class="sp-no-data">No NFL weekly game logs are available yet.</div>';return}
-    const statMax={};for(const game of games)for(const key of ["passing_yards","passing_tds","rushing_yards","rushing_tds","receiving_yards","receiving_tds"]){const n=Number(game[key]);if(game[key]!=null&&Number.isFinite(n))statMax[key]=Math.max(statMax[key]??-Infinity,n)}
-    const mini=(key,label,value)=>cell(key,label,value,statMax[key]);
-    const gameCard=game=>{
-     const groups=isQB?[
-      ["PASSING",[["completions","CMP"],["attempts","ATT"],["passing_yards","YDS"],["passing_tds","TD"],["interceptions","INT"]]],
-      ["RUSHING",[["carries","CAR"],["rushing_yards","YDS"],["rushing_tds","TD"]]]
-     ]:isRB?[
-      ["RUSHING",[["carries","CAR"],["rushing_yards","YDS"],["rushing_tds","TD"]]],
-      ["RECEIVING",[["targets","TGT"],["receptions","REC"],["receiving_yards","YDS"],["receiving_tds","TD"]]]
-     ]:[
-      ["RECEIVING",[["targets","TGT"],["receptions","REC"],["receiving_yards","YDS"],["receiving_tds","TD"]]],
-      ["RUSHING",[["carries","CAR"],["rushing_yards","YDS"],["rushing_tds","TD"]]]
-     ];
-     const visibleGroups=groups.filter(([name])=>name!=="RUSHING"||isQB||isRB||Number(game.carries||0)>0);
-     return '<article class="sp-game-card"><header class="sp-game-head"><div><small>'+esc(game.season)+' SEASON</small><h4>Week '+esc(game.week)+' <span>vs '+esc(game.opponent_team||"—")+'</span></h4></div><div class="sp-game-ppr"><span>PPR POINTS</span><strong>'+esc(fmt(game.fantasy_points_ppr,1))+'</strong>'+(game.weekly_position_finish!=null?'<small>'+esc(pos)+esc(game.weekly_position_finish)+' WEEKLY FINISH</small>':'')+'</div></header>'+
-      visibleGroups.map(([name,fields])=>'<div class="sp-game-statgroup"><div class="sp-stat-group-title">'+name+'</div><div class="sp-game-metrics">'+fields.map(([key,label])=>mini(key,label,game[key])).join("")+'</div></div>').join("")+'</article>';
+    const weekly=await bbbDb("site_player_weekly_stats","select=season,week,opponent_team,completions,attempts,passing_yards,passing_tds,interceptions,carries,rushing_yards,rushing_tds,targets,receptions,receiving_yards,receiving_tds,fantasy_points_ppr,weekly_position_finish&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc,week.desc&limit=500");
+    if(!weekly?.length){weeks.innerHTML='<div class="sp-no-data">No recorded weekly NFL game logs are available for this player.</div>';return}
+    const years=[...new Set(weekly.map(x=>Number(x.season)).filter(Number.isFinite))].sort((a,b)=>b-a);
+    weeks.innerHTML='<div class="sp-compact-section-title sp-compact-log-head"><div><div class="sp-kicker">WEEK BY WEEK</div><h3>Game log</h3><p>The full stat line, PPR points and positional finish in one row.</p></div><label for="spGameYearSelect">SEASON <select id="spGameYearSelect" aria-label="Choose game log season">'+years.map(y=>'<option value="'+y+'">'+y+'</option>').join("")+'</select></label></div><div id="spGameTable"></div><p class="sp-caption">Green highlights the highest result in the selected season’s recorded games. Scroll the table horizontally on narrow screens; the week column stays visible.</p>';
+    const yearSelect=weeks.querySelector("#spGameYearSelect"),logMount=weeks.querySelector("#spGameTable");
+    const renderYear=y=>{
+     const selected=weekly.filter(x=>Number(x.season)===Number(y)).sort((a,b)=>Number(b.week)-Number(a.week));
+     logMount.innerHTML=table(cols.weekly,selected,maxValues(selected),y+" weekly game log")+legend;
     };
-    weeks.innerHTML='<div class="sp-games-heading"><div><div class="sp-kicker">WEEK BY WEEK</div><h3>Recent game logs</h3><p>Targets, catches, carries, yards, touchdowns and fantasy points — no sideways scrolling.</p></div><span>'+games.length+' recorded games</span></div><div class="sp-game-list">'+games.map(gameCard).join("")+'</div><p class="sp-caption">Green weekly values mark the highest of the games shown; zero TDs are red. Game logs show recorded production only.</p>';
-   }catch(error){console.warn("Game logs unavailable",error);weeks.innerHTML='<div class="sp-no-data">Game-by-game statistics are temporarily unavailable. Season numbers above are unaffected.</div>'}
-  }catch(error){console.warn("Season stats unavailable",error);mount.innerHTML='<div class="sp-no-data">Season statistics could not be loaded right now. Try refreshing the page.</div>'}
+    yearSelect.addEventListener("change",()=>renderYear(Number(yearSelect.value)));
+    renderYear(years[0]);
+   }catch(err){console.warn("Weekly game stats unavailable",err);weeks.innerHTML='<div class="sp-no-data">Weekly game logs are temporarily unavailable. Career season totals above are still usable.</div>'}
+  }catch(err){console.warn("Season stats unavailable",err);mount.innerHTML='<div class="sp-no-data">NFL season stats could not be loaded right now.</div>'}
  };
  if(location.hash){const requested=location.hash.slice(1);if(["overview","traits","athletic","film","stats","advanced","dynasty"].includes(requested)){showTab(requested);if(requested==="stats")loadStats();if(requested==="advanced")loadAdvanced()}}
 };
