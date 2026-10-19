@@ -74,11 +74,14 @@ window.BBB_SCOUTING_V6 = {
   const fmt=(value,dec=1)=>value==null?"—":Number(value).toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:dec});
   const eligible=(peerRows||[]).filter(x=>x.carries>=25&&x.games>=3&&x.season===row.season);
   const rank=key=>{
-   if(row[key]==null)return null;
+   if(row[key]==null||row.carries<25||row.games<3)return null;
    const matching=eligible.filter(x=>x[key]!=null&&Number.isFinite(Number(x[key])));
    if(matching.length<8)return null;
    const number=Number(row[key]);
-   return {position:matching.filter(x=>Number(x[key])>number).length+1,total:matching.length};
+   // Aggregating the same weekly floats in different row orders can differ by ~1e-14.
+   // Treat numerically equivalent values as tied, never produce rank N+1 out of N.
+   const tolerance=Math.max(0.0000001,Math.abs(number)*0.000000001);
+   return {position:Math.min(matching.length,matching.filter(x=>Number(x[key])>number+tolerance).length+1),total:matching.length};
   };
   const fields=[
    ["yards_per_carry","Yards per carry",2,"Rushing yards ÷ carries"],
