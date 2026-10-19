@@ -122,3 +122,72 @@
 .sp-measure-quick strong{font-size:16px;line-height:1.4;font-weight:900;color:#f3f8ec}
 @media(max-width:700px){.sp-measure-strip{margin-bottom:9px;gap:5px 0}.sp-measure-quick{margin-right:11px;padding-right:11px;gap:5px}.sp-measure-quick span{font-size:9px}.sp-measure-quick strong{font-size:13px}}
 @media(max-width:390px){.sp-measure-quick{margin-right:8px;padding-right:8px}.sp-measure-quick span{font-size:8px}.sp-measure-quick strong{font-size:12px}}
+
+
+/* V7: compact season/weekly production. Keep both tables and forced horizontal scrolling out of the experience. */
+.sp-season-lead{background:linear-gradient(110deg,#1d3826,#14261b);border:1px solid #496a4d;border-radius:12px;padding:19px;margin-bottom:15px}
+.sp-season-quick{margin-top:11px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.sp-stat-cell{border:1px solid #3d5942;background:#192c20;border-radius:9px;padding:10px 12px;min-width:0}
+.sp-stat-cell span{display:block;color:#b5cbb2;font-weight:850;letter-spacing:.045em;font-size:10px;line-height:1.2}
+.sp-stat-cell strong{display:block;color:#e3ede1;font-size:21px;line-height:1.3;margin-top:4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.sp-stat-cell.sp-stat-best{background:#1e452d;border-color:#4c9760}
+.sp-stat-cell.sp-stat-best strong{color:#aaf2bd}
+.sp-stat-cell.sp-stat-positive{background:#3b3320;border-color:#80703d}
+.sp-stat-cell.sp-stat-positive strong{color:#f0d78e}
+.sp-stat-cell.sp-stat-zero{background:#3e2427;border-color:#7a4547}
+.sp-stat-cell.sp-stat-zero strong{color:#ffada8}
+.sp-stats-legend{display:flex;align-items:center;gap:15px;flex-wrap:wrap;color:#b5c9b3;font-size:11px;font-weight:700;margin:15px 0}
+.sp-legend-best{color:#8ee4a3}.sp-legend-positive{color:#e4cb82}.sp-legend-zero{color:#efaaa3}
+.sp-season-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.sp-season-card,.sp-game-card{min-width:0;border:1px solid #3f5e44;border-radius:12px;background:#15291b;padding:16px}
+.sp-season-cardhead,.sp-game-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid #3b5640;padding-bottom:12px}
+.sp-season-cardhead>div:first-child strong{display:block;color:#f4f9ed;font-size:25px;line-height:1.1}
+.sp-season-cardhead>div:first-child span{font-size:11px;color:#afc9ae}
+.sp-season-ppr{font-size:10px;color:#a9c6aa;text-align:right}
+.sp-season-ppr b{display:block;font-size:20px;color:#f0f5e9}
+.sp-season-group,.sp-game-statgroup{margin-top:13px}
+.sp-stat-group-title{font-size:10px;color:#8ecf9f;letter-spacing:.12em;font-weight:950;margin-bottom:8px}
+.sp-season-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.sp-season-card .sp-stat-cell{padding:9px 7px;text-align:center}
+.sp-season-card .sp-stat-cell strong{font-size:18px}
+.sp-season-card .sp-stat-cell span{font-size:9px}
+.sp-games-heading{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:34px 0 15px}
+.sp-games-heading h3{font-size:23px!important;margin:5px 0!important}
+.sp-games-heading p{font-size:12px;color:#b5c8b1;margin:0}
+.sp-games-heading>span{font-size:11px;color:#a7d9ae;white-space:nowrap}
+.sp-game-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sp-game-head small{font-size:9px;color:#9ac69e;letter-spacing:.08em;font-weight:800}
+.sp-game-head h4{font-size:20px;line-height:1.3;color:#eaf6e8;margin:4px 0 0}
+.sp-game-head h4 span{font-size:13px;color:#c3d6c0}
+.sp-game-ppr{text-align:right;min-width:84px}
+.sp-game-ppr>span{display:block;font-size:9px;color:#b5ceaf}
+.sp-game-ppr strong{display:block;color:#d8f5c8;font-size:24px;line-height:1.3}
+.sp-game-ppr small{display:block;font-size:9px;color:#a6d6ab}
+.sp-game-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.sp-game-metrics .sp-stat-cell{padding:9px 6px;text-align:center}
+.sp-game-metrics .sp-stat-cell strong{font-size:17px}
+.sp-game-metrics .sp-stat-cell span{font-size:9px}
+.sp-dynasty-snapshot{overflow:hidden}
+.sp-dyn-profile-link{font-size:11px;font-weight:850;border:1px solid #648965;padding:10px 13px;color:#c2f1c8;border-radius:8px;white-space:nowrap}
+.sp-dyn-hero{display:grid;grid-template-columns:220px minmax(0,1fr);gap:16px;margin:12px 0 18px}
+.sp-dyn-rank{border:1px solid #60916a;background:#23432d;border-radius:11px;padding:19px}
+.sp-dyn-rank>span,.sp-dyn-stat span{display:block;font-weight:900;font-size:10px;color:#b2d8b5;letter-spacing:.09em}
+.sp-dyn-rank strong{font-size:50px;line-height:1.1;color:#d4f8d2;display:block;letter-spacing:-.07em;margin:6px 0}
+.sp-dyn-rank small{color:#b3d4ae}
+.sp-dyn-rank-track{height:7px;border-radius:10px;background:#102718;margin-top:15px;overflow:hidden}
+.sp-dyn-rank-track i{display:block;height:100%;background:#7fdda1}
+.sp-dyn-summary{background:#1b3122;border:1px solid #4c654f;padding:20px;border-radius:11px}
+.sp-dyn-summary h3{font-size:25px;margin:9px 0!important;line-height:1.2}
+.sp-dyn-summary p{font-size:13px;color:#c5d8c0;line-height:1.6}
+.sp-dyn-statgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.sp-dyn-stat{border:1px solid #45664b;background:#1d3423;padding:14px 12px;border-radius:8px;min-width:0}
+.sp-dyn-stat strong{display:block;font-size:19px;color:#eef9e9;margin-top:6px;overflow-wrap:anywhere}
+.sp-dyn-editorial{border-top:1px solid #426249;margin-top:23px;padding-top:19px}
+.sp-dyn-editorial p{font-size:14px;line-height:1.85;color:#d7e8d3;margin:10px 0 0;max-width:90ch}
+.sp-dyn-editorial.update{border:1px solid #476548;background:#203826;border-radius:10px;padding:17px}
+.sp-dyn-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:19px}
+.sp-dyn-actions .sp-link{margin:0}
+.sp-dyn-actions .sp-link.secondary{background:#203925}
+@media(max-width:1060px){.sp-season-list,.sp-game-list{grid-template-columns:1fr}.sp-dyn-statgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.sp-season-quick{grid-template-columns:repeat(2,minmax(0,1fr))}.sp-games-heading{align-items:start;flex-direction:column}.sp-dyn-hero{grid-template-columns:1fr}.sp-dyn-statgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.sp-dyn-profile-link{white-space:normal}.sp-season-card,.sp-game-card{padding:12px}}
+@media(max-width:420px){.sp-season-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.sp-game-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.sp-stat-cell strong{font-size:18px}.sp-game-head h4{font-size:18px}}

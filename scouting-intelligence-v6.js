@@ -1,3 +1,16 @@
+/* Public-facing editorial copy: strip workflow jargon, preserve the actual evidence.
+ * Source record stays untouched. Review the wording at the source before public release. */
+window.BBB_PUBLIC_COPY = {
+ clean(value){
+  let s=String(value||"").trim();
+  s=s.replace(/^Week\s+\d+\s+(?:owner[- ]approved\s+ranking\s+update|ranking\s+approved|ranking\s+update)\s*:\s*/i,"");
+  s=s.replace(/^BBB\s+(?:owner[- ]approved|approved)\s+ranking\s+update\s*:\s*/i,"");
+  s=s.replace(/\s*Current BBB rank #(\d+)\s*\(previously #(\d+)\)\.?\s*$/i,(_,now,old)=>"");
+  s=s.replace(/\bBBB moved from #(\d+) to #(\d+)\.?/gi,(_,from,to)=>Number(to)<Number(from)?"His BBB dynasty ranking moved up from #"+from+" to #"+to+".":"His BBB dynasty ranking moved from #"+from+" to #"+to+".");
+  return s.trim();
+ }
+};
+
 /* BBB V6: scouting overview and advanced production — reuse verified BBB data,
    keep raw combine results, historical prospect evaluations and dynasty value distinct. */
 window.BBB_SCOUTING_V6 = {
@@ -25,30 +38,43 @@ window.BBB_SCOUTING_V6 = {
   const ranks=isRanked?'<div class="sp-draft-rank"><div class="sp-kicker">BBB '+classYear+' SCOUTING BOARD</div><div class="sp-rank-values"><strong>'+position+posRank+'</strong><span>#'+overall+' overall</span></div><p>Among '+byPosition.length+' graded '+position+'s and '+classRows.length+' total graded '+classYear+' prospects. This is BBB’s board, not a consensus ranking.</p><a href="/draft">View the draft board →</a></div>':
    '<div class="sp-draft-rank"><div class="sp-kicker">'+(r?'CURRENT NFL EVALUATION':'SCOUTING COVERAGE')+'</div><div class="sp-rank-values"><strong>'+(r?'BBB #'+r.rank:'In development')+'</strong></div><p>'+(r?'Dynasty ranking is separate from on-field film grades.':'Class ranking appears when a player has a saved, graded draft evaluation.')+'</p></div>';
   const hasVideo=videos?.length>0;
-  return '<div class="sp-overview-v6"><div class="sp-overview-top"><div class="sp-panel sp-verdict"><div class="sp-kicker">THE BBB SCOUTING REPORT</div><h2>What the film tells us.</h2><p class="sp-report">'+esc(report)+'</p>'+(p.latest_weekly_update?'<div class="sp-latest"><strong>Latest update</strong><p>'+esc(p.latest_weekly_update)+'</p></div>':'')+'<div class="sp-report-actions"><button class="sp-quicklink" data-profile-tab="film" type="button">Review Film Room →</button><button class="sp-quicklink" data-profile-tab="traits" type="button">View Individual Grades →</button></div></div><div class="sp-overview-right">'+ranks+'<div class="sp-overview-pulse"><div class="sp-kicker">SEASON INTELLIGENCE</div><h3>Inside the numbers.</h3><div id="spOverviewAdvanced"><div class="sp-muted">NFL advanced data loads when available. College prospects will have a separate college-stat pipeline.</div></div><button class="sp-quicklink" type="button" data-profile-tab="advanced">Full advanced statistics →</button></div></div></div><div class="sp-insights">'+pros+cons+'</div>'+
+  return '<div class="sp-overview-v6"><div class="sp-overview-top"><div class="sp-panel sp-verdict"><div class="sp-kicker">THE BBB SCOUTING REPORT</div><h2>What the film tells us.</h2><p class="sp-report">'+esc(report)+'</p>'+(p.latest_weekly_update?'<div class="sp-latest"><strong>Latest update</strong><p>'+esc(window.BBB_PUBLIC_COPY.clean(p.latest_weekly_update))+'</p></div>':'')+'<div class="sp-report-actions"><button class="sp-quicklink" data-profile-tab="film" type="button">Review Film Room →</button><button class="sp-quicklink" data-profile-tab="traits" type="button">View Individual Grades →</button></div></div><div class="sp-overview-right">'+ranks+'<div class="sp-overview-pulse"><div class="sp-kicker">SEASON INTELLIGENCE</div><h3>Inside the numbers.</h3><div id="spOverviewAdvanced"><div class="sp-muted">NFL advanced data loads when available. College prospects will have a separate college-stat pipeline.</div></div><button class="sp-quicklink" type="button" data-profile-tab="advanced">Full advanced statistics →</button></div></div></div><div class="sp-insights">'+pros+cons+'</div>'+
   '<div class="sp-overview-foot"><div><div class="sp-kicker">FILM LIBRARY</div><h3>'+(hasVideo?'Breakdowns are ready to watch.':'The scouting film room is growing.')+'</h3><p>'+(hasVideo?videos.length+' published film video'+(videos.length===1?'':'s')+' attached to this player.':'No published film breakdown is attached yet. New videos will appear when released.')+'</p></div><button class="sp-quicklink" type="button" data-profile-tab="film">Explore Film Room →</button></div></div>';
  },
- advancedHTML(row,esc,compact){
+ advancedHTML(row,esc,compact,peers=[],position=""){
   if(!row)return '<div class="sp-no-data">Advanced NFL receiving metrics are not available for this player yet.</div>';
-  const n=(key,dec=0)=>row[key]==null?'—':Number(row[key]).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});
-  const arr=[
-   ['Air yards',n('receiving_air_yards'),'Targeted distance downfield'],
-   ['Yards after catch',n('receiving_yards_after_catch'),'Recorded YAC'],
-   ['Receiving first downs',n('receiving_first_downs'),'Converted first downs'],
-   ['Receiving EPA',n('receiving_epa',2),'Expected-points added on receiving plays'],
-   ['Avg. weekly target share',n('average_weekly_target_share_pct',1)+'%','Unweighted average of reported weekly target shares'],
-   ['Avg. weekly air-yard share',n('average_weekly_air_yards_share_pct',1)+'%','Unweighted average of reported weekly air-yard shares']
+  const n=(key,dec=0)=>row[key]==null?"—":Number(row[key]).toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:dec});
+  const fields=[
+   ["receiving_air_yards","Air yards",0,"Targeted distance downfield"],
+   ["receiving_yards_after_catch","Yards after catch",0,"Recorded receiving YAC"],
+   ["receiving_first_downs","Receiving first downs",0,"Converted first downs"],
+   ["receiving_epa","Receiving EPA",2,"Expected points added on receiving plays"],
+   ["average_weekly_target_share_pct","Avg. weekly target share",1,"Unweighted mean of reported weekly shares"],
+   ["average_weekly_air_yards_share_pct","Avg. weekly air-yard share",1,"Unweighted mean of reported weekly shares"]
   ];
+  const peerRank=key=>{
+   const value=Number(row[key]);
+   if(row[key]==null||!Number.isFinite(value))return null;
+   const eligible=peers.filter(r=>r[key]!=null&&Number.isFinite(Number(r[key])));
+   if(eligible.length<8)return null;
+   const ahead=eligible.filter(r=>Number(r[key])>value).length;
+   return {rank:ahead+1,n:eligible.length};
+  };
+  const metrics=fields.map(([key,label,dec,context])=>({key,label,value:n(key,dec),dec,context,rank:peerRank(key),available:row[key]!=null}));
   if(compact){
-   const found=[arr[0],arr[1],arr[4]].filter(x=>x[1]!=='—');
-   return '<div class="sp-pulse-stats">'+found.map(x=>'<div><strong>'+esc(x[1])+'</strong><small>'+esc(x[0])+'</small></div>').join('')+'</div><p class="sp-caption">2026 through '+esc(row.weekly_rows)+' recorded games · nflverse/BBB weekly data</p>';
+   const picked=metrics.filter(x=>x.available).slice(0,3);
+   return '<div class="sp-pulse-stats">'+(picked.length?picked.map(x=>'<div><strong>'+esc(x.value)+(x.dec===1?"%":"")+'</strong><small>'+esc(x.label)+'</small></div>').join(""):'<div class="sp-muted">No complete advanced receiving metrics recorded yet.</div>')+'</div><p class="sp-caption">'+esc(row.season)+' · '+esc(row.weekly_rows)+' weekly records · updated '+esc(row.stats_updated_at?new Date(row.stats_updated_at).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"date unavailable")+'</p>';
   }
-  const ypr=row.targets?Number(row.receiving_yards)/Number(row.targets):null;
-  const yacPer=row.receptions?Number(row.receiving_yards_after_catch)/Number(row.receptions):null;
-  if(ypr!=null)arr.push(['Yards per target',ypr.toFixed(1),'Derived from receiving yards ÷ targets']);
-  if(yacPer!=null)arr.push(['YAC per reception',yacPer.toFixed(1),'Derived from receiving YAC ÷ receptions']);
-  return '<div class="sp-adv-heading"><div><span class="sp-kicker">RECORDED NFL PRODUCTION</span><h2>'+esc(String(row.season))+' advanced receiving profile</h2><p>Source: BBB game pipeline (nflverse-derived). '+esc(row.weekly_rows)+' weekly records; raw air-yard coverage '+esc(row.air_yards_covered_weeks)+'/'+esc(row.weekly_rows)+'.</p></div></div>'+
-   '<div class="sp-advanced-grid">'+arr.map(x=>'<div class="sp-adv-metric"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong><small>'+esc(x[2])+'</small></div>').join('')+'</div>'+
-   '<p class="sp-caption">Only recorded/derived metrics are shown. Yards per route run, route win rate, PlayerProfiler workout scores, and percentile rankings require separate tracked inputs or licensed methodologies and are not inferred here.</p>';
+  const ypt=row.targets>0?Number(row.receiving_yards)/Number(row.targets):null;
+  const yacPer=row.receptions>0&&row.receiving_yards_after_catch!=null?Number(row.receiving_yards_after_catch)/Number(row.receptions):null;
+  if(ypt!=null)metrics.push({label:"Yards per target",value:ypt.toFixed(1),context:"Receiving yards ÷ targets",rank:null});
+  if(yacPer!=null)metrics.push({label:"YAC per reception",value:yacPer.toFixed(1),context:"Recorded YAC ÷ receptions",rank:null});
+  const cover=(recorded,key)=>recorded+'/'+row.weekly_rows+' weeks recorded';
+  return '<div class="sp-adv-heading"><div><span class="sp-kicker">RECORDED NFL PRODUCTION · POSITION PEERS</span><h2>'+esc(String(row.season))+' advanced receiving profile</h2><p>Data last updated '+esc(row.stats_updated_at?new Date(row.stats_updated_at).toLocaleString("en-US",{month:"short",day:"numeric",year:"numeric"}):"date unavailable")+'. '+esc(row.weekly_rows)+' recorded games. Position comparisons use BBB-tracked '+esc(position||"players")+'s for the same season, not licensed PlayerProfiler rankings.</p></div></div>'+
+   '<div class="sp-advanced-grid">'+metrics.map(x=>'<div class="sp-adv-metric"><span>'+esc(x.label)+'</span><strong>'+esc(x.value)+(x.dec===1&&x.value!=="—"?"%":"")+'</strong>'+(x.rank?'<div class="sp-adv-rank">#'+x.rank.rank+' <small>of '+x.rank.n+' tracked '+esc(position)+'s</small></div>':'')+'<small>'+esc(x.context)+'</small></div>').join("")+'</div>'+
+   '<div class="sp-adv-coverage"><span>Advanced data coverage</span><p>Air yards: '+esc(cover(row.air_yards_covered_weeks))+' · YAC: '+esc(cover(row.yac_covered_weeks))+' · EPA: '+esc(cover(row.receiving_epa_covered_weeks))+'</p></div>'+
+   '<p class="sp-caption">Same-position ranks are calculated from available, recorded BBB data. Missing metrics are excluded, and ranks only appear when at least eight peers have data. These are <b>not official NFL, PFF, or PlayerProfiler ranks or percentiles</b>. Routes, yards per route run and route win rates cannot be inferred from the current feed.</p>';
  }
+
+
 };

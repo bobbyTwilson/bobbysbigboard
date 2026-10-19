@@ -1,7 +1,7 @@
 /* BBB Scouting V5 — native editorial profile, no embedded legacy site.
    Standalone initializer invoked from scouting-preview.js inside its existing scope. */
 window.BBB_PROFILE_V5 = async function(ctx){
- const {app,p,r,g,a,s,sample,photo,videos,prospects,esc,stat,section,bbbDb,setTitle}=ctx;
+ const {app,p,r,g,a,s,sample,photo,videos,prospects,profiles,esc,stat,section,bbbDb,setTitle}=ctx;
  setTitle(p.name+" | Scouting & Film");
  const hasGrade=g?.grade!=null&&Number.isFinite(Number(g.grade));
  const gradeText=hasGrade?Number(g.grade).toFixed(1):"Not graded";
@@ -54,8 +54,23 @@ window.BBB_PROFILE_V5 = async function(ctx){
   (sample?.clips?.length?'<div class="sp-panel sp-film-notes" style="margin-top:15px"><div class="sp-kicker">EDITORIAL NOTEBOOK</div><h3>Selected play observations <span>Draft only</span></h3><p class="sp-caption">These notes have not been published as a final scouting evaluation.</p>'+sample.clips.map((clip,i)=>'<div class="sp-film-clip"><span>PLAY '+(i+1)+' · '+esc(clip[0])+'</span><strong>'+esc(clip[1])+'</strong><p>'+esc(clip[2])+'</p></div>').join('')+'</div>':'');
  const emptyStats=()=>'<div class="sp-no-data">No NFL statistics are recorded yet for this player. Draft prospects will receive an NFL game log once they enter the league.</div>';
  const statsUI=()=>'<div class="sp-panel"><div class="sp-panel-head"><div><div class="sp-kicker">ON-FIELD PRODUCTION</div><h2>Season stats & game logs.</h2><p>Season-by-season production, plus weekly game detail when available.</p></div></div><div id="spStats">'+(isProspect?emptyStats():'Loading recorded NFL seasons…')+'</div><div id="spWeeks"></div></div>';
- const dyn=()=>'<div class="sp-panel"><div class="sp-panel-head"><div><div class="sp-kicker">MARKET CONTEXT</div><h2>Dynasty evaluation.</h2><p>Dynasty rankings are separate from scouting grades.</p></div></div>'+
-  (r?'<div class="sp-three">'+profileTag("BBB OVERALL RANK","#"+r.rank)+profileTag("POSITION RANK",p.pos+(r.pr||"—"))+profileTag("MARKET RANK",r.market!=null?"#"+r.market:"Not recorded")+'</div><p class="sp-caption">Rankings can change independently of a player’s scouting evaluation.</p><a href="/dynasty/rankings" class="sp-link">Open Top 500 dynasty rankings →</a>':'<div class="sp-no-data">Not currently on the dynasty Top 500. This does not mean the player lacks scouting value.</div>')+'</div>';
+ const dyn=()=>{
+  if(!r)return '<div class="sp-panel"><div class="sp-panel-head"><div><div class="sp-kicker">DYNASTY SNAPSHOT</div><h2>Dynasty value & market.</h2></div></div><div class="sp-no-data">This player is not currently on the BBB Top 500 dynasty board. His scouting profile remains available.</div></div>';
+  const gap=r.market==null?null:Number(r.rank)-Number(r.market);
+  const marketText=gap==null?"Market data not recorded":gap===0?"Aligned with market":gap>0?gap+" spots below the market":Math.abs(gap)+" spots above the market";
+  const rankDate=r.weekly_update_date?new Date(r.weekly_update_date+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
+  const note=window.BBB_PUBLIC_COPY.clean(r.latest_update||p.latest_weekly_update||"");
+  const summary=String(r.overview||p.overall_breakdown||"").trim();
+  const strip=(label,val)=>'<div class="sp-dyn-stat"><span>'+esc(label)+'</span><strong>'+esc(val)+'</strong></div>';
+  const progress=Math.max(0,100-Number(r.rank)/500*100);
+  return '<div class="sp-panel sp-dynasty-snapshot"><div class="sp-panel-head"><div><div class="sp-kicker">BBB DYNASTY PLAYER SNAPSHOT</div><h2>'+esc(p.name)+' · Dynasty outlook</h2><p>Live ranking data from the same Top 500 board as the classic player profile.</p></div><a class="sp-dyn-profile-link" href="/player/'+encodeURIComponent(p.player_key)+'">Classic full profile ↗</a></div>'+
+  '<div class="sp-dyn-hero"><div class="sp-dyn-rank"><span>SUPERFLEX RANK</span><strong>#'+esc(r.rank)+'</strong><small>Top 500</small><div class="sp-dyn-rank-track"><i style="width:'+progress.toFixed(1)+'%"></i></div></div><div class="sp-dyn-summary"><span class="sp-kicker">MARKET POSITION</span><h3>'+esc(marketText)+'</h3><p>BBB: #'+esc(r.rank)+(r.market!=null?' · Market: #'+esc(r.market):' · Market rank unavailable')+'. Smaller ranking numbers indicate higher value.</p></div></div>'+
+  '<div class="sp-dyn-statgrid">'+strip("POSITION RANK",p.pos+(r.pr||"—"))+strip("DYNASTY TIER",r.tier?"Tier "+r.tier:"Not assigned")+strip("MARKET RANK",r.market==null?"Not recorded":"#"+r.market)+strip("AGE",r.age==null?"Not recorded":String(r.age))+strip("TEAM",r.team||"Not recorded")+'</div>'+
+  (summary?'<div class="sp-dyn-editorial"><span class="sp-kicker">BOBBY’S EVALUATION</span><p>'+esc(summary)+'</p></div>':'')+
+  (note?'<div class="sp-dyn-editorial update"><span class="sp-kicker">RECENT DYNASTY CONTEXT'+(rankDate?" · "+esc(rankDate):"")+'</span><p>'+esc(note)+'</p></div>':'')+
+  '<div class="sp-dyn-actions"><a class="sp-link" href="/dynasty/rankings">Explore Top 500 rankings →</a><a class="sp-link secondary" href="/dynasty/compare?left='+encodeURIComponent(p.player_key)+'">Compare this player →</a></div>'+
+  '<p class="sp-caption">Market comparison is contextual, not a consensus grade. BBB rankings and scouting grades are independent evaluations.</p></div>';
+ };
  app.innerHTML='<section class="sp-profile"><div class="wrap"><div class="sp-crumb"><a href="/players">Players</a> <span>›</span> '+esc(p.pos||"")+' <span>›</span> '+esc(p.name)+'</div>'+
   '<div class="sp-hero"><div class="sp-portrait">'+head+'<span class="sp-portrait-fallback">'+esc(initials)+'</span></div><div class="sp-hero-content"><div class="sp-kicker">PLAYER EVALUATION · BOBBY’S BIG BOARD</div><h1>'+esc(p.name)+'</h1><p class="sp-identity">'+esc(p.pos||"")+' <span>·</span> '+esc(p.team||"Draft Prospect")+' <span>·</span> '+esc(p.college||"College not recorded")+'</p><div class="sp-measure-strip" aria-label="Player height and weight"><div class="sp-measure-quick"><span>HEIGHT</span><strong>'+esc(height(a?.height_in))+'</strong></div><div class="sp-measure-quick"><span>WEIGHT</span><strong>'+esc(a?.weight_lb==null?"Not recorded":display(a.weight_lb)+" lbs")+'</strong></div></div><div class="sp-hero-tags"><span class="sp-overall-chip">PROSPECT GRADE <strong>'+esc(gradeText)+'</strong></span>'+(g?.comp?'<span>PRO COMP <strong>'+esc(g.comp)+'</strong></span>':'')+(g?.year?'<span>CLASS <strong>'+esc(g.year)+'</strong></span>':'')+(r?'<span>DYNASTY <strong>#'+esc(r.rank)+'</strong></span>':'')+'</div></div></div>'+
   '<div class="sp-tabs" role="tablist" aria-label="Player profile sections"><button type="button" class="sp-tab active" data-tab="overview" role="tab" aria-selected="true">Overview</button><button type="button" class="sp-tab" data-tab="traits" role="tab" aria-selected="false">Prospect Grades</button><button type="button" class="sp-tab" data-tab="athletic" role="tab" aria-selected="false">Athletic Profile</button><button type="button" class="sp-tab" data-tab="film" role="tab" aria-selected="false">Film Room</button><button type="button" class="sp-tab" data-tab="stats" role="tab" aria-selected="false">Stats & Logs</button><button type="button" class="sp-tab" data-tab="advanced" role="tab" aria-selected="false">Advanced Stats</button><button type="button" class="sp-tab" data-tab="dynasty" role="tab" aria-selected="false">Dynasty</button></div>'+
@@ -83,8 +98,11 @@ window.BBB_PROFILE_V5 = async function(ctx){
   try{
    const rows=await bbbDb("site_player_advanced_season","select=*&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=1");
    const row=rows?.[0]||null;
-   if(quick)quick.innerHTML=V6.advancedHTML(row,esc,true);
-   if(full)full.innerHTML=V6.advancedHTML(row,esc,false);
+   let peers=[];if(row)try{peers=await bbbDb("site_player_advanced_season","select=*&season=eq."+encodeURIComponent(row.season)+"&limit=1000")}catch(e){console.warn("Advanced peers unavailable",e)}
+   const positionByKey=new Map((profiles||[]).map(x=>[x.player_key,x.pos]));
+   const peersAtPosition=peers.filter(x=>positionByKey.get(x.player_key)===p.pos);
+   if(quick)quick.innerHTML=V6.advancedHTML(row,esc,true,peersAtPosition,p.pos);
+   if(full)full.innerHTML=V6.advancedHTML(row,esc,false,peersAtPosition,p.pos);
   }catch(err){console.warn("Advanced stats unavailable",err);if(quick)quick.innerHTML='<div class="sp-muted">Recorded advanced stats are temporarily unavailable.</div>';if(full)full.innerHTML='<div class="sp-no-data">Advanced stats are temporarily unavailable.</div>'}
  };
  loadAdvanced();
@@ -92,21 +110,54 @@ window.BBB_PROFILE_V5 = async function(ctx){
   if(loaded)return;loaded=true;
   const mount=app.querySelector("#spStats"),weeks=app.querySelector("#spWeeks");if(!mount)return;
   try{
-   const ss=await bbbDb("site_player_season_stats","select=season,games,targets,receptions,receiving_yards,receiving_tds,carries,rushing_yards,rushing_tds,passing_yards,passing_tds,attempts,completions&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=15");
-   if(!ss?.length){mount.innerHTML=emptyStats();return}
-   const columns=p.pos==="QB"?[["Season","season"],["Games","games"],["Comp","completions"],["Att","attempts"],["Pass Yds","passing_yards"],["Pass TDs","passing_tds"]]:
-    p.pos==="RB"?[["Season","season"],["Games","games"],["Carries","carries"],["Rush Yds","rushing_yards"],["Rush TDs","rushing_tds"],["Rec","receptions"],["Rec Yds","receiving_yards"]]:
-    [["Season","season"],["Games","games"],["Targets","targets"],["Receptions","receptions"],["Rec Yds","receiving_yards"],["Rec TDs","receiving_tds"]];
-   const current=ss[0];
-   mount.innerHTML='<div class="sp-season-highlights">'+profileTag("SEASON",String(current.season))+profileTag("GAMES",display(current.games))+profileTag(statsLabel,display(current[p.pos==="QB"?"passing_yards":p.pos==="RB"?"rushing_yards":"receiving_yards"]))+profileTag(p.pos==="QB"?"PASS TD":p.pos==="RB"?"RUSH TD":"REC TD",display(current[p.pos==="QB"?"passing_tds":p.pos==="RB"?"rushing_tds":"receiving_tds"]))+'</div>'+
-    '<div class="sp-tablewrap"><table class="sp-table"><thead><tr>'+columns.map(([label])=>'<th>'+esc(label)+'</th>').join('')+'</tr></thead><tbody>'+ss.map(row=>'<tr>'+columns.map(([,k])=>'<td>'+esc(k==="season"?String(row[k]??"—"):display(row[k]))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+   const seasons=await bbbDb("site_player_season_stats","select=season,games,targets,receptions,receiving_yards,receiving_tds,carries,rushing_yards,rushing_tds,passing_yards,passing_tds,attempts,completions,interceptions,fantasy_points_ppr,position_finish&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=18");
+   if(!seasons?.length){mount.innerHTML=emptyStats();return}
+   const fmt=(value,dec=0)=>value==null?"—":Number(value).toLocaleString("en-US",{maximumFractionDigits:dec});
+   const pos=p.pos||"WR";
+   const isQB=pos==="QB",isRB=pos==="RB";
+   const statDefs=(isQB?[
+    ["PASSING","completions","CMP"],["PASSING","attempts","ATT"],["PASSING","passing_yards","PASS YDS"],["PASSING","passing_tds","PASS TD"],["PASSING","interceptions","INT"],
+    ["RUSHING","carries","CAR"],["RUSHING","rushing_yards","RUSH YDS"],["RUSHING","rushing_tds","RUSH TD"]
+   ]:isRB?[
+    ["RUSHING","carries","CAR"],["RUSHING","rushing_yards","RUSH YDS"],["RUSHING","rushing_tds","RUSH TD"],
+    ["RECEIVING","targets","TGT"],["RECEIVING","receptions","REC"],["RECEIVING","receiving_yards","REC YDS"],["RECEIVING","receiving_tds","REC TD"]
+   ]:[
+    ["RECEIVING","targets","TGT"],["RECEIVING","receptions","REC"],["RECEIVING","receiving_yards","REC YDS"],["RECEIVING","receiving_tds","REC TD"],
+    ["RUSHING","carries","CAR"],["RUSHING","rushing_yards","RUSH YDS"],["RUSHING","rushing_tds","RUSH TD"]
+   ]);
+   const maxByKey={};for(const row of seasons)for(const [,key] of statDefs){const n=Number(row[key]);if(row[key]!=null&&Number.isFinite(n))maxByKey[key]=Math.max(maxByKey[key]??-Infinity,n)}
+   const tone=(key,value,maximum)=>{if(value==null||!Number.isFinite(Number(value)))return "";const n=Number(value);if(/_tds$/.test(key)&&n===0)return "sp-stat-zero";if(maximum!=null&&n===maximum&&n>0)return "sp-stat-best";if(/_tds$/.test(key)&&n>0)return "sp-stat-positive";return ""};
+   const cell=(key,label,value,max)=>'<div class="sp-stat-cell '+tone(key,value,max)+'"><span>'+esc(label)+'</span><strong>'+esc(fmt(value,key==="fantasy_points_ppr"?1:0))+'</strong></div>';
+   const seasonCard=row=>{
+    const groups=[...new Set(statDefs.map(x=>x[0]))].map(group=>'<div class="sp-season-group"><div class="sp-stat-group-title">'+esc(group)+'</div><div class="sp-season-metrics">'+statDefs.filter(x=>x[0]===group).map(([,key,label])=>cell(key,label,row[key],maxByKey[key])).join("")+'</div></div>').join("");
+    return '<article class="sp-season-card"><div class="sp-season-cardhead"><div><strong>'+esc(row.season)+'</strong><span>'+esc(fmt(row.games))+' games'+(row.position_finish!=null?' · '+esc(pos)+esc(row.position_finish)+' PPR finish':'')+'</span></div><div class="sp-season-ppr">PPR <b>'+esc(fmt(row.fantasy_points_ppr,1))+'</b></div></div>'+groups+'</article>';
+   };
+   const current=seasons[0],heroFields=isQB?[["passing_yards","PASS YDS"],["passing_tds","PASS TD"],["rushing_yards","RUSH YDS"],["rushing_tds","RUSH TD"]]:[["rushing_yards","RUSH YDS"],["rushing_tds","RUSH TD"],["receiving_yards","REC YDS"],["receiving_tds","REC TD"]];
+   mount.innerHTML='<div class="sp-season-lead"><span class="sp-kicker">'+esc(current.season)+' · LATEST RECORDED SEASON</span><div class="sp-season-quick">'+heroFields.map(([key,label])=>cell(key,label,current[key],maxByKey[key])).join("")+'</div></div><div class="sp-stats-legend"><span class="sp-legend-best">● Season high</span><span class="sp-legend-positive">● Other TD total</span><span class="sp-legend-zero">● Zero touchdowns</span><span>— Not recorded</span></div><div class="sp-season-list">'+seasons.map(seasonCard).join("")+'</div><p class="sp-caption">Green is this player’s highest recorded season for that category, not a league percentile. Current seasons may be incomplete. Zero TDs are red; unavailable stats are never treated as zero.</p>';
+   if(!weeks)return;
    try{
-    const recent=await bbbDb("site_player_weekly_stats","select=season,week,opponent_team,targets,receptions,receiving_yards,receiving_tds,rushing_yards,passing_yards,target_share,air_yards_share&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc,week.desc&limit=18");
-    if(!recent?.length)return;
-    const c=p.pos==="QB"?[["Week","week"],["Opp","opponent_team"],["Pass Yds","passing_yards"]]:p.pos==="RB"?[["Week","week"],["Opp","opponent_team"],["Rush Yds","rushing_yards"],["Rec Yds","receiving_yards"]]:[["Week","week"],["Opp","opponent_team"],["Tgt","targets"],["Rec","receptions"],["Yds","receiving_yards"],["TD","receiving_tds"],["Tgt Share","target_share"]];
-    weeks.innerHTML='<h3 class="sp-weeks-title">Recent game log</h3><div class="sp-tablewrap"><table class="sp-table"><thead><tr>'+c.map(([l])=>'<th>'+esc(l)+'</th>').join('')+'</tr></thead><tbody>'+recent.map(row=>'<tr>'+c.map(([l,k])=>'<td>'+esc(k==="target_share"&&row[k]!=null?(Number(row[k])<=1?Number(row[k])*100:Number(row[k])).toFixed(1)+"%":row[k]??"—")+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
-   }catch(e){console.warn("Game log data unavailable",e)}
-  }catch(e){mount.innerHTML='<div class="sp-no-data">Season stats could not be loaded right now.</div>';console.warn(e)}
+    const games=await bbbDb("site_player_weekly_stats","select=season,week,opponent_team,completions,attempts,passing_yards,passing_tds,interceptions,carries,rushing_yards,rushing_tds,targets,receptions,receiving_yards,receiving_tds,fantasy_points_ppr,weekly_position_finish&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc,week.desc&limit=18");
+    if(!games?.length){weeks.innerHTML='<div class="sp-no-data">No NFL weekly game logs are available yet.</div>';return}
+    const statMax={};for(const game of games)for(const key of ["passing_yards","passing_tds","rushing_yards","rushing_tds","receiving_yards","receiving_tds"]){const n=Number(game[key]);if(game[key]!=null&&Number.isFinite(n))statMax[key]=Math.max(statMax[key]??-Infinity,n)}
+    const mini=(key,label,value)=>cell(key,label,value,statMax[key]);
+    const group=(name,fields)=>'<div class="sp-game-statgroup"><div class="sp-stat-group-title">'+name+'</div><div class="sp-game-metrics">'+fields.map(([key,label])=>mini(key,label,key==="completions"&&isQB?null:null)).join("")+'</div></div>';
+    const gameCard=game=>{
+     const groups=isQB?[
+      ["PASSING",[["completions","CMP"],["attempts","ATT"],["passing_yards","YDS"],["passing_tds","TD"],["interceptions","INT"]]],
+      ["RUSHING",[["carries","CAR"],["rushing_yards","YDS"],["rushing_tds","TD"]]]
+     ]:isRB?[
+      ["RUSHING",[["carries","CAR"],["rushing_yards","YDS"],["rushing_tds","TD"]]],
+      ["RECEIVING",[["targets","TGT"],["receptions","REC"],["receiving_yards","YDS"],["receiving_tds","TD"]]]
+     ]:[
+      ["RECEIVING",[["targets","TGT"],["receptions","REC"],["receiving_yards","YDS"],["receiving_tds","TD"]]],
+      ["RUSHING",[["carries","CAR"],["rushing_yards","YDS"],["rushing_tds","TD"]]]
+     ];
+     return '<article class="sp-game-card"><header class="sp-game-head"><div><small>'+esc(game.season)+' SEASON</small><h4>Week '+esc(game.week)+' <span>vs '+esc(game.opponent_team||"—")+'</span></h4></div><div class="sp-game-ppr"><span>PPR POINTS</span><strong>'+esc(fmt(game.fantasy_points_ppr,1))+'</strong>'+(game.weekly_position_finish!=null?'<small>'+esc(pos)+esc(game.weekly_position_finish)+' WEEKLY FINISH</small>':'')+'</div></header>'+
+      groups.map(([name,fields])=>'<div class="sp-game-statgroup"><div class="sp-stat-group-title">'+name+'</div><div class="sp-game-metrics">'+fields.map(([key,label])=>mini(key,label,game[key])).join("")+'</div></div>').join("")+'</article>';
+    };
+    weeks.innerHTML='<div class="sp-games-heading"><div><div class="sp-kicker">WEEK BY WEEK</div><h3>Recent game logs</h3><p>Targets, catches, carries, yards, touchdowns and fantasy points — no sideways scrolling.</p></div><span>'+games.length+' recorded games</span></div><div class="sp-game-list">'+games.map(gameCard).join("")+'</div><p class="sp-caption">Green weekly values mark the highest of the games shown; zero TDs are red. Game logs show recorded production only.</p>';
+   }catch(error){console.warn("Game logs unavailable",error);weeks.innerHTML='<div class="sp-no-data">Game-by-game statistics are temporarily unavailable. Season numbers above are unaffected.</div>'}
+  }catch(error){console.warn("Season stats unavailable",error);mount.innerHTML='<div class="sp-no-data">Season statistics could not be loaded right now. Try refreshing the page.</div>'}
  };
  if(location.hash){const requested=location.hash.slice(1);if(["overview","traits","athletic","film","stats","advanced","dynasty"].includes(requested)){showTab(requested);if(requested==="stats")loadStats();if(requested==="advanced")loadAdvanced()}}
 };
