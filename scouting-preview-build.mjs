@@ -21,6 +21,7 @@ await writeFile(root+'/index.html',preview);
 await copyFile('scouting-preview.js',root+'/scouting-preview.js');
 await copyFile('scouting-samples.js',root+'/scouting-samples.js');
 await copyFile('scouting-green.css',root+'/scouting-green.css');
+await copyFile('scouting-atmosphere.css',root+'/scouting-atmosphere.css');
 await copyFile('scouting-directory.css',root+'/scouting-directory.css');
 await copyFile('scouting-profile-v5.js',root+'/scouting-profile-v5.js');
 await copyFile('scouting-profile-v5.css',root+'/scouting-profile-v5.css');
