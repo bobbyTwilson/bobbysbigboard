@@ -162,3 +162,132 @@ body>main#app .sp-panel:focus-within{
   transform:translateY(-2px);
  }
 }
+
+
+/* V3 — film room visual language: faint football formations and route progress.
+   Decorative only: no click layer, no script, no asset fetch and no radar rings. */
+body>main#app .sectionHead{
+  justify-content:flex-start!important;
+  align-items:flex-start!important;
+  text-align:left!important;
+  gap:15px!important;
+  min-width:0;
+  width:100%;
+  margin:0 0 28px!important;
+}
+body>main#app .sectionHead::before{
+  align-self:stretch!important;
+  min-height:0!important;
+  height:auto!important;
+  width:3px;
+  margin:3px 0 3px 0;
+  flex:0 0 3px;
+}
+body>main#app .sectionHead>div{
+  margin:0!important;
+  padding-left:0!important;
+  flex:0 1 auto;
+  min-width:0;
+  max-width:920px;
+  text-align:left!important;
+}
+body>main#app .sectionHead h2{margin:8px 0 9px!important}
+body>main#app .sectionHead p{max-width:720px;line-height:1.55}
+body>main#app .section.line{border-color:rgba(106,208,139,.19)}
+.bbb-atmosphere__playbook{
+  z-index:1;
+  pointer-events:none;
+  overflow:hidden;
+  opacity:1;
+}
+.bbb-playbook__diagram{
+  position:absolute;
+  width:clamp(320px,35vw,590px);
+  height:auto;
+  fill:none;
+  overflow:visible;
+  color:rgba(151,238,177,.44);
+  filter:drop-shadow(0 0 7px rgba(83,230,154,.08));
+}
+.bbb-playbook__diagram--left{
+  left:-6%;top:19%;
+  transform:rotate(-9deg) scale(.96);
+  animation:bbb-playbook-float-left 27s ease-in-out infinite alternate;
+}
+.bbb-playbook__diagram--right{
+  right:-6%;bottom:1%;
+  transform:rotate(7deg) scale(.98);
+  animation:bbb-playbook-float-right 33s ease-in-out infinite alternate;
+}
+.bbb-playbook__yardlines path{
+  stroke:rgba(106,208,139,.19);
+  stroke-width:1;
+  stroke-dasharray:3 7;
+}
+.bbb-playbook__line path{
+  stroke:rgba(160,245,188,.42);
+  stroke-width:2;
+  stroke-dasharray:5 8;
+}
+.bbb-playbook__players circle{
+  fill:rgba(7,29,15,.52);
+  stroke:rgba(151,238,177,.56);
+  stroke-width:2;
+}
+.bbb-playbook__crosses path{
+  stroke:rgba(187,251,202,.56);
+  stroke-width:2.3;
+  stroke-linecap:round;
+}
+.bbb-playbook__route{
+  stroke:rgba(111,249,158,.67);
+  stroke-width:2.3;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:0 100;
+  animation:bbb-route-draw 16s ease-in-out infinite;
+}
+.bbb-playbook__route--two{animation-delay:-4s;animation-duration:19s}
+.bbb-playbook__route--three{animation-delay:-7s;animation-duration:22s}
+.bbb-playbook__route--four{animation-delay:-9s;animation-duration:20s}
+.bbb-playbook__motion{
+  stroke:rgba(186,248,202,.36);
+  stroke-width:1.5;
+  stroke-dasharray:4 5;
+  fill:none;
+}
+@keyframes bbb-route-draw{
+  0%,11%{stroke-dasharray:0 100;opacity:.12}
+  53%,78%{stroke-dasharray:100 0;opacity:.8}
+  98%,100%{stroke-dasharray:100 0;opacity:.15}
+}
+@keyframes bbb-playbook-float-left{
+  from{transform:translate3d(0,0,0) rotate(-9deg) scale(.96)}
+  to{transform:translate3d(2%,4%,0) rotate(-6deg) scale(1)}
+}
+@keyframes bbb-playbook-float-right{
+  from{transform:translate3d(0,0,0) rotate(7deg) scale(.98)}
+  to{transform:translate3d(-3%,-5%,0) rotate(4deg) scale(1.01)}
+}
+/* The page stays the foreground; graphic sits at the margins, not over stat rows. */
+body>main#app .bbb-directory-page .sectionHead,
+body>main#app .bbb-film-header,
+body>main#app .sp-profile .sp-hero{position:relative}
+@media(max-width:1050px){
+ .bbb-playbook__diagram{width:390px;opacity:.6}
+ .bbb-playbook__diagram--left{left:-27%;top:17%}
+ .bbb-playbook__diagram--right{right:-24%;bottom:6%}
+}
+@media(max-width:700px){
+ body>main#app .sectionHead{flex-direction:row!important;align-items:flex-start!important;gap:12px!important;margin-bottom:19px!important}
+ body>main#app .sectionHead::before{width:3px;min-height:53px!important;align-self:stretch!important}
+ body>main#app .sectionHead h2{font-size:clamp(26px,8vw,37px)!important}
+ .bbb-playbook__diagram{width:280px;opacity:.36;animation:none!important}
+ .bbb-playbook__diagram--left{left:-48%;top:19%;transform:rotate(-9deg)}
+ .bbb-playbook__diagram--right{right:-47%;bottom:14%;transform:rotate(7deg)}
+ .bbb-playbook__route{animation:none!important;stroke-dasharray:100 0}
+}
+@media(prefers-reduced-motion:reduce){
+ .bbb-playbook__diagram,.bbb-playbook__route{animation:none!important}
+ .bbb-playbook__route{stroke-dasharray:100 0}
+}
