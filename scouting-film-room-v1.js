@@ -26,7 +26,7 @@ const safeId=id=>valid(id)?encodeURIComponent(id):"";
 const externalOnlyIds=new Set(["cdERkoRmnH0"]);
 const mustWatchExternally=id=>externalOnlyIds.has(String(id||""));
 const youtubeUrl=id=>"https://www.youtube.com/watch?v="+safeId(id);
-const categoryLabels={prospect:"Draft Prospect",rookie:"Rookie Film",nfl:"NFL Film Study"};
+const categoryLabels={prospect:"Draft Prospect",nfl:"NFL Film"};
 function catalog(approved,channel,profiles,prospects){
  const playerMap=new Map((profiles||[]).map(p=>[p.player_key,p]));
  const prospectMap=new Map((prospects||[]).map(p=>[p.player_key,p]));
@@ -37,8 +37,9 @@ function catalog(approved,channel,profiles,prospects){
   const p=playerMap.get(v.player_key);
   if(!p)continue;
   const prospect=prospectMap.get(v.player_key),draftYear=Number(prospect?.year||p.draft_year||0);
-  const category=v.video_type==="prospect_breakdown"||draftYear>=2027?"prospect":
-   v.video_type==="rookie_film"||draftYear>=2025&&draftYear<=2026?"rookie":"nfl";
+  // Prospect status follows the player's current roster/class, not their historical video type.
+  // Drafted rookies and veterans share NFL Film, including 2025/2026 rookie breakdowns.
+  const category=(!p.team&&(draftYear>=new Date().getFullYear()||v.video_type==="prospect_breakdown"))?"prospect":"nfl";
   seen.add(id);
   entries.push({
    video_id:id,player_key:v.player_key,title:v.title||"Film Breakdown",
@@ -100,34 +101,31 @@ function render(app,videos,ctx){
  const profileLink=ctx.profileLink||((slug)=>"/scouting/"+encodeURIComponent(slug));
  const fromUrl=new URLSearchParams(location.search).get("video");
  const totals={
-  all:videos.length,
   prospect:videos.filter(x=>x.category==="prospect").length,
-  rookie:videos.filter(x=>x.category==="rookie").length,
   nfl:videos.filter(x=>x.category==="nfl").length
  };
  app.innerHTML='<section class="section bbb-film-room"><div class="wrap">'+
  '<div class="bbb-film-header"><div class="eyebrow">THE BBB FILM ROOM</div><h1>The film behind the evaluation.</h1>'+
- '<p>Watch our draft prospect scouting reports, rookie evaluations and NFL film breakdowns right here. Every video connects directly to a player profile.</p></div>'+
+ '<p>Draft prospect scouting and NFL film breakdowns, directly connected to each player’s BBB profile. Rookie and veteran studies live together under NFL Film.</p></div>'+
  '<div class="bbb-film-stage" data-bbb-film-root><div class="bbb-film-stage-left"><div class="bbb-film-screen" data-film-screen></div><div class="bbb-film-stage-info" data-film-info></div></div>'+
  '<aside class="bbb-film-stage-side"><div class="bbb-film-side-label">FROM THE BIG BOARD</div><h3>Scouting on film.</h3><p>Breakdowns grounded in actual routes, technique, coverage, and performance—not just box scores.</p>'+
  '<div class="bbb-film-side-stat"><strong>'+totals.prospect+'</strong><span>Draft prospect breakdown'+(totals.prospect!==1?"s":"")+'</span></div>'+
- '<div class="bbb-film-side-stat"><strong>'+totals.rookie+'</strong><span>Rookie film studies</span></div>'+
  '<div class="bbb-film-side-stat"><strong>'+totals.nfl+'</strong><span>NFL player breakdowns</span></div>'+
  '</aside></div>'+
  '<div class="bbb-film-catalog-head"><div><div class="eyebrow">VIDEO LIBRARY</div><h2>Browse the breakdowns</h2></div><span>'+videos.length+' published film studies</span></div>'+
  '<div class="bbb-film-toolbar"><div class="bbb-film-filters" role="group" aria-label="Film categories">'+
- [['all','All Film'],['prospect','Draft Prospects'],['rookie','Rookie Film'],['nfl','NFL Film']].map(([id,label])=>'<button type="button" class="bbb-film-filter'+(id==="all"?" active":"")+'" data-film-category="'+id+'" aria-pressed="'+(id==="all"?"true":"false")+'">'+label+' <span>'+totals[id]+'</span></button>').join('')+
+ [['nfl','NFL Film'],['prospect','Draft Prospects']].map(([id,label])=>'<button type="button" class="bbb-film-filter'+(id==="nfl"?" active":"")+'" data-film-category="'+id+'" aria-pressed="'+(id==="nfl"?"true":"false")+'">'+label+' <span>'+totals[id]+'</span></button>').join('')+
  '</div><input class="bbb-film-search" type="search" placeholder="Search player, video, or college…" aria-label="Search film breakdowns" data-film-search></div>'+
  '<div class="bbb-film-library" data-film-library></div><div class="bbb-film-no-results" data-film-empty hidden>No matching film breakdowns yet.</div>'+
- '<div class="bbb-film-footer-note">Only public, long-form films linked to BBB players appear here. New scouting uploads can be added from the same video registry.</div>'+
+ '<div class="bbb-film-footer-note">Only approved, public long-form films linked to BBB players appear here. Recent YouTube uploads are added when they are synced to the BBB film catalog.</div>'+
  '</div></section>';
  const root=app.querySelector("[data-bbb-film-root]");
  const controller=attach(root,videos,fromUrl,esc,profileLink);
  // Film tiles are located outside the playback panel, so forward selection explicitly.
  const library=app.querySelector("[data-film-library]");
- let category="all",search="";
+ let category="nfl",search="";
  const draw=()=>{
-  const filtered=videos.filter(v=>(category==="all"||v.category===category)&&(!search||[v.title,v.player_name,v.player_college,v.player_team].join(" ").toLowerCase().includes(search)));
+  const filtered=videos.filter(v=>v.category===category&&(!search||[v.title,v.player_name,v.player_college,v.player_team].join(" ").toLowerCase().includes(search)));
   library.innerHTML=filtered.map(v=>filmTile(v,esc)).join("");
   app.querySelector("[data-film-empty]").hidden=filtered.length>0;
   library.querySelectorAll("[data-film-select]").forEach(b=>b.setAttribute("aria-pressed",String(controller.current()?.video_id===b.dataset.filmSelect)));
