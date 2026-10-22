@@ -244,3 +244,15 @@
   .sp-profile .sp-portrait-framed .sp-portrait-fallback{font-size:22px}
   .sp-profile .sp-hero{gap:9px}
 }
+
+
+/* Athletic-data provenance: distinguish roster measurements from verified test venues. */
+.sp-athletic-provenance{
+ display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+ margin:0 0 19px;padding:13px 16px;border:1px solid #43664b;border-radius:9px;
+ background:linear-gradient(110deg,#1c3325,#15281c);
+}
+.sp-athletic-provenance>div span{display:block;color:#9ed3a9;font-size:9px;font-weight:900;letter-spacing:.12em}
+.sp-athletic-provenance strong{display:block;font-size:13px;color:#f0f8ec;margin-top:4px}
+.sp-athletic-provenance small{max-width:470px;color:#c3d5c0;font-size:11px;line-height:1.55}
+@media(max-width:700px){.sp-athletic-provenance{padding:11px 12px}.sp-athletic-provenance strong{font-size:12px}.sp-athletic-provenance small{font-size:10px}}

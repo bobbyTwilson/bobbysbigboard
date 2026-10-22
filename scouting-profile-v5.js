@@ -34,12 +34,16 @@ window.BBB_PROFILE_V5 = async function(ctx){
  };
  const athletics=()=>{
   let tested=measured.filter(d=>a?.[d.key]!=null);
+  const sourceType=String(a?.event_name||"").trim();
+  const sourceYear=a?.event_year?String(a.event_year):"";
+  const sourceChip=a?'<div class="sp-athletic-provenance"><div><span>MEASUREMENT RECORD</span><strong>'+esc(sourceType||"Sourced measurements")+(sourceYear?' · '+esc(sourceYear):'')+'</strong></div><small>'+(sourceType.toLowerCase().includes("testing dataset")||sourceType.toLowerCase().includes("draft-year testing")?'PFR draft-year data may not distinguish NFL Combine from pro-day testing.':'Height and weight may come from a team roster rather than Combine testing.')+'</small></div>':'';
   const movementTraits=fieldTraits.filter(x=>/^(speed|acceleration|agility|change of direction|deceleration)$/i.test(x.name));
   const metrics=tested.map(d=>{
    const value=Number(a[d.key]),pct=d.reverse?(d.hi-value)/(d.hi-d.lo):(value-d.lo)/(d.hi-d.lo),safe=Math.max(0,Math.min(100,pct*100));
    return '<div class="sp-athletic-row"><div class="sp-athletic-number"><span>'+esc(d.label)+'</span><strong>'+esc(d.format(value))+' <small>'+esc(d.unit)+'</small></strong></div><div class="sp-athletic-range"><div class="sp-athletic-marker" style="left:'+safe.toFixed(2)+'%"></div><div class="sp-range-fill" style="width:'+safe.toFixed(2)+'%"></div></div><div class="sp-range-ends"><span>'+d.lo+'</span><span>'+d.hi+'</span></div></div>';
   }).join("");
-  return '<div class="sp-panel sp-athletics"><div class="sp-panel-head"><div><div class="sp-kicker">TESTING PROFILE</div><h2>How he measures up.</h2><p>Verified measurements, presented on labeled display scales.</p></div></div>'+
+  return '<div class="sp-panel sp-athletics"><div class="sp-panel-head"><div><div class="sp-kicker">TESTING PROFILE</div><h2>How he measures up.</h2><p>Recorded measurements and testing results. Unavailable drills are never estimated.</p></div></div>'+
+   sourceChip+
    '<div class="sp-physical"><div>'+profileTag("HEIGHT",height(a?.height_in))+'</div><div>'+profileTag("WEIGHT",a?.weight_lb==null?"Not recorded":display(a.weight_lb)+" lbs")+'</div><div>'+profileTag("HAND",a?.hand_in==null?"Not recorded":display(a.hand_in)+" in")+'</div><div>'+profileTag("ARM",a?.arm_in==null?"Not recorded":display(a.arm_in)+" in")+'</div></div>'+
    (tested.length?'<div class="sp-athletic-chart">'+metrics+'</div>':'<div class="sp-no-data">No verified timed/jump drill results are recorded. This is expected for many college prospects before the NFL Combine.</div>')+
    (a?.forty_seconds&&a?.weight_lb?'<div class="sp-speed-score"><strong>'+(Number(a.weight_lb)*200/Math.pow(Number(a.forty_seconds),4)).toFixed(1)+'</strong><span><b>Weight-adjusted Speed Score</b><br>Calculated from weight × 200 ÷ 40 time⁴ (Barnwell formula). Independent BBB calculation, not a PlayerProfiler percentile.</span></div>':'')+
