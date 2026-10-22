@@ -194,61 +194,53 @@
 @media(max-width:420px){.sp-season-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.sp-game-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.sp-stat-cell strong{font-size:18px}.sp-game-head h4{font-size:18px}}
 
 
-/* V9: native player hero portrait framing, using the original cutout asset.
-   This is a layout treatment only; no generated replacement player artwork. */
+
+/* V10: image-fit correction for wide ESPN headshots. Original PNGs remain unchanged.
+   Crops transparent side space and fills the frame; no fake foot/base bar. */
 .sp-profile .sp-portrait-framed{
-  width:184px;height:184px;flex:none;
-  position:relative;display:flex;align-items:flex-end;justify-content:center;
-  overflow:visible;isolation:isolate;
-  background:transparent;border:0;border-radius:0;
-  filter:none;
+  position:relative;isolation:isolate;flex:0 0 178px;
+  display:flex;align-items:center;justify-content:center;
+  width:178px;height:164px;
+  overflow:hidden;
+  border:1px solid #52725a;border-radius:15px;
+  background:
+    radial-gradient(ellipse at 50% 83%,rgba(101,173,112,.22),transparent 62%),
+    linear-gradient(155deg,#2a4331 0%,#1a2f22 50%,#102319 100%);
+  box-shadow:inset 0 1px 0 rgba(240,255,232,.12),0 10px 23px rgba(0,0,0,.31);
 }
 .sp-profile .sp-portrait-framed::before{
-  content:"";position:absolute;inset:12px 3px 5px;z-index:0;pointer-events:none;
-  border:1px solid #647e66;border-radius:15px;
-  background:
-    linear-gradient(130deg,rgba(238,252,227,.075),transparent 44%),
-    radial-gradient(ellipse at 50% 76%,rgba(91,173,115,.3),transparent 68%),
-    linear-gradient(150deg,#293d2f 0%,#1a3221 42%,#0f2117 100%);
-  box-shadow:inset 0 1px 0 rgba(229,249,217,.20),
-             inset 0 -16px 24px rgba(10,28,16,.34),
-             0 11px 23px rgba(0,0,0,.30);
+  content:"";position:absolute;z-index:0;pointer-events:none;
+  inset:7px;border:1px solid rgba(183,213,180,.10);border-radius:10px;
+  background:radial-gradient(ellipse at 50% 85%,rgba(97,174,105,.10),transparent 72%);
 }
 .sp-profile .sp-portrait-framed::after{
-  content:"";position:absolute;left:16px;right:16px;bottom:7px;height:25px;
-  z-index:0;pointer-events:none;
-  background:radial-gradient(ellipse at center,rgba(117,219,139,.37),transparent 70%);
-  filter:blur(6px);
+  content:"";position:absolute;z-index:3;pointer-events:none;
+  left:0;right:0;bottom:0;height:19px;
+  background:linear-gradient(0deg,rgba(9,26,17,.64),transparent);
+  border-bottom:3px solid rgba(114,189,133,.42);
 }
 .sp-profile .sp-portrait-framed .sp-player-image{
-  position:relative;z-index:1;display:block;
-  width:100%;height:calc(100% + 5px);max-width:none;
-  object-fit:contain;object-position:center bottom;
-  filter:drop-shadow(0 10px 8px rgba(0,0,0,.53));
-  pointer-events:none;
+  position:absolute;z-index:2;
+  inset:0;width:100%;height:100%;max-width:none;
+  object-fit:cover;object-position:center center;
+  display:block;pointer-events:none;
+  filter:drop-shadow(0 7px 7px rgba(0,0,0,.39));
 }
 .sp-profile .sp-portrait-framed .sp-portrait-fallback{
-  z-index:1;top:48px;left:0;right:0;text-align:center;
-  color:#c4d9b9;font-size:40px;
+  position:absolute;z-index:1;inset:0;top:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;font-size:37px;color:#c6d9bb;
 }
-.sp-profile .sp-portrait-framed .sp-portrait-floor{
-  position:absolute;z-index:2;pointer-events:none;
-  left:14px;right:14px;bottom:5px;height:7px;
-  border-top:1px solid rgba(201,239,201,.60);
-  border-radius:2px 2px 7px 7px;
-  background:linear-gradient(90deg,rgba(29,61,39,.75),rgba(103,145,108,.9) 50%,rgba(29,61,39,.75));
-  box-shadow:0 4px 9px rgba(0,0,0,.32),0 -2px 7px rgba(118,200,143,.13);
-}
-.sp-profile .sp-hero{gap:24px}
+.sp-profile .sp-hero{gap:25px;align-items:center}
 @media(max-width:700px){
-  .sp-profile .sp-portrait-framed{width:112px;height:136px}
-  .sp-profile .sp-portrait-framed::before{inset:8px 2px 4px;border-radius:12px}
-  .sp-profile .sp-portrait-framed .sp-portrait-floor{left:10px;right:10px;bottom:4px;height:5px}
-  .sp-profile .sp-portrait-framed .sp-portrait-fallback{top:37px;font-size:26px}
-  .sp-profile .sp-hero{gap:11px}
+  .sp-profile .sp-portrait-framed{width:111px;height:127px;flex-basis:111px;border-radius:11px}
+  .sp-profile .sp-portrait-framed::before{inset:5px;border-radius:7px}
+  .sp-profile .sp-portrait-framed::after{height:12px;border-bottom-width:2px}
+  .sp-profile .sp-portrait-framed .sp-portrait-fallback{font-size:26px}
+  .sp-profile .sp-hero{gap:12px}
 }
 @media(max-width:380px){
-  .sp-profile .sp-portrait-framed{width:86px;height:112px}
-  .sp-profile .sp-portrait-framed .sp-portrait-fallback{top:30px;font-size:23px}
-  .sp-profile .sp-hero{gap:8px}
+  .sp-profile .sp-portrait-framed{width:86px;height:106px;flex-basis:86px;border-radius:10px}
+  .sp-profile .sp-portrait-framed .sp-portrait-fallback{font-size:22px}
+  .sp-profile .sp-hero{gap:9px}
 }
