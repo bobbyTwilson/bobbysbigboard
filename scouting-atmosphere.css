@@ -1,23 +1,23 @@
-/* Bobby's Big Board / Scouting Preview • Stadium-light atmosphere V1
+/* Bobby's Big Board / Scouting Preview • Admin-mint stadium atmosphere V2
    No raster assets, canvas, scripts, pointer tracking, or third-party animation.
    Faint angular geometry instead of radar circles. Production stylesheet unchanged. */
 
-/* Dark ink base with visible teal/blue light only in the spaces between readable cards. */
-html{background:#061119!important}
-body{background:#061119!important;isolation:isolate;color:#f1f5ee}
+/* Dark ink base with admin-green and mint light only in the spaces between readable cards. */
+html{background:#07140d!important}
+body{background:#07140d!important;isolation:isolate;color:#f1f5ee}
 body::before{content:none!important}
 body>.bbb-atmosphere{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;contain:paint;
   background:
-   radial-gradient(ellipse 95% 75% at 110% -13%,rgba(14,96,101,.24),transparent 76%),
-   linear-gradient(125deg,#061117 0%,#07171c 35%,#08171a 58%,#061018 100%);
+   radial-gradient(ellipse 95% 75% at 110% -13%,rgba(35,139,78,.24),transparent 76%),
+   linear-gradient(125deg,#07140d 0%,#0a1a10 35%,#0a1c12 58%,#06120c 100%);
 }
 .bbb-atmosphere>div{position:absolute;inset:0;pointer-events:none}
 .bbb-atmosphere__lights{
   inset:-23% -24%!important;
   background:
-    radial-gradient(ellipse 24% 37% at 19% 19%,rgba(31,191,182,.26) 0%,transparent 72%),
-    radial-gradient(ellipse 29% 38% at 80% 30%,rgba(38,108,198,.25) 0%,transparent 76%),
-    radial-gradient(ellipse 34% 33% at 52% 82%,rgba(18,143,116,.20) 0%,transparent 76%);
+    radial-gradient(ellipse 24% 37% at 19% 19%,rgba(83,230,154,.32) 0%,transparent 72%),
+    radial-gradient(ellipse 29% 38% at 80% 30%,rgba(130,228,154,.22) 0%,transparent 76%),
+    radial-gradient(ellipse 34% 33% at 52% 82%,rgba(43,194,103,.19) 0%,transparent 76%);
   animation:bbb-glow-wander 31s ease-in-out infinite alternate;
   will-change:transform;transform:translate3d(0,0,0)
 }
@@ -25,16 +25,16 @@ body>.bbb-atmosphere{position:fixed;inset:0;z-index:0;pointer-events:none;overfl
 .bbb-atmosphere__slashes{
   opacity:.25;
   background:
-    repeating-linear-gradient(116deg,transparent 0px,transparent 86px,rgba(110,218,207,.13) 87px,transparent 89px,transparent 183px),
-    linear-gradient(120deg,transparent 15%,rgba(30,116,118,.08) 31%,transparent 43%,transparent 75%,rgba(22,117,167,.10) 91%);
+    repeating-linear-gradient(116deg,transparent 0px,transparent 86px,rgba(146,245,183,.14) 87px,transparent 89px,transparent 183px),
+    linear-gradient(120deg,transparent 15%,rgba(54,180,94,.09) 31%,transparent 43%,transparent 75%,rgba(87,210,117,.09) 91%);
   -webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.88),transparent 34%,transparent 66%,rgba(0,0,0,.92));
   mask-image:linear-gradient(90deg,rgba(0,0,0,.88),transparent 34%,transparent 66%,rgba(0,0,0,.92));
 }
 .bbb-atmosphere__grid{
   top:24%!important;left:-32%!important;right:-32%!important;bottom:-77%!important;
   background-image:
-   linear-gradient(rgba(91,210,205,.19) 1px,transparent 1px),
-   linear-gradient(90deg,rgba(91,210,205,.19) 1px,transparent 1px);
+   linear-gradient(rgba(119,236,166,.18) 1px,transparent 1px),
+   linear-gradient(90deg,rgba(119,236,166,.18) 1px,transparent 1px);
   background-size:72px 72px;
   opacity:.43;
   transform:perspective(630px) rotateX(70deg) translate3d(0,1%,0);
@@ -47,30 +47,30 @@ body>.bbb-atmosphere{position:fixed;inset:0;z-index:0;pointer-events:none;overfl
 .bbb-atmosphere__beam{
   inset:-70% auto -70% -20%!important;
   width:42%;height:240%;
-  background:linear-gradient(90deg,transparent 0%,rgba(35,202,179,.015) 29%,rgba(38,175,188,.07) 49%,rgba(56,166,230,.03) 62%,transparent 100%);
+  background:linear-gradient(90deg,transparent 0%,rgba(76,219,125,.018) 29%,rgba(83,230,154,.075) 49%,rgba(174,244,180,.038) 62%,transparent 100%);
   transform:rotate(22deg) translate3d(-24%,0,0);
   transform-origin:center;
   animation:bbb-beam-wander 38s ease-in-out infinite alternate;
 }
 .bbb-atmosphere__horizon{
   background:
-   linear-gradient(90deg,transparent 4%,rgba(78,215,204,.17) 31%,rgba(73,116,188,.16) 60%,transparent 94%) center 90% / 100% 1px no-repeat,
-   linear-gradient(180deg,transparent 40%,rgba(11,47,49,.09) 72%,rgba(6,15,25,.3) 100%);
+   linear-gradient(90deg,transparent 4%,rgba(107,228,153,.19) 31%,rgba(131,235,164,.13) 60%,transparent 94%) center 90% / 100% 1px no-repeat,
+   linear-gradient(180deg,transparent 40%,rgba(16,54,28,.11) 72%,rgba(6,20,10,.32) 100%);
 }
 body>.previewbar{position:relative;z-index:2}
 body>header{z-index:50}
 body>main#app{position:relative;z-index:1;background:transparent!important}
-body>footer.foot{position:relative;z-index:1;background:rgba(5,15,19,.7)}
+body>footer.foot{position:relative;z-index:1;background:rgba(5,18,10,.75)}
 /* These two formerly painted opaque green blocks across the entire atmospheric layer. */
 body>main#app .sp-profile{background:transparent!important}
 body>main#app .hero{
   background:
-    linear-gradient(105deg,rgba(8,22,23,.90) 0%,rgba(11,34,31,.70) 44%,rgba(7,22,30,.48) 100%)!important;
+    linear-gradient(105deg,rgba(8,25,14,.91) 0%,rgba(13,42,23,.72) 44%,rgba(8,28,17,.49) 100%)!important;
 }
 body>main#app .profileHead{
-  background:linear-gradient(122deg,rgba(10,28,25,.90),rgba(6,23,28,.70))!important;
+  background:linear-gradient(122deg,rgba(10,32,17,.90),rgba(7,27,15,.71))!important;
 }
-body>main#app .statsstrip{background:rgba(12,30,29,.88)!important}
+body>main#app .statsstrip{background:rgba(12,34,20,.89)!important}
 body>main#app .section{background:transparent}
 body>main#app .sp-panel,body>main#app .bbb-film-library-tile,body>main#app .bbb-directory-row{
   box-shadow:0 7px 26px rgba(0,0,0,.17);
@@ -79,8 +79,8 @@ body>main#app .sp-panel,body>main#app .bbb-film-library-tile,body>main#app .bbb-
 body>main#app .sectionHead::before{
   content:"";display:block;width:3px;align-self:stretch;min-height:28px;
   flex:0 0 3px;border-radius:3px;
-  background:linear-gradient(180deg,#6de2bb,#2a889e 62%,transparent);
-  box-shadow:0 0 14px rgba(44,201,187,.17);
+  background:linear-gradient(180deg,#84f2b8,#39b875 62%,transparent);
+  box-shadow:0 0 14px rgba(83,230,154,.25);
 }
 body>main#app .sectionHead{align-items:stretch}
 body>main#app .sectionHead>div{padding-left:5px}
@@ -102,7 +102,7 @@ body>main#app .sectionHead>div{padding-left:5px}
  .bbb-atmosphere__slashes{opacity:.14}
  .bbb-atmosphere__lights{opacity:.75}
  .bbb-atmosphere__beam{display:none}
- body>main#app .hero{background:linear-gradient(108deg,rgba(7,23,25,.92),rgba(11,30,27,.68))!important}
+ body>main#app .hero{background:linear-gradient(108deg,rgba(8,24,14,.92),rgba(13,39,21,.71))!important}
 }
 /* Respect motion preferences; never animate scroll or text for this effect. */
 @media(prefers-reduced-motion:reduce){
@@ -113,4 +113,52 @@ body>main#app .sectionHead>div{padding-left:5px}
 /* Browser fallbacks: useful visual background even where masks are unavailable. */
 @supports not (mask-image:linear-gradient(black,transparent)){
  .bbb-atmosphere__grid,.bbb-atmosphere__slashes{opacity:.10}
+}
+
+
+/* Align with the Admin Center's established green spectrum, not neon cyan/blue.
+   Keep headings, tables and film artwork visually ahead of the background. */
+body{--bbb-scout-green:#53e69a;--bbb-scout-mint:#84f2b8;--bbb-scout-forest:#153a23}
+body>header{
+  background:rgba(6,21,12,.92)!important;
+  border-bottom:1px solid rgba(111,216,147,.29)!important;
+  box-shadow:0 5px 20px rgba(0,0,0,.23),0 1px 0 rgba(83,230,154,.08)!important;
+}
+body>.previewbar{
+  background:rgba(16,49,27,.96)!important;
+  border-color:rgba(83,230,154,.22)!important;
+}
+body>header nav a.active,body>header nav a:hover,
+body>header .dropdown[open]>summary{
+  color:var(--bbb-scout-mint)!important;
+}
+body>main#app .sp-tab.active{
+  background:rgba(83,230,154,.10)!important;
+  border-bottom-color:var(--bbb-scout-green)!important;
+}
+body>main#app .sp-tab:focus-visible,
+body>main#app .bbb-film-filter:focus-visible,
+body>main#app .bbb-directory-row:focus-visible{
+  outline:2px solid var(--bbb-scout-mint)!important;
+  outline-offset:2px;
+}
+body>main#app .bbb-film-filter.active,
+body>main#app .filter.active{
+  background:#85e5a9!important;border-color:#a0efba!important;color:#092516!important;
+}
+body>main#app .sectionHead::before{
+  background:linear-gradient(180deg,#84f2b8,#39b875 64%,transparent);
+}
+body>main#app .card:hover,
+body>main#app .sp-panel:focus-within{
+  border-color:rgba(116,222,154,.63)!important;
+}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+ body>main#app .card,body>main#app .bbb-film-library-tile{
+  transition:border-color .2s ease,box-shadow .25s ease,transform .25s ease;
+ }
+ body>main#app .card:hover,body>main#app .bbb-film-library-tile:hover{
+  box-shadow:0 13px 35px rgba(0,0,0,.28),0 0 20px rgba(83,230,154,.06)!important;
+  transform:translateY(-2px);
+ }
 }

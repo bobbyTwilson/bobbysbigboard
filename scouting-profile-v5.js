@@ -88,12 +88,41 @@ window.BBB_PROFILE_V5 = async function(ctx){
   '</div></section>';
  window.BBB_FILM_ROOM.bindProfile(app,videos,esc);
  const tabs=Array.from(app.querySelectorAll(".sp-tab"));
+ const validTabs=new Set(["overview","traits","athletic","film","stats","advanced","dynasty"]);
  const showTab=tab=>{
-  tabs.forEach(el=>{const on=el.dataset.tab===tab;el.classList.toggle("active",on);el.setAttribute("aria-selected",String(on))});
-  app.querySelectorAll(".sp-tab-content").forEach(el=>el.classList.toggle("active",el.dataset.content===tab));
+  if(!validTabs.has(tab))return;
+  tabs.forEach(el=>{const on=el.dataset.tab===tab;el.classList.toggle("active",on);el.setAttribute("aria-selected",String(on));el.tabIndex=on?0:-1});
+  app.querySelectorAll(".sp-tab-content").forEach(el=>{const on=el.dataset.content===tab;el.classList.toggle("active",on);el.hidden=!on});
  };
- tabs.forEach(button=>button.addEventListener("click",()=>{showTab(button.dataset.tab);if(button.dataset.tab==="stats")loadStats();if(button.dataset.tab==="advanced")loadRushingPeers();}));
- app.querySelectorAll("[data-profile-tab]").forEach(button=>button.addEventListener("click",()=>{const target=button.dataset.profileTab;showTab(target);if(target==="advanced")loadRushingPeers();if(target==="stats")loadStats();app.querySelector(".sp-tabs")?.scrollIntoView({behavior:"smooth",block:"start"});}));
+ const activateTab=(tab,updateUrl=true)=>{
+  if(!validTabs.has(tab))return;
+  showTab(tab);
+  if(updateUrl&&location.hash!=="#"+tab)history.replaceState(history.state,"",location.pathname+location.search+"#"+tab);
+  if(tab==="stats")loadStats();
+  if(tab==="advanced")loadRushingPeers();
+ };
+ tabs.forEach((button,index)=>{
+  button.id="sp-tab-"+button.dataset.tab;
+  button.setAttribute("aria-controls","sp-panel-"+button.dataset.tab);
+  button.addEventListener("click",()=>activateTab(button.dataset.tab));
+  button.addEventListener("keydown",event=>{
+   let next=index;
+   if(event.key==="ArrowRight")next=(index+1)%tabs.length;
+   else if(event.key==="ArrowLeft")next=(index-1+tabs.length)%tabs.length;
+   else if(event.key==="Home")next=0;
+   else if(event.key==="End")next=tabs.length-1;
+   else return;
+   event.preventDefault();tabs[next].focus();activateTab(tabs[next].dataset.tab);
+  });
+ });
+ app.querySelectorAll(".sp-tab-content").forEach(el=>{
+  el.id="sp-panel-"+el.dataset.content;
+  el.setAttribute("aria-labelledby","sp-tab-"+el.dataset.content);
+ });
+ app.querySelectorAll("[data-profile-tab]").forEach(button=>button.addEventListener("click",()=>{
+  activateTab(button.dataset.profileTab);
+  app.querySelector(".sp-tabs")?.scrollIntoView({behavior:window.matchMedia?.("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
+ }));
  let loaded=false;
  let advancedPromise=null,advancedResult=null,rushingPeersLoaded=false;
  const renderAdvanced=(peers=[])=>{
@@ -221,5 +250,9 @@ window.BBB_PROFILE_V5 = async function(ctx){
    }catch(err){console.warn("Weekly game stats unavailable",err);weeks.innerHTML='<div class="sp-no-data">Weekly game logs are temporarily unavailable. Career season totals above are still usable.</div>'}
   }catch(err){console.warn("Season stats unavailable",err);mount.innerHTML='<div class="sp-no-data">NFL season stats could not be loaded right now.</div>'}
  };
- if(location.hash){const requested=location.hash.slice(1);if(["overview","traits","athletic","film","stats","advanced","dynasty"].includes(requested)){showTab(requested);if(requested==="stats")loadStats();if(requested==="advanced")loadRushingPeers()}}
+ // Deep links and externally edited hashes should resolve to the same accessible panel.
+ const syncLocationTab=()=>{const tab=location.hash.replace(/^#/,"");if(validTabs.has(tab))activateTab(tab,false)};
+ window.addEventListener("hashchange",syncLocationTab);
+ syncLocationTab();
+ if(!location.hash)showTab("overview");
 };
