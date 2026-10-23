@@ -6,6 +6,20 @@ let adminHtml=await readFile('admin.html','utf8');
 adminHtml=adminHtml
   .replace(/\s*<div class="auth-tabs">[\s\S]*?<\/div>\s*<form id="authForm">/, '\n      <form id="authForm">')
   .replace('Only an email already approved in the BBB database can open the dashboard or write data. New accounts that are not approved remain locked out.','This private control room is sign-in only. Only the approved BBB owner account can open the dashboard or write data.');
+/* Link-only YouTube Film Manager inside the existing authenticated Admin shell. */
+const filmPanel=await readFile('admin-film-panel.html','utf8');
+const filmCss=await readFile('admin-film-v1.css','utf8');
+const filmJs=await readFile('admin-film-v1.js','utf8');
+new Function(filmJs);
+if(!adminHtml.includes('data-page="content"'))throw new Error('Cannot attach Film Manager navigation');
+if(!adminHtml.includes('</main>'))throw new Error('Cannot attach Film Manager page');
+adminHtml=adminHtml.replace(/(<button class="nav-btn" data-page="content">[\s\S]*?<\/button>)/, '$1\n          <button class="nav-btn" data-page="film">Film Breakdown Manager <span class="nav-count" id="filmNavCount">●</span></button>');
+adminHtml=adminHtml.replace('</main>',filmPanel+'\n      </main>');
+adminHtml=adminHtml.replace('</head>','<link rel="stylesheet" href="/admin-film-v1.css?v=1">\n</head>');
+adminHtml=adminHtml.replace('</body>','<script src="/admin-film-v1.js?v=1"></script>\n</body>');
+if(!adminHtml.includes('id="pageFilm"')||!adminHtml.includes('data-page="film"'))throw new Error('Film Manager admin page/nav missing from assembled HTML');
+await writeFile(out+'/static/admin-film-v1.css',filmCss);
+await writeFile(out+'/static/admin-film-v1.js',filmJs);
 await writeFile(`${out}/static/admin.html`,adminHtml);
 
 let adminJs=await readFile('admin.js','utf8');
