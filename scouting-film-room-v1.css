@@ -133,3 +133,20 @@
 .bbb-film-external-button:hover,.bbb-film-external-button:focus-visible{background:#aceeb9;outline:2px solid #d4f4db;outline-offset:2px}
 .bbb-film-external-label{display:inline-flex!important;width:fit-content;margin-top:3px;border:1px solid #627a59;border-radius:5px;padding:3px 7px;color:#f1d6aa!important;font-size:10px!important;font-weight:800}
 @media(max-width:480px){.bbb-film-external-message{padding:12px 15px;gap:5px}.bbb-film-external-message h3{font-size:16px}.bbb-film-external-message p{font-size:10px;line-height:1.45}.bbb-film-external-button{padding:7px 12px;min-height:35px}}
+
+
+/* Film embeds always expose a readable YouTube fallback. YouTube IFrame API errors
+   automatically replace the player with the same external-playback screen as Jeanty. */
+.bbb-film-embed-wrap{position:relative;width:100%;height:100%;background:#07110b}
+.bbb-film-embed-watch{
+  position:absolute;z-index:4;right:11px;bottom:10px;
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:8px 12px;min-height:35px;border-radius:7px;
+  background:rgba(9,26,14,.96);border:1px solid rgba(155,228,169,.8);
+  color:#e2f9e3!important;font-size:11px;font-weight:850;
+  box-shadow:0 3px 13px #0009;text-decoration:none!important;
+}
+.bbb-film-embed-watch:hover,.bbb-film-embed-watch:focus-visible{
+ background:#244d30;color:#fff!important;outline:2px solid #a8e6b4;outline-offset:2px
+}
+@media(max-width:480px){.bbb-film-embed-watch{right:7px;bottom:7px;font-size:10px;padding:6px 9px;min-height:30px}}

@@ -24,7 +24,51 @@ const safeId=id=>valid(id)?encodeURIComponent(id):"";
    Keep affected films discoverable without retrying a blocked third-party iframe.
    Add future cases only after verifying their playback restrictions. */
 const externalOnlyIds=new Set(["cdERkoRmnH0"]);
-const mustWatchExternally=id=>externalOnlyIds.has(String(id||""));
+const runtimeErrors=new Map();
+const cacheKey="bbb-film-external-playback-v1";
+try{
+ const cached=JSON.parse(sessionStorage.getItem(cacheKey)||"[]");
+ if(Array.isArray(cached))for(const id of cached.slice(0,100))if(valid(id))runtimeErrors.set(id,150);
+}catch{}
+const mustWatchExternally=id=>externalOnlyIds.has(String(id||""))||runtimeErrors.has(String(id||""));
+function rememberExternal(id,code){
+ if(!valid(id))return;
+ runtimeErrors.set(id,code);
+ // An embed restriction can be changed by its owner, so cache only for this browser tab.
+ if(code===101||code===150)try{
+  sessionStorage.setItem(cacheKey,JSON.stringify([...runtimeErrors].filter(([key,status])=>status===101||status===150).map(([key])=>key).slice(0,100)));
+ }catch{}
+}
+function externalReason(id){
+ const code=runtimeErrors.get(id);
+ if(code===100)return "YouTube reports that this video is unavailable or private. You can check its YouTube page for updates.";
+ if(code===153)return "YouTube could not authorize playback in this embedded player. Try opening the video directly on YouTube.";
+ if(code===5)return "The embedded player couldn't play this video. Try watching it directly on YouTube.";
+ return "The rights holder has restricted this video's playback on other websites. The full film breakdown can still be opened on YouTube.";
+}
+// The YouTube IFrame Player API reports copyright / embed restrictions as 101 or 150.
+// Do not interpret iframe 'load' as success: blocked YouTube error pages also load.
+let playerApiPromise=null;
+function loadPlayerApi(){
+ if(window.YT?.Player)return Promise.resolve(window.YT);
+ if(playerApiPromise)return playerApiPromise;
+ playerApiPromise=new Promise((resolve,reject)=>{
+  let settled=false;
+  const prior=window.onYouTubeIframeAPIReady;
+  const settle=(error,yt)=>{
+   if(settled)return;settled=true;clearTimeout(timeout);
+   if(error)reject(error);else resolve(yt);
+  };
+  window.onYouTubeIframeAPIReady=()=>{try{if(typeof prior==="function")prior()}catch{};settle(null,window.YT)};
+  const script=document.createElement("script");
+  script.src="https://www.youtube.com/iframe_api";
+  script.async=true;
+  script.onerror=()=>settle(new Error("YouTube player API could not load"));
+  const timeout=setTimeout(()=>settle(new Error("YouTube player API timed out")),10000);
+  document.head.appendChild(script);
+ }).catch(error=>{playerApiPromise=null;throw error});
+ return playerApiPromise;
+}
 const youtubeUrl=id=>"https://www.youtube.com/watch?v="+safeId(id);
 const categoryLabels={prospect:"Draft Prospect",nfl:"NFL Film"};
 function catalog(approved,channel,profiles,prospects){
@@ -52,11 +96,13 @@ function catalog(approved,channel,profiles,prospects){
  return entries;
 }
 function frame(id,esc){
- return '<iframe title="Bobby’s Big Board YouTube film breakdown" src="https://www.youtube-nocookie.com/embed/'+safeId(id)+'?rel=0&playsinline=1&autoplay=1" loading="lazy" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
+ const watch=youtubeUrl(id);
+ return '<div class="bbb-film-embed-wrap"><iframe title="Bobby’s Big Board YouTube film breakdown" src="https://www.youtube-nocookie.com/embed/'+safeId(id)+'?rel=0&playsinline=1&autoplay=1&enablejsapi=1&origin='+encodeURIComponent(location.origin)+'" loading="eager" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'+
+ '<a class="bbb-film-embed-watch" href="'+watch+'" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a></div>';
 }
 function screen(video,playing,esc){
  if(!video)return '<div class="bbb-film-placeholder">No matching film breakdown selected.</div>';
- if(mustWatchExternally(video.video_id))return '<div class="bbb-film-external"><img class="bbb-film-external-art" src="'+thumb(video.video_id)+'" alt="" loading="lazy"><div class="bbb-film-external-shade"></div><div class="bbb-film-external-message"><span>VIEW ON YOUTUBE</span><h3>Playback is restricted on other websites.</h3><p>The NFL has blocked this video from playing in embedded players. The film breakdown is still linked to this profile.</p><a class="bbb-film-external-button" href="'+youtubeUrl(video.video_id)+'" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a></div></div>';
+ if(mustWatchExternally(video.video_id))return '<div class="bbb-film-external"><img class="bbb-film-external-art" src="'+thumb(video.video_id)+'" alt="" loading="lazy"><div class="bbb-film-external-shade"></div><div class="bbb-film-external-message"><span>VIEW ON YOUTUBE</span><h3>Playback is restricted here.</h3><p>'+esc(externalReason(video.video_id))+'</p><a class="bbb-film-external-button" href="'+youtubeUrl(video.video_id)+'" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a></div></div>';
  if(playing)return frame(video.video_id,esc);
  return '<div class="bbb-film-poster"><img class="bbb-film-poster-image" data-video-id="'+safeId(video.video_id)+'" alt="" decoding="async"><div class="bbb-film-poster-shade"></div><button class="bbb-film-bigplay" type="button" data-film-play aria-label="Play '+esc(video.title)+'">▶</button><div class="bbb-film-poster-info"><span>'+esc(video.category_label)+'</span><strong>'+esc(video.title)+'</strong></div></div>';
 }
@@ -67,16 +113,37 @@ function detail(video,esc,profileLink,isProfile){
 }
 function attach(root,list,initialId,esc,profileLink,isProfile=false){
  let chosen=list.find(v=>v.video_id===initialId)||list[0]||null,playing=false;
+ let activePlayer=null,renderToken=0;
  const screenNode=root.querySelector("[data-film-screen]"),infoNode=root.querySelector("[data-film-info]");
  const repaint=()=>{
+  const token=++renderToken;
+  if(activePlayer){try{activePlayer.destroy()}catch{}activePlayer=null}
   if(screenNode)screenNode.innerHTML=screen(chosen,playing,esc);
   if(infoNode)infoNode.innerHTML=detail(chosen,esc,profileLink,isProfile);
   upgradePoster(screenNode?.querySelector(".bbb-film-poster-image"));
   root.querySelectorAll("[data-film-select]").forEach(el=>el.setAttribute("aria-pressed",String(!!chosen&&el.dataset.filmSelect===chosen.video_id)));
+  const iframe=screenNode?.querySelector(".bbb-film-embed-wrap iframe");
+  const id=chosen?.video_id;
+  if(!iframe||!id)return;
+  // Only load YouTube's monitoring script after someone actually starts a video.
+  loadPlayerApi().then(YT=>{
+   if(token!==renderToken||!iframe.isConnected||chosen?.video_id!==id||!playing)return;
+   activePlayer=new YT.Player(iframe,{events:{
+    onError:event=>{
+     if(token!==renderToken||chosen?.video_id!==id)return;
+     const code=Number(event.data);
+     if(![5,100,101,150,153].includes(code))return;
+     rememberExternal(id,code);
+     playing=false;repaint();
+     // Update the selected video's tile/queue label as well.
+     root.querySelectorAll("[data-film-select]").forEach(el=>el.setAttribute("data-film-restricted",String(el.dataset.filmSelect===id)));
+   }
+   }});
+  }).catch(()=>{ /* The unconditional YouTube link remains visible when the API is unavailable. */ });
  };
  const pick=(id,autoPlay)=>{
   const v=list.find(x=>x.video_id===id);if(!v)return;
-  chosen=v;playing=autoPlay;repaint();
+  chosen=v;playing=autoPlay&&!mustWatchExternally(id);repaint();
  };
  root.addEventListener("click",event=>{
   const play=event.target.closest("[data-film-play]");
