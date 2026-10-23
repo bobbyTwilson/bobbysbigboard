@@ -209,3 +209,49 @@
  .sp-overview-v7 .sp-v7-axis-label{padding:6px}
  .sp-overview-v7 .sp-radar-svg{max-width:285px}
 }
+
+
+/* V7.2: keep the trait map in the first viewport on tablets and phones too.
+   At phone sizes its axis key sits beside the compact SVG, not beneath it. */
+@media(min-width:900px) and (max-width:1249px){
+ .sp-profile .sp-hero{gap:13px;min-height:293px}
+ .sp-profile .sp-hero-radar{
+   display:block;flex:0 0 260px;align-self:center;min-width:0;
+   padding:12px 9px 9px;border:1px solid rgba(94,213,135,.48);border-radius:12px;
+   background:linear-gradient(130deg,rgba(10,40,24,.82),rgba(8,30,21,.74));
+ }
+ .sp-profile .sp-hero-radar-heading{display:flex;align-items:center;justify-content:center}
+ .sp-profile .sp-hero-radar-heading span{font-size:10px;color:#8ff6b1;letter-spacing:.12em;font-weight:900}
+ .sp-profile .sp-hero-radar-heading small{display:none}
+ .sp-profile .sp-hero-radar .sp-radar-svg{display:block;width:100%;max-width:203px;height:189px;margin:-7px auto -9px}
+ .sp-profile .sp-hero-radar .sp-v7-axis-key{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:0}
+ .sp-profile .sp-hero-radar .sp-v7-axis-label{grid-template-columns:10px minmax(0,1fr);gap:2px;padding:4px}
+ .sp-profile .sp-hero-radar .sp-v7-axis-name{font-size:8px}
+ .sp-profile .sp-hero-radar .sp-v7-axis-n{font-size:9px}
+ .sp-profile .sp-hero-radar .sp-v7-axis-label strong{display:none}
+ .sp-profile .sp-hero:has(.sp-hero-radar) h1{font-size:clamp(34px,4.3vw,51px)}
+}
+@media(max-width:899px){
+ .sp-profile .sp-hero{flex-wrap:wrap;gap:9px}
+ .sp-profile .sp-hero-radar{
+   display:block;flex:1 0 100%;width:100%;min-width:0;
+   padding:9px 11px;border:1px solid rgba(94,213,135,.46);border-radius:12px;
+   background:linear-gradient(115deg,rgba(9,36,23,.83),rgba(11,32,22,.74));
+ }
+ .sp-profile .sp-hero-radar-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+ .sp-profile .sp-hero-radar-heading span{font-size:10px;color:#8ff6b1;letter-spacing:.11em;font-weight:900}
+ .sp-profile .sp-hero-radar-heading small{font-size:9px;color:#b6ddc2}
+ .sp-profile .sp-hero-radar .sp-v7-radar-plot{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.96fr);gap:4px;align-items:center}
+ .sp-profile .sp-hero-radar .sp-radar-svg{display:block;width:100%;max-width:215px;max-height:165px;margin:-8px auto}
+ .sp-profile .sp-hero-radar .sp-v7-axis-key{grid-template-columns:1fr;gap:3px;margin:0}
+ .sp-profile .sp-hero-radar .sp-v7-axis-label{grid-template-columns:12px minmax(0,1fr) auto;gap:4px;padding:3px 5px}
+ .sp-profile .sp-hero-radar .sp-v7-axis-label strong{font-size:9px}
+ .sp-profile .sp-hero-radar .sp-v7-axis-name{font-size:9px}
+ .sp-profile .sp-hero-radar .sp-v7-axis-n{font-size:9px}
+}
+@media(max-width:370px){
+ .sp-profile .sp-hero-radar{padding:8px 7px}
+ .sp-profile .sp-hero-radar-heading small{display:none}
+ .sp-profile .sp-hero-radar .sp-v7-axis-label{padding:2px 3px;gap:2px}
+ .sp-profile .sp-hero-radar .sp-v7-axis-name{font-size:8px}
+}
