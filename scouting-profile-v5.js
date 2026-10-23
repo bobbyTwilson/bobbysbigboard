@@ -86,22 +86,29 @@ window.BBB_PROFILE_V5 = async function(ctx){
   '<div class="sp-tab-content" data-content="advanced" role="tabpanel"><div class="sp-panel" id="spAdvancedPanel"><div class="sp-muted">Loading advanced NFL production metrics…</div></div></div>'+
   '<div class="sp-tab-content" data-content="dynasty" role="tabpanel">'+dyn()+'</div>'+
   '</div></section>';
- // Show a compact, accurate radar in the unused right-hand space of the player
- // header. The detailed radar remains in Overview for comparison and small screens.
- const detailedRadar=app.querySelector(".sp-v7-radar-plot");
+ // One radar chart only: move the actual SVG from the inert template into the
+ // player hero. The Overview below contains only grade bars and scouting insights.
+ const radarTemplate=app.querySelector("#spRadarTemplate");
+ const singleRadar=radarTemplate?.content?.querySelector(".sp-v7-radar-plot");
  const playerHero=app.querySelector(".sp-hero");
- if(playerHero&&detailedRadar){
+ if(playerHero&&singleRadar){
    const preview=document.createElement("aside");
    preview.className="sp-hero-radar";
-   preview.setAttribute("aria-label","Scouting trait radar at a glance");
+   preview.setAttribute("aria-label","BBB scouting trait radar");
    preview.innerHTML='<div class="sp-hero-radar-heading"><span>PLAYER TRAIT RADAR</span><small>BBB film grades · normalized</small></div>';
-   preview.appendChild(detailedRadar.cloneNode(true));
+   preview.appendChild(singleRadar);
+   const compareSelector=radarTemplate.content.querySelector("#spRadarCompare");
+   if(compareSelector){
+     const heading=preview.querySelector(".sp-hero-radar-heading");
+     const label=compareSelector.closest(".sp-v7-compare");
+     if(label)heading.appendChild(label);
+     compareSelector.addEventListener("change",()=>preview.classList.toggle("sp-compare-on",compareSelector.value==="peers"));
+   }
    playerHero.appendChild(preview);
  }
+ radarTemplate?.remove();
  window.BBB_FILM_ROOM.bindProfile(app,videos,esc);
  const tabs=Array.from(app.querySelectorAll(".sp-tab"));
- const compareSelector=app.querySelector("#spRadarCompare");
- if(compareSelector)compareSelector.addEventListener("change",()=>app.querySelector(".sp-v7-radar")?.classList.toggle("sp-compare-on",compareSelector.value==="peers"));
  const validTabs=new Set(["overview","traits","athletic","film","stats","advanced","dynasty"]);
  const showTab=tab=>{
   if(!validTabs.has(tab))return;

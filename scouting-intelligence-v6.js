@@ -112,10 +112,10 @@ window.BBB_SCOUTING_V6 = {
     '<div class="sp-v7-insights">'+insight("Top graded traits",strongest)+insight("Development focus",lowest,true)+'</div>'+
     '<p class="sp-v7-method">Based on recorded BBB trait scores. Development focus highlights lower relative grades, not verified weaknesses.</p>'+
     '<div class="sp-report-actions"><button class="sp-quicklink" data-profile-tab="film" type="button">Review Film Room →</button><button class="sp-quicklink" data-profile-tab="traits" type="button">Individual Grades →</button></div></section>'+
+    // The ONLY radar is moved from this non-rendering template into the player header.
+    // No duplicate chart remains beneath the scouting report.
+    '<template id="spRadarTemplate">'+(radarTraits.length>=3?radar()+compare:'')+'</template>'+
     '<div class="sp-v7-mid">'+
-    '<section class="sp-v7-card sp-v7-radar"><div class="sp-v7-card-head"><span class="sp-kicker">TRAIT BREAKDOWN</span>'+compare+'</div>'+
-    radar()+(canCompare?'<div class="sp-v7-radar-legend"><span>● Player</span><span class="sp-v7-peer-legend">– '+esc(year+" "+pos+" median")+' (n='+cohort.length+')</span></div>':'')+
-    '<p class="sp-v7-method">Traits normalized to 0–100 from their original 5- or 10-point BBB scales. Not percentiles.</p></section>'+
     '<section class="sp-v7-card sp-v7-grades"><div class="sp-v7-card-head"><span class="sp-kicker">GRADE BREAKDOWN</span>'+
     (g?.grade!=null?'<div class="sp-v7-grade-chip">Overall <strong>'+esc(Number(g.grade).toFixed(1))+'</strong></div>':'')+'</div>'+
     (radarTraits.length?'<div class="sp-v7-bars">'+bars+'</div>':'<div class="sp-visual-empty">Trait grades are not yet recorded for this player.</div>')+
