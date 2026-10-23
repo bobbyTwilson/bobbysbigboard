@@ -12,7 +12,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
  const statsLabel=p.pos==="QB"?"Passing yards":p.pos==="RB"?"Rushing yards":"Receiving yards";
  const isProspect=(Number(g?.year||p.draft_year)>=2027);
  const V6=window.BBB_SCOUTING_V6;
- const report=s?.scouting_summary||p.overall_breakdown||"A complete player scouting evaluation has not been published yet. Statistics and film will be added as they are verified.";
+ const report=(s?.editorial_status==="approved"&&s?.scouting_summary)||p.overall_breakdown||"A complete player scouting evaluation has not been published yet. Statistics and film will be added as they are verified.";
  const height=x=>x==null?"Not recorded":Math.floor(Number(x)/12)+"′"+(Number(x)%12)+"″";
  const display=n=>n==null?"—":Number(n).toLocaleString("en-US",{maximumFractionDigits:1});
  const head=photo?'<img class="sp-player-image" src="'+esc(photo)+'" alt="'+esc(p.name)+' player portrait" onerror="this.remove()">':'';
@@ -88,6 +88,8 @@ window.BBB_PROFILE_V5 = async function(ctx){
   '</div></section>';
  window.BBB_FILM_ROOM.bindProfile(app,videos,esc);
  const tabs=Array.from(app.querySelectorAll(".sp-tab"));
+ const compareSelector=app.querySelector("#spRadarCompare");
+ if(compareSelector)compareSelector.addEventListener("change",()=>app.querySelector(".sp-v7-radar")?.classList.toggle("sp-compare-on",compareSelector.value==="peers"));
  const validTabs=new Set(["overview","traits","athletic","film","stats","advanced","dynasty"]);
  const showTab=tab=>{
   if(!validTabs.has(tab))return;
@@ -162,7 +164,29 @@ window.BBB_PROFILE_V5 = async function(ctx){
   return advancedPromise;
  };
  const loadRushingPeers=async()=>{
-  await loadAdvanced();
+  await const loadOverviewProduction=async()=>{
+  const target=app.querySelector("#spOverviewProduction");
+  if(!target)return;
+  try{
+   const years=await bbbDb("site_player_season_stats","select=season,games,targets,receptions,receiving_yards,receiving_tds,carries,rushing_yards,rushing_tds,completions,attempts,passing_yards,passing_tds&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=1");
+   const season=years?.[0];
+   if(!season){target.innerHTML='<div class="sp-muted">No recorded NFL season totals yet.</div>';return}
+   const n=key=>Number(season[key]||0);
+   const pct=(top,den)=>den>0?(100*top/den).toFixed(1)+"%":"—";
+   const avg=(top,den)=>den>0?(top/den).toFixed(1):"—";
+   const items=p.pos==="QB"?[
+    ["Pass yards",n("passing_yards")],["Pass TD",n("passing_tds")],["Comp %",pct(n("completions"),n("attempts"))],["Rush yards",n("rushing_yards")]]:
+    p.pos==="RB"?[
+    ["Carries",n("carries")],["Rush yards",n("rushing_yards")],["Yards / carry",avg(n("rushing_yards"),n("carries"))],["Rush TD",n("rushing_tds")]]:
+    [["Receptions",n("receptions")],["Rec yards",n("receiving_yards")],["Yards / catch",avg(n("receiving_yards"),n("receptions"))],["Rec TD",n("receiving_tds")]];
+   const shown=value=>typeof value==="number"?value.toLocaleString("en-US"):value;
+   target.innerHTML='<div class="sp-v7-production-grid">'+items.map(([key,value])=>
+     '<div class="sp-v7-stat"><strong>'+esc(shown(value))+'</strong><span>'+esc(key)+'</span></div>').join("")+'</div>'+
+     '<p class="sp-v7-seasonline">'+esc(String(season.season))+' season · '+esc(String(season.games??"—"))+' games recorded</p>';
+  }catch(error){console.warn("Overview production data unavailable",error);target.innerHTML='<div class="sp-muted">Season production is temporarily unavailable. See Stats & Logs for more detail.</div>'}
+ };
+ loadOverviewProduction();
+ loadAdvanced();
   if(p.pos!=="RB"||!advancedResult?.rushing||rushingPeersLoaded)return;
   rushingPeersLoaded=true;
   const year=advancedResult.rushing.season,all=[];

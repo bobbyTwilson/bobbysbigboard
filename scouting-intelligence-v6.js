@@ -17,32 +17,116 @@ window.BBB_PUBLIC_COPY = {
 window.BBB_SCOUTING_V6 = {
  overview(ctx){
   const {p,g,s,report,r,sample,prospects,videos,esc}=ctx;
-  const classYear=Number(g?.year),position=String(g?.pos||p.pos||"");
-  const classRows=(prospects||[]).filter(x=>Number(x.year)===classYear&&x.grade!=null&&Number.isFinite(Number(x.grade))).sort((a,b)=>Number(b.grade)-Number(a.grade));
-  const byPosition=classRows.filter(x=>x.pos===position);
-  const place=arr=>{const n=arr.findIndex(x=>x.player_key===p.player_key);return n<0?null:1+arr.slice(0,n).filter(x=>Number(x.grade)>Number(g.grade)).length};
-  const overall=place(classRows),posRank=place(byPosition),isRanked=overall!=null&&posRank!=null;
-  const tag=(str)=>esc(str);
+  const year=Number(g?.year),pos=String(g?.pos||p.pos||"");
+  const classRows=(prospects||[]).filter(x=>Number(x.year)===year&&x.grade!=null&&Number.isFinite(Number(x.grade))).sort((a,b)=>Number(b.grade)-Number(a.grade));
+  const positionRows=classRows.filter(x=>x.pos===pos);
+  const place=list=>{const n=list.findIndex(x=>x.player_key===p.player_key);return n<0?null:1+list.slice(0,n).filter(x=>Number(x.grade)>Number(g.grade)).length};
+  const overall=place(classRows),positionRank=place(positionRows),ranked=overall!=null&&positionRank!=null;
+  const maxFor=(name,value)=>/^(speed|acceleration|analytics)$/i.test(name)||/\(10\)/.test(name)||value>5?10:5;
   const all=Object.entries(g?.traits||{}).map(([name,v])=>{
-   const val=Number(v), max=/\(10\)/.test(name)||/^(speed|acceleration|analytics)$/i.test(name)||val>5?10:5;
-   return {name,grade:val,max,pct:val/max}
-  }).filter(x=>Number.isFinite(x.grade)&&x.grade>=0&&!/draft capital/i.test(x.name));
-  all.sort((a,b)=>b.pct-a.pct||b.grade-a.grade);
-  const strengths=all.filter(v=>!/^(analytics|dawg factor)$/i.test(v.name)).slice(0,3);
-  const watch=all.slice(-2).reverse();
-  const label=(v)=>v.max===10?v.grade.toFixed(1)+"/10":v.grade.toFixed(1)+"/5";
-  const row=(x,i)=>'<div class="sp-scout-item"><span class="sp-scout-index">'+(i+1).toString().padStart(2,"0")+'</span><div><strong>'+esc(x.name)+'</strong><small>BBB graded '+label(x)+'</small></div></div>';
-  const approvedStrengths=s?.strengths?.length?s.strengths:(!all.length?sample?.traits||[]:[]);
-  const card=(title,sub,items,isWatch)=>'<div class="sp-insight-card '+(isWatch?'watch':'')+'"><div class="sp-insight-head"><span class="sp-kicker">'+(isWatch?'DEVELOPMENT':'SCOUTING STRENGTHS')+'</span><h3>'+title+'</h3><p>'+sub+'</p></div>'+(items.length?'<div class="sp-scout-items">'+items.map(row).join('')+'</div>':'<div class="sp-no-data">'+(isWatch?'No finalized developmental assessment has been recorded yet.':'No individual scouting strengths have been graded yet.')+'</div>')+'</div>';
-  const pros=all.length?card('Where he wins.','The strongest individual traits on his recorded BBB grading sheet.',strengths,false):'<div class="sp-insight-card"><span class="sp-kicker">WHAT STANDS OUT</span><h3>Where he wins.</h3>'+(approvedStrengths.length?'<ul class="sp-simple-list">'+approvedStrengths.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<div class="sp-no-data">Awaiting scouting evaluation.</div>')+'</div>';
-  const cons=watch.length?card('Areas to sharpen.','Lowest relative grades within this player’s own scouting profile—not necessarily weaknesses.',watch,true):'<div class="sp-insight-card watch"><span class="sp-kicker">DEVELOPMENT WATCH</span><h3>What comes next.</h3>'+(s?.development_areas?.length?'<ul class="sp-simple-list">'+s.development_areas.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<div class="sp-no-data">No reviewed developmental notes yet. We won’t invent a weakness.</div>')+'</div>';
-  const ranks=isRanked?'<div class="sp-draft-rank"><div class="sp-kicker">BBB '+classYear+' SCOUTING BOARD</div><div class="sp-rank-values"><strong>'+position+posRank+'</strong><span>#'+overall+' overall</span></div><p>Among '+byPosition.length+' graded '+position+'s and '+classRows.length+' total graded '+classYear+' prospects. This is BBB’s board, not a consensus ranking.</p><a href="/draft">View the draft board →</a></div>':
-   '<div class="sp-draft-rank"><div class="sp-kicker">'+(r?'CURRENT NFL EVALUATION':'SCOUTING COVERAGE')+'</div><div class="sp-rank-values"><strong>'+(r?'BBB #'+r.rank:'In development')+'</strong></div><p>'+(r?'Dynasty ranking is separate from on-field film grades.':'Class ranking appears when a player has a saved, graded draft evaluation.')+'</p></div>';
-  const hasVideo=videos?.length>0;
-  return '<div class="sp-overview-v6"><div class="sp-overview-top"><div class="sp-panel sp-verdict"><div class="sp-kicker">THE BBB SCOUTING REPORT</div><h2>What the film tells us.</h2><p class="sp-report">'+esc(report)+'</p>'+(p.latest_weekly_update?'<div class="sp-latest"><strong>Latest update</strong><p>'+esc(window.BBB_PUBLIC_COPY.clean(p.latest_weekly_update))+'</p></div>':'')+'<div class="sp-report-actions"><button class="sp-quicklink" data-profile-tab="film" type="button">Review Film Room →</button><button class="sp-quicklink" data-profile-tab="traits" type="button">View Individual Grades →</button></div></div><div class="sp-overview-right">'+ranks+'<div class="sp-overview-pulse"><div class="sp-kicker">SEASON INTELLIGENCE</div><h3>Inside the numbers.</h3><div id="spOverviewAdvanced"><div class="sp-muted">NFL advanced data loads when available. College prospects will have a separate college-stat pipeline.</div></div><button class="sp-quicklink" type="button" data-profile-tab="advanced">Full advanced statistics →</button></div></div></div><div class="sp-insights">'+pros+cons+'</div>'+
-  '<div class="sp-overview-foot"><div><div class="sp-kicker">FILM LIBRARY</div><h3>'+(hasVideo?'Breakdowns are ready to watch.':'The scouting film room is growing.')+'</h3><p>'+(hasVideo?videos.length+' published film video'+(videos.length===1?'':'s')+' attached to this player.':'No published film breakdown is attached yet. New videos will appear when released.')+'</p></div><button class="sp-quicklink" type="button" data-profile-tab="film">Explore Film Room →</button></div></div>';
+    const value=Number(v),max=maxFor(name,value);
+    return {name,value,max,pct:Math.max(0,Math.min(100,100*value/max))}
+  }).filter(x=>Number.isFinite(x.value)&&x.value>=0&&!/draft capital|analytics|dawg factor/i.test(x.name));
+  const byName=new Map(all.map(x=>[x.name.toLowerCase(),x]));
+  const keys=pos==="WR"||pos==="TE"?
+    ["Releases","Catching","Medium Routes","Speed","Catch in Traffic","Run After Catch"]:
+    pos==="RB"?["Vision","Contact Balance","Speed","Acceleration","Catching","Run IQ"]:
+    pos==="QB"?["Accuracy","Arm Strength","Pocket Presence","Decision Making","Mobility","Athleticism"]:[];
+  const chosen=[];
+  for(const key of keys){const metric=byName.get(key.toLowerCase());if(metric&&!chosen.includes(metric))chosen.push(metric)}
+  for(const metric of all.slice().sort((a,b)=>b.pct-a.pct)){if(chosen.length>=6)break;if(!chosen.includes(metric))chosen.push(metric)}
+  const radarTraits=chosen.slice(0,6);
+  const fmt=value=>Number(value).toLocaleString("en-US",{maximumFractionDigits:1});
+  const raw=x=>fmt(x.value)+"/"+x.max;
+  const cohort=positionRows.filter(x=>x.traits&&typeof x.traits==="object");
+  const medians=radarTraits.map(metric=>{
+    const pts=cohort.map(player=>{
+      const val=Object.entries(player.traits).find(([name])=>name.toLowerCase()===metric.name.toLowerCase());
+      if(!val)return null;
+      const n=Number(val[1]);return Number.isFinite(n)&&n>=0?Math.min(100,100*n/maxFor(val[0],n)):null;
+    }).filter(v=>v!=null).sort((a,b)=>a-b);
+    if(pts.length<5)return null;
+    const m=Math.floor(pts.length/2);
+    return pts.length%2?pts[m]:(pts[m-1]+pts[m])/2;
+  });
+  const canCompare=radarTraits.length>=3&&medians.every(v=>v!=null)&&cohort.length>=5;
+  // A radar polygon normalizes each REAL recorded BBB trait to its own original 5/10-point maximum.
+  // It is not a percentile and does not replace the saved overall prospect grade.
+  const coords=(pct,i,n,r=116)=>{
+    const angle=(-90+i*360/n)*Math.PI/180,dist=r*pct/100;
+    return [180+dist*Math.cos(angle),165+dist*Math.sin(angle)];
+  };
+  const polygon=(scores,n)=>scores.map((v,i)=>coords(v,i,n).map(x=>x.toFixed(2)).join(",")).join(" ");
+  const radar=()=>{
+    if(radarTraits.length<3)return '<div class="sp-visual-empty">A radar chart will appear once this player has at least three recorded scouting traits.</div>';
+    const n=radarTraits.length;
+    const grid=[25,50,75,100].map(k=>'<polygon points="'+polygon(Array(n).fill(k),n)+'" class="sp-radar-ring"/>').join("");
+    const lines=radarTraits.map((_,i)=>'<line x1="180" y1="165" x2="'+coords(100,i,n)[0].toFixed(1)+'" y2="'+coords(100,i,n)[1].toFixed(1)+'" class="sp-radar-axis"/>').join("");
+    const values=radarTraits.map((x,i)=>{const [xx,yy]=coords(x.pct,i,n);return '<circle class="sp-radar-dot" cx="'+xx.toFixed(1)+'" cy="'+yy.toFixed(1)+'" r="4.2"/>'}).join("");
+    const labels=radarTraits.map((x,i)=>{
+      const [xpos,ypos]=coords(140,i,n),anchor=xpos<155?"end":xpos>205?"start":"middle";
+      const label=x.name.length>17?x.name.replace(/ /g," ").slice(0,20):x.name;
+      return '<text x="'+xpos.toFixed(1)+'" y="'+(ypos-5).toFixed(1)+'" text-anchor="'+anchor+'" class="sp-radar-label">'+esc(label)+'</text>'+
+        '<text x="'+xpos.toFixed(1)+'" y="'+(ypos+12).toFixed(1)+'" text-anchor="'+anchor+'" class="sp-radar-value">'+Math.round(x.pct)+'</text>';
+    }).join("");
+    const description=radarTraits.map(x=>x.name+" "+raw(x)).join(", ");
+    return '<svg class="sp-radar-svg" viewBox="0 0 360 335" role="img" aria-label="'+esc("BBB scouting radar: "+description)+'">'+
+      '<g class="sp-radar-grids">'+grid+lines+'</g>'+
+      (canCompare?'<polygon class="sp-radar-peer" points="'+polygon(medians,n)+'"/>':'')+
+      '<polygon class="sp-radar-player" points="'+polygon(radarTraits.map(x=>x.pct),n)+'"/>'+values+labels+'</svg>';
+  };
+  const ordered=all.slice().sort((a,b)=>b.pct-a.pct||a.name.localeCompare(b.name));
+  const strongest=ordered.slice(0,4);
+  const lowest=ordered.slice(-3).reverse();
+  const insight=(label,items,negative=false)=>
+    '<div class="sp-v7-traitgroup '+(negative?'sp-v7-development':'')+'"><h3><span aria-hidden="true">'+(negative?'−':'✓')+'</span>'+esc(label)+'</h3>'+
+    (items.length?'<ul>'+items.map(x=>'<li><span class="sp-v7-bullet" aria-hidden="true">'+(negative?'−':'✓')+'</span><span>'+esc(x.name)+' <small>'+esc(raw(x))+'</small></span></li>').join("")+'</ul>':
+    '<p class="sp-muted">No rated traits are recorded yet.</p>')+'</div>';
+  const rankedCard=ranked?
+    '<section class="sp-draft-rank sp-v7-card sp-v7-rank"><div class="sp-kicker">BBB '+year+' SCOUTING BOARD</div>'+
+    '<div class="sp-rank-values"><strong>'+esc(pos)+positionRank+'</strong><span>#'+overall+' overall</span></div>'+
+    '<p>Among '+positionRows.length+' graded '+esc(pos)+'s and '+classRows.length+' graded '+year+' prospects. These are BBB evaluations, not consensus rankings.</p>'+
+    '<a href="/draft">View the draft board →</a></section>':
+    '<section class="sp-draft-rank sp-v7-card sp-v7-rank"><div class="sp-kicker">BBB SCOUTING BOARD</div>'+
+    '<div class="sp-rank-values"><strong>'+(r?'BBB #'+esc(r.rank):'Not ranked')+'</strong></div>'+
+    '<p>'+(r?'Current dynasty rank; independent of a prospect grade.':'A class rank is shown once a graded BBB scouting evaluation is available.')+'</p>'+
+    '<a href="/draft">Explore the draft board →</a></section>';
+  const bars=radarTraits.map(x=>
+    '<div class="sp-v7-grade-row"><div class="sp-v7-bar-label"><span>'+esc(x.name)+'</span><strong>'+Math.round(x.pct)+'</strong></div>'+
+    '<div class="sp-v7-bar-track" role="meter" aria-label="'+esc(x.name)+' normalized scouting grade" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Math.round(x.pct)+'"><span style="width:'+x.pct.toFixed(2)+'%"></span></div>'+
+    '<small>'+esc(raw(x))+' original BBB grade</small></div>').join("");
+  const compare=canCompare?'<label class="sp-v7-compare">Compare <select id="spRadarCompare" aria-label="Trait radar comparison"><option value="none">Player only</option><option value="peers">'+esc(year+" "+pos+" cohort")+'</option></select></label>':
+    '<span class="sp-v7-cohort">Recorded BBB traits</span>';
+  const note=p.latest_weekly_update?window.BBB_PUBLIC_COPY.clean(p.latest_weekly_update):"";
+  const stamp=r?.weekly_update_date&&/^\d{4}-\d{2}-\d{2}/.test(r.weekly_update_date)?
+    new Date(r.weekly_update_date+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
+  return '<div class="sp-overview-v6 sp-overview-v7"><div class="sp-v7-dashboard">'+
+    '<section class="sp-panel sp-verdict sp-v7-card sp-v7-report"><div class="sp-v7-card-label"><span aria-hidden="true">▤</span> THE BBB SCOUTING REPORT</div>'+
+    '<h2>What the film <em>tells us.</em></h2><p class="sp-report">'+esc(report)+'</p>'+
+    (note?'<div class="sp-v7-latest"><div class="sp-v7-latest-top"><strong>↗ &nbsp; LATEST UPDATE</strong>'+ (stamp?'<time>'+esc(stamp)+'</time>':'')+'</div><p>'+esc(note)+'</p></div>':'')+
+    '<div class="sp-v7-insights">'+insight("Top graded traits",strongest)+insight("Development focus",lowest,true)+'</div>'+
+    '<p class="sp-v7-method">Based on recorded BBB trait scores. Development focus highlights lower relative grades, not verified weaknesses.</p>'+
+    '<div class="sp-report-actions"><button class="sp-quicklink" data-profile-tab="film" type="button">Review Film Room →</button><button class="sp-quicklink" data-profile-tab="traits" type="button">Individual Grades →</button></div></section>'+
+    '<div class="sp-v7-mid">'+
+    '<section class="sp-v7-card sp-v7-radar"><div class="sp-v7-card-head"><span class="sp-kicker">TRAIT BREAKDOWN</span>'+compare+'</div>'+
+    radar()+(canCompare?'<div class="sp-v7-radar-legend"><span>● Player</span><span class="sp-v7-peer-legend">– '+esc(year+" "+pos+" median")+' (n='+cohort.length+')</span></div>':'')+
+    '<p class="sp-v7-method">Traits normalized to 0–100 from their original 5- or 10-point BBB scales. Not percentiles.</p></section>'+
+    '<section class="sp-v7-card sp-v7-grades"><div class="sp-v7-card-head"><span class="sp-kicker">GRADE BREAKDOWN</span>'+
+    (g?.grade!=null?'<div class="sp-v7-grade-chip">Overall <strong>'+esc(Number(g.grade).toFixed(1))+'</strong></div>':'')+'</div>'+
+    (radarTraits.length?'<div class="sp-v7-bars">'+bars+'</div>':'<div class="sp-visual-empty">Trait grades are not yet recorded for this player.</div>')+
+    '<button type="button" class="sp-v7-morelink" data-profile-tab="traits">All recorded traits →</button></section></div>'+
+    '<div class="sp-v7-side">'+rankedCard+
+    '<section class="sp-overview-pulse sp-v7-card"><div class="sp-kicker">SEASON INTELLIGENCE</div><h3>Inside the numbers.</h3>'+
+    '<div id="spOverviewAdvanced"><div class="sp-muted">Loading recorded advanced NFL data…</div></div>'+
+    '<button class="sp-v7-morelink" data-profile-tab="advanced" type="button">Full advanced statistics →</button></section>'+
+    '<section class="sp-v7-card sp-v7-production"><div class="sp-v7-card-head"><span class="sp-kicker">PRODUCTION SNAPSHOT</span>'+
+    '<button class="sp-v7-morelink" data-profile-tab="stats" type="button">View full stats →</button></div>'+
+    '<div id="spOverviewProduction" aria-live="polite"><div class="sp-muted">Loading current season totals…</div></div></section>'+
+    '</div></div>'+
+    '<div class="sp-overview-foot sp-v7-film-cta"><div><div class="sp-kicker">FILM LIBRARY</div><h3>'+(videos?.length?"Breakdowns are ready to watch.":"More film is coming.")+'</h3>'+
+    '<p>'+(videos?.length?videos.length+" published breakdown"+(videos.length===1?"":"s")+" linked to this player.":"No published long-form film is linked yet.")+'</p></div>'+
+    '<button class="sp-quicklink" data-profile-tab="film" type="button">Open Film Room →</button></div></div>';
  },
-
  // A strictly derived BBB view over recorded nflverse weekly fields. No licensed scores inferred.
  rushingAggregate(weeks){
   if(!Array.isArray(weeks)||!weeks.length)return null;
