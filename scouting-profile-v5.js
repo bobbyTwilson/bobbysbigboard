@@ -163,8 +163,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
   })();
   return advancedPromise;
  };
- const loadRushingPeers=async()=>{
-  await const loadOverviewProduction=async()=>{
+ const loadOverviewProduction=async()=>{
   const target=app.querySelector("#spOverviewProduction");
   if(!target)return;
   try{
@@ -186,7 +185,9 @@ window.BBB_PROFILE_V5 = async function(ctx){
   }catch(error){console.warn("Overview production data unavailable",error);target.innerHTML='<div class="sp-muted">Season production is temporarily unavailable. See Stats & Logs for more detail.</div>'}
  };
  loadOverviewProduction();
- loadAdvanced();
+
+ const loadRushingPeers=async()=>{
+  await loadAdvanced();
   if(p.pos!=="RB"||!advancedResult?.rushing||rushingPeersLoaded)return;
   rushingPeersLoaded=true;
   const year=advancedResult.rushing.season,all=[];
