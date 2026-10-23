@@ -21,51 +21,68 @@ nav{display:flex;gap:24px;align-items:center;flex-wrap:wrap}nav a{font-size:13px
 @media(max-width:680px){.wrap{width:calc(100% - 28px)}header{position:relative}.top{gap:12px}.brand strong{font-size:14px}nav{width:100%;gap:13px;overflow:auto;flex-wrap:nowrap;padding-bottom:7px}nav a{font-size:11px}.topcta{display:none}.hero{padding:38px 0}.hero h1{font-size:48px}.lead{font-size:15px}.statgrid{grid-template-columns:repeat(2,1fr)}.cards,.playerGrid,.twoCol{grid-template-columns:1fr}.section{padding:42px 0}.sectionHead{align-items:start;flex-direction:column}.playerGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.profileName{font-size:50px}.grades{grid-template-columns:repeat(3,minmax(0,1fr))}.grade{padding:10px}.grade strong{font-size:18px}.filterbar .search{flex-basis:100%}.filmItem{grid-template-columns:100px 1fr}}
 </style><link rel="stylesheet" href="/scouting-green.css"><link rel="stylesheet" href="/scouting-directory.css"><link rel="stylesheet" href="/scouting-profile-v5.css"><link rel="stylesheet" href="/scouting-intelligence-v6.css"><link rel="stylesheet" href="/scouting-film-room-v1.css"><link rel="stylesheet" href="/scouting-atmosphere.css"></head><body>
 <div class="bbb-atmosphere" aria-hidden="true"><div class="bbb-atmosphere__lights"></div><div class="bbb-atmosphere__grid"></div><div class="bbb-atmosphere__slashes"></div><div class="bbb-atmosphere__beam"></div><div class="bbb-atmosphere__horizon"></div><div class="bbb-atmosphere__playbook" aria-hidden="true">
-<svg class="bbb-playbook__diagram bbb-playbook__diagram--left" viewBox="0 0 460 300" xmlns="http://www.w3.org/2000/svg" focusable="false" role="presentation">
-<g class="bbb-playbook__yardlines">
-  <path d="M0 56H460 M0 118H460 M0 180H460 M0 242H460"/>
-  <path d="M86 52v8 M230 52v8 M374 52v8 M86 114v8 M230 114v8 M374 114v8 M86 176v8 M230 176v8 M374 176v8 M86 238v8 M230 238v8 M374 238v8"/>
+<svg class="bbb-playbook__diagram bbb-playbook__diagram--levels" viewBox="0 0 540 310" xmlns="http://www.w3.org/2000/svg" focusable="false" role="presentation">
+
+<g class="bbb-playbook__field">
+ <path d="M0 50H540 M0 120H540 M0 192H540 M0 264H540"/>
+ <path class="bbb-playbook__hash" d="M18 0V310 M188 0V310 M356 0V310 M525 0V310"/>
 </g>
-<g class="bbb-playbook__line"><path d="M35 172H425"/></g>
-<g class="bbb-playbook__players">
-  <circle cx="152" cy="172" r="9"/><circle cx="186" cy="172" r="9"/><circle cx="220" cy="172" r="9"/><circle cx="254" cy="172" r="9"/><circle cx="288" cy="172" r="9"/>
-  <circle cx="55" cy="172" r="10"/><circle cx="405" cy="172" r="10"/><circle cx="332" cy="172" r="9"/>
-  <circle cx="112" cy="192" r="10"/><circle cx="220" cy="212" r="10"/><circle cx="244" cy="263" r="10"/>
+<path class="bbb-playbook__scrimmage" d="M18 221H522"/>
+<g class="bbb-playbook__positions">
+ <text x="44" y="246">X</text><text x="135" y="246">R</text><text x="365" y="246">Y</text><text x="436" y="246">A</text><text x="496" y="246">Z</text>
+ <text x="271" y="289">QB</text>
 </g>
-<g class="bbb-playbook__crosses">
-  <path d="M40 123l14 14m0-14l-14 14 M381 123l14 14m0-14l-14 14 M200 109l14 14m0-14l-14 14"/>
+<g class="bbb-playbook__offense">
+ <circle cx="44" cy="221" r="9"/><circle cx="135" cy="221" r="9"/><circle cx="363" cy="221" r="9"/>
+ <circle cx="437" cy="221" r="9"/><circle cx="496" cy="221" r="9"/>
+ <circle cx="199" cy="221" r="9"/><circle cx="222" cy="221" r="9"/><rect x="236" y="212" width="18" height="18" rx="1"/>
+ <circle cx="269" cy="221" r="9"/><circle cx="293" cy="221" r="9"/><circle cx="249" cy="275" r="9"/>
 </g>
 <g class="bbb-playbook__routes">
- <path class="bbb-playbook__route bbb-playbook__route--one" pathLength="100" d="M55 158V72Q55 60 69 60H148"/>
- <path class="bbb-playbook__route bbb-playbook__route--two" pathLength="100" d="M405 158V70Q405 45 370 48L332 56"/>
- <path class="bbb-playbook__route bbb-playbook__route--three" pathLength="100" d="M112 179V125Q112 100 143 100L179 110"/>
- <path class="bbb-playbook__route bbb-playbook__route--four" pathLength="100" d="M332 159V119L297 86"/>
- <path class="bbb-playbook__motion" d="M244 251Q283 227 296 207"/>
+ <path class="bbb-playbook__route" style="--route-delay:0s" pathLength="100" d="M44 209Q43 145 40 81V29"/>
+<polygon class="bbb-playbook__arrow" style="--route-delay:0s" points="40,27 32,43 48,43"/>
+ <path class="bbb-playbook__route" style="--route-delay:0.28s" pathLength="100" d="M135 210V158H25"/>
+<polygon class="bbb-playbook__arrow" style="--route-delay:0.28s" points="24,158 40,151 40,165"/>
+ <path class="bbb-playbook__route" style="--route-delay:0.48s" pathLength="100" d="M363 209V58H256"/>
+<polygon class="bbb-playbook__arrow" style="--route-delay:0.48s" points="254,58 272,51 272,65"/>
+ <path class="bbb-playbook__route" style="--route-delay:0.7s" pathLength="100" d="M437 209V141H353"/>
+<polygon class="bbb-playbook__arrow" style="--route-delay:0.7s" points="351,141 369,134 369,148"/>
+ <path class="bbb-playbook__route" style="--route-delay:0.91s" pathLength="100" d="M496 209V176H441"/>
+<polygon class="bbb-playbook__arrow" style="--route-delay:0.91s" points="439,176 455,169 455,183"/>
 </g>
-
 </svg>
-<svg class="bbb-playbook__diagram bbb-playbook__diagram--right" viewBox="0 0 460 300" xmlns="http://www.w3.org/2000/svg" focusable="false" role="presentation">
-<g class="bbb-playbook__yardlines">
-  <path d="M0 56H460 M0 118H460 M0 180H460 M0 242H460"/>
-  <path d="M86 52v8 M230 52v8 M374 52v8 M86 114v8 M230 114v8 M374 114v8 M86 176v8 M230 176v8 M374 176v8 M86 238v8 M230 238v8 M374 238v8"/>
+<svg class="bbb-playbook__diagram bbb-playbook__diagram--dagger" viewBox="0 0 960 657" xmlns="http://www.w3.org/2000/svg" focusable="false" role="presentation">
+
+<g class="bbb-playbook__field">
+ <path d="M0 76H960 M0 167H960 M0 258H960 M0 347H960 M0 438H960 M0 529H960"/>
+ <path class="bbb-playbook__hash" d="M12 0V657 M354 0V657 M606 0V657 M947 0V657"/>
 </g>
-<g class="bbb-playbook__line"><path d="M35 172H425"/></g>
-<g class="bbb-playbook__players">
-  <circle cx="152" cy="172" r="9"/><circle cx="186" cy="172" r="9"/><circle cx="220" cy="172" r="9"/><circle cx="254" cy="172" r="9"/><circle cx="288" cy="172" r="9"/>
-  <circle cx="55" cy="172" r="10"/><circle cx="405" cy="172" r="10"/><circle cx="332" cy="172" r="9"/>
-  <circle cx="112" cy="192" r="10"/><circle cx="220" cy="212" r="10"/><circle cx="244" cy="263" r="10"/>
+<path class="bbb-playbook__scrimmage" d="M70 453H880"/>
+<g class="bbb-playbook__positions">
+ <text x="128" y="486">X</text><text x="627" y="515">H</text><text x="723" y="509">Z</text><text x="838" y="485">Y</text>
+ <text x="484" y="564">QB</text><text x="565" y="238">FS</text><text x="645" y="367">SS</text>
 </g>
-<g class="bbb-playbook__crosses">
-  <path d="M40 123l14 14m0-14l-14 14 M381 123l14 14m0-14l-14 14 M200 109l14 14m0-14l-14 14"/>
+<g class="bbb-playbook__offense">
+ <circle cx="135" cy="453" r="13"/>
+ <circle cx="415" cy="454" r="13"/><circle cx="451" cy="454" r="13"/>
+ <rect x="470" y="441" width="22" height="26" rx="1"/>
+ <circle cx="516" cy="454" r="13"/><circle cx="550" cy="454" r="13"/>
+ <circle cx="629" cy="479" r="13"/><circle cx="726" cy="473" r="13"/>
+ <circle cx="842" cy="451" r="13"/><circle cx="483" cy="526" r="13"/>
+</g>
+<g class="bbb-playbook__defense">
+ <path d="M110 320l16 16m0-16l-16 16 M802 320l16 16m0-16l-16 16 M565 264l16 16m0-16l-16 16"/>
 </g>
 <g class="bbb-playbook__routes">
- <path class="bbb-playbook__route bbb-playbook__route--one" pathLength="100" d="M55 157V109Q55 88 96 88L166 58"/>
- <path class="bbb-playbook__route bbb-playbook__route--two" pathLength="100" d="M405 159V59"/>
- <path class="bbb-playbook__route bbb-playbook__route--three" pathLength="100" d="M112 179Q105 123 153 113H216"/>
- <path class="bbb-playbook__route bbb-playbook__route--four" pathLength="100" d="M332 158V116Q332 98 303 101"/>
- <path class="bbb-playbook__motion" d="M244 252Q221 231 180 211"/>
+ <path class="bbb-playbook__route" style="--route-delay:0.04s" pathLength="100" d="M135 440C130 392 215 365 430 356C620 349 707 355 795 355"/>
+<polygon class="bbb-playbook__arrow" style="--route-delay:0.04s" points="798,355 781,347 781,363"/>
+ <path class="bbb-playbook__route" style="--route-delay:0.23s" pathLength="100" d="M629 467C620 400 585 322 470 265C350 205 195 202 70 223"/>
+<polygon class="bbb-playbook__arrow" style="--route-delay:0.23s" points="68,223 85,214 85,230"/>
+ <path class="bbb-playbook__route" style="--route-delay:0.43s" pathLength="100" d="M726 460L720 78"/>
+<polygon class="bbb-playbook__arrow" style="--route-delay:0.43s" points="720,75 712,94 728,94"/>
+ <path class="bbb-playbook__route" style="--route-delay:0.68s" pathLength="100" d="M842 438L842 169L510 169"/>
+<polygon class="bbb-playbook__arrow" style="--route-delay:0.68s" points="507,169 526,161 526,177"/>
 </g>
-
 </svg>
 </div></div>
 <div class="previewbar">SCOUTING EXPERIENCE PREVIEW · PRODUCTION IS UNCHANGED · DRAFT NOTES ARE NOT PUBLIC</div>
