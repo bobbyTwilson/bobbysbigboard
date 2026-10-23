@@ -62,18 +62,23 @@ window.BBB_SCOUTING_V6 = {
     const n=radarTraits.length;
     const grid=[25,50,75,100].map(k=>'<polygon points="'+polygon(Array(n).fill(k),n)+'" class="sp-radar-ring"/>').join("");
     const lines=radarTraits.map((_,i)=>'<line x1="180" y1="165" x2="'+coords(100,i,n)[0].toFixed(1)+'" y2="'+coords(100,i,n)[1].toFixed(1)+'" class="sp-radar-axis"/>').join("");
-    const values=radarTraits.map((x,i)=>{const [xx,yy]=coords(x.pct,i,n);return '<circle class="sp-radar-dot" cx="'+xx.toFixed(1)+'" cy="'+yy.toFixed(1)+'" r="4.2"/>'}).join("");
-    const labels=radarTraits.map((x,i)=>{
-      const [xpos,ypos]=coords(140,i,n),anchor=xpos<155?"end":xpos>205?"start":"middle";
-      const label=x.name.length>17?x.name.replace(/ /g," ").slice(0,20):x.name;
-      return '<text x="'+xpos.toFixed(1)+'" y="'+(ypos-5).toFixed(1)+'" text-anchor="'+anchor+'" class="sp-radar-label">'+esc(label)+'</text>'+
-        '<text x="'+xpos.toFixed(1)+'" y="'+(ypos+12).toFixed(1)+'" text-anchor="'+anchor+'" class="sp-radar-value">'+Math.round(x.pct)+'</text>';
+    const dots=radarTraits.map((x,i)=>{
+      const [px,py]=coords(x.pct,i,n);
+      return '<circle class="sp-radar-dot" cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" r="4.6"/>';
+    }).join("");
+    // Names do not belong inside a scaled SVG: long labels previously ran off its edges.
+    // Numbered axes map to a responsive HTML key that remains legible at all widths.
+    const numbers=radarTraits.map((_,i)=>{
+      const [px,py]=coords(129,i,n);
+      return '<text class="sp-radar-number" x="'+px.toFixed(1)+'" y="'+(py+4).toFixed(1)+'" text-anchor="middle">'+(i+1)+'</text>';
     }).join("");
     const description=radarTraits.map(x=>x.name+" "+raw(x)).join(", ");
-    return '<svg class="sp-radar-svg" viewBox="0 0 360 335" role="img" aria-label="'+esc("BBB scouting radar: "+description)+'">'+
+    const key=radarTraits.map((x,i)=>'<div class="sp-v7-axis-label"><span class="sp-v7-axis-n">'+(i+1)+'</span><span class="sp-v7-axis-name">'+esc(x.name)+'</span><strong>'+Math.round(x.pct)+'</strong></div>').join("");
+    return '<div class="sp-v7-radar-plot"><svg class="sp-radar-svg" viewBox="0 0 360 335" role="img" aria-label="'+esc("BBB scouting radar: "+description)+'">'+
       '<g class="sp-radar-grids">'+grid+lines+'</g>'+
       (canCompare?'<polygon class="sp-radar-peer" points="'+polygon(medians,n)+'"/>':'')+
-      '<polygon class="sp-radar-player" points="'+polygon(radarTraits.map(x=>x.pct),n)+'"/>'+values+labels+'</svg>';
+      '<polygon class="sp-radar-player" points="'+polygon(radarTraits.map(x=>x.pct),n)+'"/>'+dots+numbers+'</svg>'+
+      '<div class="sp-v7-axis-key" aria-label="Radar trait key">'+key+'</div></div>';
   };
   const ordered=all.slice().sort((a,b)=>b.pct-a.pct||a.name.localeCompare(b.name));
   const strongest=ordered.slice(0,4);

@@ -86,6 +86,18 @@ window.BBB_PROFILE_V5 = async function(ctx){
   '<div class="sp-tab-content" data-content="advanced" role="tabpanel"><div class="sp-panel" id="spAdvancedPanel"><div class="sp-muted">Loading advanced NFL production metrics…</div></div></div>'+
   '<div class="sp-tab-content" data-content="dynasty" role="tabpanel">'+dyn()+'</div>'+
   '</div></section>';
+ // Show a compact, accurate radar in the unused right-hand space of the player
+ // header. The detailed radar remains in Overview for comparison and small screens.
+ const detailedRadar=app.querySelector(".sp-v7-radar-plot");
+ const playerHero=app.querySelector(".sp-hero");
+ if(playerHero&&detailedRadar){
+   const preview=document.createElement("aside");
+   preview.className="sp-hero-radar";
+   preview.setAttribute("aria-label","Scouting trait radar at a glance");
+   preview.innerHTML='<div class="sp-hero-radar-heading"><span>PLAYER TRAIT RADAR</span><small>BBB film grades · normalized</small></div>';
+   preview.appendChild(detailedRadar.cloneNode(true));
+   playerHero.appendChild(preview);
+ }
  window.BBB_FILM_ROOM.bindProfile(app,videos,esc);
  const tabs=Array.from(app.querySelectorAll(".sp-tab"));
  const compareSelector=app.querySelector("#spRadarCompare");
