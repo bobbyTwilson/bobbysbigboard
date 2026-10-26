@@ -157,12 +157,18 @@ function dynastyTool(key){
 function legacyView(key){
  const names={account:"My BBB Account",plus:"BBB+ Membership",watchlist:"My Watchlist",stats:"Fantasy Statistics",terms:"Terms of Service",privacy:"Privacy Policy",billing:"BBB+ Billing Policy"};
  const which=Object.hasOwn(names,key)?key:"account";
+ // Supabase email confirmation/password reset can land on the root URL with
+ // access_token in the fragment. Give the existing auth handler that fragment,
+ // then remove it from the public address bar immediately.
+ const tokenHash=which==="account"&&/(?:^#|&)access_token=/.test(location.hash)?location.hash:"";
+ const embeddedAuthUrl="/dynasty-engine/"+(tokenHash?location.search+tokenHash:"#"+which);
  setTitle(names[which]);
  const isLegal=["terms","privacy","billing"].includes(which);
  app.innerHTML='<section class="section bbb-member-section"><div class="wrap">'+
   (isLegal?'':section("BOBBY’S BIG BOARD",names[which],"Your existing BBB account, membership and connected tools—inside the new website."))+
   '<iframe id="bbbMemberFrame" class="dynastyFrame bbb-member-frame" title="'+esc(names[which])+
-  '" src="/dynasty-engine/#'+which+'" loading="eager"></iframe></div></section>';
+  '" src="'+esc(embeddedAuthUrl)+'" loading="eager"></iframe></div></section>';
+ if(tokenHash)history.replaceState(history.state,"","/account");
  const frame=app.querySelector("#bbbMemberFrame");
  frame.addEventListener("load",()=>{
   try{
@@ -198,6 +204,8 @@ D.ranks.forEach(x=>R.set(x.player_key,x));D.prospects.forEach(x=>P.set(x.player_
 try{const images=await fetch("/scouting-headshots.json",{cache:"force-cache"}).then(r=>r.ok?r.json():null);D.media=images?.players||{}}catch(e){console.warn("ESPN images unavailable",e)}
 let path=decodeURIComponent(location.pathname).replace(/\/+$/,"")||"/";
 const legacyPaths={"/rankings":"/dynasty/rankings","/rookies":"/dynasty/rookies","/prospects":"/draft","/trade":"/dynasty/trade","/compare":"/dynasty/compare","/movers":"/dynasty/movers","/updates":"/dynasty/updates"};
+const authCallbackHash=path==="/"&&/(?:^#|&)access_token=/.test(location.hash);
+if(authCallbackHash){history.replaceState(history.state,"","/account"+location.search+location.hash);path="/account"}
 const oldHash=(path==="/"&&/^#(account|plus|watchlist|stats|terms|privacy|billing)$/.test(location.hash))?location.hash.slice(1):"";
 if(oldHash){history.replaceState(history.state,"","/"+oldHash+location.search);path="/"+oldHash}
 if(legacyPaths[path]){history.replaceState(history.state,"",legacyPaths[path]+location.search+location.hash);path=legacyPaths[path]}
