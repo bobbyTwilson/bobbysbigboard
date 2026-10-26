@@ -16,7 +16,13 @@ a:hover,.rank-cell{color:#8bdfa0!important}
 @media(max-width:650px){.shell{width:calc(100% - 16px)!important}.section{padding:24px 0!important}.hero{padding:19px 0!important}}
 </style>`;
 await writeFile(root+'/dynasty-engine/index.html',original.replace('</head>', '<meta name="robots" content="noindex,nofollow">'+styles+'</head>'));
-const preview=await readFile('scouting-preview.html','utf8');
+const publicBuild=process.env.VERCEL_ENV==='production';
+let preview=await readFile('scouting-preview.html','utf8');
+if(publicBuild){
+  preview=preview.replace('<meta name="robots" content="noindex,nofollow">','<meta name="robots" content="index,follow">')
+    .replace('<title>Bobby\'s Big Board — Scouting Platform Preview</title>','<title>Bobby\'s Big Board | Film, Scouting & Dynasty Rankings</title>')
+    .replace(/<div class="previewbar">[\s\S]*?<\/div>/,'');
+}
 await writeFile(root+'/index.html',preview);
 await copyFile('scouting-preview.js',root+'/scouting-preview.js');
 await copyFile('scouting-samples.js',root+'/scouting-samples.js');
@@ -47,12 +53,83 @@ const metadataFunctionDir='.vercel/output/functions/api/youtube-meta.func';
 await mkdir(metadataFunctionDir,{recursive:true});
 await copyFile('scouting-youtube-meta.mjs',metadataFunctionDir+'/index.mjs');
 await writeFile(metadataFunctionDir+'/.vc-config.json',JSON.stringify({runtime:'nodejs22.x',handler:'index.mjs',launcherType:'Nodejs',maxDuration:10,shouldAddHelpers:true}));
+/* Search/social metadata is emitted into actual HTML at build time for public
+   crawlers. Preview deployments remain noindex and disallow crawling. */
+const htmlEscape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const canonical='https://bobbysbigboard.com';
+const metaPage=(source,{title,description,path,robots})=>{
+  let doc=source.replace(/<title>[\s\S]*?<\/title>/i,'<title>'+htmlEscape(title)+'</title>')
+    .replace(/<meta name="robots" content="[^"]*">/i,'<meta name="robots" content="'+(robots||'index,follow')+'">');
+  const metadata=[
+   '<meta name="description" content="'+htmlEscape(description)+'">',
+   '<link rel="canonical" href="'+canonical+htmlEscape(path)+'">',
+   '<meta property="og:type" content="website">',
+   '<meta property="og:site_name" content="Bobby’s Big Board">',
+   '<meta property="og:title" content="'+htmlEscape(title)+'">',
+   '<meta property="og:description" content="'+htmlEscape(description)+'">',
+   '<meta property="og:url" content="'+canonical+htmlEscape(path)+'">',
+   '<meta property="og:image" content="'+canonical+'/bbb-share.webp">',
+   '<meta name="twitter:card" content="summary_large_image">',
+   '<meta name="twitter:title" content="'+htmlEscape(title)+'">',
+   '<meta name="twitter:description" content="'+htmlEscape(description)+'">'
+  ].join('');
+  return doc.replace('</head>',metadata+'</head>');
+};
+let publicSitemap='';
+if(publicBuild){
+ const landing=[
+  ['','Film, Scouting & Dynasty Rankings','Detailed football scouting reports, player film breakdowns, draft prospects and Superflex dynasty rankings from Bobby’s Big Board.'],
+  ['players','Football Player Scouting Database','Explore NFL and college prospect scouting, verified athletic profiles, player grades, production, and connected game film.'],
+  ['film','Football Film Room','Watch original NFL and draft prospect film breakdowns from Bobby’s Big Board with player-linked scouting reports.'],
+  ['draft','NFL Draft Prospects & Scouting Grades','Explore independently graded draft prospects, trait breakdowns, college backgrounds, athletic testing and film.'],
+  ['dynasty/rankings','Superflex Dynasty Top 500 Rankings','Current Bobby’s Big Board Superflex dynasty rankings, position rankings and player values.'],
+  ['dynasty/trade','Dynasty Trade Calculator','Evaluate fantasy football dynasty trades and player values with the existing BBB trade engine.'],
+  ['dynasty/rookies','Rookie Dynasty Rankings','Rookie dynasty fantasy football rankings with independent player scouting context.'],
+  ['dynasty/compare','Compare Football Players','Compare player rankings, dynasty value, scouting and production side by side.'],
+  ['dynasty/movers','Dynasty Ranking Movers','Risers and fallers in Bobby’s Big Board dynasty rankings.'],
+  ['dynasty/updates','Player Updates & Rankings Context','Read natural-language player updates, injuries and roster context for dynasty fantasy football.'],
+  ['terms','Terms of Service','Terms of Service for Bobby’s Big Board football analysis and membership features.'],
+  ['privacy','Privacy Policy','How Bobby’s Big Board handles account, membership and fantasy-football data.'],
+  ['billing','BBB+ Billing Policy','Subscription billing and cancellation terms for BBB+ memberships.']
+ ];
+ const directory=root+'/seo/scouting';
+ await mkdir(directory,{recursive:true});
+ await mkdir(directory+'/landing',{recursive:true});
+ const entry=landing[0];
+ await writeFile(root+'/index.html',metaPage(preview,{title:entry[1]+' | Bobby’s Big Board',description:entry[2],path:'/'}));
+ for(const [path,title,description] of landing.slice(1)){
+  await writeFile(directory+'/landing/'+path.replaceAll('/','-')+'.html',metaPage(preview,{title:title+' | Bobby’s Big Board',description,path:'/'+path}));
+ }
+ const profileFiles=await readdir(profileDir);
+ const profileSlugs=[];
+ for(const filename of profileFiles){
+  if(!filename.endsWith('.html'))continue;
+  const slug=filename.slice(0,-5);
+  const old=await readFile(profileDir+'/'+filename,'utf8');
+  const oldTitle=old.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]||'';
+  const person=oldTitle.replace(/&amp;/g,'&').split(/\s+(?:\d{4}\s+)?(?:Dynasty|NFL Draft|Scouting|Player|Stats|Fantasy)\b|\s+\|/i)[0].trim()
+    ||slug.split('-').map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join(' ');
+  const title=person+' — Scouting Report, Stats & Film | Bobby’s Big Board';
+  const description=person+' scouting report, prospect grades, verified football athletic testing, player stats and film breakdowns from Bobby’s Big Board.';
+  await writeFile(directory+'/'+slug+'.html',metaPage(preview,{title,description,path:'/scouting/'+slug}));
+  profileSlugs.push(slug);
+ }
+ const skipAliases=new Set(['michael-penix','ben-sinnot','lequint-allen','erick-all']);
+ const siteRoutes=landing.map(x=>x[0]).filter(x=>!['terms','privacy','billing'].includes(x));
+ const urls=[...new Set([...siteRoutes.map(x=>canonical+'/'+x),...profileSlugs.filter(x=>!skipAliases.has(x)).map(x=>canonical+'/scouting/'+x)])];
+ const modified=new Date().toISOString().slice(0,10);
+ publicSitemap='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+
+   urls.map(url=>'  <url><loc>'+htmlEscape(url)+'</loc><lastmod>'+modified+'</lastmod></url>').join('\n')+'\n</urlset>\n';
+ await writeFile(root+'/sitemap.xml',publicSitemap);
+ console.log('Scouting SEO: '+profileSlugs.length+' static share/indexing profiles; preview remains excluded.');
+}
+
 let config=JSON.parse(await readFile('.vercel/output/config.json','utf8'));
 config.routes=[
- {src:'/players/?',dest:'/index.html'},
- {src:'/film/?',dest:'/index.html'},
- {src:'/draft/?',dest:'/index.html'},
- {src:'/scouting/([^/]+)/?',dest:'/index.html'},
+ {src:'/players/?',dest:publicBuild?'/seo/scouting/landing/players.html':'/index.html'},
+ {src:'/film/?',dest:publicBuild?'/seo/scouting/landing/film.html':'/index.html'},
+ {src:'/draft/?',dest:publicBuild?'/seo/scouting/landing/draft.html':'/index.html'},
+ {src:'/scouting/([^/]+)/?',dest:publicBuild?'/seo/scouting/$1.html':'/index.html'},
  {src:'/dynasty/?',dest:'/index.html'},
  {src:'/dynasty/(rankings|trade|compare|rookies|movers|updates|watchlist|stats)/?',dest:'/index.html'},
  {src:'/(account|plus|watchlist|stats|terms|privacy|billing)/?',dest:'/index.html'},
@@ -67,5 +144,9 @@ config.routes=[
  ...config.routes
 ];
 await writeFile('.vercel/output/config.json',JSON.stringify(config,null,2));
-await writeFile(root+'/robots.txt','User-agent: *\nDisallow: /\n');
+if(publicBuild){
+  await writeFile(root+'/robots.txt','User-agent: *\\nDisallow: /admin\\nDisallow: /dynasty-engine\\nDisallow: /account\\nDisallow: /watchlist\\nDisallow: /seo\\nSitemap: https://bobbysbigboard.com/sitemap.xml\\n'.replaceAll('\\n','\n'));
+}else{
+  await writeFile(root+'/robots.txt','User-agent: *\\nDisallow: /\\n'.replaceAll('\\n','\n'));
+}
 console.log('Unified BBB scouting preview, green identity, dynamic ESPN headshots and integrated dynasty tools built. No production deployment.');
