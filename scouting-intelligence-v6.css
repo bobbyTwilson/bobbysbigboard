@@ -255,3 +255,28 @@
  .sp-profile .sp-hero-radar .sp-v7-axis-label{padding:2px 3px;gap:2px}
  .sp-profile .sp-hero-radar .sp-v7-axis-name{font-size:8px}
 }
+
+
+/* V7.4: Full trait names ON the single Overview radar. No numbered key.
+   A wider coordinate canvas reserves safe gutters for wrapped multi-line labels. */
+.sp-overview-v7 .sp-v7-radar-plot{width:100%;min-width:0}
+.sp-overview-v7 .sp-radar-svg{display:block;width:100%;max-width:440px;height:auto;overflow:visible;margin:10px auto 4px}
+.sp-radar-trait-name{
+  fill:#dcfce7;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:800;
+  letter-spacing:.05px;
+  stroke:#0b2417;
+  stroke-width:2.7px;
+  stroke-linejoin:round;
+  paint-order:stroke fill;
+}
+.sp-radar-trait-name tspan{dominant-baseline:alphabetic}
+@media(max-width:1249px){
+ .sp-overview-v7 .sp-v7-radar .sp-radar-svg{width:100%;max-width:440px}
+}
+@media(max-width:480px){
+ .sp-overview-v7 .sp-v7-radar .sp-radar-svg{width:100%;max-width:440px}
+ .sp-overview-v7 .sp-v7-radar-plot{margin:0 auto}
+}

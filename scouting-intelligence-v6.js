@@ -52,33 +52,46 @@ window.BBB_SCOUTING_V6 = {
   const canCompare=radarTraits.length>=3&&medians.every(v=>v!=null)&&cohort.length>=5;
   // A radar polygon normalizes each REAL recorded BBB trait to its own original 5/10-point maximum.
   // It is not a percentile and does not replace the saved overall prospect grade.
-  const coords=(pct,i,n,r=116)=>{
+  const coords=(pct,i,n,r=105)=>{
     const angle=(-90+i*360/n)*Math.PI/180,dist=r*pct/100;
-    return [180+dist*Math.cos(angle),165+dist*Math.sin(angle)];
+    return [220+dist*Math.cos(angle),180+dist*Math.sin(angle)];
   };
   const polygon=(scores,n)=>scores.map((v,i)=>coords(v,i,n).map(x=>x.toFixed(2)).join(",")).join(" ");
   const radar=()=>{
     if(radarTraits.length<3)return '<div class="sp-visual-empty">A radar chart will appear once this player has at least three recorded scouting traits.</div>';
     const n=radarTraits.length;
     const grid=[25,50,75,100].map(k=>'<polygon points="'+polygon(Array(n).fill(k),n)+'" class="sp-radar-ring"/>').join("");
-    const lines=radarTraits.map((_,i)=>'<line x1="180" y1="165" x2="'+coords(100,i,n)[0].toFixed(1)+'" y2="'+coords(100,i,n)[1].toFixed(1)+'" class="sp-radar-axis"/>').join("");
+    const lines=radarTraits.map((_,i)=>'<line x1="220" y1="180" x2="'+coords(100,i,n)[0].toFixed(1)+'" y2="'+coords(100,i,n)[1].toFixed(1)+'" class="sp-radar-axis"/>').join("");
     const dots=radarTraits.map((x,i)=>{
       const [px,py]=coords(x.pct,i,n);
-      return '<circle class="sp-radar-dot" cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" r="4.6"/>';
+      return '<circle class="sp-radar-dot" cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" r="4.5"/>';
     }).join("");
-    // Names do not belong inside a scaled SVG: long labels previously ran off its edges.
-    // Numbered axes map to a responsive HTML key that remains legible at all widths.
-    const numbers=radarTraits.map((_,i)=>{
-      const [px,py]=coords(129,i,n);
-      return '<text class="sp-radar-number" x="'+px.toFixed(1)+'" y="'+(py+4).toFixed(1)+'" text-anchor="middle">'+(i+1)+'</text>';
+    // Real scouting trait NAMES at the ends of the spokes, not numbered references.
+    // Long names wrap to multiple SVG text lines so the graph stays within its panel.
+    const wrapName=name=>{
+      const words=String(name).trim().split(/\s+/);
+      if(name.length<=13||words.length===1)return [name];
+      const lines=[''];
+      for(const word of words){
+        const last=lines.length-1;
+        if(lines[last]&&(lines[last].length+word.length+1)>12)lines.push(word);
+        else lines[last]+=(lines[last]?' ':'')+word;
+      }
+      return lines;
+    };
+    const labels=radarTraits.map((trait,i)=>{
+      const [px,py]=coords(100,i,n,145);
+      const rows=wrapName(trait.name);
+      const baseY=py-(rows.length-1)*6.8+4;
+      return '<text class="sp-radar-trait-name" x="'+px.toFixed(2)+'" y="'+baseY.toFixed(2)+'" text-anchor="middle">'+
+        rows.map((row,index)=>'<tspan x="'+px.toFixed(2)+'" dy="'+(index?'13.6':'0')+'">'+esc(row)+'</tspan>').join("")+
+        '</text>';
     }).join("");
     const description=radarTraits.map(x=>x.name+" "+raw(x)).join(", ");
-    const key=radarTraits.map((x,i)=>'<div class="sp-v7-axis-label"><span class="sp-v7-axis-n">'+(i+1)+'</span><span class="sp-v7-axis-name">'+esc(x.name)+'</span><strong>'+Math.round(x.pct)+'</strong></div>').join("");
-    return '<div class="sp-v7-radar-plot"><svg class="sp-radar-svg" viewBox="0 0 360 335" role="img" aria-label="'+esc("BBB scouting radar: "+description)+'">'+
+    return '<div class="sp-v7-radar-plot"><svg class="sp-radar-svg" viewBox="0 0 440 360" role="img" aria-label="'+esc("BBB scouting radar: "+description)+'">'+
       '<g class="sp-radar-grids">'+grid+lines+'</g>'+
       (canCompare?'<polygon class="sp-radar-peer" points="'+polygon(medians,n)+'"/>':'')+
-      '<polygon class="sp-radar-player" points="'+polygon(radarTraits.map(x=>x.pct),n)+'"/>'+dots+numbers+'</svg>'+
-      '<div class="sp-v7-axis-key" aria-label="Radar trait key">'+key+'</div></div>';
+      '<polygon class="sp-radar-player" points="'+polygon(radarTraits.map(x=>x.pct),n)+'"/>'+dots+labels+'</svg></div>';
   };
   const ordered=all.slice().sort((a,b)=>b.pct-a.pct||a.name.localeCompare(b.name));
   const strongest=ordered.slice(0,4);
