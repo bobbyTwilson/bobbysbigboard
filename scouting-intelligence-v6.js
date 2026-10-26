@@ -96,6 +96,64 @@ window.BBB_SCOUTING_V6 = {
   const ordered=all.slice().sort((a,b)=>b.pct-a.pct||a.name.localeCompare(b.name));
   const strongest=ordered.slice(0,4);
   const lowest=ordered.slice(-3).reverse();
+  // A written scouting report takes priority; only approved notes are public.
+  // Otherwise frame the existing grades as provisional strengths and questions.
+  const prosCons=()=>{
+    if(g?.grade==null||!Number.isFinite(Number(g.grade)))return "";
+    const approved=s?.editorial_status==="approved";
+    const notes=x=>Array.isArray(x)?x.filter(v=>typeof v==="string"&&v.trim()).map(v=>v.trim().slice(0,400)).slice(0,6):[];
+    const editorialPros=approved?notes(s.strengths):[],editorialCons=approved?notes(s.development_areas):[];
+    const angles={
+      speed:["offers a credible vertical-speed dimension to his projection","leaves the true vertical-speed ceiling to confirm on film"],
+      acceleration:["adds first-step burst to his overall skill set","makes the initial burst an area for more film study"],
+      agility:["supports creating space within a tight window","raises questions about his quickness in tight quarters"],
+      deceleration:["supports stop-start movement and sharper cuts","leaves stop-start movement worth another look"],
+      "change of direction":["supports lateral movement and redirecting against leverage","makes change of direction a development focus"],
+      releases:["supports beating coverage at the line of scrimmage","raises questions about consistently escaping press coverage"],
+      catching:["supports his hands and target-finishing projection","makes catch consistency a relative question"],
+      "catch in traffic":["supports finishing targets through contact","makes contested-catch consistency worth watching"],
+      "short routes":["supports separation underneath","makes underneath route precision a question"],
+      "medium routes":["supports intermediate route work","makes intermediate route execution worth refining"],
+      "deep routes":["supports a downfield route tree","leaves deep-route development to monitor"],
+      "double moves":["adds deception to his route repertoire","leaves route deception as an area to polish"],
+      "run after catch":["supports the potential to create extra yards in space","makes independent creation after the catch a development focus"],
+      vision:["supports finding and setting up rushing lanes","leaves rushing-lane recognition as an area to evaluate"],
+      "contact balance":["supports finishing through contact","leaves power through contact a comparative question"],
+      "pass protection":["supports earning snaps on passing downs","raises questions about early passing-down reliability"],
+      "ball security":["supports dependable ball handling","makes ball security worth watching closely"],
+      "route running":["supports his receiving-role projection","makes route detail an area to develop"],
+      blocking:["supports an every-down tight end profile","makes blocking a developmental question"],
+      physicality:["supports a strong contact-oriented profile","grades below his more promising traits"],
+      "arm talent":["supports his overall passing-tools projection","makes arm talent a question relative to his other tools"],
+      "deep accuracy":["supports throwing accurately downfield","leaves vertical ball placement worth further study"],
+      "short accuracy":["supports operating the quick passing game","makes short-area placement a concern to monitor"],
+      "intermediate accuracy":["supports challenging intermediate coverages","makes intermediate-ball placement worth developing"],
+      "pre-snap processing":["supports reading looks before the snap","leaves pre-snap identification to refine"],
+      "post-snap processing":["supports adjusting decisions after the snap","makes post-snap recognition a relative question"],
+      "anticipation / timing":["supports the timing and rhythm of his throws","leaves throwing with anticipation to develop"],
+      "decision making / ball security":["supports safe decision-making in structure","makes ball-security decisions worth additional review"],
+      "pocket presence":["supports maneuvering within the pocket","leaves his pocket movement under pressure to improve"],
+      "play extension":["provides upside outside the designed structure","makes improvisation less central to the projection"],
+      "rushing upside":["adds another dimension to the quarterback profile","leaves the designed-run dimension as a comparative limitation"]
+    };
+    const label=t=>t.name.replace(/\s*\((?:5|10)\)$/,""),describe=(t,bad)=>{
+      const name=label(t),angle=angles[name.toLowerCase()]?.[bad?1:0];
+      return name+" ("+raw(t)+") "+(angle||(bad?"is a lower-rated aspect of the evaluation that deserves more film study":"is one of the higher-rated aspects of this evaluation"))+".";
+    };
+    const gradedPros=ordered.filter(t=>t.pct>=80).slice(0,4);
+    if(gradedPros.length<3)for(const t of ordered.slice(0,3)){if(!gradedPros.includes(t))gradedPros.push(t);}
+    const highest=ordered[0]?.pct||0;
+    const gradedCons=ordered.slice().reverse().filter(t=>t.pct<=80&&highest-t.pct>=12).slice(0,3);
+    const noFlaw="No clearly weak on-field trait is reflected in the existing grades. Consistency against tougher competition is a future film-study question, not a confirmed flaw.";
+    const good=editorialPros.length?editorialPros:gradedPros.map(t=>describe(t,false));
+    const bad=editorialCons.length?editorialCons:(gradedCons.length?gradedCons.map(t=>describe(t,true)):[noFlaw]);
+    const side=(label,rows,type)=>'<div class="sp-procon-half sp-procon-'+type+'"><h3><span aria-hidden="true">'+(type==="positive"?"✓":"!")+'</span>'+label+'</h3><ul>'+
+      rows.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul></div>';
+    const editorial=editorialPros.length&&editorialCons.length;
+    return '<section class="sp-procon" aria-labelledby="sp-procon-title"><div class="sp-procon-head"><div class="sp-kicker">BOBBY’S BIG BOARD SCOUTING ANALYSIS</div><h2 id="sp-procon-title">Pros &amp; cons.</h2><p>What gives this player an edge — and the areas still worth developing.</p></div>'+
+      '<div class="sp-procon-grid">'+side("Pros · Strengths",good,"positive")+side("Cons · Questions",bad,"caution")+'</div>'+
+      '<p class="sp-procon-source">'+(editorial?"Published BBB scouting notes.":"Grade-based scouting preview based on BBB’s recorded trait evaluations. These are relative projections, not independently confirmed play-by-play film observations.")+'</p></section>';
+  };
   const insight=(label,items,negative=false)=>
     '<div class="sp-v7-traitgroup '+(negative?'sp-v7-development':'')+'"><h3><span aria-hidden="true">'+(negative?'−':'✓')+'</span>'+esc(label)+'</h3>'+
     (items.length?'<ul>'+items.map(x=>'<li><span class="sp-v7-bullet" aria-hidden="true">'+(negative?'−':'✓')+'</span><span>'+esc(x.name)+' <small>'+esc(raw(x))+'</small></span></li>').join("")+'</ul>':
@@ -122,8 +180,7 @@ window.BBB_SCOUTING_V6 = {
     '<section class="sp-panel sp-verdict sp-v7-card sp-v7-report"><div class="sp-v7-card-label"><span aria-hidden="true">▤</span> THE BBB SCOUTING REPORT</div>'+
     '<h2>What the film <em>tells us.</em></h2><p class="sp-report">'+esc(report)+'</p>'+
     (note?'<div class="sp-v7-latest"><div class="sp-v7-latest-top"><strong>↗ &nbsp; LATEST UPDATE</strong>'+ (stamp?'<time>'+esc(stamp)+'</time>':'')+'</div><p>'+esc(note)+'</p></div>':'')+
-    '<div class="sp-v7-insights">'+insight("Top graded traits",strongest)+insight("Development focus",lowest,true)+'</div>'+
-    '<p class="sp-v7-method">Based on recorded BBB trait scores. Development focus highlights lower relative grades, not verified weaknesses.</p>'+
+
     '<div class="sp-report-actions"><button class="sp-quicklink" data-profile-tab="film" type="button">Review Film Room →</button><button class="sp-quicklink" data-profile-tab="traits" type="button">Individual Grades →</button></div></section>'+
     '<div class="sp-v7-mid">'+
     '<section class="sp-v7-card sp-v7-radar"><div class="sp-v7-card-head"><span class="sp-kicker">TRAIT BREAKDOWN</span>'+compare+'</div>'+
@@ -141,6 +198,7 @@ window.BBB_SCOUTING_V6 = {
     '<button class="sp-v7-morelink" data-profile-tab="stats" type="button">View full stats →</button></div>'+
     '<div id="spOverviewProduction" aria-live="polite"><div class="sp-muted">Loading current season totals…</div></div></section>'+
     '</div></div>'+
+    prosCons()+
     '<div class="sp-overview-foot sp-v7-film-cta"><div><div class="sp-kicker">FILM LIBRARY</div><h3>'+(videos?.length?"Breakdowns are ready to watch.":"More film is coming.")+'</h3>'+
     '<p>'+(videos?.length?videos.length+" published breakdown"+(videos.length===1?"":"s")+" linked to this player.":"No published long-form film is linked yet.")+'</p></div>'+
     '<button class="sp-quicklink" data-profile-tab="film" type="button">Open Film Room →</button></div></div>';

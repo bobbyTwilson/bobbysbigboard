@@ -280,3 +280,21 @@
  .sp-overview-v7 .sp-v7-radar .sp-radar-svg{width:100%;max-width:440px}
  .sp-overview-v7 .sp-v7-radar-plot{margin:0 auto}
 }
+
+/* BBB prospect strengths & questions */
+.sp-procon{margin-top:18px;background:#14261a;border:1px solid #466348;border-radius:14px;overflow:hidden}
+.sp-procon-head{padding:23px 25px 18px}.sp-procon-head h2{font-size:30px;letter-spacing:-.035em;color:#eef7eb;margin:5px 0 7px}
+.sp-procon-head p{font-size:13px;line-height:1.6;color:#c4d5bf;margin:0}
+.sp-procon-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid #426246}
+.sp-procon-half{padding:24px;min-width:0}
+.sp-procon-positive{background:linear-gradient(150deg,#193923,#132b1c)}
+.sp-procon-caution{background:linear-gradient(150deg,#30271e,#231e1a);border-left:1px solid #62533f}
+.sp-procon-half h3{display:flex;gap:10px;align-items:center;color:#f0f6e9;font-size:20px;margin:0 0 16px}
+.sp-procon-half h3 span{display:grid;place-items:center;width:28px;height:28px;flex:none;border-radius:7px;background:#28673f;border:1px solid #4a8a5a;color:#d5ffe0;font-size:15px}
+.sp-procon-caution h3 span{background:#6f502d;border-color:#947248;color:#fff0c7}
+.sp-procon-half ul{list-style:none;padding:0;margin:0;display:grid;gap:14px}
+.sp-procon-half li{position:relative;padding-left:19px;color:#e3efe0;font-size:13px;line-height:1.7}
+.sp-procon-half li:before{content:"";position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:#81d68e}
+.sp-procon-caution li{color:#eddfcc}.sp-procon-caution li:before{background:#edb16c}
+.sp-procon-source{margin:0;padding:12px 25px 15px;border-top:1px solid #425945;color:#acc4ae;font-size:11px;line-height:1.6}
+@media(max-width:720px){.sp-procon-grid{grid-template-columns:1fr}.sp-procon-caution{border-left:0;border-top:1px solid #62533f}.sp-procon-half{padding:19px 17px}.sp-procon-head{padding:20px 17px 15px}.sp-procon-head h2{font-size:25px}.sp-procon-source{padding:12px 17px}}
