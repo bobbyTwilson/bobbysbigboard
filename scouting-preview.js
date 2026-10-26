@@ -152,6 +152,43 @@ function dynastyTool(key){
  });
 }
 
+/* Member features are rendered from the existing BBB app, preserving its
+   real Supabase auth/session and BBB+/Sleeper integrations. No mock account UI. */
+function legacyView(key){
+ const names={account:"My BBB Account",plus:"BBB+ Membership",watchlist:"My Watchlist",stats:"Fantasy Statistics",terms:"Terms of Service",privacy:"Privacy Policy",billing:"BBB+ Billing Policy"};
+ const which=Object.hasOwn(names,key)?key:"account";
+ setTitle(names[which]);
+ const isLegal=["terms","privacy","billing"].includes(which);
+ app.innerHTML='<section class="section bbb-member-section"><div class="wrap">'+
+  (isLegal?'':section("BOBBY’S BIG BOARD",names[which],"Your existing BBB account, membership and connected tools—inside the new website."))+
+  '<iframe id="bbbMemberFrame" class="dynastyFrame bbb-member-frame" title="'+esc(names[which])+
+  '" src="/dynasty-engine/#'+which+'" loading="eager"></iframe></div></section>';
+ const frame=app.querySelector("#bbbMemberFrame");
+ frame.addEventListener("load",()=>{
+  try{
+   const inner=frame.contentDocument;if(!inner)return;
+   let scheduled=false;
+   const resize=()=>{
+    if(scheduled)return;
+    scheduled=true;
+    requestAnimationFrame(()=>{
+     scheduled=false;
+     const shown=[...inner.querySelectorAll(".bbb-account-view:not(.hide),.bbb-plus-view:not(.hide),.bbb-legal-view:not(.hide),.stats-view:not(.hide),.watchlist-view:not(.hide)")];
+     let bottom=0;
+     for(const el of shown){const b=el.getBoundingClientRect();bottom=Math.max(bottom,b.bottom+inner.defaultView.scrollY)}
+     frame.style.height=Math.max(800,bottom+70,inner.body?.scrollHeight+40,inner.documentElement.scrollHeight+40)+"px";
+    });
+   };
+   resize();
+   if(inner.defaultView?.ResizeObserver){const obs=new inner.defaultView.ResizeObserver(resize);obs.observe(inner.body)}
+   inner.defaultView?.addEventListener("hashchange",resize);
+   inner.defaultView?.addEventListener("resize",resize);
+   // Refresh height after login, account loading and membership checks.
+   [250,900,1800,3500].forEach(ms=>inner.defaultView.setTimeout(resize,ms));
+  }catch(error){console.warn("BBB member view sizing fallback",error)}
+ });
+}
+
 async function load(){let queries=[["profiles","site_profiles","select=player_key,name,pos,team,age,college,draft_year,overall_breakdown,latest_weekly_update,injury_status&order=name.asc&limit=1000"],["ranks","site_dynasty","select=player_key,rank,pr,name,pos,team,age,market,gap,tier,view,overview,latest_update,weekly_update_date,injury_status,injury_note&order=rank.asc&limit=500"],["prospects","site_prospects","select=player_key,name,pos,year,grade,comp,traits&limit=300"],["athletics","bbb_player_athletics","select=*&limit=1000"],["scouting","bbb_player_scouting","select=*&limit=1000"],["videos","bbb_youtube_videos","select=video_id,player_key,title,video_type,content_archetype,privacy_status,published_at&order=published_at.desc&limit=250"],["films","site_bbb_film_catalog","select=video_id,player_key,title,video_type,editorial_status,published_at,created_at,updated_at&order=created_at.desc&limit=500"]];
 await Promise.all(queries.map(async q=>{try{D[q[0]]=await bbbDb(q[1],q[2])||[]}catch(x){console.warn("Failed loading "+q[0],x);D[q[0]]=[]}}));
 // Keep exactly one visible Michael Penix Jr. entry, with his existing Falcons
@@ -159,7 +196,12 @@ await Promise.all(queries.map(async q=>{try{D[q[0]]=await bbbDb(q[1],q[2])||[]}c
 D.profiles=D.profiles.filter(p=>!Object.prototype.hasOwnProperty.call(PROFILE_ALIASES,p.player_key));
 D.ranks.forEach(x=>R.set(x.player_key,x));D.prospects.forEach(x=>P.set(x.player_key,x));D.athletics.forEach(x=>A.set(x.player_key,x));D.scouting.forEach(x=>S.set(x.player_key,x));
 try{const images=await fetch("/scouting-headshots.json",{cache:"force-cache"}).then(r=>r.ok?r.json():null);D.media=images?.players||{}}catch(e){console.warn("ESPN images unavailable",e)}
-const path=decodeURIComponent(location.pathname).replace(/\/+$/,"")||"/";if(path==="/players")directory(false);else if(path==="/draft")directory(true);else if(path==="/film")filmRoom();else if(path.startsWith("/scouting/")){
+let path=decodeURIComponent(location.pathname).replace(/\/+$/,"")||"/";
+const legacyPaths={"/rankings":"/dynasty/rankings","/rookies":"/dynasty/rookies","/prospects":"/draft","/trade":"/dynasty/trade","/compare":"/dynasty/compare","/movers":"/dynasty/movers","/updates":"/dynasty/updates"};
+const oldHash=(path==="/"&&/^#(account|plus|watchlist|stats|terms|privacy|billing)$/.test(location.hash))?location.hash.slice(1):"";
+if(oldHash){history.replaceState(history.state,"","/"+oldHash+location.search);path="/"+oldHash}
+if(legacyPaths[path]){history.replaceState(history.state,"",legacyPaths[path]+location.search+location.hash);path=legacyPaths[path]}
+if(path==="/players")directory(false);else if(path==="/draft")directory(true);else if(path==="/film")filmRoom();else if(["/account","/plus","/watchlist","/stats","/terms","/privacy","/billing"].includes(path))legacyView(path.slice(1));else if(path==="/dynasty/watchlist")legacyView("watchlist");else if(path==="/dynasty/stats")legacyView("stats");else if(path.startsWith("/scouting/")){
  const requested=path.split("/").slice(2).join("/");
  const canonical=canonicalKey(requested);
  if(canonical!==requested)history.replaceState(history.state,"","/scouting/"+encodeURIComponent(canonical)+location.search+location.hash);

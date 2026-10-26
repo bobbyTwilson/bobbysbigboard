@@ -54,7 +54,15 @@ config.routes=[
  {src:'/draft/?',dest:'/index.html'},
  {src:'/scouting/([^/]+)/?',dest:'/index.html'},
  {src:'/dynasty/?',dest:'/index.html'},
- {src:'/dynasty/(rankings|trade|compare|rookies|movers|updates)/?',dest:'/index.html'},
+ {src:'/dynasty/(rankings|trade|compare|rookies|movers|updates|watchlist|stats)/?',dest:'/index.html'},
+ {src:'/(account|plus|watchlist|stats|terms|privacy|billing)/?',dest:'/index.html'},
+ {src:'/rankings/?',dest:'/dynasty/rankings',status:308},
+ {src:'/rookies/?',dest:'/dynasty/rookies',status:308},
+ {src:'/prospects/?',dest:'/draft',status:308},
+ {src:'/trade/?',dest:'/dynasty/trade',status:308},
+ {src:'/compare/?',dest:'/dynasty/compare',status:308},
+ {src:'/movers/?',dest:'/dynasty/movers',status:308},
+ {src:'/updates/?',dest:'/dynasty/updates',status:308},
  {src:'/dynasty-engine/?',dest:'/dynasty-engine/index.html'},
  ...config.routes
 ];
