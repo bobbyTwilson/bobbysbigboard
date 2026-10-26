@@ -44,14 +44,13 @@
     if(!qq){out.classList.add('hide');return;}
 
     const usedPlayerRanks=new Set([...tradeA,...tradeB].filter(x=>typeof x==='number'));
-    const usedPickIds=new Set([...tradeA,...tradeB].filter(x=>typeof x==='string'&&x.startsWith('pick:')));
 
     const pm=players
       .filter(p=>!usedPlayerRanks.has(p.rank)&&(`${p.name} ${p.team} ${p.pos}`).toLowerCase().includes(raw))
       .map(p=>({kind:'player',key:String(p.rank),obj:p,score:p.name.toLowerCase().startsWith(raw)?0:2}));
 
     const km=(typeof draftPicks!=='undefined'?draftPicks:[])
-      .filter(p=>!usedPickIds.has(p.id)&&pickAliases(p).includes(qq))
+      .filter(p=>pickAliases(p).includes(qq))
       .map(p=>{
         const exactYear=String(p.year)===qq;
         const exactName=String(p.name||'').toLowerCase()===qq;
@@ -88,7 +87,7 @@
       if(!wrap||wrap.querySelector('.bbb-pick-search-hint'))return;
       const hint=document.createElement('div');
       hint.className='bbb-pick-search-hint';
-      hint.textContent='1st–4th round picks for 2027–2029 are included. Try “2027 3rd” or “2028 4th”.';
+      hint.textContent='1st–4th round picks for 2027–2029 are included. You can add multiple picks of the same type (try “2027 3rd”).';
       wrap.appendChild(hint);
     });
 
