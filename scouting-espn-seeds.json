@@ -133,6 +133,13 @@
       "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870921.png",
       "source": "ESPN player profile (identity confirmed)",
       "profile_url": "https://www.espn.com/college-football/player/_/id/4870921/dante-moore"
+    },
+    "donovan-smith": {
+      "id": "4690977",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4690977.png",
+      "source": "ESPN Houston quarterback profile, athlete identity and PNG verified",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/4690977/donovan-smith"
     }
   }
 }
