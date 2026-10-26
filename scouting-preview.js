@@ -176,7 +176,7 @@ function legacyView(key){
      const shown=[...inner.querySelectorAll(".bbb-account-view:not(.hide),.bbb-plus-view:not(.hide),.bbb-legal-view:not(.hide),.stats-view:not(.hide),.watchlist-view:not(.hide)")];
      let bottom=0;
      for(const el of shown){const b=el.getBoundingClientRect();bottom=Math.max(bottom,b.bottom+inner.defaultView.scrollY)}
-     frame.style.height=Math.max(800,bottom+70,inner.body?.scrollHeight+40,inner.documentElement.scrollHeight+40)+"px";
+     frame.style.height=Math.max(800,Math.min(5500,bottom+85))+"px";
     });
    };
    resize();
