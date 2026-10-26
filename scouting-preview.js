@@ -6,7 +6,7 @@ const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const num=v=>v==null?"—":Number(v).toLocaleString("en-US");
 // Duplicate legacy player aliases remain in the source database for historical
 // references, but the public scouting preview resolves them to one canonical player.
-const PROFILE_ALIASES=Object.freeze({"michael-penix":"michael-penix-jr"});
+const PROFILE_ALIASES=Object.freeze({"michael-penix":"michael-penix-jr","ben-sinnot":"ben-sinnott","lequint-allen":"lequint-allen-jr","erick-all":"erick-all-jr"});
 const canonicalKey=key=>PROFILE_ALIASES[String(key||"")]||String(key||"");
 const purl=p=>"/scouting/"+encodeURIComponent(canonicalKey(p.player_key));
 const section=(k,t,s)=>'<div class="sectionHead"><div><div class="eyebrow">'+esc(k)+'</div><h2>'+esc(t)+'</h2><p>'+esc(s)+'</p></div></div>';
