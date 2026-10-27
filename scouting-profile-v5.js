@@ -137,6 +137,12 @@ window.BBB_PROFILE_V5 = async function(ctx){
     (row?'<section class="sp-advanced-receiving">'+V6.advancedHTML(row,esc,false,receivingPeers,p.pos)+'</section>':'<div class="sp-no-data">Receiving advanced data is not currently recorded for this player.</div>');
  };
  const loadAdvanced=()=>{
+  if(isProspect){
+    const quick=profileRoot.querySelector("#spOverviewAdvanced"),full=profileRoot.querySelector("#spAdvancedPanel");
+    if(quick)quick.innerHTML='<div class="sp-muted">NFL advanced production begins when this prospect enters the league.</div>';
+    if(full)full.innerHTML='<div class="sp-no-data">No NFL advanced statistics yet for this draft prospect.</div>';
+    return Promise.resolve();
+  }
   if(advancedPromise)return advancedPromise;
   advancedPromise=(async()=>{
   const quick=profileRoot.querySelector("#spOverviewAdvanced"),full=profileRoot.querySelector("#spAdvancedPanel");
@@ -162,6 +168,10 @@ window.BBB_PROFILE_V5 = async function(ctx){
  const loadOverviewProduction=async()=>{
   const target=profileRoot.querySelector("#spOverviewProduction");
   if(!target)return;
+  if(isProspect){
+    target.innerHTML='<div class="sp-muted">NFL production will appear after this player enters the league.</div>';
+    return;
+  }
   try{
    const years=await bbbDb("site_player_season_stats","select=season,games,targets,receptions,receiving_yards,receiving_tds,carries,rushing_yards,rushing_tds,completions,attempts,passing_yards,passing_tds&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=1");
    const season=years?.[0];
@@ -226,6 +236,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
   if(loaded)return;loaded=true;
   const mount=profileRoot.querySelector("#spStats"),weeks=profileRoot.querySelector("#spWeeks");
   if(!mount)return;
+  if(isProspect){mount.innerHTML=emptyStats();return}
   const fmt=(v,d=0)=>v==null||v===""?"—":Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
   const pos=p.pos||"WR",isQB=pos==="QB",isRB=pos==="RB";
   // Match the compact year-by-year and weekly tables on the existing BBB player profile.
@@ -265,6 +276,8 @@ window.BBB_PROFILE_V5 = async function(ctx){
   };
   const legend='<div class="sp-compact-legend"><span><i class="sp-swatch-best"></i> Personal high</span><span><i class="sp-swatch-td"></i> Other TDs</span><span><i class="sp-swatch-zero"></i> Zero TDs</span><span>— Not recorded</span></div>';
   try{
+   // Fetch game logs alongside season totals instead of waiting for the first request.
+   const weeklyPromise=weeks?bbbDb("site_player_weekly_stats","select=season,week,opponent_team,completions,attempts,passing_yards,passing_tds,interceptions,carries,rushing_yards,rushing_tds,targets,receptions,receiving_yards,receiving_tds,fantasy_points_ppr,weekly_position_finish&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc,week.desc&limit=500"):Promise.resolve([]);
    const seasons=await bbbDb("site_player_season_stats","select=season,games,targets,receptions,receiving_yards,receiving_tds,carries,rushing_yards,rushing_tds,passing_yards,passing_tds,attempts,completions,interceptions,fantasy_points_ppr,position_finish&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=25");
    if(!seasons?.length){mount.innerHTML=emptyStats();return}
    const current=seasons[0],total=Number(current.fantasy_points_ppr||0),games=Number(current.games||0),year=Number(current.season);
@@ -273,7 +286,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
    mount.innerHTML=main+'<div class="sp-compact-section-title"><div><h3>Career season totals</h3><p>Same quick comparison as the classic BBB profile, with receiving touchdowns included for RBs.</p></div></div>'+table(cols.season,seasons,seasonMax,"Career season totals")+legend+'<p class="sp-caption">Green marks the player’s highest recorded nonzero season for that stat (ties included). Current-year totals may be incomplete. A red zero is shown only for recorded touchdowns, never missing stats.</p>';
    if(!weeks)return;
    try{
-    const weekly=await bbbDb("site_player_weekly_stats","select=season,week,opponent_team,completions,attempts,passing_yards,passing_tds,interceptions,carries,rushing_yards,rushing_tds,targets,receptions,receiving_yards,receiving_tds,fantasy_points_ppr,weekly_position_finish&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc,week.desc&limit=500");
+    const weekly=await weeklyPromise;
     if(!weekly?.length){weeks.innerHTML='<div class="sp-no-data">No recorded weekly NFL game logs are available for this player.</div>';return}
     const years=[...new Set(weekly.map(x=>Number(x.season)).filter(Number.isFinite))].sort((a,b)=>b-a);
     weeks.innerHTML='<div class="sp-compact-section-title sp-compact-log-head"><div><div class="sp-kicker">WEEK BY WEEK</div><h3>Game log</h3><p>The full stat line, PPR points and positional finish in one row.</p></div><label for="spGameYearSelect">SEASON <select id="spGameYearSelect" aria-label="Choose game log season">'+years.map(y=>'<option value="'+y+'">'+y+'</option>').join("")+'</select></label></div><div id="spGameTable"></div><p class="sp-caption">Green highlights the highest result in the selected season’s recorded games. Scroll the table horizontally on narrow screens; the week column stays visible.</p>';
