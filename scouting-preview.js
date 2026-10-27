@@ -15,6 +15,14 @@ const chip=t=>'<span class="pill">'+esc(t)+'</span>';
 // Memoize the joined film catalog: directory cards no longer rebuild it on every row.
 let filmCatalogCache=null;
 let homepagePending=true;
+let activeRoute=0;
+const pageCache=new Map();
+const PAGE_CACHE_MS=90*1000;
+let cachedHeadshots=null;
+const assetHeadshots=()=>cachedHeadshots||(cachedHeadshots=fetch("/scouting-headshots.json",{cache:"force-cache"})
+  .then(r=>r.ok?r.json():null).then(doc=>doc?.players||{})
+  .catch(error=>{cachedHeadshots=null;console.warn("Headshot manifest unavailable",error);return{}}));
+
 const filmList=()=>filmCatalogCache||(filmCatalogCache=window.BBB_FILM_ROOM.catalog(D.films,D.videos,D.profiles,D.prospects));
 function setTitle(x){document.title=x+" | Bobby's Big Board";const k=location.pathname.startsWith("/scouting/")?"players":location.pathname.split("/")[1]||"home";document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("active",a.dataset.nav===k))}
 function portrait(p){const m=D.media[p.player_key];return m&&/^https:\/\/(a\.)?espncdn\.com\//.test(m.url||"")?m.url:""}
@@ -149,6 +157,18 @@ function dynastyTool(key){
  const labels={rankings:"rankings",trade:"trade",compare:"compare",rookies:"rookies",movers:"movers",updates:"updates"};
  const which=names[key]?key:"rankings";
  setTitle("Dynasty — "+names[which]);
+ // Switching dynasty sub-tabs should NOT recreate the legacy app iframe.
+ const existing=document.getElementById("dynastyToolFrame");
+ if(existing&&app.contains(existing)){
+   app.querySelectorAll(".dynastyTab").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="/dynasty/"+which));
+   const heading=app.querySelector(".sectionHead h2");
+   if(heading)heading.textContent=names[which];
+   try{
+     const frameUrl=new URL(existing.src,location.href);
+     if(frameUrl.hash!=="#"+labels[which])existing.contentWindow.location.hash=labels[which];
+   }catch(error){existing.src="/dynasty-engine/#"+labels[which]}
+   return;
+ }
  app.innerHTML='<section class="section"><div class="wrap">'+section("BBB DYNASTY TOOLKIT",names[which],"Rankings, trades and dynasty context in one connected BBB experience.")+'<div class="dynastyBack">'+Object.entries(names).map(([slug,name])=>'<a class="dynastyTab '+(slug===which?'active':'')+'" href="/dynasty/'+slug+'">'+esc(name)+'</a>').join("")+'</div><div style="margin-top:23px"><iframe class="dynastyFrame" id="dynastyToolFrame" title="BBB '+esc(names[which])+'" src="/dynasty-engine/#'+labels[which]+'" loading="eager"></iframe></div></div></section>';
  const iframe=document.getElementById("dynastyToolFrame");
  iframe.addEventListener("load",()=>{
@@ -208,6 +228,12 @@ function legacyView(key){
 }
 
 async function load(){
+  const visit=++activeRoute;
+  // Dispose profile-only hash listeners before changing sections.
+  if(window.BBB_SCOUTING_CLEANUP){
+    window.BBB_SCOUTING_CLEANUP();
+    window.BBB_SCOUTING_CLEANUP=null;
+  }
   // Decide which page the visitor wants BEFORE making network requests.
   // The member iframe and dynasty tools already load their own data.
   let path=decodeURIComponent(location.pathname).replace(/\/+$/,"")||"/";
@@ -220,7 +246,10 @@ async function load(){
   if(["/account","/plus","/watchlist","/stats","/terms","/privacy","/billing"].includes(path))return legacyView(path.slice(1));
   if(path==="/dynasty/watchlist")return legacyView("watchlist");
   if(path==="/dynasty/stats")return legacyView("stats");
-  if(path==="/")home(); // Render the real hero and navigation before data resolves.
+  if(path==="/") {
+    homepagePending=true;
+    home(); // Real homepage paints before any network request.
+  }
   if(path==="/dynasty/compare"){ /* only rankings and light player metadata required below */ }
   else if(path.startsWith("/dynasty"))return dynastyTool(path.split("/")[2]||"rankings");
 
@@ -232,6 +261,12 @@ async function load(){
     if(playerKey!==requested)history.replaceState(history.state,"","/scouting/"+encodeURIComponent(playerKey)+location.search+location.hash);
   }
   const profileFilter=profile?"&player_key=eq."+encodeURIComponent(playerKey):"";
+  const remembered=pageCache.get(path);
+  const hasFreshCopy=remembered&&Date.now()-remembered.savedAt<PAGE_CACHE_MS;
+  if(!hasFreshCopy&&path!=="/"){
+    setTitle(profile?"Player Scouting":path==="/players"?"Players":path==="/draft"?"NFL Draft":path==="/film"?"Film Room":"Player Comparison");
+    app.innerHTML='<section class="section"><div class="wrap"><div class="eyebrow">BOBBY’S BIG BOARD</div><div class="bbb-route-loading" role="status">Opening '+esc(profile?"scouting profile":path==="/players"?"player directory":path==="/draft"?"draft board":path==="/film"?"film room":"player comparison")+'…</div></div></section>';
+  }
   const slimProfiles="select=player_key,name,pos,team,college,draft_year,overall_breakdown";
   const fullProfiles="select=player_key,name,pos,team,age,college,draft_year,overall_breakdown,latest_weekly_update,injury_status";
   const slimRanks="select=player_key,rank";
@@ -277,24 +312,69 @@ async function load(){
     ];
   }
 
-  // Start the image manifest at the same time as the necessary Supabase calls.
-  const imagesNeeded=profile||path==="/"||path==="/players"||path==="/draft";
-  const pictures=imagesNeeded?fetch("/scouting-headshots.json",{cache:"force-cache"})
-    .then(r=>r.ok?r.json():null)
-    .then(result=>{D.media=result?.players||{}})
-    .catch(error=>{console.warn("Player headshot manifest unavailable",error);D.media={}}):Promise.resolve();
-  await Promise.all([
-    ...queries.map(async q=>{
-      try{D[q.key]=await bbbDb(q.table,q.params)||[]}
-      catch(error){console.warn("Failed loading "+q.key,error);D[q.key]=[]}
-    }),
-    pictures
-  ]);
+  // Recent pages restore instantly; identical Supabase queries also reuse BBB's
+  // shared request cache when visiting a section for the first time.
+  let nextData;
+  if(hasFreshCopy){
+    nextData=remembered.data;
+  }else{
+    const results={};
+    const imagesNeeded=profile||path==="/"||path==="/players"||path==="/draft";
+    await Promise.all([
+      ...queries.map(async q=>{
+        try{results[q.key]=await bbbDb(q.table,q.params)||[]}
+        catch(error){console.warn("Failed loading "+q.key,error);results[q.key]=[]}
+      }),
+      imagesNeeded?assetHeadshots().then(images=>{results.media=images}):Promise.resolve()
+    ]);
+    if(visit!==activeRoute)return; // Ignore responses from an abandoned navigation.
+    nextData=results;
+    pageCache.set(path,{savedAt:Date.now(),data:nextData});
+    if(pageCache.size>40){
+      for(const [key,value] of pageCache)if(Date.now()-value.savedAt>PAGE_CACHE_MS)pageCache.delete(key);
+      if(pageCache.size>40)pageCache.delete(pageCache.keys().next().value);
+    }
+  }
+  if(visit!==activeRoute)return;
+  for(const key of ["profiles","ranks","prospects","athletics","scouting","videos","films"])
+    D[key]=nextData[key]||[];
+  D.media=nextData.media||{};
 // Keep exactly one visible Michael Penix Jr. entry, with his existing Falcons
 // identity, college history, draft pick, and newly unified scouting grade.
 D.profiles=D.profiles.filter(p=>!Object.prototype.hasOwnProperty.call(PROFILE_ALIASES,p.player_key));
+for(const map of [R,P,A,S])map.clear();
 D.ranks.forEach(x=>R.set(x.player_key,x));D.prospects.forEach(x=>P.set(x.player_key,x));D.athletics.forEach(x=>A.set(x.player_key,x));D.scouting.forEach(x=>S.set(x.player_key,x));
 filmCatalogCache=null;
 if(path==="/players")directory(false);else if(path==="/draft")directory(true);else if(path==="/film")filmRoom();else if(["/account","/plus","/watchlist","/stats","/terms","/privacy","/billing"].includes(path))legacyView(path.slice(1));else if(path==="/dynasty/watchlist")legacyView("watchlist");else if(path==="/dynasty/stats")legacyView("stats");else if(profile){await detail(playerKey)}else if(path==="/dynasty/compare")nativeCompare();else if(path.startsWith("/dynasty"))dynastyTool(path.split("/")[2]||"rankings");else if(path==="/")hydrateHome();else home()
-}load().catch(e=>{console.error(e);app.innerHTML='<section class="section"><div class="wrap"><div class="empty">Unable to load scouting data. Refresh to try again.</div></div></section>'});
+}
+// Keep internal navigation in this document; full reloads discard the scouting
+// app, re-download styles/scripts, and restart every view.
+function localRoute(path){
+  return path==="/"||path==="/players"||path==="/draft"||path==="/film"||
+    path==="/dynasty"||path.startsWith("/scouting/")||
+    /^\/dynasty\/(rankings|trade|compare|rookies|movers|updates|watchlist|stats)\/?$/.test(path)||
+    /^\/(account|plus|watchlist|stats|terms|privacy|billing)\/?$/.test(path);
+}
+const renderRoute=()=>load().catch(error=>{
+  console.error("Scouting route failed",error);
+  app.innerHTML='<section class="section"><div class="wrap"><div class="empty">That section could not load. <a href="'+esc(location.pathname)+'">Retry page</a></div></div></section>';
+});
+document.addEventListener("click",event=>{
+  if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+  const a=event.target?.closest?.("a[href]");
+  if(!a||a.hasAttribute("download")||a.target&&a.target!=="_self")return;
+  let next;
+  try{next=new URL(a.href,location.href)}catch{return}
+  if(next.origin!==location.origin||!localRoute(next.pathname))return;
+  if(next.pathname===location.pathname&&next.search===location.search){
+    if(next.hash)return; // Native fragment navigation (including profile tabs).
+    event.preventDefault();return;
+  }
+  event.preventDefault();
+  history.pushState(history.state,"",next.pathname+next.search+next.hash);
+  renderRoute();
+  window.scrollTo(0,0);
+});
+window.addEventListener("popstate",renderRoute);
+renderRoute();
 })();
