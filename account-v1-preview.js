@@ -30,7 +30,10 @@ async function bbbAccountLoadProfile(){
 }
 
 async function bbbAccountSignup(email,password,username){
-  const r=await fetch(`${BBB_SUPABASE_URL}/auth/v1/signup`,{method:'POST',headers:bbbAccountHeaders(),body:JSON.stringify({email,password,data:{username,display_name:username}})});
+  // Keep confirmation links on the same BBB host that initiated signup.
+  // The destination must also appear in Supabase Auth's redirect allowlist.
+  const callbackUrl=location.origin+'/account';
+  const r=await fetch(`${BBB_SUPABASE_URL}/auth/v1/signup?redirect_to=${encodeURIComponent(callbackUrl)}`,{method:'POST',headers:bbbAccountHeaders(),body:JSON.stringify({email,password,data:{username,display_name:username}})});
   const data=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(data.msg||data.message||data.error_description||'Could not create account.');
   if(data.access_token){bbbAccountSaveSession(data);await bbbAccountLoadProfile();}
