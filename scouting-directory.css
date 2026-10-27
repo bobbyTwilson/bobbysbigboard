@@ -80,7 +80,7 @@
 .bbb-draft-class-heading .eyebrow{font-size:10px}
 .bbb-draft-class-heading p{margin:5px 0 0;color:#c3d9c1;font-size:12px;line-height:1.55}
 .bbb-draft-class-picker{display:flex;flex-direction:column;gap:7px;flex:0 1 260px;min-width:215px;color:#cce6c9;font-size:10px;font-weight:900;letter-spacing:.1em}
-.bbb-draft-class-picker select{appearance:auto;width:100%;padding:11px 14px;border-radius:9px;border:1px solid #68936d;background:#183922;color:#f1f9ec;font:700 14px/1.45 inherit;letter-spacing:normal;cursor:pointer}
+.bbb-draft-class-picker select{appearance:auto;width:100%;padding:11px 14px;border-radius:9px;border:1px solid #68936d;background:#183922;color:#f1f9ec;font-family:inherit;font-weight:700;font-size:14px;line-height:1.45;letter-spacing:normal;cursor:pointer}
 .bbb-draft-class-picker select:focus-visible{outline:3px solid #80cd9c77;outline-offset:2px}
 .bbb-draft-class-picker option{background:#193322;color:#f1f9ec}
 @media(max-width:600px){.bbb-draft-class-bar{padding:16px;gap:13px}.bbb-draft-class-picker{flex-basis:100%;min-width:0}.bbb-draft-class-heading{flex-basis:100%}}
