@@ -248,7 +248,9 @@ function legacyView(key){
  // Supabase email confirmation/password reset can land on the root URL with
  // access_token in the fragment. Give the existing auth handler that fragment,
  // then remove it from the public address bar immediately.
- const tokenHash=which==="account"&&/(?:^#|&)access_token=/.test(location.hash)?location.hash:"";
+ // Both successful Auth callbacks and rejected/expired links must reach
+ // the existing account handler in the embedded dynasty engine.
+ const tokenHash=which==="account"&&/(?:^#|&)(?:access_token|error|error_description)=/.test(location.hash)?location.hash:"";
  // The outer page is a shell: forward Stripe's return result so the original
  // BBB+ module can confirm subscription activation after checkout completes.
  const checkoutResult=which==="plus"?new URLSearchParams(location.search).get("checkout"):"";
@@ -298,7 +300,7 @@ async function load(){
   // The member iframe and dynasty tools already load their own data.
   let path=decodeURIComponent(location.pathname).replace(/\/+$/,"")||"/";
   const legacyPaths={"/rankings":"/dynasty/rankings","/rookies":"/dynasty/rookies","/prospects":"/draft","/trade":"/dynasty/trade","/compare":"/dynasty/compare","/movers":"/dynasty/movers","/updates":"/dynasty/updates"};
-  const authCallbackHash=path==="/"&&/(?:^#|&)access_token=/.test(location.hash);
+  const authCallbackHash=path==="/"&&/(?:^#|&)(?:access_token|error|error_description)=/.test(location.hash);
   if(authCallbackHash){history.replaceState(history.state,"","/account"+location.search+location.hash);path="/account"}
   const oldHash=(path==="/"&&/^#(account|plus|watchlist|stats|terms|privacy|billing)$/.test(location.hash))?location.hash.slice(1):"";
   if(oldHash){history.replaceState(history.state,"","/"+oldHash+location.search);path="/"+oldHash}
