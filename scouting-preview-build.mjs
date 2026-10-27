@@ -197,6 +197,19 @@ if(!builtPreview.includes('src="/scouting-preview.js"'))qaErrors.push('Scouting 
 if(!builtPreview.includes('href="/scouting-styles.css"'))qaErrors.push('Consolidated scouting CSS missing');
 if(!builtEngine.includes('src="/movers-section.js"'))qaErrors.push('Market Movers script missing from dynasty engine');
 if(!builtEngine.includes('src="/profile-ui-redesign-preview.js"'))qaErrors.push('Player art/profile module missing from dynasty engine');
+if(!builtEngine.includes('src="/bbb-plus-v1.js"'))qaErrors.push('BBB+ membership module missing from dynasty engine');
+if(!builtEngine.includes('src="/account-v1-preview.js"')||!builtEngine.includes('src="/account-auth-cleanup.js"'))
+ qaErrors.push('BBB account and password-recovery modules missing from dynasty engine');
+const billingJs=await readFile(root+'/bbb-plus-v1.js','utf8');
+if(!billingJs.includes('openStripePage(d.url,"checkout")')||!billingJs.includes('openStripePage(d.url,"billing")')||
+   !billingJs.includes('browser.location.assign(target.href)'))
+ qaErrors.push('Stripe checkout/portal must navigate the outer browser window');
+const authJs=await readFile(root+'/account-auth-cleanup.js','utf8');
+if(!authJs.includes('/auth/v1/recover')||!authJs.includes('handleAuthCallback'))
+ qaErrors.push('Account confirmation/reset callbacks missing');
+if(!builtPreview.includes('checkoutSearch+"#"+which'))
+ qaErrors.push('Stripe checkout return not forwarded to BBB+ embedded account');
+
 const assetChecks=['scouting-preview.js','scouting-styles.css','scouting-profile-v5.js',
  'scouting-intelligence-v6.js','scouting-film-room-v1.js','scouting-samples.js',
  'scouting-headshots.json','bbb-core.js','movers-section.js',
