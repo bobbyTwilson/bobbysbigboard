@@ -18,6 +18,25 @@ a:hover,.rank-cell{color:#8bdfa0!important}
 await writeFile(root+'/dynasty-engine/index.html',original.replace('</head>', '<meta name="robots" content="noindex,nofollow">'+styles+'</head>'));
 const publicBuild=process.env.VERCEL_ENV==='production';
 let preview=await readFile('scouting-preview.html','utf8');
+// Preserve stylesheet cascade order while reducing six blocking CSS files to one.
+// Emit a single, cacheable asset; keep original assets for existing references.
+const styleSources=[
+  'scouting-green.css','scouting-directory.css','scouting-profile-v5.css',
+  'scouting-intelligence-v6.css','scouting-film-room-v1.css','scouting-atmosphere.css'
+];
+const styleText=(await Promise.all(styleSources.map(file=>readFile(file,'utf8')))).join('\n');
+await writeFile(root+'/scouting-styles.css',styleText);
+for(const [i,file] of styleSources.entries()){
+  const originalTag='<link rel="stylesheet" href="/'+file+'">';
+  if(!preview.includes(originalTag))throw new Error('Missing style link '+file);
+  preview=preview.replace(originalTag,i===0?'<link rel="stylesheet" href="/scouting-styles.css">':'');
+}
+// Warm the public database origin before its API calls start.
+preview=preview.replace('</head>',
+  '<link rel="preconnect" href="https://twbduhmibbotregdxlla.supabase.co" crossorigin>'+
+  '<link rel="dns-prefetch" href="//i.ytimg.com">'+
+  '</head>');
+
 if(publicBuild){
   preview=preview.replace('<meta name="robots" content="noindex,nofollow">','<meta name="robots" content="index,follow">')
     .replace('<title>Bobby\'s Big Board — Scouting Platform Preview</title>','<title>Bobby\'s Big Board | Film, Scouting & Dynasty Rankings</title>')
