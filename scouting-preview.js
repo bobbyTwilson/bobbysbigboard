@@ -12,7 +12,9 @@ const purl=p=>"/scouting/"+encodeURIComponent(canonicalKey(p.player_key));
 const section=(k,t,s)=>'<div class="sectionHead"><div><div class="eyebrow">'+esc(k)+'</div><h2>'+esc(t)+'</h2><p>'+esc(s)+'</p></div></div>';
 const stat=(k,v)=>'<div class="grade"><small>'+esc(k)+'</small><strong>'+esc(v)+'</strong></div>';
 const chip=t=>'<span class="pill">'+esc(t)+'</span>';
-const filmList=()=>window.BBB_FILM_ROOM.catalog(D.films,D.videos,D.profiles,D.prospects);
+// Memoize the joined film catalog: directory cards no longer rebuild it on every row.
+let filmCatalogCache=null;
+const filmList=()=>filmCatalogCache||(filmCatalogCache=window.BBB_FILM_ROOM.catalog(D.films,D.videos,D.profiles,D.prospects));
 function setTitle(x){document.title=x+" | Bobby's Big Board";const k=location.pathname.startsWith("/scouting/")?"players":location.pathname.split("/")[1]||"home";document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("active",a.dataset.nav===k))}
 function portrait(p){const m=D.media[p.player_key];return m&&/^https:\/\/(a\.)?espncdn\.com\//.test(m.url||"")?m.url:""}
 function playerCard(p){
@@ -195,25 +197,93 @@ function legacyView(key){
  });
 }
 
-async function load(){let queries=[["profiles","site_profiles","select=player_key,name,pos,team,age,college,draft_year,overall_breakdown,latest_weekly_update,injury_status&order=name.asc&limit=1000"],["ranks","site_dynasty","select=player_key,rank,pr,name,pos,team,age,market,gap,tier,view,overview,latest_update,weekly_update_date,injury_status,injury_note&order=rank.asc&limit=500"],["prospects","site_prospects","select=player_key,name,pos,year,grade,comp,traits&limit=300"],["athletics","bbb_player_athletics","select=*&limit=1000"],["scouting","bbb_player_scouting","select=*&limit=1000"],["videos","bbb_youtube_videos","select=video_id,player_key,title,video_type,content_archetype,privacy_status,published_at&order=published_at.desc&limit=250"],["films","site_bbb_film_catalog","select=video_id,player_key,title,video_type,editorial_status,published_at,created_at,updated_at&order=created_at.desc&limit=500"]];
-await Promise.all(queries.map(async q=>{try{D[q[0]]=await bbbDb(q[1],q[2])||[]}catch(x){console.warn("Failed loading "+q[0],x);D[q[0]]=[]}}));
+async function load(){
+  // Decide which page the visitor wants BEFORE making network requests.
+  // The member iframe and dynasty tools already load their own data.
+  let path=decodeURIComponent(location.pathname).replace(/\/+$/,"")||"/";
+  const legacyPaths={"/rankings":"/dynasty/rankings","/rookies":"/dynasty/rookies","/prospects":"/draft","/trade":"/dynasty/trade","/compare":"/dynasty/compare","/movers":"/dynasty/movers","/updates":"/dynasty/updates"};
+  const authCallbackHash=path==="/"&&/(?:^#|&)access_token=/.test(location.hash);
+  if(authCallbackHash){history.replaceState(history.state,"","/account"+location.search+location.hash);path="/account"}
+  const oldHash=(path==="/"&&/^#(account|plus|watchlist|stats|terms|privacy|billing)$/.test(location.hash))?location.hash.slice(1):"";
+  if(oldHash){history.replaceState(history.state,"","/"+oldHash+location.search);path="/"+oldHash}
+  if(legacyPaths[path]){history.replaceState(history.state,"",legacyPaths[path]+location.search+location.hash);path=legacyPaths[path]}
+  if(["/account","/plus","/watchlist","/stats","/terms","/privacy","/billing"].includes(path))return legacyView(path.slice(1));
+  if(path==="/dynasty/watchlist")return legacyView("watchlist");
+  if(path==="/dynasty/stats")return legacyView("stats");
+  if(path==="/dynasty/compare"){ /* only rankings and light player metadata required below */ }
+  else if(path.startsWith("/dynasty"))return dynastyTool(path.split("/")[2]||"rankings");
+
+  const profile=path.startsWith("/scouting/");
+  let playerKey="";
+  if(profile){
+    const requested=path.split("/").slice(2).join("/");
+    playerKey=canonicalKey(requested);
+    if(playerKey!==requested)history.replaceState(history.state,"","/scouting/"+encodeURIComponent(playerKey)+location.search+location.hash);
+  }
+  const profileFilter=profile?"&player_key=eq."+encodeURIComponent(playerKey):"";
+  const slimProfiles="select=player_key,name,pos,team,college,draft_year,overall_breakdown";
+  const fullProfiles="select=player_key,name,pos,team,age,college,draft_year,overall_breakdown,latest_weekly_update,injury_status";
+  const slimRanks="select=player_key,rank";
+  const fullRanks="select=player_key,rank,pr,name,pos,team,age,market,gap,tier,view,overview,latest_update,weekly_update_date,injury_status,injury_note";
+  const slimProspects="select=player_key,name,pos,year,grade,comp";
+  const fullProspects="select=player_key,name,pos,year,grade,comp,traits";
+  const videoFields="select=video_id,player_key,title,video_type,content_archetype,privacy_status,published_at";
+  const filmFields="select=video_id,player_key,title,video_type,editorial_status,published_at,created_at,updated_at";
+  const query=(key,table,params)=>({key,table,params});
+  let queries;
+  if(profile){
+    queries=[
+      query("profiles","site_profiles",fullProfiles+profileFilter+"&limit=1"),
+      query("ranks","site_dynasty",fullRanks+profileFilter+"&limit=1"),
+      query("prospects","site_prospects",fullProspects+"&limit=300"),
+      query("athletics","bbb_player_athletics","select=*"+profileFilter+"&limit=1"),
+      query("scouting","bbb_player_scouting","select=*"+profileFilter+"&limit=1"),
+      query("videos","bbb_youtube_videos",videoFields+profileFilter+"&order=published_at.desc&limit=50"),
+      query("films","site_bbb_film_catalog",filmFields+profileFilter+"&order=created_at.desc&limit=50")
+    ];
+  }else if(path==="/film"){
+    queries=[
+      query("profiles","site_profiles",slimProfiles+"&order=name.asc&limit=1000"),
+      query("prospects","site_prospects","select=player_key,name,pos,year&limit=300"),
+      query("videos","bbb_youtube_videos",videoFields+"&order=published_at.desc&limit=250"),
+      query("films","site_bbb_film_catalog",filmFields+"&order=created_at.desc&limit=500")
+    ];
+  }else if(path==="/dynasty/compare"){
+    queries=[
+      query("profiles","site_profiles",slimProfiles+"&order=name.asc&limit=1000"),
+      query("ranks","site_dynasty",fullRanks+"&order=rank.asc&limit=500"),
+      query("prospects","site_prospects",slimProspects+"&limit=300")
+    ];
+  }else{
+    // Home and prospect directories require the lightweight shared listing
+    // fields, not hundreds of full JSON trait maps and scouting/athletics rows.
+    queries=[
+      query("profiles","site_profiles",slimProfiles+"&order=name.asc&limit=1000"),
+      query("ranks","site_dynasty",slimRanks+"&order=rank.asc&limit=500"),
+      query("prospects","site_prospects",slimProspects+"&limit=300"),
+      query("videos","bbb_youtube_videos",videoFields+"&order=published_at.desc&limit=250"),
+      query("films","site_bbb_film_catalog",filmFields+"&order=created_at.desc&limit=500")
+    ];
+  }
+
+  // Start the image manifest at the same time as the necessary Supabase calls.
+  const imagesNeeded=profile||path==="/"||path==="/players"||path==="/draft";
+  const pictures=imagesNeeded?fetch("/scouting-headshots.json",{cache:"force-cache"})
+    .then(r=>r.ok?r.json():null)
+    .then(result=>{D.media=result?.players||{}})
+    .catch(error=>{console.warn("Player headshot manifest unavailable",error);D.media={}}):Promise.resolve();
+  await Promise.all([
+    ...queries.map(async q=>{
+      try{D[q.key]=await bbbDb(q.table,q.params)||[]}
+      catch(error){console.warn("Failed loading "+q.key,error);D[q.key]=[]}
+    }),
+    pictures
+  ]);
 // Keep exactly one visible Michael Penix Jr. entry, with his existing Falcons
 // identity, college history, draft pick, and newly unified scouting grade.
 D.profiles=D.profiles.filter(p=>!Object.prototype.hasOwnProperty.call(PROFILE_ALIASES,p.player_key));
 D.ranks.forEach(x=>R.set(x.player_key,x));D.prospects.forEach(x=>P.set(x.player_key,x));D.athletics.forEach(x=>A.set(x.player_key,x));D.scouting.forEach(x=>S.set(x.player_key,x));
-try{const images=await fetch("/scouting-headshots.json",{cache:"force-cache"}).then(r=>r.ok?r.json():null);D.media=images?.players||{}}catch(e){console.warn("ESPN images unavailable",e)}
-let path=decodeURIComponent(location.pathname).replace(/\/+$/,"")||"/";
-const legacyPaths={"/rankings":"/dynasty/rankings","/rookies":"/dynasty/rookies","/prospects":"/draft","/trade":"/dynasty/trade","/compare":"/dynasty/compare","/movers":"/dynasty/movers","/updates":"/dynasty/updates"};
-const authCallbackHash=path==="/"&&/(?:^#|&)access_token=/.test(location.hash);
-if(authCallbackHash){history.replaceState(history.state,"","/account"+location.search+location.hash);path="/account"}
-const oldHash=(path==="/"&&/^#(account|plus|watchlist|stats|terms|privacy|billing)$/.test(location.hash))?location.hash.slice(1):"";
-if(oldHash){history.replaceState(history.state,"","/"+oldHash+location.search);path="/"+oldHash}
-if(legacyPaths[path]){history.replaceState(history.state,"",legacyPaths[path]+location.search+location.hash);path=legacyPaths[path]}
-if(path==="/players")directory(false);else if(path==="/draft")directory(true);else if(path==="/film")filmRoom();else if(["/account","/plus","/watchlist","/stats","/terms","/privacy","/billing"].includes(path))legacyView(path.slice(1));else if(path==="/dynasty/watchlist")legacyView("watchlist");else if(path==="/dynasty/stats")legacyView("stats");else if(path.startsWith("/scouting/")){
- const requested=path.split("/").slice(2).join("/");
- const canonical=canonicalKey(requested);
- if(canonical!==requested)history.replaceState(history.state,"","/scouting/"+encodeURIComponent(canonical)+location.search+location.hash);
- await detail(canonical);
-}else if(path==="/dynasty/compare")nativeCompare();else if(path.startsWith("/dynasty"))dynastyTool(path.split("/")[2]||"rankings");else home()
+filmCatalogCache=null;
+if(path==="/players")directory(false);else if(path==="/draft")directory(true);else if(path==="/film")filmRoom();else if(["/account","/plus","/watchlist","/stats","/terms","/privacy","/billing"].includes(path))legacyView(path.slice(1));else if(path==="/dynasty/watchlist")legacyView("watchlist");else if(path==="/dynasty/stats")legacyView("stats");else if(profile){await detail(playerKey)}else if(path==="/dynasty/compare")nativeCompare();else if(path.startsWith("/dynasty"))dynastyTool(path.split("/")[2]||"rankings");else home()
 }load().catch(e=>{console.error(e);app.innerHTML='<section class="section"><div class="wrap"><div class="empty">Unable to load scouting data. Refresh to try again.</div></div></section>'});
 })();
