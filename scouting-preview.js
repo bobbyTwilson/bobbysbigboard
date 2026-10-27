@@ -401,5 +401,14 @@ document.addEventListener("click",event=>{
   window.scrollTo(0,0);
 });
 window.addEventListener("popstate",renderRoute);
+// A player selected far down the embedded Top 500 must open at the TOP of
+// the full website, not just at scrollTop=0 inside the dynasty iframe.
+window.addEventListener("message",event=>{
+  if(event.origin!==location.origin||event.data?.type!=="bbb:dynasty-profile-open")return;
+  const frame=document.getElementById("dynastyToolFrame");
+  if(!frame||event.source!==frame.contentWindow)return;
+  window.scrollTo(0,0);
+  requestAnimationFrame(()=>window.scrollTo(0,0));
+});
 renderRoute();
 })();
