@@ -242,6 +242,16 @@ if(publicBuild){
 const authJs=await readFile(root+'/account-auth-cleanup.js','utf8');
 if(!authJs.includes('/auth/v1/recover')||!authJs.includes('handleAuthCallback'))
  qaErrors.push('Account confirmation/reset callbacks missing');
+const signupJs=await readFile(root+'/account-v1-preview.js','utf8');
+if(!signupJs.includes("signup?redirect_to=\u0024{encodeURIComponent(callbackUrl)}")||
+   !signupJs.includes("location.origin+'/account'"))
+ qaErrors.push('Signup confirmation must return to the requesting BBB host');
+if(!authJs.includes('showAuthLinkError')||!authJs.includes("params.has('error_description')")||
+   !authJs.includes('Never keep an invalid token'))
+ qaErrors.push('Expired confirmation/password-reset links must clear tokens and show an error');
+if(!scoutingJs.includes('(?:access_token|error|error_description)'))
+ qaErrors.push('Outer scouting routes must forward failed auth callbacks to account page');
+
 const scoutingJs=await readFile(root+'/scouting-preview.js','utf8');
 if(!scoutingJs.includes('checkoutSearch+"#"+which'))
  qaErrors.push('Stripe checkout return not forwarded to BBB+ embedded account');
