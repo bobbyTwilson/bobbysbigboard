@@ -148,6 +148,14 @@ function profileResetViewport(){
   const scroller=document.scrollingElement||document.documentElement;
   if(scroller)scroller.scrollTop=0;
   window.scrollTo(0,0);
+  // On the unified site the dynasty engine runs inside an iframe. Resetting
+  // only this frame leaves the outer page scrolled to the clicked ranking row.
+  // Ask our same-origin parent to restore its viewport when a profile opens.
+  if(window.parent!==window){
+    try{window.parent.postMessage({type:'bbb:dynasty-profile-open'},location.origin)}catch(error){
+      console.warn('Could not reset embedded profile viewport',error);
+    }
+  }
 }
 function profileHideOtherViews(){
   ['rankingsView','rookieView','prospectView','tradeView'].forEach(id=>document.querySelector('#'+id)?.classList.add('hide'));
