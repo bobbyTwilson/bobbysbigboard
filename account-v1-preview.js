@@ -1,6 +1,16 @@
 // BBB Account V1 preview — free account foundation + My BBB shell.
 
 const BBB_ACCOUNT_STORAGE='bbb_auth_session_v1';
+const BBB_PREVIEW_AUTH_BRANCH='bobbys-big-board-v2-git-preview-scou-92f477-bobbywilsonbtw-2065.vercel.app';
+function bbbAccountReturnOrigin(){
+  // Deploy-specific preview URLs change on every commit. The branch alias is
+  // stable and can be allowlisted in Supabase without accepting every Vercel site.
+  const host=location.hostname.toLowerCase();
+  if(host.startsWith('bobbys-big-board-v2-')&&host.endsWith('.vercel.app'))
+    return 'https://'+BBB_PREVIEW_AUTH_BRANCH;
+  return location.origin;
+}
+
 let bbbAccountSession=null;
 let bbbAccountProfile=null;
 
@@ -30,9 +40,9 @@ async function bbbAccountLoadProfile(){
 }
 
 async function bbbAccountSignup(email,password,username){
-  // Keep confirmation links on the same BBB host that initiated signup.
-  // The destination must also appear in Supabase Auth's redirect allowlist.
-  const callbackUrl=location.origin+'/account';
+  // Use the stable branch alias for preview email links. Live BBB accounts
+  // continue returning to the official domain. Both must be allowlisted.
+  const callbackUrl=bbbAccountReturnOrigin()+'/account';
   const r=await fetch(`${BBB_SUPABASE_URL}/auth/v1/signup?redirect_to=${encodeURIComponent(callbackUrl)}`,{method:'POST',headers:bbbAccountHeaders(),body:JSON.stringify({email,password,data:{username,display_name:username}})});
   const data=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(data.msg||data.message||data.error_description||'Could not create account.');
