@@ -5,7 +5,9 @@ await mkdir(root+'/dynasty-engine',{recursive:true});
 /* Legacy dynasty tools are a component inside the new scouting shell, not a second visible website. */
 const styles=`<style>
 .site-header,.mobile-subnav,footer,.footer,.youtube-strip{display:none!important}
-html,body{background:#0b180f!important;color:#eef4ed!important}
+/* Only the parent page scrolls. The embedded engine expands to its content. */
+html,body{background:#0b180f!important;color:#eef4ed!important;overflow-y:hidden!important;scrollbar-width:none!important}
+html::-webkit-scrollbar,body::-webkit-scrollbar{display:none!important}
 .hero,.trade-hero{padding:27px 0 32px!important;background:linear-gradient(125deg,#15281a,#0d1b11)!important}
 .hero h1,.trade-hero h1{font-size:clamp(36px,5vw,62px)!important}
 .hero-card,.trade-summary-card,.rankings-panel,.market-card,.trade-team-card,.trade-verdict-card{background:#13241a!important;border-color:#38563e!important}
