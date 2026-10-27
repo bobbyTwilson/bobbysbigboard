@@ -354,18 +354,19 @@
         grid-template-columns:154px minmax(0,1fr) auto!important;
         gap:19px!important;min-height:0!important;align-items:center!important
       }
+      /* Floating cutout like the scouting profiles: no rectangular photo card. */
       #profileView .bbb-redesign-player-art{
         position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;
-        width:154px;max-width:100%;height:169px;overflow:hidden;
-        border:1px solid #294d36;border-radius:12px;
-        background:radial-gradient(ellipse at 50% 43%,rgba(85,168,111,.10),transparent 62%),
-          linear-gradient(160deg,#10261a,#07160e 78%);
-        box-shadow:inset 0 0 0 1px #ffffff04,0 8px 21px #0003
+        width:154px;max-width:100%;height:169px;overflow:visible;
+        border:0!important;border-radius:0!important;background:transparent!important;
+        box-shadow:none!important
       }
-      #profileView .bbb-redesign-player-art:after{
-        content:"";position:absolute;z-index:2;inset:auto 0 0;height:11%;
-        background:linear-gradient(0deg,#07180f9e,transparent);pointer-events:none
+      #profileView .bbb-redesign-player-art:before{
+        content:"";position:absolute;z-index:0;inset:0 -16% -2%;
+        background:radial-gradient(ellipse 55% 56% at 50% 57%,rgba(92,186,117,.15) 0%,rgba(44,119,69,.07) 52%,transparent 80%);
+        pointer-events:none
       }
+      #profileView .bbb-redesign-player-art:after{display:none!important}
       #profileView .bbb-player-png{
         position:absolute;z-index:1;inset:auto 0 0;width:100%;height:104%;
         display:block;object-fit:contain;object-position:center bottom;
@@ -373,7 +374,7 @@
       }
       #profileView .bbb-player-png-fallback{
         display:grid;place-items:center;width:69px;height:69px;border-radius:50%;
-        background:#224a31;color:#b8f2c5;font-size:27px;font-weight:950
+        background:radial-gradient(circle,#244c31 0%,#153421 65%,transparent 72%);color:#b8f2c5;font-size:27px;font-weight:950
       }
       #profileView .bbb-redesign-identity{min-width:0}
       #profileView .bbb-player-art-hero .profile-title{
@@ -419,7 +420,7 @@
           grid-template-columns:88px minmax(0,1fr)!important;
           gap:10px!important;min-height:0!important
         }
-        #profileView .bbb-redesign-player-art{width:88px;height:116px;border-radius:9px}
+        #profileView .bbb-redesign-player-art{width:88px;height:116px}
         #profileView .bbb-player-png-fallback{width:49px;height:49px;font-size:20px}
         #profileView .bbb-player-art-hero .profile-title{font-size:clamp(27px,7vw,37px)!important}
         #profileView .bbb-player-art-hero .profile-meta{margin-top:6px!important}
