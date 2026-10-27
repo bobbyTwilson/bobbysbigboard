@@ -179,4 +179,40 @@ if(publicBuild){
 }else{
   await writeFile(root+'/robots.txt','User-agent: *\\nDisallow: /\\n'.replaceAll('\\n','\n'));
 }
+// Validate the FINAL preview output. Earlier QA checks run before this script
+// replaces the legacy index, so they cannot catch missing scouting assets.
+const qaErrors=[];
+const builtPreview=await readFile(root+'/index.html','utf8');
+const builtEngine=await readFile(root+'/dynasty-engine/index.html','utf8');
+for(const [label,doc] of [['preview',builtPreview],['dynasty engine',builtEngine]]){
+ if(!doc.includes('rel="icon"')||!doc.includes('href="/favicon.png"'))
+   qaErrors.push(label+': missing BBB browser favicon');
+ if(!doc.includes('rel="apple-touch-icon"'))
+   qaErrors.push(label+': missing BBB mobile bookmark icon');
+}
+const png=await readFile(root+'/favicon.png');
+if(png.length<1024||png.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')
+ qaErrors.push('BBB favicon is missing or invalid');
+if(!builtPreview.includes('src="/scouting-preview.js"'))qaErrors.push('Scouting app boot script missing');
+if(!builtPreview.includes('href="/scouting-styles.css"'))qaErrors.push('Consolidated scouting CSS missing');
+if(!builtEngine.includes('src="/movers-section.js"'))qaErrors.push('Market Movers script missing from dynasty engine');
+if(!builtEngine.includes('src="/profile-ui-redesign-preview.js"'))qaErrors.push('Player art/profile module missing from dynasty engine');
+const assetChecks=['scouting-preview.js','scouting-styles.css','scouting-profile-v5.js',
+ 'scouting-intelligence-v6.js','scouting-film-room-v1.js','scouting-samples.js',
+ 'scouting-headshots.json','bbb-core.js','movers-section.js',
+ 'profile-ui-redesign-preview.js','dynasty-engine/index.html'];
+for(const asset of assetChecks){
+ try{const bytes=await readFile(root+'/'+asset);if(bytes.length<50)qaErrors.push(asset+': unexpectedly empty')}
+ catch(error){qaErrors.push(asset+': missing ('+error.code+')')}
+}
+try{
+ const headshots=JSON.parse(await readFile(root+'/scouting-headshots.json','utf8'));
+ if(Object.keys(headshots.players||{}).length<450)qaErrors.push('Player PNG manifest coverage unexpectedly low');
+}catch(error){qaErrors.push('Player PNG manifest invalid: '+error.message)}
+if(!config.routes.some(route=>route.src.startsWith('/scouting/')))
+ qaErrors.push('Scouting profile deep-link routing missing');
+if(!config.routes.some(route=>route.src.includes('/dynasty/')))
+ qaErrors.push('Dynasty tools routing missing');
+if(qaErrors.length)throw new Error('Preview launch checks failed:\\n'+qaErrors.join('\\n'));
+console.log('Final preview QA passed: favicon, '+assetChecks.length+' app assets, player headshots, embedded movers/profile modules and deep-link routes.');
 console.log('Unified BBB scouting preview, green identity, dynamic ESPN headshots and integrated dynasty tools built. No production deployment.');
