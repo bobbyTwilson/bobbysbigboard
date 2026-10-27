@@ -207,7 +207,8 @@ if(!billingJs.includes('openStripePage(d.url,"checkout")')||!billingJs.includes(
 const authJs=await readFile(root+'/account-auth-cleanup.js','utf8');
 if(!authJs.includes('/auth/v1/recover')||!authJs.includes('handleAuthCallback'))
  qaErrors.push('Account confirmation/reset callbacks missing');
-if(!builtPreview.includes('checkoutSearch+"#"+which'))
+const scoutingJs=await readFile(root+'/scouting-preview.js','utf8');
+if(!scoutingJs.includes('checkoutSearch+"#"+which'))
  qaErrors.push('Stripe checkout return not forwarded to BBB+ embedded account');
 
 const assetChecks=['scouting-preview.js','scouting-styles.css','scouting-profile-v5.js',
