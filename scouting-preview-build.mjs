@@ -28,6 +28,34 @@ if(!engineWithMovers.includes(moverScript))throw new Error('Market Movers engine
 await writeFile(root+'/dynasty-engine/index.html',
   engineWithMovers.replace('</head>', '<meta name="robots" content="noindex,nofollow">'+styles+'</head>'));
 const publicBuild=process.env.VERCEL_ENV==='production';
+
+// Payment safety: the preview uses the live Supabase project. Until a truly
+// isolated Stripe sandbox and membership datastore are connected, do NOT allow
+// visitors (including the owner) to start a potentially live Checkout session.
+// This modifies only the preview build output, never the source or production.
+if(!publicBuild){
+ const billingPath=root+'/bbb-plus-v1.js';
+ let billingSource=await readFile(billingPath,'utf8');
+ const checkoutStart=billingSource.indexOf('  async function checkout(){');
+ const portalStart=billingSource.indexOf('  async function portal(){',checkoutStart);
+ const followingNav=billingSource.indexOf('  function nav(){',portalStart);
+ if(checkoutStart<0||portalStart<0||followingNav<0)
+   throw new Error('Could not safely isolate billing handlers for payment-free preview');
+ const blockedMessage='BBB+ PREVIEW: Real payments are disabled. No charge was attempted. A separate Stripe sandbox is required before testing checkout.';
+ billingSource=billingSource.slice(0,checkoutStart)+
+   '  // PREVIEW_PAYMENT_LOCK — No Stripe requests are made by these handlers.\n'+
+   '  async function checkout(){alert('+JSON.stringify(blockedMessage)+');}\n'+
+   '  async function portal(){alert('+JSON.stringify('BBB+ PREVIEW: Billing management is disabled here so no live subscription can be changed.')+');}\n'+
+   billingSource.slice(followingNav);
+ // Make the safety state clear before a member even clicks.
+ billingSource=billingSource.replace(":'JOIN BBB+'"," :'CHECKOUT DISABLED (PREVIEW)'");
+ if(billingSource.includes("'/functions/v1/bbb-plus-checkout'")||
+    billingSource.includes("'/functions/v1/bbb-plus-portal'"))
+   throw new Error('Preview still contains a live payment endpoint call');
+ await writeFile(billingPath,billingSource);
+ console.log('BBB+ preview payments locked: no live Stripe checkout or billing portal calls.');
+}
+
 let preview=await readFile('scouting-preview.html','utf8');
 // Preserve stylesheet cascade order while reducing six blocking CSS files to one.
 // Emit a single, cacheable asset; keep original assets for existing references.
@@ -201,9 +229,16 @@ if(!builtEngine.includes('src="/bbb-plus-v1.js"'))qaErrors.push('BBB+ membership
 if(!builtEngine.includes('src="/account-v1-preview.js"')||!builtEngine.includes('src="/account-auth-cleanup.js"'))
  qaErrors.push('BBB account and password-recovery modules missing from dynasty engine');
 const billingJs=await readFile(root+'/bbb-plus-v1.js','utf8');
-if(!billingJs.includes('openStripePage(d.url,"checkout")')||!billingJs.includes('openStripePage(d.url,"billing")')||
-   !billingJs.includes('browser.location.assign(target.href)'))
- qaErrors.push('Stripe checkout/portal must navigate the outer browser window');
+if(publicBuild){
+ if(!billingJs.includes('openStripePage(d.url,"checkout")')||!billingJs.includes('openStripePage(d.url,"billing")')||
+    !billingJs.includes('browser.location.assign(target.href)'))
+   qaErrors.push('Production Stripe checkout/portal must navigate the outer browser window');
+}else{
+ if(!billingJs.includes('PREVIEW_PAYMENT_LOCK')||
+    billingJs.includes("'/functions/v1/bbb-plus-checkout'")||
+    billingJs.includes("'/functions/v1/bbb-plus-portal'"))
+   qaErrors.push('PREVIEW PAYMENT LOCK FAILED: live Stripe endpoint reachable');
+}
 const authJs=await readFile(root+'/account-auth-cleanup.js','utf8');
 if(!authJs.includes('/auth/v1/recover')||!authJs.includes('handleAuthCallback'))
  qaErrors.push('Account confirmation/reset callbacks missing');
