@@ -1,4 +1,5 @@
 import {readFile,writeFile,copyFile,mkdir,readdir} from 'node:fs/promises';
+import {runInNewContext} from 'node:vm';
 const root='.vercel/output/static';
 const original=await readFile(root+'/index.html','utf8');
 await mkdir(root+'/dynasty-engine',{recursive:true});
@@ -255,6 +256,38 @@ if(!scoutingJs.includes('(?:access_token|error|error_description)'))
 
 if(!scoutingJs.includes('checkoutSearch+"#"+which'))
  qaErrors.push('Stripe checkout return not forwarded to BBB+ embedded account');
+
+// Exercise the actual shipped Film Room catalog code, not a duplicate
+// implementation. This catches unpublished, orphaned and duplicate videos
+// leaking into either the Film Room or individual player profiles.
+try {
+ const filmJs=await readFile(root+'/scouting-film-room-v1.js','utf8');
+ const isolated={};
+ runInNewContext(filmJs,{window:isolated,sessionStorage:{getItem:()=>null},document:{}},{timeout:1500});
+ const buildCatalog=isolated.BBB_FILM_ROOM?.catalog;
+ if(typeof buildCatalog!=='function')throw new Error('film catalog factory unavailable');
+ const profiles=[
+  {player_key:'qa-nfl',name:'QA NFL Player',team:'NYJ',pos:'RB',draft_year:2024},
+  {player_key:'qa-prospect',name:'QA Prospect',team:'',pos:'WR',draft_year:2028}
+ ];
+ const prospects=[{player_key:'qa-prospect',year:2028}];
+ const approved=[
+  {video_id:'abcDEFGHijk',player_key:'qa-nfl',title:'Published NFL Film',video_type:'rookie_film',editorial_status:'approved',created_at:'2026-10-20T00:00:00Z'},
+  {video_id:'XYZabcdef12',player_key:'qa-prospect',title:'Published Prospect Film',video_type:'prospect_breakdown',editorial_status:'approved',created_at:'2026-10-22T00:00:00Z'},
+  {video_id:'12345678901',player_key:'qa-nfl',title:'Private draft must stay hidden',editorial_status:'draft'},
+  {video_id:'short',player_key:'qa-nfl',title:'Bad ID must stay hidden',editorial_status:'approved'},
+  {video_id:'abcDEFGHijk',player_key:'qa-nfl',title:'Duplicate must stay hidden',editorial_status:'approved'},
+  {video_id:'abcdefghijkl',player_key:'qa-missing',title:'Orphan must stay hidden',editorial_status:'approved'}
+ ];
+ const catalog=buildCatalog(approved,[],profiles,prospects);
+ if(catalog.length!==2||
+    catalog[0].video_id!=='XYZabcdef12'||
+    catalog[0].category!=='prospect'||
+    catalog[1].video_id!=='abcDEFGHijk'||
+    catalog[1].category!=='nfl')
+   throw new Error('published film filtering, matching, sort or category failed');
+ console.log('Film Room behavioral QA passed: approved-only, player matching, ID/duplicate guards, categories, newest-first.');
+}catch(error){qaErrors.push('Film Room behavioral QA failed: '+error.message)}
 
 const assetChecks=['scouting-preview.js','scouting-styles.css','scouting-profile-v5.js',
  'scouting-intelligence-v6.js','scouting-film-room-v1.js','scouting-samples.js',
