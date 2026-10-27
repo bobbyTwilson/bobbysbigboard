@@ -249,10 +249,10 @@ if(!signupJs.includes("signup?redirect_to=\u0024{encodeURIComponent(callbackUrl)
 if(!authJs.includes('showAuthLinkError')||!authJs.includes("params.has('error_description')")||
    !authJs.includes('Never keep an invalid token'))
  qaErrors.push('Expired confirmation/password-reset links must clear tokens and show an error');
+const scoutingJs=await readFile(root+'/scouting-preview.js','utf8');
 if(!scoutingJs.includes('(?:access_token|error|error_description)'))
  qaErrors.push('Outer scouting routes must forward failed auth callbacks to account page');
 
-const scoutingJs=await readFile(root+'/scouting-preview.js','utf8');
 if(!scoutingJs.includes('checkoutSearch+"#"+which'))
  qaErrors.push('Stripe checkout return not forwarded to BBB+ embedded account');
 
