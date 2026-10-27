@@ -86,15 +86,16 @@ window.BBB_PROFILE_V5 = async function(ctx){
   '<div class="sp-tab-content" data-content="advanced" role="tabpanel"><div class="sp-panel" id="spAdvancedPanel"><div class="sp-muted">Loading advanced NFL production metrics…</div></div></div>'+
   '<div class="sp-tab-content" data-content="dynasty" role="tabpanel">'+dyn()+'</div>'+
   '</div></section>';
- window.BBB_FILM_ROOM.bindProfile(app,videos,esc);
- const tabs=Array.from(app.querySelectorAll(".sp-tab"));
- const compareSelector=app.querySelector("#spRadarCompare");
- if(compareSelector)compareSelector.addEventListener("change",()=>app.querySelector(".sp-v7-radar")?.classList.toggle("sp-compare-on",compareSelector.value==="peers"));
+ const profileRoot=app.querySelector(".sp-profile");
+ window.BBB_FILM_ROOM.bindProfile(profileRoot,videos,esc);
+ const tabs=Array.from(profileRoot.querySelectorAll(".sp-tab"));
+ const compareSelector=profileRoot.querySelector("#spRadarCompare");
+ if(compareSelector)compareSelector.addEventListener("change",()=>profileRoot.querySelector(".sp-v7-radar")?.classList.toggle("sp-compare-on",compareSelector.value==="peers"));
  const validTabs=new Set(["overview","traits","athletic","film","stats","advanced","dynasty"]);
  const showTab=tab=>{
   if(!validTabs.has(tab))return;
   tabs.forEach(el=>{const on=el.dataset.tab===tab;el.classList.toggle("active",on);el.setAttribute("aria-selected",String(on));el.tabIndex=on?0:-1});
-  app.querySelectorAll(".sp-tab-content").forEach(el=>{const on=el.dataset.content===tab;el.classList.toggle("active",on);el.hidden=!on});
+  profileRoot.querySelectorAll(".sp-tab-content").forEach(el=>{const on=el.dataset.content===tab;el.classList.toggle("active",on);el.hidden=!on});
  };
  const activateTab=(tab,updateUrl=true)=>{
   if(!validTabs.has(tab))return;
@@ -117,20 +118,20 @@ window.BBB_PROFILE_V5 = async function(ctx){
    event.preventDefault();tabs[next].focus();activateTab(tabs[next].dataset.tab);
   });
  });
- app.querySelectorAll(".sp-tab-content").forEach(el=>{
+ profileRoot.querySelectorAll(".sp-tab-content").forEach(el=>{
   el.id="sp-panel-"+el.dataset.content;
   el.setAttribute("aria-labelledby","sp-tab-"+el.dataset.content);
  });
- app.querySelectorAll("[data-profile-tab]").forEach(button=>button.addEventListener("click",()=>{
+ profileRoot.querySelectorAll("[data-profile-tab]").forEach(button=>button.addEventListener("click",()=>{
   activateTab(button.dataset.profileTab);
-  app.querySelector(".sp-tabs")?.scrollIntoView({behavior:window.matchMedia?.("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
+  profileRoot.querySelector(".sp-tabs")?.scrollIntoView({behavior:window.matchMedia?.("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
  }));
  let loaded=false;
  let advancedPromise=null,advancedResult=null,rushingPeersLoaded=false;
  const renderAdvanced=(peers=[])=>{
   if(!advancedResult)return;
   const {row,receivingPeers,rushing}=advancedResult;
-  const quick=app.querySelector("#spOverviewAdvanced"),full=app.querySelector("#spAdvancedPanel");
+  const quick=profileRoot.querySelector("#spOverviewAdvanced"),full=profileRoot.querySelector("#spAdvancedPanel");
   if(quick)quick.innerHTML=p.pos==="RB"&&rushing?V6.rushingHTML(rushing,esc,true):V6.advancedHTML(row,esc,true,receivingPeers,p.pos);
   if(full)full.innerHTML=(p.pos==="RB"&&rushing?V6.rushingHTML(rushing,esc,false,peers):"")+
     (row?'<section class="sp-advanced-receiving">'+V6.advancedHTML(row,esc,false,receivingPeers,p.pos)+'</section>':'<div class="sp-no-data">Receiving advanced data is not currently recorded for this player.</div>');
@@ -138,7 +139,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
  const loadAdvanced=()=>{
   if(advancedPromise)return advancedPromise;
   advancedPromise=(async()=>{
-  const quick=app.querySelector("#spOverviewAdvanced"),full=app.querySelector("#spAdvancedPanel");
+  const quick=profileRoot.querySelector("#spOverviewAdvanced"),full=profileRoot.querySelector("#spAdvancedPanel");
   try{
    const results=await Promise.all([
     bbbDb("site_player_advanced_season","select=*&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=1").catch(e=>{console.warn("Receiving metrics unavailable",e);return []}),
@@ -164,7 +165,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
   return advancedPromise;
  };
  const loadOverviewProduction=async()=>{
-  const target=app.querySelector("#spOverviewProduction");
+  const target=profileRoot.querySelector("#spOverviewProduction");
   if(!target)return;
   try{
    const years=await bbbDb("site_player_season_stats","select=season,games,targets,receptions,receiving_yards,receiving_tds,carries,rushing_yards,rushing_tds,completions,attempts,passing_yards,passing_tds&player_key=eq."+encodeURIComponent(p.player_key)+"&order=season.desc&limit=1");
@@ -212,7 +213,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
  loadAdvanced();
  const loadStats=async()=>{
   if(loaded)return;loaded=true;
-  const mount=app.querySelector("#spStats"),weeks=app.querySelector("#spWeeks");
+  const mount=profileRoot.querySelector("#spStats"),weeks=profileRoot.querySelector("#spWeeks");
   if(!mount)return;
   const fmt=(v,d=0)=>v==null||v===""?"—":Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
   const pos=p.pos||"WR",isQB=pos==="QB",isRB=pos==="RB";
@@ -277,7 +278,10 @@ window.BBB_PROFILE_V5 = async function(ctx){
  };
  // Deep links and externally edited hashes should resolve to the same accessible panel.
  const syncLocationTab=()=>{const tab=location.hash.replace(/^#/,"");if(validTabs.has(tab))activateTab(tab,false)};
+ // Do not retain stale profile tab handlers after navigating to another player.
+ window.BBB_SCOUTING_CLEANUP?.();
  window.addEventListener("hashchange",syncLocationTab);
+ window.BBB_SCOUTING_CLEANUP=()=>window.removeEventListener("hashchange",syncLocationTab);
  syncLocationTab();
  if(!location.hash)showTab("overview");
 };
