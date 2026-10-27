@@ -111,7 +111,26 @@ function bbbInjectMoversUi(){
   document.addEventListener('click',e=>{const card=e.target.closest('.bbb-mover-row,.bbb-mover-card');if(!card)return;const m=bbbMovers.find(x=>x.player_key===card.dataset.playerKey);if(m&&typeof profileGo==='function')profileGo(m.name)});
 }
 async function bbbLoadMovers(){
-  const data=await bbbDb('site_movers','select=*');bbbMovers=data||[];bbbRenderMoversHome();bbbRenderMoversPage();
+  const data=await bbbDb('site_movers','select=*');
+  if(!Array.isArray(data))throw new Error('Expected player movement records');
+  bbbMovers=data;
+  bbbRenderMoversHome();
+  bbbRenderMoversPage();
+}
+function bbbMoversError(error){
+  console.error('BBB movers:',error);
+  const message='<div class="bbb-mover-empty page" role="alert">Market Movers could not load player data. <button type="button" id="bbbMoverRetry" class="bbb-mover-more" style="display:inline-block;margin:10px 0 0">Retry Market Movers</button></div>';
+  const grid=document.querySelector('#bbbMoverGrid');
+  if(grid){
+    grid.innerHTML=message;
+    grid.querySelector('#bbbMoverRetry')?.addEventListener('click',()=>{grid.innerHTML='<div class="bbb-mover-empty page" role="status">Loading player movement…</div>';bbbLoadMovers().catch(bbbMoversError)});
+  }
+  const home=document.querySelector('#bbbMoversHomeGrid');
+  if(home)home.innerHTML='<div class="bbb-mover-empty">Movement data is temporarily unavailable.</div>';
+  const count=document.querySelector('#bbbMoverCount');
+  if(count)count.textContent='Unable to load player rankings';
+  const note=document.querySelector('#bbbMoverNotice');
+  if(note)note.textContent='Unable to reach the Market Movers feed. Please retry.';
 }
 function bbbMoversRoute(){
   const show=location.hash==='#movers'&&!location.pathname.startsWith('/player/');
@@ -119,6 +138,12 @@ function bbbMoversRoute(){
   if(show){['rankingsView','rookieView','prospectView','tradeView','profileView','updatesView'].forEach(id=>document.querySelector('#'+id)?.classList.add('hide'));window.scrollTo(0,0)}
 }
 function bbbMoversInit(){
-  bbbInjectMoversUi();bbbLoadMovers().catch(e=>{console.error('BBB movers:',e);const h=document.querySelector('#bbbMoversHomeGrid');if(h)h.innerHTML='<div class="bbb-mover-empty">Board movement is temporarily unavailable.</div>'});bbbMoversRoute();window.addEventListener('hashchange',()=>setTimeout(bbbMoversRoute,0));window.addEventListener('popstate',()=>setTimeout(bbbMoversRoute,0));
+  bbbInjectMoversUi();
+  const grid=document.querySelector('#bbbMoverGrid');
+  if(grid)grid.innerHTML='<div class="bbb-mover-empty page" role="status">Loading player movement…</div>';
+  bbbLoadMovers().catch(bbbMoversError);
+  bbbMoversRoute();
+  window.addEventListener('hashchange',()=>setTimeout(bbbMoversRoute,0));
+  window.addEventListener('popstate',()=>setTimeout(bbbMoversRoute,0));
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bbbMoversInit);else bbbMoversInit();
