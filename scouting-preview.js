@@ -249,7 +249,11 @@ function legacyView(key){
  // access_token in the fragment. Give the existing auth handler that fragment,
  // then remove it from the public address bar immediately.
  const tokenHash=which==="account"&&/(?:^#|&)access_token=/.test(location.hash)?location.hash:"";
- const embeddedAuthUrl="/dynasty-engine/"+(tokenHash?location.search+tokenHash:"#"+which);
+ // The outer page is a shell: forward Stripe's return result so the original
+ // BBB+ module can confirm subscription activation after checkout completes.
+ const checkoutResult=which==="plus"?new URLSearchParams(location.search).get("checkout"):"";
+ const checkoutSearch=["success","canceled"].includes(checkoutResult)?"?checkout="+checkoutResult:"";
+ const embeddedAuthUrl="/dynasty-engine/"+(tokenHash?location.search+tokenHash:checkoutSearch+"#"+which);
  setTitle(names[which]);
  const isLegal=["terms","privacy","billing"].includes(which);
  app.innerHTML='<section class="section bbb-member-section"><div class="wrap">'+
