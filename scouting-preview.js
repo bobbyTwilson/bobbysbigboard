@@ -194,16 +194,47 @@ function dynastyTool(key){
    }catch(error){existing.src="/dynasty-engine/#"+labels[which]}
    return;
  }
- app.innerHTML='<section class="section"><div class="wrap">'+section("BBB DYNASTY TOOLKIT",names[which],"Rankings, trades and dynasty context in one connected BBB experience.")+'<div class="dynastyBack">'+Object.entries(names).map(([slug,name])=>'<a class="dynastyTab '+(slug===which?'active':'')+'" href="/dynasty/'+slug+'">'+esc(name)+'</a>').join("")+'</div><div style="margin-top:23px"><iframe class="dynastyFrame" id="dynastyToolFrame" title="BBB '+esc(names[which])+'" src="/dynasty-engine/#'+labels[which]+'" loading="eager"></iframe></div></div></section>';
+ app.innerHTML='<section class="section"><div class="wrap">'+section("BBB DYNASTY TOOLKIT",names[which],"Rankings, trades and dynasty context in one connected BBB experience.")+'<div class="dynastyBack">'+Object.entries(names).map(([slug,name])=>'<a class="dynastyTab '+(slug===which?'active':'')+'" href="/dynasty/'+slug+'">'+esc(name)+'</a>').join("")+'</div><div style="margin-top:23px"><iframe class="dynastyFrame" id="dynastyToolFrame" title="BBB '+esc(names[which])+'" src="/dynasty-engine/#'+labels[which]+'" scrolling="no" loading="eager"></iframe></div></div></section>';
  const iframe=document.getElementById("dynastyToolFrame");
  iframe.addEventListener("load",()=>{
    try{
-    const inner=iframe.contentDocument;
-    if(!inner)return;
-    let scheduled=false;
-    const resize=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;iframe.style.height=Math.max(830,inner.documentElement.scrollHeight+55,inner.body?.scrollHeight+55)+"px"})};
+    const inner=iframe.contentDocument,win=inner?.defaultView;
+    if(!inner?.body||!win)return;
+    let scheduled=false,lastHeight=0;
+    let observer=null;
+    const resize=()=>{
+      if(scheduled)return;
+      scheduled=true;
+      requestAnimationFrame(()=>{
+        scheduled=false;
+        if(!iframe.isConnected){
+          observer?.disconnect();
+          window.removeEventListener("resize",resize);
+          win.removeEventListener("hashchange",resize);
+          win.removeEventListener("popstate",resize);
+          return;
+        }
+        // ScrollHeight includes the iframe viewport itself. Adding 55px to
+        // that measurement created a resize feedback loop and flashing bars.
+        // Measure the BOTTOM of actual visible content instead, so an iframe
+        // height change cannot make the next target height grow by itself.
+        let bottom=0;
+        for(const el of inner.body.children){
+          if(!el.getClientRects().length)continue;
+          const position=win.getComputedStyle(el).position;
+          if(position==="fixed"||position==="absolute")continue;
+          bottom=Math.max(bottom,el.getBoundingClientRect().bottom+win.scrollY);
+        }
+        const target=Math.max(820,Math.ceil(bottom+20));
+        if(Math.abs(target-lastHeight)<3)return;
+        lastHeight=target;
+        iframe.style.height=target+"px";
+      });
+    };
     resize();
-    if(window.ResizeObserver){const ro=new ResizeObserver(resize);ro.observe(inner.body);}
+    if(win.ResizeObserver){observer=new win.ResizeObserver(resize);observer.observe(inner.body);}
+    win.addEventListener("hashchange",resize);
+    win.addEventListener("popstate",resize);
     window.addEventListener("resize",resize,{passive:true});
    }catch(err){console.warn("Dynasty frame height fallback",err)}
  });
