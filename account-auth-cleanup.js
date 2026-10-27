@@ -46,12 +46,30 @@
 
   async function handleAuthCallback(){
     const raw=location.hash.startsWith('#')?location.hash.slice(1):'';
-    if(!raw.includes('access_token='))return false;
+    if(!raw.includes('access_token=')){
+      const params=new URLSearchParams(raw);
+      if(!params.has('error')&&!params.has('error_description'))return false;
+      const message=params.get('error_description')||'The authentication link was not accepted.';
+      setAccountRouteWithoutTokens();
+      bbbAccountRender();
+      bbbAccountRoute();
+      showAuthLinkError(message.length<240?message:'The authentication link was not accepted.');
+      return true;
+    }
     const params=new URLSearchParams(raw);
     const token=params.get('access_token');
     if(!token)return false;
     const type=params.get('type')||'';
-    const user=await getUser(token);
+    let user=null;
+    try{user=await getUser(token)}catch{}
+    // Never keep an invalid token in the embedded page's address bar.
+    if(!user||!params.get('refresh_token')){
+      setAccountRouteWithoutTokens();
+      bbbAccountRender();
+      bbbAccountRoute();
+      showAuthLinkError('This email link has expired or is invalid. Request a new link or sign in again.');
+      return true;
+    }
     const session=sessionFromHash(params,user);
 
     if(type==='recovery'||new URL(location.href).searchParams.get(RESET_QUERY)==='1'){
@@ -73,6 +91,17 @@
       return true;
     }
     return false;
+  }
+
+  function showAuthLinkError(message){
+    const view=bbbAccountEnsureView();
+    const card=view.querySelector('.bbb-auth-card');
+    if(!card)return;
+    const note=document.createElement('p');
+    note.className='bbb-auth-status error';
+    note.setAttribute('role','alert');
+    note.textContent=message;
+    card.prepend(note);
   }
 
   function showOneTimeBanner(message){
