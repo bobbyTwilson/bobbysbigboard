@@ -245,8 +245,23 @@ if(!authJs.includes('/auth/v1/recover')||!authJs.includes('handleAuthCallback'))
  qaErrors.push('Account confirmation/reset callbacks missing');
 const signupJs=await readFile(root+'/account-v1-preview.js','utf8');
 if(!signupJs.includes("signup?redirect_to=\u0024{encodeURIComponent(callbackUrl)}")||
-   !signupJs.includes("location.origin+'/account'"))
- qaErrors.push('Signup confirmation must return to the requesting BBB host');
+   !signupJs.includes("bbbAccountReturnOrigin()+'/account'"))
+ qaErrors.push('Signup confirmation must use stable BBB callback URL');
+if(!authJs.includes('bbbAccountReturnOrigin()}/account?'))
+ qaErrors.push('Password resets must use stable BBB account callback URL');
+try{
+ const a=signupJs.indexOf('const BBB_PREVIEW_AUTH_BRANCH=');
+ const b=signupJs.indexOf('let bbbAccountSession=',a);
+ if(a<0||b<a)throw new Error('Account return-origin helper missing');
+ const callbackCode=signupJs.slice(a,b)+'; bbbAccountReturnOrigin()';
+ const stable='https://bobbys-big-board-v2-git-preview-scou-92f477-bobbywilsonbtw-2065.vercel.app';
+ const originFor=(hostname,origin)=>runInNewContext(callbackCode,{location:{hostname,origin}},{timeout:1000});
+ if(originFor('bobbys-big-board-v2-ihwj4i4gi-bobbywilsonbtw-2065.vercel.app','https://bobbys-big-board-v2-ihwj4i4gi-bobbywilsonbtw-2065.vercel.app')!==stable||
+    originFor('bobbys-big-board-v2-git-preview-scou-92f477-bobbywilsonbtw-2065.vercel.app',stable)!==stable||
+    originFor('bobbysbigboard.com','https://bobbysbigboard.com')!=='https://bobbysbigboard.com')
+   throw new Error('Stable preview and live-domain redirect selection failed');
+ console.log('Auth redirect behavioral QA passed: immutable preview branch URL and official production domain.');
+}catch(error){qaErrors.push('Account redirect behavioral QA failed: '+error.message)}
 if(!authJs.includes('showAuthLinkError')||!authJs.includes("params.has('error_description')")||
    !authJs.includes('Never keep an invalid token'))
  qaErrors.push('Expired confirmation/password-reset links must clear tokens and show an error');
