@@ -102,7 +102,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
   showTab(tab);
   if(updateUrl&&location.hash!=="#"+tab)history.replaceState(history.state,"",location.pathname+location.search+"#"+tab);
   if(tab==="stats")loadStats();
-  if(tab==="advanced")loadRushingPeers();
+  if(tab==="advanced")loadPeerComparisons();
  };
  tabs.forEach((button,index)=>{
   button.id="sp-tab-"+button.dataset.tab;
@@ -127,7 +127,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
   profileRoot.querySelector(".sp-tabs")?.scrollIntoView({behavior:window.matchMedia?.("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
  }));
  let loaded=false;
- let advancedPromise=null,advancedResult=null,rushingPeersLoaded=false;
+ let advancedPromise=null,advancedResult=null,peerPromise=null;
  const renderAdvanced=(peers=[])=>{
   if(!advancedResult)return;
   const {row,receivingPeers,rushing}=advancedResult;
@@ -147,14 +147,9 @@ window.BBB_PROFILE_V5 = async function(ctx){
    ]);
    const row=results[0]?.[0]||null;
    const rushing=p.pos==="RB"?V6.rushingAggregate(results[1]):null;
-   // Fetch only the existing receiving comparison data here; rush peer rows wait for the Advanced tab.
-   let receivingPeers=[];
-   if(row)try{
-    const all=await bbbDb("site_player_advanced_season","select=*&season=eq."+encodeURIComponent(row.season)+"&limit=1000");
-    const positions=new Map((profiles||[]).map(x=>[x.player_key,x.pos]));
-    receivingPeers=all.filter(x=>positions.get(x.player_key)===p.pos);
-   }catch(e){console.warn("Receiving peers unavailable",e)}
-   advancedResult={row,rushing,receivingPeers};
+   // The overview needs only this player's record. Full position peers are
+   // expensive and load on demand when Advanced Stats is opened.
+   advancedResult={row,rushing,receivingPeers:[]};
    renderAdvanced();
   }catch(e){
    console.warn("Advanced metrics temporarily unavailable",e);
@@ -187,28 +182,44 @@ window.BBB_PROFILE_V5 = async function(ctx){
  };
  loadOverviewProduction();
 
- const loadRushingPeers=async()=>{
-  await loadAdvanced();
-  if(p.pos!=="RB"||!advancedResult?.rushing||rushingPeersLoaded)return;
-  rushingPeersLoaded=true;
-  const year=advancedResult.rushing.season,all=[];
-  try{
-   // PostgREST has a per-response row cap. Page until complete; never rank an incomplete peer sample.
-   for(let offset=0;offset<6000;offset+=1000){
-    const page=await bbbDb("player_weekly_stats","select=player_key,season,week,carries,rushing_yards,rushing_tds,targets,rushing_first_downs,rushing_epa,offense_snap_pct,updated_at&position=eq.RB&season=eq."+encodeURIComponent(year)+"&order=player_key.asc,week.asc&limit=1000&offset="+offset);
-    all.push(...page);
-    if(page.length<1000)break;
-    if(offset===5000)throw Error("Rushing peer dataset exceeded comparison limit");
-   }
-   const byPlayer=new Map();
-   for(const record of all){
-    const key=record.player_key;if(!key)continue;
-    if(!byPlayer.has(key))byPlayer.set(key,[]);
-    byPlayer.get(key).push(record);
-   }
-   const aggregates=[...byPlayer.values()].map(rows=>V6.rushingAggregate(rows)).filter(Boolean);
-   renderAdvanced(aggregates);
-  }catch(e){console.warn("Advanced rushing comparisons unavailable",e);renderAdvanced()}
+ const loadPeerComparisons=()=>{
+  if(peerPromise)return peerPromise;
+  peerPromise=(async()=>{
+    await loadAdvanced();
+    if(!advancedResult)return;
+    const {row,rushing}=advancedResult;
+    // Position comparisons require all players' positions; the initial profile
+    // intentionally loads only the selected player, so resolve peers lazily.
+    if(row)try{
+      const [all,positions]=await Promise.all([
+        bbbDb("site_player_advanced_season","select=*&season=eq."+encodeURIComponent(row.season)+"&limit=1000"),
+        bbbDb("site_profiles","select=player_key,pos&limit=1000")
+      ]);
+      const byPosition=new Map(positions.map(x=>[x.player_key,x.pos]));
+      advancedResult.receivingPeers=all.filter(x=>byPosition.get(x.player_key)===p.pos);
+      renderAdvanced();
+    }catch(error){console.warn("Advanced receiving peers unavailable",error)}
+    if(p.pos!=="RB"||!rushing)return;
+    const year=rushing.season,all=[];
+    try{
+      // Same validated paginated peer sample as before, but only on this tab.
+      for(let offset=0;offset<6000;offset+=1000){
+        const page=await bbbDb("player_weekly_stats","select=player_key,season,week,carries,rushing_yards,rushing_tds,targets,rushing_first_downs,rushing_epa,offense_snap_pct,updated_at&position=eq.RB&season=eq."+encodeURIComponent(year)+"&order=player_key.asc,week.asc&limit=1000&offset="+offset);
+        all.push(...page);
+        if(page.length<1000)break;
+        if(offset===5000)throw Error("Rushing peer dataset exceeded comparison limit");
+      }
+      const byPlayer=new Map();
+      for(const record of all){
+        const key=record.player_key;if(!key)continue;
+        if(!byPlayer.has(key))byPlayer.set(key,[]);
+        byPlayer.get(key).push(record);
+      }
+      const aggregates=[...byPlayer.values()].map(rows=>V6.rushingAggregate(rows)).filter(Boolean);
+      renderAdvanced(aggregates);
+    }catch(error){console.warn("Advanced rushing peers unavailable",error);renderAdvanced()}
+  })();
+  return peerPromise;
  };
  loadAdvanced();
  const loadStats=async()=>{
