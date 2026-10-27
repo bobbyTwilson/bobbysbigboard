@@ -15,7 +15,16 @@ a:hover,.rank-cell{color:#8bdfa0!important}
 .shell{width:min(1150px,calc(100% - 22px))!important}
 @media(max-width:650px){.shell{width:calc(100% - 16px)!important}.section{padding:24px 0!important}.hero{padding:19px 0!important}}
 </style>`;
-await writeFile(root+'/dynasty-engine/index.html',original.replace('</head>', '<meta name="robots" content="noindex,nofollow">'+styles+'</head>'));
+// The legacy build copies movers-section.js but does not include its script in
+// HTML. Load it in the preview's embedded engine after BBB core and other
+// bundled scripts so #movers initializes on direct loads and tab navigation.
+const moverScript='<script src="/movers-section.js"></script>';
+const engineWithMovers=original.includes('src="/movers-section.js"')
+  ?original
+  :original.replace('</body>',moverScript+'</body>');
+if(!engineWithMovers.includes(moverScript))throw new Error('Market Movers engine script missing');
+await writeFile(root+'/dynasty-engine/index.html',
+  engineWithMovers.replace('</head>', '<meta name="robots" content="noindex,nofollow">'+styles+'</head>'));
 const publicBuild=process.env.VERCEL_ENV==='production';
 let preview=await readFile('scouting-preview.html','utf8');
 // Preserve stylesheet cascade order while reducing six blocking CSS files to one.
