@@ -346,68 +346,99 @@
         #profileView .bbb-redesign-hero-row{grid-template-columns:64px minmax(0,1fr)}
       }
 
-      /* Dynasty player hero: transparent player PNG as the visual focus. */
+      /* Compact dynasty hero — the PNG leads, not its backdrop. */
+      #profileView .profile-hero{padding:14px 0 11px!important}
+      #profileView .profile-back{margin-bottom:8px!important}
+      #profileView .bbb-profile-atglance{margin-top:14px!important}
       #profileView .bbb-player-art-hero{
-        grid-template-columns:210px minmax(0,1fr) auto!important;
-        gap:26px!important;min-height:230px;align-items:center!important
+        grid-template-columns:154px minmax(0,1fr) auto!important;
+        gap:19px!important;min-height:0!important;align-items:center!important
       }
       #profileView .bbb-redesign-player-art{
         position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;
-        width:100%;height:230px;overflow:hidden;border:1px solid #366044;border-radius:16px;
-        background:radial-gradient(ellipse at 50% 50%,#2b6c3d77,transparent 65%),
-          linear-gradient(155deg,#193b26,#07170e 70%);
-        box-shadow:inset 0 0 0 1px #ffffff06,0 15px 40px #0005
+        width:154px;max-width:100%;height:169px;overflow:hidden;
+        border:1px solid #294d36;border-radius:12px;
+        background:radial-gradient(ellipse at 50% 43%,rgba(85,168,111,.10),transparent 62%),
+          linear-gradient(160deg,#10261a,#07160e 78%);
+        box-shadow:inset 0 0 0 1px #ffffff04,0 8px 21px #0003
       }
       #profileView .bbb-redesign-player-art:after{
-        content:"";position:absolute;z-index:2;inset:auto 0 0;height:20%;
-        background:linear-gradient(0deg,#0a1c11ba,transparent);pointer-events:none
+        content:"";position:absolute;z-index:2;inset:auto 0 0;height:11%;
+        background:linear-gradient(0deg,#07180f9e,transparent);pointer-events:none
       }
       #profileView .bbb-player-png{
-        position:absolute;z-index:1;inset:auto 0 0;width:100%;height:108%;
+        position:absolute;z-index:1;inset:auto 0 0;width:100%;height:104%;
         display:block;object-fit:contain;object-position:center bottom;
-        filter:drop-shadow(0 10px 13px #0006)
+        filter:drop-shadow(0 5px 8px #0004)
       }
       #profileView .bbb-player-png-fallback{
-        display:grid;place-items:center;width:94px;height:94px;border-radius:50%;
-        background:#285539;color:#b8f2c5;font-size:35px;font-weight:950
+        display:grid;place-items:center;width:69px;height:69px;border-radius:50%;
+        background:#224a31;color:#b8f2c5;font-size:27px;font-weight:950
       }
       #profileView .bbb-redesign-identity{min-width:0}
+      #profileView .bbb-player-art-hero .profile-title{
+        font-size:clamp(35px,4.1vw,55px)!important;line-height:.96!important
+      }
+      #profileView .bbb-player-art-hero .profile-meta{margin-top:8px!important}
       #profileView .bbb-redesign-team-logo{
         display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;
-        width:auto!important;max-width:100%!important;height:auto!important;min-height:48px!important;
-        gap:9px!important;margin-top:16px!important;padding:6px 12px!important;
-        border:1px solid #43664a!important;border-radius:12px!important;
-        background:#142e1d!important;box-shadow:none!important
+        width:auto!important;max-width:100%!important;height:auto!important;min-height:38px!important;
+        gap:7px!important;margin-top:10px!important;padding:4px 9px!important;
+        border:1px solid #385740!important;border-radius:9px!important;
+        background:#12291c!important;box-shadow:none!important
       }
-      #profileView .bbb-redesign-team-logo img{width:37px!important;height:37px!important;object-fit:contain}
+      #profileView .bbb-redesign-team-logo img{width:29px!important;height:29px!important;object-fit:contain}
       #profileView .bbb-redesign-team-logo .bbb-player-team-label{
-        color:#d7eedb;font-size:11px;font-weight:900;letter-spacing:.1em
+        color:#d7eedb;font-size:10px;font-weight:900;letter-spacing:.07em
       }
       #profileView .bbb-redesign-team-logo .bbb-player-team-fallback{
-        display:grid;place-items:center;width:32px;height:32px;background:#214c32;
-        border:1px solid #426c4c;border-radius:6px;font-size:11px;font-weight:900
+        display:grid;place-items:center;width:27px;height:27px;background:#21432d;
+        border:1px solid #365c40;border-radius:6px;font-size:10px;font-weight:900
       }
-      #profileView .bbb-player-art-hero .profile-title{font-size:clamp(43px,4.9vw,69px)!important}
+      #profileView .bbb-player-art-hero .bbb-redesign-hero-actions{gap:8px}
+      #profileView .bbb-player-art-hero .bbb-redesign-hero-actions .bbb-profile-watch,
+      #profileView .bbb-player-art-hero .bbb-redesign-compare{
+        min-height:39px;padding:0 14px;font-size:10px
+      }
       @media(max-width:980px){
-        #profileView .bbb-player-art-hero{grid-template-columns:148px minmax(0,1fr)!important;gap:18px!important;min-height:190px}
-        #profileView .bbb-redesign-player-art{height:190px}
-        #profileView .bbb-player-art-hero .bbb-redesign-hero-actions{grid-column:2!important;justify-content:flex-start!important}
+        #profileView .bbb-player-art-hero{
+          grid-template-columns:120px minmax(0,1fr)!important;
+          gap:14px!important;min-height:0!important
+        }
+        #profileView .bbb-redesign-player-art{width:120px;height:138px}
+        #profileView .bbb-player-art-hero .bbb-redesign-hero-actions{
+          grid-column:2!important;justify-content:flex-start!important
+        }
         #profileView .bbb-player-art-hero .bbb-redesign-hero-actions>*{flex:0 1 auto}
       }
       @media(max-width:640px){
-        #profileView .bbb-player-art-hero{grid-template-columns:108px minmax(0,1fr)!important;gap:11px!important;min-height:150px}
-        #profileView .bbb-redesign-player-art{height:148px;border-radius:11px}
-        #profileView .bbb-player-png-fallback{width:65px;height:65px;font-size:24px}
-        #profileView .bbb-player-art-hero .profile-title{font-size:clamp(29px,8vw,41px)!important}
-        #profileView .bbb-redesign-team-logo{min-height:34px!important;margin-top:9px!important;gap:6px!important;padding:4px 8px!important;border-radius:8px!important}
-        #profileView .bbb-redesign-team-logo img{width:25px!important;height:25px!important}
+        #profileView .profile-hero{padding:11px 0 8px!important}
+        #profileView .profile-back{margin-bottom:7px!important}
+        #profileView .bbb-profile-atglance{margin-top:11px!important}
+        #profileView .bbb-player-art-hero{
+          grid-template-columns:88px minmax(0,1fr)!important;
+          gap:10px!important;min-height:0!important
+        }
+        #profileView .bbb-redesign-player-art{width:88px;height:116px;border-radius:9px}
+        #profileView .bbb-player-png-fallback{width:49px;height:49px;font-size:20px}
+        #profileView .bbb-player-art-hero .profile-title{font-size:clamp(27px,7vw,37px)!important}
+        #profileView .bbb-player-art-hero .profile-meta{margin-top:6px!important}
+        #profileView .bbb-redesign-team-logo{
+          min-height:30px!important;margin-top:7px!important;gap:5px!important;
+          padding:3px 7px!important;border-radius:7px!important
+        }
+        #profileView .bbb-redesign-team-logo img{width:23px!important;height:23px!important}
         #profileView .bbb-redesign-team-logo .bbb-player-team-label{font-size:9px}
-        #profileView .bbb-player-art-hero .bbb-redesign-hero-actions{grid-column:1/-1!important;justify-content:stretch!important}
+        #profileView .bbb-player-art-hero .bbb-redesign-hero-actions{
+          grid-column:1/-1!important;justify-content:stretch!important;margin-top:0
+        }
         #profileView .bbb-player-art-hero .bbb-redesign-hero-actions>*{flex:1}
+        #profileView .bbb-player-art-hero .bbb-redesign-hero-actions .bbb-profile-watch,
+        #profileView .bbb-player-art-hero .bbb-redesign-compare{min-height:36px;padding:0 10px}
       }
       @media(max-width:390px){
-        #profileView .bbb-player-art-hero{grid-template-columns:92px minmax(0,1fr)!important;gap:9px!important}
-        #profileView .bbb-redesign-player-art{height:136px}
+        #profileView .bbb-player-art-hero{grid-template-columns:80px minmax(0,1fr)!important;gap:9px!important}
+        #profileView .bbb-redesign-player-art{width:80px;height:108px}
       }
     `;
     document.head.appendChild(style);
