@@ -58,16 +58,25 @@ function hydrateHome(){
  document.getElementById("homeFilmCards").innerHTML=filmList().slice(0,3).map(videoCard).join("");
 }
 function directory(isDraft){
- isDraftMode=!!isDraft;position="ALL";filter="";limit=40;draftYearFilter="2027";window.BBB_SORT=isDraft?"grade":"featured";setTitle(isDraft?"NFL Draft Hub":"Player Directory");
+ isDraftMode=!!isDraft;position="ALL";filter="";limit=40;window.BBB_SORT=isDraft?"grade":"featured";setTitle(isDraft?"NFL Draft Hub":"Player Directory");
+ // Build the class list from BBB's actual graded years. Retain 2028 for future reports.
+ const recordedYears=D.prospects.map(g=>Number(g.year)).filter(y=>Number.isInteger(y)&&y>=2000&&y<=2100);
+ const firstClass=recordedYears.length?Math.min(...recordedYears):2027;
+ const lastClass=Math.max(2028,...recordedYears);
+ const classYears=Array.from({length:lastClass-firstClass+1},(_,i)=>lastClass-i);
+ const selectedClass=isDraft?new URLSearchParams(location.search).get("class"):null;
+ draftYearFilter=selectedClass==="ALL"||classYears.includes(Number(selectedClass))&&selectedClass!==null?selectedClass:"2027";
  const prospects=isDraft?D.prospects.map(g=>D.profiles.find(p=>p.player_key===g.player_key)||{player_key:g.player_key,name:g.name,pos:g.pos,team:"",college:""}):D.profiles;
  window.BBB_DIR=prospects.slice();
  app.innerHTML='<section class="section bbb-directory-page"><div class="wrap">'+
  section(isDraft?"PROSPECT SCOUTING":"THE PLAYER DATABASE",isDraft?"NFL Draft prospects.":"Know the player.","Real scouting notes, film breakdowns, college backgrounds and only the grades actually assigned in Bobby’s Big Board.")+
- (isDraft?'<div class="filterbar"><button class="filter active" data-year="2027">2027 Class</button><button class="filter" data-year="2028">2028 Class</button><button class="filter" data-year="ALL">All Classes</button></div>':'')+
+ (isDraft?'<div class="bbb-draft-class-bar"><div class="bbb-draft-class-heading"><span class="eyebrow">DRAFT CLASS ARCHIVE</span><p>Every class graded by Bobby’s Big Board, from '+esc(firstClass)+' through '+esc(lastClass)+'.</p></div><label class="bbb-draft-class-picker" for="draftClassFilter"><span>DRAFT CLASS</span><select id="draftClassFilter" aria-label="Select NFL Draft class">'+
+  classYears.map(year=>'<option value="'+year+'"'+(String(year)===draftYearFilter?' selected':'')+'>'+year+' NFL Draft'+(year===2028&&!D.prospects.some(g=>Number(g.year)===2028)?' · Coming Soon':'')+'</option>').join("")+
+  '<option value="ALL"'+(draftYearFilter==="ALL"?' selected':'')+'>All Draft Classes</option></select></label></div>':'')+
  '<div class="bbb-directory-controls"><input id="directorySearch" class="search" aria-label="Find player" placeholder="Search players, colleges, or teams…">'+
  '<div class="bbb-directory-filter-buttons"><button class="filter active" data-pos="ALL">All</button><button class="filter" data-pos="QB">QB</button><button class="filter" data-pos="RB">RB</button><button class="filter" data-pos="WR">WR</button><button class="filter" data-pos="TE">TE</button></div>'+
  '<label class="bbb-sortlabel">Sort <select id="directorySort"><option value="featured">Featured</option><option value="name">Name A–Z</option><option value="grade">Prospect grade</option><option value="rank">Dynasty rank</option></select></label></div>'+
- '<div class="bbb-directory-meta"><span id="resultCount"></span><span>Grades shown only when recorded in BBB</span></div>'+
+ '<div class="bbb-directory-meta"><span id="resultCount" aria-live="polite"></span><span id="draftClassContext">Grades shown only when recorded in BBB</span></div>'+
  '<div class="bbb-directory-head"><span>PLAYER</span><span>COLLEGE</span><span>PROSPECT GRADE</span><span>SCOUTING COVERAGE</span><span>DYNASTY</span><span></span></div>'+
  '<div id="directoryCards" class="bbb-directory-rows"></div><div style="margin-top:24px;text-align:center"><button class="secondary" id="loadMore">Load more players</button></div>'+
  '</div></section>';
@@ -76,7 +85,18 @@ function directory(isDraft){
  document.getElementById("directorySort").value=window.BBB_SORT;
  document.getElementById("directorySort").addEventListener("change",ev=>{window.BBB_SORT=ev.target.value;limit=40;draw()});
  document.querySelectorAll("[data-pos]").forEach(btn=>btn.addEventListener("click",()=>{position=btn.dataset.pos;limit=40;document.querySelectorAll("[data-pos]").forEach(b=>b.classList.toggle("active",b===btn));draw()}));
- document.querySelectorAll("[data-year]").forEach(btn=>btn.addEventListener("click",()=>{draftYearFilter=btn.dataset.year;limit=40;document.querySelectorAll("[data-year]").forEach(b=>b.classList.toggle("active",b===btn));draw()}));
+ if(isDraft){
+   document.getElementById("draftClassFilter").addEventListener("change",event=>{
+     draftYearFilter=event.target.value;
+     limit=40;
+     // Keep draft-class selections bookmarkable without a page reload.
+     const next=new URL(location.href);
+     if(draftYearFilter==="2027")next.searchParams.delete("class");
+     else next.searchParams.set("class",draftYearFilter);
+     history.replaceState(history.state,"",next.pathname+next.search+next.hash);
+     draw();
+   });
+ }
  document.getElementById("loadMore").addEventListener("click",()=>{limit+=40;draw()});draw();
 }
 function draw(){
@@ -87,8 +107,13 @@ function draw(){
  const featured=p=>(videos.has(p.player_key)?2:0)+(p.overall_breakdown?1:0);
  const sort=window.BBB_SORT;
  rows.sort((a,b)=>sort==="name"?a.name.localeCompare(b.name):sort==="rank"?rank(a)-rank(b)||a.name.localeCompare(b.name):sort==="grade"?grade(b)-grade(a)||a.name.localeCompare(b.name):featured(b)-featured(a)||grade(b)-grade(a)||a.name.localeCompare(b.name));
- document.getElementById("resultCount").textContent=rows.length+" players found";
- document.getElementById("directoryCards").innerHTML=rows.length?rows.slice(0,limit).map(playerCard).join(""):'<div class="empty">'+(isDraftMode&&draftYearFilter==="2028"?"No 2028 prospect grades are in BBB yet. This class will populate as scouting begins.":"No matching players. Try another search.")+'</div>';
+ document.getElementById("resultCount").textContent=rows.length+" "+(rows.length===1?"player":"players")+(isDraftMode&&draftYearFilter!=="ALL"?" · "+draftYearFilter+" class":"")+" found";
+ const context=document.getElementById("draftClassContext");
+ if(context)context.textContent=isDraftMode?(draftYearFilter==="ALL"?"All recorded BBB draft evaluations":rows.length?"Graded evaluations · "+draftYearFilter+" NFL Draft":"Scouting grades coming soon · "+draftYearFilter+" NFL Draft"):"Grades shown only when recorded in BBB";
+ document.getElementById("directoryCards").innerHTML=rows.length?rows.slice(0,limit).map(playerCard).join(""):'<div class="empty">'+
+  (isDraftMode&&draftYearFilter==="2028"&&!filter&&position==="ALL"?"2028 scouting is coming. The class is ready for player grades and breakdowns as they are added.":
+   isDraftMode&&draftYearFilter!=="ALL"&&!filter&&position==="ALL"?"No grades are recorded for the "+esc(draftYearFilter)+" NFL Draft class yet.":
+   "No matching players. Try another search.")+'</div>';
  document.getElementById("loadMore").style.display=rows.length>limit?"inline-flex":"none";
 }
 function filmRoom(){setTitle("Film Room");return window.BBB_FILM_ROOM.render(app,filmList(),{esc,profileLink:purl})}
