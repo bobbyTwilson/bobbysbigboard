@@ -141,7 +141,7 @@
     e.preventDefault();const form=e.currentTarget,status=form.querySelector('#bbbForgotStatus'),btn=form.querySelector('.bbb-auth-submit');const email=String(new FormData(form).get('email')||'').trim();
     status.className='bbb-auth-status';status.textContent='Sending…';btn.disabled=true;
     try{
-      const redirect=`${location.origin}/?${RESET_QUERY}=1`;
+      const redirect=`${bbbAccountReturnOrigin()}/account?${RESET_QUERY}=1`;
       const r=await fetch(`${BBB_SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(redirect)}`,{method:'POST',headers:authHeaders(),body:JSON.stringify({email})});
       const data=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error(data.msg||data.message||data.error_description||'Could not send reset email.');
