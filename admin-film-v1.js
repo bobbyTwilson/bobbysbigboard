@@ -164,7 +164,7 @@
    });
    await load(true);
    resetForm();
-   status(publish?'Published! Video #'+result+' will appear in the Film Room and matched scouting profile when the updated website preview is deployed.':'Draft saved privately. It will not appear in the public Film Room.',false);
+   status(publish?'Published! Video #'+result+' is available in the Film Room and matched scouting profile after the page refreshes.':'Draft saved privately. It will not appear in the public Film Room.',false);
   }catch(err){status('Could not save video: '+err.message,true)}
   finally{by('filmAdminDraft').disabled=false;by('filmAdminPublish').disabled=false;btn.textContent=btn.dataset.original||btn.textContent}
  }
