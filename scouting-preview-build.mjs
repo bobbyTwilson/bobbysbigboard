@@ -43,10 +43,6 @@ if(!publicBuild){
  const sandboxCheckoutUrl='https://buy.stripe.com/test_fZu4gs2l73vXaRC1HT4F200';
 // Keep live Supabase billing APIs entirely absent in preview bundles.
 // The test link is on the isolated Stripe sandbox account and cannot grant a live entitlement.
-billingSource=billingSource.replace(
-  '  function card(){',
-  '  function card(){'
-);
 const cardStart=billingSource.indexOf('  function card(){');
 const cardEnd=billingSource.indexOf('  function markup(){',cardStart);
 if(cardStart<0||cardEnd<=cardStart)throw new Error('BBB+ card markup could not be located');
@@ -55,19 +51,25 @@ const btnStart=cardSource.indexOf('const p=price(), active=isActive(), btn=');
 const btnEnd=cardSource.indexOf(';\n    return ',btnStart);
 if(btnStart<0||btnEnd<0)throw new Error('BBB+ preview checkout button not found');
 cardSource=cardSource.slice(0,btnStart)+
-  \`const p=price(), active=isActive(), btn='<button class="bbb-plus-btn" id="bbbPlusCheckout" type="button">TEST STRIPE CHECKOUT · NO REAL CHARGE</button>'\`+
+  `const p=price(), active=isActive(), btn='<button class="bbb-plus-btn" id="bbbPlusCheckout" type="button">TEST STRIPE CHECKOUT · NO REAL CHARGE</button>'`+
   cardSource.slice(btnEnd);
 cardSource=cardSource.replace(
   '<div class="bbb-plus-note">Rankings and Sleeper integration stay free.',
   '<div class="bbb-plus-note"><strong>PREVIEW TEST MODE:</strong> This uses a separate Stripe sandbox, charges no real money, and will not activate a live BBB+ subscription.<br>Rankings and Sleeper integration stay free.'
 );
 billingSource=billingSource.slice(0,cardStart)+cardSource+billingSource.slice(cardEnd);
+// Card markup changed length; locate the payment functions again before slicing.
+const safeCheckoutStart=billingSource.indexOf('  async function checkout(){');
+const safePortalStart=billingSource.indexOf('  async function portal(){',safeCheckoutStart);
+const safeFollowingNav=billingSource.indexOf('  function nav(){',safePortalStart);
+if(safeCheckoutStart<0||safePortalStart<0||safeFollowingNav<0)
+  throw new Error('Preview payment handlers missing after card transformation');
 const blockedMessage='BBB+ PREVIEW: Billing management is unavailable because this environment is not connected to a test membership datastore.';
- billingSource=billingSource.slice(0,checkoutStart)+
+ billingSource=billingSource.slice(0,safeCheckoutStart)+
    '  // PREVIEW_PAYMENT_LOCK — No Stripe requests are made by these handlers.\n'+
    '  async function checkout(){const url='+JSON.stringify(sandboxCheckoutUrl)+';const browser=(window.top&&window.top!==window)?window.top:window;browser.location.assign(url);}\n'+
    '  async function portal(){alert('+JSON.stringify(blockedMessage)+');}\n'+
-   billingSource.slice(followingNav);
+   billingSource.slice(safeFollowingNav);
  // Make the safety state clear before a member even clicks.
  // The primary preview checkout button now opens a sandbox-only Stripe URL.
  if(!billingSource.includes("TEST STRIPE CHECKOUT")||!billingSource.includes("buy.stripe.com/test_"))
