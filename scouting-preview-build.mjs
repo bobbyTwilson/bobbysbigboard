@@ -40,14 +40,38 @@ if(!publicBuild){
  const followingNav=billingSource.indexOf('  function nav(){',portalStart);
  if(checkoutStart<0||portalStart<0||followingNav<0)
    throw new Error('Could not safely isolate billing handlers for payment-free preview');
- const blockedMessage='BBB+ PREVIEW: Real payments are disabled. No charge was attempted. A separate Stripe sandbox is required before testing checkout.';
+ const sandboxCheckoutUrl='https://buy.stripe.com/test_fZu4gs2l73vXaRC1HT4F200';
+// Keep live Supabase billing APIs entirely absent in preview bundles.
+// The test link is on the isolated Stripe sandbox account and cannot grant a live entitlement.
+billingSource=billingSource.replace(
+  '  function card(){',
+  '  function card(){'
+);
+const cardStart=billingSource.indexOf('  function card(){');
+const cardEnd=billingSource.indexOf('  function markup(){',cardStart);
+if(cardStart<0||cardEnd<=cardStart)throw new Error('BBB+ card markup could not be located');
+let cardSource=billingSource.slice(cardStart,cardEnd);
+const btnStart=cardSource.indexOf('const p=price(), active=isActive(), btn=');
+const btnEnd=cardSource.indexOf(';\n    return ',btnStart);
+if(btnStart<0||btnEnd<0)throw new Error('BBB+ preview checkout button not found');
+cardSource=cardSource.slice(0,btnStart)+
+  \`const p=price(), active=isActive(), btn='<button class="bbb-plus-btn" id="bbbPlusCheckout" type="button">TEST STRIPE CHECKOUT · NO REAL CHARGE</button>'\`+
+  cardSource.slice(btnEnd);
+cardSource=cardSource.replace(
+  '<div class="bbb-plus-note">Rankings and Sleeper integration stay free.',
+  '<div class="bbb-plus-note"><strong>PREVIEW TEST MODE:</strong> This uses a separate Stripe sandbox, charges no real money, and will not activate a live BBB+ subscription.<br>Rankings and Sleeper integration stay free.'
+);
+billingSource=billingSource.slice(0,cardStart)+cardSource+billingSource.slice(cardEnd);
+const blockedMessage='BBB+ PREVIEW: Billing management is unavailable because this environment is not connected to a test membership datastore.';
  billingSource=billingSource.slice(0,checkoutStart)+
    '  // PREVIEW_PAYMENT_LOCK — No Stripe requests are made by these handlers.\n'+
-   '  async function checkout(){alert('+JSON.stringify(blockedMessage)+');}\n'+
-   '  async function portal(){alert('+JSON.stringify('BBB+ PREVIEW: Billing management is disabled here so no live subscription can be changed.')+');}\n'+
+   '  async function checkout(){const url='+JSON.stringify(sandboxCheckoutUrl)+';const browser=(window.top&&window.top!==window)?window.top:window;browser.location.assign(url);}\n'+
+   '  async function portal(){alert('+JSON.stringify(blockedMessage)+');}\n'+
    billingSource.slice(followingNav);
  // Make the safety state clear before a member even clicks.
- billingSource=billingSource.replace(":'JOIN BBB+'"," :'CHECKOUT DISABLED (PREVIEW)'");
+ // The primary preview checkout button now opens a sandbox-only Stripe URL.
+ if(!billingSource.includes("TEST STRIPE CHECKOUT")||!billingSource.includes("buy.stripe.com/test_"))
+   throw new Error('The BBB+ preview did not receive its sandbox checkout button');
  if(billingSource.includes("'/functions/v1/bbb-plus-checkout'")||
     billingSource.includes("'/functions/v1/bbb-plus-portal'"))
    throw new Error('Preview still contains a live payment endpoint call');
@@ -245,9 +269,11 @@ if(publicBuild){
    qaErrors.push('Production Stripe checkout/portal must navigate the outer browser window');
 }else{
  if(!billingJs.includes('PREVIEW_PAYMENT_LOCK')||
+    !billingJs.includes('TEST STRIPE CHECKOUT')||
+    !billingJs.includes('buy.stripe.com/test_')||
     billingJs.includes("'/functions/v1/bbb-plus-checkout'")||
     billingJs.includes("'/functions/v1/bbb-plus-portal'"))
-   qaErrors.push('PREVIEW PAYMENT LOCK FAILED: live Stripe endpoint reachable');
+   qaErrors.push('PREVIEW PAYMENT LOCK FAILED: expected sandbox-only checkout');
 }
 const authJs=await readFile(root+'/account-auth-cleanup.js','utf8');
 if(!authJs.includes('/auth/v1/recover')||!authJs.includes('handleAuthCallback'))
