@@ -188,6 +188,7 @@ config.routes=[
  {src:'/players/?',dest:publicBuild?'/seo/scouting/landing/players.html':'/index.html'},
  {src:'/film/?',dest:publicBuild?'/seo/scouting/landing/film.html':'/index.html'},
  {src:'/draft/?',dest:publicBuild?'/seo/scouting/landing/draft.html':'/index.html'},
+ {src:'/player/([^/]+)/?',dest:'/scouting/$1',status:308},
  {src:'/scouting/([^/]+)/?',dest:publicBuild?'/seo/scouting/$1.html':'/index.html'},
  {src:'/dynasty/?',dest:'/index.html'},
  {src:'/dynasty/(rankings|trade|compare|rookies|movers|updates|watchlist|stats)/?',dest:'/index.html'},
