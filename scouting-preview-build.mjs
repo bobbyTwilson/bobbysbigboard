@@ -55,6 +55,15 @@ if(!publicBuild){
  console.log('BBB+ preview payments locked: no live Stripe checkout or billing portal calls.');
 }
 
+if(!publicBuild){
+ const url='https://buy.stripe.com/test_fZu4gs2l73vXaRC1HT4F200';
+ const instruction='<section class="bbb-preview-test-stripe" style="margin:22px auto;max-width:1080px;padding:18px;border:1px solid #3b7a55;background:#0b2417;border-radius:14px;color:#e6f6e9"><strong>STRIPE TEST MODE — NO REAL CHARGES</strong><p>This test checkout is separate from live BBB+ and does not activate a real membership. Use Stripe test card 4242 4242 4242 4242, any future expiration, any three-digit CVC, and any valid ZIP.</p><a style="color:#8ff2b4;text-decoration:underline" target="_blank" rel="noopener noreferrer" href="'+url+'">Open BBB+ sandbox checkout ↗</a></section>';
+ const source=root+'/bbb-plus-v1.js';
+ let src=await readFile(source,'utf8');
+ src=src.replace('  function nav(){', '  function nav(){');
+ src += '\n;(function(){function add(){if(!location.hash.includes("plus"))return;let v=document.querySelector("#plusView");if(v&&!v.querySelector(".bbb-preview-test-stripe")){v.insertAdjacentHTML("afterbegin",'+JSON.stringify(instruction)+');}}window.addEventListener("hashchange",()=>setTimeout(add,300));setTimeout(add,1700);setTimeout(add,3500);})();\n';
+ await writeFile(source,src);
+}
 let preview=await readFile('scouting-preview.html','utf8');
 // Preserve stylesheet cascade order while reducing six blocking CSS files to one.
 // Emit a single, cacheable asset; keep original assets for existing references.

@@ -2,6 +2,8 @@
 (function(){
   const RESET_QUERY='bbb_reset';
   let recoverySession=null;
+  let recoveryPending=false;
+  const isRecoveryCallback=()=>new URL(location.href).searchParams.get(RESET_QUERY)==='1'||/(?:^#|&)type=recovery(?:&|$)/.test(location.hash);
 
   function injectStyles(){
     if(document.querySelector('#bbb-auth-cleanup-styles'))return;
@@ -74,6 +76,9 @@
 
     if(type==='recovery'||new URL(location.href).searchParams.get(RESET_QUERY)==='1'){
       recoverySession=session;
+      recoveryPending=true;
+      bbbAccountSaveSession(null);
+      bbbAccountSession=null;
       setAccountRouteWithoutTokens();
       showRecoveryForm();
       return true;
@@ -172,10 +177,10 @@
       const data=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error(data.msg||data.message||data.error_description||'Could not update password.');
       const user=data?.id?data:await getUser(token);
-      const session={...recoverySession,user};
-      bbbAccountSaveSession(session);bbbAccountSession=session;await bbbAccountLoadProfile();recoverySession=null;
-      status.className='bbb-auth-status success';status.textContent='Password updated. Opening My BBB…';
-      setTimeout(()=>{bbbAccountRender();bbbAccountPolishNav();bbbAccountRoute();showOneTimeBanner('Password updated successfully.');},650);
+      recoverySession=null;recoveryPending=false;
+      bbbAccountSaveSession(null);bbbAccountSession=null;bbbAccountProfile=null;
+      status.className='bbb-auth-status success';status.textContent='Password updated successfully. Please sign in with your new password.';
+      setTimeout(()=>{bbbAccountRender();bbbAccountPolishNav();bbbAccountRoute();showOneTimeBanner('Password updated. Sign in with your new password.');},1300);
     }catch(err){status.className='bbb-auth-status error';status.textContent=err.message||'Could not update password.';}finally{btn.disabled=false;}
   }
 
@@ -196,11 +201,12 @@
   }
 
   const originalRender=bbbAccountRender;
-  bbbAccountRender=function(){originalRender();setTimeout(enhanceAuthUi,0);};
+  bbbAccountRender=function(){if(recoveryPending){showRecoveryForm();return;}originalRender();setTimeout(enhanceAuthUi,0);};
 
   async function start(){
     injectStyles();syncFromStorage();
     const handled=await handleAuthCallback();
+    if(isRecoveryCallback()&&!handled){bbbAccountSaveSession(null);bbbAccountSession=null;bbbAccountRender();bbbAccountRoute();showAuthLinkError('This password reset link is invalid or expired. Request a new reset email.');return;}
     if(!handled)enhanceAuthUi();
   }
 

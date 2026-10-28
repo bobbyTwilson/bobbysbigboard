@@ -128,14 +128,16 @@ function bbbAccountRoute(){
 
 async function bbbAccountInit(){
   bbbAccountInjectStyles();bbbAccountEnsureView();
-  bbbAccountSession=await bbbAccountRefreshSession();if(bbbAccountSession)await bbbAccountLoadProfile();
+  const recovering=new URL(location.href).searchParams.get('bbb_reset')==='1'||/(?:^#|&)type=recovery(?:&|$)/.test(location.hash);
+  if(recovering){bbbAccountSaveSession(null);bbbAccountSession=null;bbbAccountProfile=null;}
+  else {bbbAccountSession=await bbbAccountRefreshSession();if(bbbAccountSession)await bbbAccountLoadProfile();}
   bbbAccountRender();bbbAccountPolishNav();bbbAccountRoute();
   [150,600,1400].forEach(ms=>setTimeout(()=>{bbbAccountPolishNav();bbbAccountRoute();},ms));
   window.addEventListener('hashchange',()=>setTimeout(bbbAccountRoute,0));
 }
 
 // Prepaint a stable account control from the locally cached session.
-bbbAccountSession=bbbAccountReadSession();
+bbbAccountSession=(new URL(location.href).searchParams.get('bbb_reset')==='1'||/(?:^#|&)type=recovery(?:&|$)/.test(location.hash))?null:bbbAccountReadSession();
 bbbAccountInjectStyles();
 bbbAccountPolishNav();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bbbAccountInit);else bbbAccountInit();
