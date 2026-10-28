@@ -7,6 +7,7 @@
 
   let bbbFantasyToken=0;
   const bbbFantasyCache=new Map();
+  const bbbFantasySeasons=new Map();
 
   function esc(v){
     if(typeof bbbEsc==='function')return bbbEsc(v);
@@ -39,6 +40,22 @@
       }));
     }
     return bbbFantasyCache.get(key);
+  }
+
+  function loadOfficialSeasons(playerKey){
+    const key=String(playerKey||'').trim();
+    if(!key)return Promise.resolve([]);
+    if(!bbbFantasySeasons.has(key)){
+      bbbFantasySeasons.set(key,bbbDb(
+        'site_player_season_stats',
+        `select=season,games,fantasy_points_ppr,position_finish&player_key=eq.${encodeURIComponent(key)}&order=season.desc`
+      ).then(rows=>Array.isArray(rows)?rows:[]).catch(err=>{
+        bbbFantasySeasons.delete(key);
+        console.warn('BBB season totals unavailable; falling back to weekly data',err);
+        return [];
+      }));
+    }
+    return bbbFantasySeasons.get(key);
   }
 
   function seasonRows(rows,season){
@@ -91,12 +108,18 @@
     return opp;
   }
 
-  function summaryHtml(player,rows,season){
+  function summaryHtml(player,rows,season,officialSeasons=[]){
     const list=seasonRows(rows,season);
     if(!list.length)return '';
-    const pos=position(player,list),t=totals(list),games=list.length;
-    const seasonPpr=num(list[0]?.season_ppr)||list.reduce((s,r)=>s+num(r.fantasy_points_ppr),0);
-    const rawFinish=list[0]?.season_position_finish;
+    const official=officialSeasons.find(row=>Number(row.season)===Number(season));
+    const pos=position(player,list),t=totals(list);
+    // Weekly imports include DNP/zero-production weeks. For actual games
+    // played and per-game averages, use the verified season table.
+    const games=official&&Number.isFinite(Number(official.games))?Number(official.games):list.length;
+    const seasonPpr=official&&Number.isFinite(Number(official.fantasy_points_ppr))
+      ?Number(official.fantasy_points_ppr)
+      :num(list[0]?.season_ppr)||list.reduce((s,r)=>s+num(r.fantasy_points_ppr),0);
+    const rawFinish=official?.position_finish??list[0]?.season_position_finish;
     const finish=rawFinish==null||rawFinish===''?NaN:Number(rawFinish);
     const ppg=games?seasonPpr/games:0;
     const isCurrent=Number(season)===currentYear();
@@ -163,7 +186,7 @@
     const body=card.querySelector('#bbbGameBody');if(body)body.innerHTML=gameLogBody(player,rows,season);
   }
 
-  function render(slug,player,rows){
+  function render(slug,player,rows,officialSeasons=[]){
     const mount=document.querySelector('#profileMount');
     const hero=mount?.querySelector('.profile-hero .shell');
     const grid=mount?.querySelector('.profile-grid');
@@ -179,7 +202,7 @@
     }
     const latest=seasonList[0];
     const summary=document.createElement('div');
-    summary.innerHTML=summaryHtml(player,rows,latest);
+    summary.innerHTML=summaryHtml(player,rows,latest,officialSeasons);
     const summaryCard=summary.firstElementChild;
     const snapshot=hero.querySelector('.bbb-profile-atglance');
     if(summaryCard){snapshot?snapshot.insertAdjacentElement('afterend',summaryCard):hero.appendChild(summaryCard)}
@@ -215,9 +238,12 @@
     const player=currentPlayer(slug);
     const key=String(player?.playerKey||player?.player_key||'').trim();
     if(!player||!key)return result;
-    const rows=await loadWeekly(key).catch(err=>{console.error('BBB fantasy weekly stats:',err);return []});
+    const [rows,officialSeasons]=await Promise.all([
+      loadWeekly(key).catch(err=>{console.error('BBB fantasy weekly stats:',err);return []}),
+      loadOfficialSeasons(key)
+    ]);
     if(token!==bbbFantasyToken)return result;
-    render(slug,player,rows);
+    render(slug,player,rows,officialSeasons);
     return result;
   };
 })();
