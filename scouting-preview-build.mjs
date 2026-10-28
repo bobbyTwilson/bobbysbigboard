@@ -18,14 +18,12 @@ a:hover,.rank-cell{color:#8bdfa0!important}
 .shell{width:min(1150px,calc(100% - 22px))!important}
 @media(max-width:650px){.shell{width:calc(100% - 16px)!important}.section{padding:24px 0!important}.hero{padding:19px 0!important}}
 </style>`;
-// The legacy build copies movers-section.js but does not include its script in
-// HTML. Load it in the preview's embedded engine after BBB core and other
-// bundled scripts so #movers initializes on direct loads and tab navigation.
-const moverScript='<script src="/movers-section.js"></script>';
-const engineWithMovers=original.includes('src="/movers-section.js"')
-  ?original
-  :original.replace('</body>',moverScript+'</body>');
-if(!engineWithMovers.includes(moverScript))throw new Error('Market Movers engine script missing');
+// updates-section.js already injects movers-section.js at runtime. Adding a
+// second script tag re-evaluated top-level const BBB_MOVER_MODES and crashed
+// the embedded dynasty engine, including on player profile pages.
+const moverLoader=await readFile(root+'/updates-section.js','utf8');
+if(!moverLoader.includes("s.src='/movers-section.js'"))throw new Error('Market Movers runtime loader missing');
+const engineWithMovers=original;
 await writeFile(root+'/dynasty-engine/index.html',
   engineWithMovers.replace('</head>', '<meta name="robots" content="noindex,nofollow">'+styles+'</head>'));
 const publicBuild=process.env.VERCEL_ENV==='production';
@@ -225,7 +223,8 @@ if(png.length<1024||png.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')
  qaErrors.push('BBB favicon is missing or invalid');
 if(!builtPreview.includes('src="/scouting-preview.js"'))qaErrors.push('Scouting app boot script missing');
 if(!builtPreview.includes('href="/scouting-styles.css"'))qaErrors.push('Consolidated scouting CSS missing');
-if(!builtEngine.includes('src="/movers-section.js"'))qaErrors.push('Market Movers script missing from dynasty engine');
+if(!builtEngine.includes('src="/updates-section.js"')||!moverLoader.includes("s.src='/movers-section.js'"))
+  qaErrors.push('Market Movers dynamic loader missing from dynasty engine');
 if(!builtEngine.includes('src="/profile-ui-redesign-preview.js"'))qaErrors.push('Player art/profile module missing from dynasty engine');
 if(!builtEngine.includes('src="/bbb-plus-v1.js"'))qaErrors.push('BBB+ membership module missing from dynasty engine');
 if(!builtEngine.includes('src="/account-v1-preview.js"')||!builtEngine.includes('src="/account-auth-cleanup.js"'))
