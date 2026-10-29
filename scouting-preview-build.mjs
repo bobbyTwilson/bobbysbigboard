@@ -29,17 +29,20 @@ const engineWithMovers=original;
    body paint when the parent opens an account or membership route. Otherwise
    it flashes for several seconds while Supabase membership checks finish. */
 const memberPrepaint=`<script>(function(){
-  var route=String(location.hash||'').slice(1).split(/[?&]/)[0];
-  if(/^\\/dynasty-engine\\/?$/.test(location.pathname)&&
-     /^(plus|account|watchlist|stats|terms|privacy|billing)$/.test(route)){
-    document.documentElement.classList.add('bbb-embedded-member-boot');
+  function sync(){
+    var route=String(location.hash||'').slice(1).split(/[?&]/)[0];
+    var member=/^\\/dynasty-engine\\/?$/.test(location.pathname)&&
+      /^(plus|account|watchlist|stats|terms|privacy|billing)$/.test(route);
+    document.documentElement.classList.toggle('bbb-embedded-member-boot',member);
   }
+  sync();
+  window.addEventListener('hashchange',sync);
+  window.addEventListener('popstate',sync);
 })()</script><style>
 html.bbb-embedded-member-boot #rankingsView,
 html.bbb-embedded-member-boot #rookieView,
 html.bbb-embedded-member-boot #prospectView,
-html.bbb-embedded-member-boot #tradeView,
-html.bbb-embedded-member-boot #profileView{display:none!important}
+html.bbb-embedded-member-boot #tradeView{display:none!important}
 </style>`;
 await writeFile(root+'/dynasty-engine/index.html',
   engineWithMovers.replace('</head>', '<meta name="robots" content="noindex,nofollow">'+memberPrepaint+styles+'</head>'));
