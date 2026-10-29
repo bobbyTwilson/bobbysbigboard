@@ -152,7 +152,7 @@ function bbbCompareInjectUi(){
   bbbCompareInjectStyles();
   const main=document.createElement('main');main.id='compareView';main.className='bbb-compare-view hide';main.innerHTML=`<section class="bbb-compare-hero"><div class="shell"><div class="profile-kicker">BBB DECISION TOOL</div><h1>Compare Players.</h1><p>Put two dynasty assets side-by-side using Bobby's live rankings, market context, ranking movement, latest news, and film grades.</p></div></section><section class="bbb-compare-content"><div class="shell" id="bbbCompareMount"><div class="profile-loading">Loading player comparison…</div></div></section>`;
   const profile=document.querySelector('#profileView');profile.parentNode.insertBefore(main,profile);
-  document.querySelectorAll('.nav-links').forEach(nav=>{if(!nav.querySelector('a[href="/#compare"]')){const a=document.createElement('a');a.href='/#compare';a.textContent='Compare';const yt=[...nav.querySelectorAll('a')].find(x=>x.href.includes('youtube'));nav.insertBefore(a,yt||null)}});
+  document.querySelectorAll('.nav-links').forEach(nav=>{if(!nav.querySelector('a[href="/#compare"]')){const a=document.createElement('a');a.href='/#compare';a.textContent='Compare';const yt=[...nav.querySelectorAll('a')].find(x=>x.href.includes('youtube'));nav.insertBefore(a,yt&&yt.parentNode===nav?yt:null)}});
   const mobile=document.querySelector('.mobile-subnav');if(mobile&&!mobile.querySelector('a[href="/#compare"]')){const a=document.createElement('a');a.href='/#compare';a.textContent='Compare';mobile.appendChild(a)}
 }
 function bbbCompareAddProfileButton(){

@@ -611,6 +611,18 @@
     if(!similar.dataset.built){similar.innerHTML=similarCard(player);similar.dataset.built='1';}
 
     const statsPanel=ensurePanel(system,'stats'),gamePanel=ensurePanel(system,'gamelog'),notesPanel=ensurePanel(system,'notes');
+    // The legacy V2 card could be rendered with an empty dataset before the
+    // asynchronous season fetch completed. The Career tab already has the
+    // authoritative season rows: rebuild Stats from those same rows, not the
+    // earlier (possibly stale) card.
+    if(Array.isArray(data.stats)&&data.stats.length&&typeof bbbV2CareerCard==='function'){
+      const ordered=[...data.stats].sort((a,b)=>Number(b.season)-Number(a.season));
+      const fresh=bbbV2CareerCard(ordered,String(player?.pos||ordered[0]?.position||'').toUpperCase());
+      const stale=statsPanel.querySelector('.bbb-v2-career-card');
+      if(stale)stale.outerHTML=fresh;
+      else statsPanel.insertAdjacentHTML('afterbegin',fresh);
+      statsPanel.querySelector('.bbb-v2-career-table')?.classList.add('bbb-preview-readable-career-table');
+    }
     if(!statsPanel.children.length)statsPanel.innerHTML='<section class="bbb-tab-placeholder"><div class="profile-card-kicker">STATS</div><h2>No season stats yet.</h2><p>Season-by-season NFL production will populate automatically when stats become available.</p></section>';
     if(!gamePanel.children.length)gamePanel.innerHTML='<section class="bbb-tab-placeholder"><div class="profile-card-kicker">GAME LOG</div><h2>No game log yet.</h2><p>Weekly NFL production will populate automatically when game data becomes available.</p></section>';
     if(!notesPanel.children.length)notesPanel.innerHTML='<section class="bbb-tab-placeholder"><div class="profile-card-kicker">RANK HISTORY</div><h2>No ranking history yet.</h2><p>BBB ranking movement and market context will appear here when enough history is available.</p></section>';

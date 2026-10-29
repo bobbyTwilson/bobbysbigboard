@@ -2,6 +2,8 @@
 (function(){
   const RESET_QUERY='bbb_reset';
   let recoverySession=null;
+  let recoveryPending=false;
+  const isRecoveryCallback=()=>new URL(location.href).searchParams.get(RESET_QUERY)==='1'||/(?:^#|&)type=recovery(?:&|$)/.test(location.hash);
 
   function injectStyles(){
     if(document.querySelector('#bbb-auth-cleanup-styles'))return;
@@ -46,16 +48,37 @@
 
   async function handleAuthCallback(){
     const raw=location.hash.startsWith('#')?location.hash.slice(1):'';
-    if(!raw.includes('access_token='))return false;
+    if(!raw.includes('access_token=')){
+      const params=new URLSearchParams(raw);
+      if(!params.has('error')&&!params.has('error_description'))return false;
+      const message=params.get('error_description')||'The authentication link was not accepted.';
+      setAccountRouteWithoutTokens();
+      bbbAccountRender();
+      bbbAccountRoute();
+      showAuthLinkError(message.length<240?message:'The authentication link was not accepted.');
+      return true;
+    }
     const params=new URLSearchParams(raw);
     const token=params.get('access_token');
     if(!token)return false;
     const type=params.get('type')||'';
-    const user=await getUser(token);
+    let user=null;
+    try{user=await getUser(token)}catch{}
+    // Never keep an invalid token in the embedded page's address bar.
+    if(!user||!params.get('refresh_token')){
+      setAccountRouteWithoutTokens();
+      bbbAccountRender();
+      bbbAccountRoute();
+      showAuthLinkError('This email link has expired or is invalid. Request a new link or sign in again.');
+      return true;
+    }
     const session=sessionFromHash(params,user);
 
     if(type==='recovery'||new URL(location.href).searchParams.get(RESET_QUERY)==='1'){
       recoverySession=session;
+      recoveryPending=true;
+      bbbAccountSaveSession(null);
+      bbbAccountSession=null;
       setAccountRouteWithoutTokens();
       showRecoveryForm();
       return true;
@@ -73,6 +96,17 @@
       return true;
     }
     return false;
+  }
+
+  function showAuthLinkError(message){
+    const view=bbbAccountEnsureView();
+    const card=view.querySelector('.bbb-auth-card');
+    if(!card)return;
+    const note=document.createElement('p');
+    note.className='bbb-auth-status error';
+    note.setAttribute('role','alert');
+    note.textContent=message;
+    card.prepend(note);
   }
 
   function showOneTimeBanner(message){
@@ -112,7 +146,7 @@
     e.preventDefault();const form=e.currentTarget,status=form.querySelector('#bbbForgotStatus'),btn=form.querySelector('.bbb-auth-submit');const email=String(new FormData(form).get('email')||'').trim();
     status.className='bbb-auth-status';status.textContent='Sending…';btn.disabled=true;
     try{
-      const redirect=`${location.origin}/?${RESET_QUERY}=1`;
+      const redirect=`${bbbAccountReturnOrigin()}/account?${RESET_QUERY}=1`;
       const r=await fetch(`${BBB_SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(redirect)}`,{method:'POST',headers:authHeaders(),body:JSON.stringify({email})});
       const data=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error(data.msg||data.message||data.error_description||'Could not send reset email.');
@@ -143,10 +177,10 @@
       const data=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error(data.msg||data.message||data.error_description||'Could not update password.');
       const user=data?.id?data:await getUser(token);
-      const session={...recoverySession,user};
-      bbbAccountSaveSession(session);bbbAccountSession=session;await bbbAccountLoadProfile();recoverySession=null;
-      status.className='bbb-auth-status success';status.textContent='Password updated. Opening My BBB…';
-      setTimeout(()=>{bbbAccountRender();bbbAccountPolishNav();bbbAccountRoute();showOneTimeBanner('Password updated successfully.');},650);
+      recoverySession=null;recoveryPending=false;
+      bbbAccountSaveSession(null);bbbAccountSession=null;bbbAccountProfile=null;
+      status.className='bbb-auth-status success';status.textContent='Password updated successfully. Please sign in with your new password.';
+      setTimeout(()=>{bbbAccountRender();bbbAccountPolishNav();bbbAccountRoute();showOneTimeBanner('Password updated. Sign in with your new password.');},1300);
     }catch(err){status.className='bbb-auth-status error';status.textContent=err.message||'Could not update password.';}finally{btn.disabled=false;}
   }
 
@@ -167,11 +201,12 @@
   }
 
   const originalRender=bbbAccountRender;
-  bbbAccountRender=function(){originalRender();setTimeout(enhanceAuthUi,0);};
+  bbbAccountRender=function(){if(recoveryPending){showRecoveryForm();return;}originalRender();setTimeout(enhanceAuthUi,0);};
 
   async function start(){
     injectStyles();syncFromStorage();
     const handled=await handleAuthCallback();
+    if(isRecoveryCallback()&&!handled){bbbAccountSaveSession(null);bbbAccountSession=null;bbbAccountRender();bbbAccountRoute();showAuthLinkError('This password reset link is invalid or expired. Request a new reset email.');return;}
     if(!handled)enhanceAuthUi();
   }
 

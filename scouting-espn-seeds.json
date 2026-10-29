@@ -1,0 +1,1029 @@
+{
+  "note": "Preview-only ESPN profile identity matches obtained from ESPN public player URLs. CDN URLs are conventional headshot endpoints; image may be unavailable. Commercial reuse terms require review.",
+  "players": {
+    "christian-watson": {
+      "id": "4248528",
+      "league": "nfl",
+      "url": "https://a.espncdn.com/i/headshots/nfl/players/full/4248528.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/nfl/player/_/id/4248528/christian-watson"
+    },
+    "parker-washington": {
+      "id": "4432620",
+      "league": "nfl",
+      "url": "https://a.espncdn.com/i/headshots/nfl/players/full/4432620.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/nfl/player/_/id/4432620/parker-washington"
+    },
+    "matthew-golden": {
+      "id": "4701936",
+      "league": "nfl",
+      "url": "https://a.espncdn.com/i/headshots/nfl/players/full/4701936.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/nfl/player/_/id/4701936/matthew-golden"
+    },
+    "denzel-boston": {
+      "id": "4832800",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4832800.png",
+      "source": "ESPN player profile (identity confirmed)",
+      "profile_url": "https://www.espn.com/college-football/player/_/id/4832800/denzel-boston"
+    },
+    "jeremiah-smith": {
+      "id": "5079720",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079720.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "ahmad-hardy": {
+      "id": "5197065",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5197065.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jadan-baugh": {
+      "id": "5079322",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079322.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "arch-manning": {
+      "id": "4870906",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870906.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "cam-coleman": {
+      "id": "5079376",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079376.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "julian-sayin": {
+      "id": "5079712",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079712.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "trey-dez-green": {
+      "id": "5079420",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079420.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "kewan-lacy": {
+      "id": "5086388",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5086388.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "charlie-becker": {
+      "id": "5146735",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5146735.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "nate-frazier": {
+      "id": "5084047",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5084047.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "kj-duff": {
+      "id": "5084771",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5084771.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "lanorris-sellers": {
+      "id": "4875127",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4875127.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "justice-haynes": {
+      "id": "4870760",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870760.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "john-mateer": {
+      "id": "4915980",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4915980.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "dante-moore": {
+      "id": "4870921",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870921.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "donovan-smith": {
+      "id": "4690977",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4690977.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "amarion-peterson": {
+      "id": "4918111",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4918111.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "aidan-chiles": {
+      "id": "5075805",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5075805.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "amare-thomas": {
+      "id": "5077060",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5077060.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "andrew-marsh": {
+      "id": "5141572",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141572.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "andrew-olesh": {
+      "id": "5201878",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5201878.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "andrew-rappleyea": {
+      "id": "4899484",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4899484.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "anthony-colandrea": {
+      "id": "5044387",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5044387.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "anthony-evans-iii": {
+      "id": "4907671",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4907671.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "antwan-raymond": {
+      "id": "5209945",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5209945.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "austin-novosad": {
+      "id": "4912647",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4912647.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "avery-johnson": {
+      "id": "4870857",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870857.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "benjamin-brahmer": {
+      "id": "4870608",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870608.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "brandon-inniss": {
+      "id": "4870835",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870835.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "brandon-polk": {
+      "id": "3929652",
+      "league": "nfl",
+      "url": "https://a.espncdn.com/i/headshots/nfl/players/full/3929652.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "brant-kuithe": {
+      "id": "4361014",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4361014.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "braxton-berrios": {
+      "id": "3123075",
+      "league": "nfl",
+      "url": "https://a.espncdn.com/i/headshots/nfl/players/full/3123075.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "braydon-bennett": {
+      "id": "4608922",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4608922.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "braylon-staley": {
+      "id": "5132629",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5132629.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "brendan-sorsby": {
+      "id": "4899046",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4899046.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "brett-norfleet": {
+      "id": "4870869",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870869.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "brody-foley": {
+      "id": "4819226",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4819226.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "bryant-wesco-jr": {
+      "id": "5112674",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5112674.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "bryce-underwood": {
+      "id": "5141741",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141741.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "byrum-brown": {
+      "id": "4880272",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4880272.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "caleb-hawkins": {
+      "id": "5258016",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5258016.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "cam-cook": {
+      "id": "4918103",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4918103.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "carter-smith": {
+      "id": "5141687",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141687.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "cayden-lee": {
+      "id": "4870858",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870858.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "chris-johnson-jr": {
+      "id": "5159948",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5159948.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "chris-marshall": {
+      "id": "4717430",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4717430.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "cj-bailey": {
+      "id": "5079301",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079301.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "cj-baxter": {
+      "id": "4870609",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870609.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "cj-carr": {
+      "id": "5079369",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079369.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "cody-jackson": {
+      "id": "4875853",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4875853.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "conner-weigman": {
+      "id": "4685574",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4685574.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "cooper-barkate": {
+      "id": "4804878",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4804878.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "dakorien-moore": {
+      "id": "5141586",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141586.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "dallas-wilson": {
+      "id": "5141723",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141723.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "dante-dowdell": {
+      "id": "4923252",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4923252.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "darian-mensah": {
+      "id": "5121169",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5121169.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "datrell-jones": {
+      "id": "4870820",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870820.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "deandre-moore-jr": {
+      "id": "4870860",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870860.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "demond-williams-jr": {
+      "id": "5079653",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079653.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "derrick-davis-jr": {
+      "id": "4431527",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4431527.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "desean-bishop": {
+      "id": "4921108",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4921108.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "deuce-knight": {
+      "id": "5141506",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141506.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "devin-mccuin": {
+      "id": "5076952",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5076952.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "dezmen-roebuck": {
+      "id": "5166797",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5166797.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "dj-lagway": {
+      "id": "5079555",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079555.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "dj-vonnahme": {
+      "id": "5218931",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5218931.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "donovan-murph": {
+      "id": "5200374",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5200374.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "donovan-olugbode": {
+      "id": "5141582",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141582.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "dorian-thomas": {
+      "id": "4908552",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4908552.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "drake-lindsey": {
+      "id": "5144959",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5144959.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "drew-mestemaker": {
+      "id": "5219834",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5219834.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "duce-robinson": {
+      "id": "4870922",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870922.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "dylan-braithwaite": {
+      "id": "5075319",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5075319.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "dylan-edwards": {
+      "id": "4918414",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4918414.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "dylan-lonergan": {
+      "id": "4870900",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870900.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "dylan-raiola": {
+      "id": "5079572",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079572.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "elyiss-williams": {
+      "id": "5141756",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141756.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "eric-singleton-jr": {
+      "id": "5095360",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5095360.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "eugene-wilson-iii": {
+      "id": "4921154",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4921154.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "evan-pryor": {
+      "id": "4432757",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4432757.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "evan-stewart": {
+      "id": "4685565",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4685565.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "gavin-sawchuk": {
+      "id": "4685545",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4685545.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "gunner-stockton": {
+      "id": "4685578",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4685578.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "hank-brown": {
+      "id": "5089314",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5089314.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "harlem-berry": {
+      "id": "5122231",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5122231.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "hollywood-smothers": {
+      "id": "4871053",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4871053.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "ian-strong": {
+      "id": "5075390",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5075390.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "isaac-brown": {
+      "id": "5079349",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079349.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "isaiah-augustave": {
+      "id": "4921292",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4921292.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jkoby-williams": {
+      "id": "5086393",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5086393.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jackson-arnold": {
+      "id": "4870607",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870607.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jaden-bray": {
+      "id": "4683719",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4683719.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jaden-greathouse": {
+      "id": "4870768",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870768.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jaden-platt": {
+      "id": "4899360",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4899360.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jaden-rashada": {
+      "id": "4870909",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870909.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jahiem-white": {
+      "id": "4911971",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4911971.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jake-garcia": {
+      "id": "4432703",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4432703.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jake-johnson": {
+      "id": "4685414",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4685414.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jalen-hale": {
+      "id": "4870776",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870776.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jamari-johnson": {
+      "id": "4922988",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4922988.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "james-peoples": {
+      "id": "5110454",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5110454.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jaquaize-pettaway": {
+      "id": "4870951",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870951.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jaron-keawe-sagapolutele": {
+      "id": "5164313",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5164313.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jayce-brown": {
+      "id": "5121334",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5121334.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jayden-limar": {
+      "id": "4870868",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870868.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jayden-maiava": {
+      "id": "4685454",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4685454.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jelani-thurman": {
+      "id": "4871039",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4871039.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jeremiah-cobb": {
+      "id": "4870642",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870642.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jerome-myles": {
+      "id": "5148650",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5148650.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "johntay-cook": {
+      "id": "4870656",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870656.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jordan-faison": {
+      "id": "5150424",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5150424.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "jordan-marshall": {
+      "id": "5079574",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079574.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "josh-hoover": {
+      "id": "4685401",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4685401.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "junior-sherrill": {
+      "id": "5078165",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5078165.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "kaleb-jackson": {
+      "id": "4870839",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870839.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "keelon-russell": {
+      "id": "5141629",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141629.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "kevin-jennings": {
+      "id": "5084084",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5084084.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "keyjuan-brown": {
+      "id": "4923046",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4923046.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "lawson-luckie": {
+      "id": "4870874",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870874.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "lj-martin": {
+      "id": "4918126",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4918126.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "london-humphreys": {
+      "id": "5078453",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5078453.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "lotzeir-brooks": {
+      "id": "5141394",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141394.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "luke-reynolds": {
+      "id": "5138451",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5138451.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "makhi-hughes": {
+      "id": "4816098",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4816098.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "malachi-coleman": {
+      "id": "4917947",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4917947.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "malachi-nelson": {
+      "id": "4870928",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870928.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "mario-craver": {
+      "id": "5079345",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079345.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "mark-fletcher": {
+      "id": "4870736",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870736.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "marquis-johnson": {
+      "id": "5076106",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5076106.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "max-johnson": {
+      "id": "4685740",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4685740.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "micah-mays-jr": {
+      "id": "4870826",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870826.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "mike-matthews": {
+      "id": "5079580",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079580.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "nic-anderson": {
+      "id": "4699866",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4699866.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "nick-marsh": {
+      "id": "5079600",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5079600.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "nico-iamaleava": {
+      "id": "4870799",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870799.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "noah-fifita": {
+      "id": "4801717",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4801717.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "nyck-harbor": {
+      "id": "4870745",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870745.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "nyziah-hunter": {
+      "id": "5078312",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5078312.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "omarion-miller": {
+      "id": "4870850",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870850.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "ousmane-kromah": {
+      "id": "5141560",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141560.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "peter-clarke": {
+      "id": "5080547",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5080547.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "quincy-porter": {
+      "id": "5141613",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141613.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "quinten-joyner": {
+      "id": "4917949",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4917949.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "quintrevion-wisner": {
+      "id": "4871076",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4871076.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "raleek-brown": {
+      "id": "4685268",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4685268.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "rico-flores-jr": {
+      "id": "4870713",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870713.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "riley-williams": {
+      "id": "4871054",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4871054.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "rueben-owens-ii": {
+      "id": "4870934",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870934.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "ryan-coleman-williams": {
+      "id": "5141711",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141711.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "ryan-wingo": {
+      "id": "5218633",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5218633.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "sam-huard": {
+      "id": "4567748",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4567748.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "sam-leavitt": {
+      "id": "5078810",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5078810.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "semaj-morgan": {
+      "id": "4899366",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4899366.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "shamar-porter": {
+      "id": "4870959",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4870959.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "t-j-moore": {
+      "id": "5218753",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5218753.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "talyn-taylor": {
+      "id": "5141671",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141671.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "tanook-hines": {
+      "id": "5141975",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5141975.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "tavien-st-clair": {
+      "id": "5146824",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5146824.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "terrance-carter-jr": {
+      "id": "4867887",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4867887.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "trey-leckner": {
+      "id": "5024359",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5024359.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "trinidad-chambliss": {
+      "id": "4911529",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4911529.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "troy-omeire": {
+      "id": "4430827",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4430827.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "vernell-brown-iii": {
+      "id": "5295811",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5295811.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "walker-lyons": {
+      "id": "5221043",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5221043.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "wyatt-young": {
+      "id": "5148787",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/5148787.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    },
+    "darius-taylor": {
+      "id": "4920901",
+      "league": "college-football",
+      "url": "https://a.espncdn.com/i/headshots/college-football/players/full/4920901.png",
+      "source": "ESPN exact player name and position confirmed; image endpoint checked"
+    }
+  }
+}

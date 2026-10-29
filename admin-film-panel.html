@@ -1,0 +1,49 @@
+<section id="pageFilm" class="admin-page hide">
+ <div class="page-head">
+  <div><div class="eyebrow">BBB SCOUTING · VIDEO LIBRARY</div><h1>Film Breakdown Manager</h1>
+  <p>Paste a YouTube link, match a BBB player, and publish directly into the Film Room and that player's scouting profile. No vidIQ credits or video re-uploads needed.</p></div>
+  <button class="refresh-btn" type="button" id="filmAdminRefresh">Refresh Library</button>
+ </div>
+ <div class="film-admin-layout">
+  <section class="film-admin-card film-admin-edit">
+   <div class="film-admin-header"><div><span class="film-admin-kicker">01 / VIDEO DETAILS</span><h2 id="filmAdminEditorTitle">Add a Film Breakdown</h2><p>Only videos already public on your YouTube channel should be published.</p></div><button type="button" id="filmAdminReset" class="film-admin-ghost">+ New</button></div>
+   <form id="filmAdminForm" autocomplete="off">
+    <label class="film-admin-field"><span>YOUTUBE VIDEO LINK <b>*</b></span>
+     <div class="film-admin-url"><input id="filmAdminUrl" type="url" inputmode="url" placeholder="https://www.youtube.com/watch?v=…" required spellcheck="false"><button type="button" id="filmAdminInspect">Get title</button></div>
+    </label>
+    <p id="filmAdminLookup" class="film-admin-feedback" aria-live="polite">Paste a public YouTube link to preview its details.</p>
+    <div class="film-admin-preview" id="filmAdminPreview" hidden>
+     <img id="filmAdminPreviewImage" src="" alt="Video thumbnail">
+     <div><strong id="filmAdminPreviewTitle">Video preview</strong><span id="filmAdminPreviewChannel"></span><a id="filmAdminWatch" target="_blank" rel="noopener noreferrer" href="#">Open video on YouTube ↗</a></div>
+    </div>
+    <label class="film-admin-field"><span>VIDEO TITLE <b>*</b></span><input id="filmAdminTitle" maxlength="200" minlength="5" required placeholder="e.g. Jeremiah Smith Film Breakdown"></label>
+    <label class="film-admin-field"><span>FIND THE PLAYER <b>*</b></span><input id="filmAdminPlayerSearch" type="search" placeholder="Type a player name or college…"></label>
+    <label class="film-admin-field"><span>MATCHED BBB PLAYER <b>*</b></span><select id="filmAdminPlayer" required><option value="">Loading BBB players…</option></select></label>
+    <div class="film-admin-two">
+     <label class="film-admin-field"><span>FILM CATEGORY</span><select id="filmAdminType">
+      <option value="prospect_breakdown">Draft Prospect Breakdown</option>
+      <option value="rookie_film">Rookie Film Study</option>
+      <option value="nfl_film_study" selected>NFL Player Film</option>
+     </select></label>
+     <label class="film-admin-field"><span>OPTIONAL DESCRIPTION</span><textarea id="filmAdminDescription" maxlength="1200" rows="3" placeholder="Add a short scouting summary, if desired."></textarea></label>
+    </div>
+    <label class="film-admin-check"><input type="checkbox" id="filmAdminConfirm"><span>I confirm this is a <strong>public, embeddable video from my own YouTube channel.</strong></span></label>
+    <div class="film-admin-actions"><button id="filmAdminDraft" type="button" class="film-admin-ghost">Save Draft</button><button id="filmAdminPublish" type="submit" class="film-admin-primary">Publish to Film Room →</button></div>
+    <div id="filmAdminStatus" class="film-admin-status" aria-live="polite"></div>
+   </form>
+  </section>
+  <aside class="film-admin-card film-admin-info">
+   <span class="film-admin-kicker">HOW THIS WORKS</span><h2>One link. Two destinations.</h2>
+   <div class="film-admin-step"><span>01</span><div><strong>Paste your video</strong><p>BBB reads the title through YouTube's free public metadata endpoint, when available.</p></div></div>
+   <div class="film-admin-step"><span>02</span><div><strong>Choose the player</strong><p>Match the film to someone already in your BBB player database—prospects included.</p></div></div>
+   <div class="film-admin-step"><span>03</span><div><strong>Publish when ready</strong><p>The embed appears on the Film Room and on that player's scouting profile. Drafts stay private.</p></div></div>
+   <p class="film-admin-caution">Videos stay hosted on YouTube. Changing a video to private or disabling embedding on YouTube will stop playback here too.</p>
+  </aside>
+ </div>
+ <section class="film-admin-card film-admin-library">
+  <div class="film-admin-library-head"><div><span class="film-admin-kicker">YOUR VIDEO LINKS</span><h2>Connected Film Library</h2><p id="filmAdminLibraryCount">Loading published videos and drafts…</p></div>
+   <div class="film-admin-library-tools"><input type="search" id="filmAdminLibrarySearch" placeholder="Search videos or player…"><select id="filmAdminLibraryStatus"><option value="all">All videos</option><option value="approved">Published</option><option value="draft">Drafts</option></select></div>
+  </div>
+  <div id="filmAdminLibraryRows" class="film-admin-library-rows"></div>
+ </section>
+</section>

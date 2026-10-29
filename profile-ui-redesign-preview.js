@@ -37,6 +37,50 @@
     const id=LOGO_MAP[String(team||'').toUpperCase()];
     return id?`https://a.espncdn.com/i/teamlogos/nfl/500/${id}.png`:'';
   }
+  // Share the scouting platform's verified, player-keyed ESPN PNG registry.
+  // No name-based image guessing: mismatched player photos are worse than fallback art.
+  let photoRegistryRequest=null;
+  function photoRegistry(){
+    if(!photoRegistryRequest)photoRegistryRequest=fetch('/scouting-headshots.json',{cache:'force-cache'})
+      .then(r=>{if(!r.ok)throw Error('Player PNG registry unavailable');return r.json()})
+      .then(d=>d?.players||{})
+      .catch(err=>{console.warn('Dynasty profile PNGs unavailable',err);photoRegistryRequest=null;return {}});
+    return photoRegistryRequest;
+  }
+  function playerArtwork(art,key,name){
+    if(!art)return;
+    if(art.dataset.playerKey!==key){
+      art.dataset.playerKey=key;
+      const initials=String(name||'?').trim().split(/\s+/).slice(0,2).map(v=>v.charAt(0)).join('');
+      art.innerHTML='<span class="bbb-player-png-fallback" aria-hidden="true">'+esc(initials)+'</span>';
+    }
+    photoRegistry().then(photos=>{
+      if(!art.isConnected||art.dataset.playerKey!==key)return;
+      const url=String(photos[key]?.url||'');
+      if(!url.startsWith('https://a.espncdn.com/i/headshots/')||!url.endsWith('.png'))return;
+      const existing=art.querySelector('.bbb-player-png');
+      if(existing?.getAttribute('src')===url)return;
+      const img=document.createElement('img');
+      img.className='bbb-player-png';
+      img.alt=name+' player portrait';
+      img.loading='eager';
+      img.decoding='async';
+      img.setAttribute('fetchpriority','high');
+      img.addEventListener('error',()=>img.remove(),{once:true});
+      img.addEventListener('load',()=>{if(img.naturalWidth<100)img.remove()},{once:true});
+      img.src=url;
+      existing?.remove();
+      art.appendChild(img);
+    });
+  }
+  function teamBadge(badge,team,pos){
+    if(!badge||badge.dataset.team===team)return;
+    badge.dataset.team=team;
+    const url=logoUrl(team);
+    badge.innerHTML=(url?'<img src="'+esc(url)+'" alt="'+esc(team)+' NFL team logo" loading="eager" decoding="async" onerror="this.remove()">':
+      '<span class="bbb-player-team-fallback">'+esc(pos||'FA')+'</span>')+
+      '<small class="bbb-player-team-label">'+esc(url?team:'FREE AGENT')+'</small>';
+  }
   function moveMarkup(v,label){
     const n=num(v);
     const cls=n>0?'up':n<0?'down':'neutral';
@@ -301,6 +345,114 @@
         #profileView .bbb-redesign-team-logo img{width:46px;height:46px}
         #profileView .bbb-redesign-hero-row{grid-template-columns:64px minmax(0,1fr)}
       }
+
+      /* Compact dynasty hero — the PNG leads, not its backdrop. */
+      #profileView .profile-hero{padding:14px 0 11px!important}
+      #profileView .profile-back{margin-bottom:8px!important}
+      #profileView .bbb-profile-atglance{margin-top:14px!important}
+      #profileView .bbb-player-art-hero{
+        grid-template-columns:178px minmax(0,1fr) auto!important;
+        gap:19px!important;min-height:0!important;align-items:center!important
+      }
+      /* Match the existing prospect portrait exactly: inset border, rounded
+         evergreen frame, full-size cropped PNG and narrow bottom fade. */
+      #profileView .bbb-redesign-player-art{
+        position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;
+        width:178px;max-width:100%;height:164px;overflow:hidden;
+        border:1px solid #52725a!important;border-radius:15px!important;
+        background:radial-gradient(ellipse at 50% 83%,rgba(101,173,112,.22),transparent 62%),
+          linear-gradient(155deg,#2a4331 0%,#1a2f22 50%,#102319 100%)!important;
+        box-shadow:inset 0 1px 0 rgba(240,255,232,.12),0 10px 23px rgba(0,0,0,.31)!important
+      }
+      #profileView .bbb-redesign-player-art:before{
+        content:"";position:absolute;z-index:0;pointer-events:none;
+        inset:7px;border:1px solid rgba(183,213,180,.10);border-radius:10px;
+        background:radial-gradient(ellipse at 50% 85%,rgba(97,174,105,.10),transparent 72%)
+      }
+      #profileView .bbb-redesign-player-art:after{
+        content:"";display:block!important;position:absolute;z-index:3;pointer-events:none;
+        left:0;right:0;bottom:0;height:19px;
+        background:linear-gradient(0deg,rgba(9,26,17,.64),transparent);
+        border-bottom:3px solid rgba(114,189,133,.42)
+      }
+      #profileView .bbb-redesign-player-art .bbb-player-png{
+        position:absolute;z-index:2;inset:0;width:100%;height:100%;max-width:none;
+        display:block;object-fit:cover;object-position:center center;pointer-events:none;
+        filter:drop-shadow(0 7px 7px rgba(0,0,0,.39))
+      }
+      #profileView .bbb-player-png-fallback{
+        position:absolute;z-index:1;inset:0;
+        display:flex;align-items:center;justify-content:center;
+        font-size:30px;font-weight:950;color:#c6d9bb
+      }
+      #profileView .bbb-redesign-player-art:has(.bbb-player-png) .bbb-player-png-fallback{opacity:0}
+      #profileView .bbb-redesign-identity{min-width:0}
+      #profileView .bbb-player-art-hero .profile-title{
+        font-size:clamp(35px,4.1vw,55px)!important;line-height:.96!important
+      }
+      #profileView .bbb-player-art-hero .profile-meta{margin-top:8px!important}
+      #profileView .bbb-redesign-team-logo{
+        display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;
+        width:auto!important;max-width:100%!important;height:auto!important;min-height:38px!important;
+        gap:7px!important;margin-top:10px!important;padding:4px 9px!important;
+        border:1px solid #385740!important;border-radius:9px!important;
+        background:#12291c!important;box-shadow:none!important
+      }
+      #profileView .bbb-redesign-team-logo img{width:29px!important;height:29px!important;object-fit:contain}
+      #profileView .bbb-redesign-team-logo .bbb-player-team-label{
+        color:#d7eedb;font-size:10px;font-weight:900;letter-spacing:.07em
+      }
+      #profileView .bbb-redesign-team-logo .bbb-player-team-fallback{
+        display:grid;place-items:center;width:27px;height:27px;background:#21432d;
+        border:1px solid #365c40;border-radius:6px;font-size:10px;font-weight:900
+      }
+      #profileView .bbb-player-art-hero .bbb-redesign-hero-actions{gap:8px}
+      #profileView .bbb-player-art-hero .bbb-redesign-hero-actions .bbb-profile-watch,
+      #profileView .bbb-player-art-hero .bbb-redesign-compare{
+        min-height:39px;padding:0 14px;font-size:10px
+      }
+      @media(max-width:980px){
+        #profileView .bbb-player-art-hero{
+          grid-template-columns:132px minmax(0,1fr)!important;
+          gap:14px!important;min-height:0!important
+        }
+        #profileView .bbb-redesign-player-art{width:132px;height:125px;border-radius:12px!important}
+        #profileView .bbb-redesign-player-art:before{inset:5px;border-radius:8px}
+        #profileView .bbb-redesign-player-art:after{height:12px;border-bottom-width:2px}
+        #profileView .bbb-player-art-hero .bbb-redesign-hero-actions{
+          grid-column:2!important;justify-content:flex-start!important
+        }
+        #profileView .bbb-player-art-hero .bbb-redesign-hero-actions>*{flex:0 1 auto}
+      }
+      @media(max-width:640px){
+        #profileView .profile-hero{padding:11px 0 8px!important}
+        #profileView .profile-back{margin-bottom:7px!important}
+        #profileView .bbb-profile-atglance{margin-top:11px!important}
+        #profileView .bbb-player-art-hero{
+          grid-template-columns:111px minmax(0,1fr)!important;
+          gap:10px!important;min-height:0!important
+        }
+        #profileView .bbb-redesign-player-art{width:111px;height:127px;border-radius:11px!important}
+        #profileView .bbb-player-png-fallback{font-size:26px}
+        #profileView .bbb-player-art-hero .profile-title{font-size:clamp(27px,7vw,37px)!important}
+        #profileView .bbb-player-art-hero .profile-meta{margin-top:6px!important}
+        #profileView .bbb-redesign-team-logo{
+          min-height:30px!important;margin-top:7px!important;gap:5px!important;
+          padding:3px 7px!important;border-radius:7px!important
+        }
+        #profileView .bbb-redesign-team-logo img{width:23px!important;height:23px!important}
+        #profileView .bbb-redesign-team-logo .bbb-player-team-label{font-size:9px}
+        #profileView .bbb-player-art-hero .bbb-redesign-hero-actions{
+          grid-column:1/-1!important;justify-content:stretch!important;margin-top:0
+        }
+        #profileView .bbb-player-art-hero .bbb-redesign-hero-actions>*{flex:1}
+        #profileView .bbb-player-art-hero .bbb-redesign-hero-actions .bbb-profile-watch,
+        #profileView .bbb-player-art-hero .bbb-redesign-compare{min-height:36px;padding:0 10px}
+      }
+      @media(max-width:390px){
+        #profileView .bbb-player-art-hero{grid-template-columns:86px minmax(0,1fr)!important;gap:9px!important}
+        #profileView .bbb-redesign-player-art{width:86px;height:106px;border-radius:10px!important}
+      }
     `;
     document.head.appendChild(style);
   }
@@ -325,26 +477,39 @@
 
     if(!row){
       row=document.createElement('div');
-      row.className='bbb-redesign-hero-row';
+      row.className='bbb-redesign-hero-row bbb-player-art-hero';
       title.parentNode.insertBefore(row,title);
-      const logo=document.createElement('div');
-      logo.className='bbb-redesign-team-logo';
-      const src=logoUrl(team);
-      logo.innerHTML=src?`<img src="${esc(src)}" alt="${esc(team)} team logo" loading="eager">`:`<span>${esc(team||player.pos||'BBB')}</span>`;
+      const art=document.createElement('div');
+      art.className='bbb-redesign-player-art';
       const identity=document.createElement('div');
       identity.className='bbb-redesign-identity';
-      row.append(logo,identity);
-      identity.append(title,meta);
+      const badge=document.createElement('div');
+      badge.className='bbb-redesign-team-logo';
       const actions=document.createElement('div');
       actions.className='bbb-redesign-hero-actions';
-      row.appendChild(actions);
+      row.append(art,identity,actions);
+      identity.append(title,meta,badge);
     }else{
-      const logo=row.querySelector('.bbb-redesign-team-logo');
-      if(logo){
-        const src=logoUrl(team);
-        logo.innerHTML=src?`<img src="${esc(src)}" alt="${esc(team)} team logo" loading="eager">`:`<span>${esc(team||player.pos||'BBB')}</span>`;
+      row.classList.add('bbb-player-art-hero');
+      const identity=row.querySelector('.bbb-redesign-identity');
+      if(identity){
+        if(title.parentNode!==identity)identity.append(title);
+        if(meta.parentNode!==identity)identity.append(meta);
+        let art=row.querySelector('.bbb-redesign-player-art');
+        if(!art){
+          art=document.createElement('div');art.className='bbb-redesign-player-art';
+          row.insertBefore(art,identity);
+        }
+        let badge=row.querySelector('.bbb-redesign-team-logo');
+        if(!badge){
+          badge=document.createElement('div');badge.className='bbb-redesign-team-logo';
+        }
+        if(badge.parentNode!==identity)identity.append(badge);
       }
     }
+    teamBadge(row.querySelector('.bbb-redesign-team-logo'),team,player.pos);
+    playerArtwork(row.querySelector('.bbb-redesign-player-art'),
+      String(player.playerKey||player.player_key||slug),String(player.name||slug));
 
     const actions=row.querySelector('.bbb-redesign-hero-actions');
     if(actions){

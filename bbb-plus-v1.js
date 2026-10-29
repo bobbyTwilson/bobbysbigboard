@@ -153,8 +153,19 @@
     v.innerHTML=markup();
     bind();
   }
-  async function checkout(){if(busy)return;const s=sess();if(!s?.access_token){location.hash='#account';return}busy=true;renderCard();try{const r=await fetch(BBB_SUPABASE_URL+'/functions/v1/bbb-plus-checkout',{method:'POST',headers:{apikey:BBB_SUPABASE_KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({interval})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Checkout could not be started.');if(!d.url)throw new Error('Stripe checkout URL was not returned.');location.href=d.url}catch(e){alert(e.message||'Checkout could not be started.');busy=false;renderCard()}}
-  async function portal(){if(busy)return;const s=sess();if(!s?.access_token){location.hash='#account';return}busy=true;try{const r=await fetch(BBB_SUPABASE_URL+'/functions/v1/bbb-plus-portal',{method:'POST',headers:{apikey:BBB_SUPABASE_KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Billing settings unavailable.');if(d.url)location.href=d.url}catch(e){alert(e.message||'Billing settings unavailable.')}finally{busy=false}}
+  // The new BBB site embeds this membership page in a same-origin iframe.
+  // Stripe Checkout and the customer portal must open in the TOP browser tab;
+  // both intentionally block embedded payment pages.
+  function openStripePage(rawUrl,flow){
+    const target=new URL(String(rawUrl||""));
+    const allowed=flow==="checkout"?"checkout.stripe.com":"billing.stripe.com";
+    if(target.protocol!=="https:"||target.hostname!==allowed||target.username||target.password)
+      throw new Error("Billing provider returned an unexpected destination.");
+    const browser=(window.top&&window.top!==window)?window.top:window;
+    browser.location.assign(target.href);
+  }
+  async function checkout(){if(busy)return;const s=sess();if(!s?.access_token){location.hash='#account';return}busy=true;renderCard();try{const r=await fetch(BBB_SUPABASE_URL+'/functions/v1/bbb-plus-checkout',{method:'POST',headers:{apikey:BBB_SUPABASE_KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({interval})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Checkout could not be started.');if(!d.url)throw new Error('Stripe checkout URL was not returned.');openStripePage(d.url,"checkout")}catch(e){alert(e.message||'Checkout could not be started.');busy=false;renderCard()}}
+  async function portal(){if(busy)return;const s=sess();if(!s?.access_token){location.hash='#account';return}busy=true;try{const r=await fetch(BBB_SUPABASE_URL+'/functions/v1/bbb-plus-portal',{method:'POST',headers:{apikey:BBB_SUPABASE_KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Billing settings unavailable.');if(!d.url)throw new Error('Billing portal URL was not returned.');openStripePage(d.url,"billing")}catch(e){alert(e.message||'Billing settings unavailable.')}finally{busy=false}}
   function nav(){qa('.site-header .nav').forEach(h=>{if(h.querySelector('.bbb-plus-nav'))return;const a=document.createElement('a');a.className='bbb-plus-nav';a.href='#plus';a.innerHTML='<span>BBB+</span><span class="bbb-plus-star">★</span>';const acct=h.querySelector('.bbb-account-join'),trade=h.querySelector('.nav-cta');if(acct)h.insertBefore(a,acct);else if(trade)trade.insertAdjacentElement('afterend',a);else h.appendChild(a)});qa('.mobile-subnav').forEach(n=>{if(n.querySelector('.bbb-plus-mobile'))return;const a=document.createElement('a');a.className='bbb-plus-mobile';a.href='#plus';a.textContent='BBB+';n.appendChild(a)})}
   function foundingStripLabel(){const claimed=Number.isFinite(Number(founding?.claimed))?Number(founding.claimed):null;return claimed==null?'BBB+ FOUNDING 100':'BBB+ FOUNDING '+claimed+' / '+(Number(founding?.cap)||100)}
   function updateStrip(){const d=q('.bbb-plus-strip');if(!d)return;d.innerHTML='<strong>'+foundingStripLabel()+'</strong> Value History+, Trade Lab, Player Alerts and Command Center are live. <a href="#plus">OPEN BBB+ →</a>'}
