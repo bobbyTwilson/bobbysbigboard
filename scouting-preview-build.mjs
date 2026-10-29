@@ -24,8 +24,25 @@ a:hover,.rank-cell{color:#8bdfa0!important}
 const moverLoader=await readFile(root+'/updates-section.js','utf8');
 if(!moverLoader.includes("s.src='/movers-section.js'"))throw new Error('Market Movers runtime loader missing');
 const engineWithMovers=original;
+/* The legacy engine is embedded for BBB+/account/tools, but its server HTML
+   defaults to the original rankings homepage. Hide that old homepage BEFORE
+   body paint when the parent opens an account or membership route. Otherwise
+   it flashes for several seconds while Supabase membership checks finish. */
+const memberPrepaint=`<script>(function(){
+  var route=String(location.hash||'').slice(1).split(/[?&]/)[0];
+  if(/^\\/dynasty-engine\\/?$/.test(location.pathname)&&
+     /^(plus|account|watchlist|stats|terms|privacy|billing)$/.test(route)){
+    document.documentElement.classList.add('bbb-embedded-member-boot');
+  }
+})()<\\/script><style>
+html.bbb-embedded-member-boot #rankingsView,
+html.bbb-embedded-member-boot #rookieView,
+html.bbb-embedded-member-boot #prospectView,
+html.bbb-embedded-member-boot #tradeView,
+html.bbb-embedded-member-boot #profileView{display:none!important}
+</style>`;
 await writeFile(root+'/dynasty-engine/index.html',
-  engineWithMovers.replace('</head>', '<meta name="robots" content="noindex,nofollow">'+styles+'</head>'));
+  engineWithMovers.replace('</head>', '<meta name="robots" content="noindex,nofollow">'+memberPrepaint+styles+'</head>'));
 const publicBuild=process.env.VERCEL_ENV==='production';
 
 // Payment safety: the preview uses the live Supabase project. Until a truly
@@ -247,6 +264,10 @@ if(publicBuild){
 const qaErrors=[];
 const builtPreview=await readFile(root+'/index.html','utf8');
 const builtEngine=await readFile(root+'/dynasty-engine/index.html','utf8');
+if(!builtEngine.includes('bbb-embedded-member-boot')||
+   !builtEngine.includes('html.bbb-embedded-member-boot #rankingsView')||
+   !builtEngine.includes('plus|account|watchlist|stats|terms|privacy|billing'))
+  throw new Error('Embedded member prepaint guard missing: legacy homepage would flash behind BBB+');
 for(const [label,doc] of [['preview',builtPreview],['dynasty engine',builtEngine]]){
  if(!doc.includes('rel="icon"')||!doc.includes('href="/favicon.png"'))
    qaErrors.push(label+': missing BBB browser favicon');
