@@ -93,7 +93,207 @@ function bbbAccountSignedOutHtml(){return `
 
 function bbbAccountSignedInHtml(){
   const email=bbbAccountSession?.user?.email||'';const name=bbbAccountProfile?.username||bbbAccountProfile?.display_name||email.split('@')[0]||'BBB Member';const initial=(name[0]||'B').toUpperCase();
-  return `<section class="bbb-account-hero"><div class="shell"><div class="bbb-account-kicker">MY BBB</div><h1 class="bbb-account-title">WELCOME BACK,<br><span>${bbbAccountEsc(name)}.</span></h1><p class="bbb-account-copy">Your account is live. This is the foundation we'll use for connected leagues, contender analysis, personalized roster recommendations and trade finding.</p></div></section><section class="bbb-account-main"><div class="shell"><div class="bbb-account-profilebar"><div class="bbb-account-profile-id"><div class="bbb-account-avatar">${bbbAccountEsc(initial)}</div><div><strong>${bbbAccountEsc(name)}</strong><span>${bbbAccountEsc(email)}</span></div></div><button id="bbbAccountSignout" class="bbb-account-signout">SIGN OUT</button></div><div class="bbb-account-grid"><article class="bbb-account-card featured"><div class="label">NEXT STEP</div><h3>Connect Sleeper.</h3><p>The account layer is ready. Once you approve this layout, we'll add the read-only Sleeper connection here and let you choose which leagues appear in My BBB.</p><span class="action disabled">CONNECT SLEEPER — NEXT</span></article><article class="bbb-account-card"><div class="label">MY PLAYERS</div><h3>Your existing watchlist.</h3><p>Your saved BBB players stay available while we fold them into the new account experience.</p><a class="action" href="#watchlist">OPEN MY PLAYERS</a></article><article class="bbb-account-card"><div class="label">MY TEAMS</div><h3>League dashboard.</h3><p>Roster value, starter strength, future picks, contender score and recommended moves will live here after Sleeper is connected.</p><span class="bbb-account-lock">WAITING FOR SLEEPER</span></article></div></div></section>`;
+  return `<section class="bbb-account-hero"><div class="shell"><div class="bbb-account-kicker">MY BBB</div><h1 class="bbb-account-title">WELCOME BACK,<br><span>${bbbAccountEsc(name)}.</span></h1><p class="bbb-account-copy">Your account is live. This is the foundation we'll use for connected leagues, contender analysis, personalized roster recommendations and trade finding.</p></div></section><section class="bbb-account-main"><div class="shell"><div class="bbb-account-profilebar"><div class="bbb-account-profile-id"><div class="bbb-account-avatar">${bbbAccountEsc(initial)}</div><div><strong>${bbbAccountEsc(name)}</strong><span>${bbbAccountEsc(email)}</span></div></div><button id="bbbAccountSignout" class="bbb-account-signout">SIGN OUT</button></div><div class="bbb-account-grid"><article class="bbb-account-card featured"><div class="label">NEXT STEP</div><h3>Connect Sleeper.</h3><p>The account layer is ready. Once you approve this layout, we'll add the read-only Sleeper connection here and let you choose which leagues appear in My BBB.</p>${bbbSleeperPreviewOnly()?'<div id="bbbSleeperPanel" class="bbb-sleeper-panel" aria-live="polite">Loading your Sleeper connection…</div>':'<span class="bbb-account-lock">SLEEPER CONNECTION IN PREVIEW TESTING</span>'}</article><article class="bbb-account-card"><div class="label">MY PLAYERS</div><h3>Your existing watchlist.</h3><p>Your saved BBB players stay available while we fold them into the new account experience.</p><a class="action" href="#watchlist">OPEN MY PLAYERS</a></article><article class="bbb-account-card"><div class="label">MY TEAMS</div><h3>League dashboard.</h3><p>Roster value, starter strength, future picks, contender score and recommended moves will live here after Sleeper is connected.</p><span class="bbb-account-lock">WAITING FOR SLEEPER</span></article></div></div></section>`;
+}
+
+
+// Sleeper username/league linking (read-only Sleeper API). This feature is
+// intentionally preview-only until commercial API permission is resolved.
+const bbbSleeperState={userId:null,connection:null,saved:[],available:[],season:null,loaded:false,loading:false,busy:false,message:'',error:''};
+
+function bbbSleeperPreviewOnly(){
+  try{
+    const topPage=window.top;
+    return topPage!==window &&
+      topPage.location.origin===location.origin &&
+      /noindex/i.test(topPage.document.querySelector('meta[name="robots"]')?.content||'') &&
+      /vercel\.app$/i.test(location.hostname);
+  }catch{return false;}
+}
+
+function bbbSleeperStyle(){
+  if(document.querySelector('#bbb-sleeper-styles'))return;
+  const style=document.createElement('style');
+  style.id='bbb-sleeper-styles';
+  style.textContent='.bbb-sleeper-panel{margin-top:14px;font-size:12px;color:#b2c5ba}.bbb-sleeper-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.bbb-sleeper-row input{flex:1;min-width:145px;padding:10px;border:1px solid #375b45;border-radius:8px;color:#eff9f1;background:#07140d}.bbb-sleeper-panel button{border:1px solid #388354;border-radius:8px;background:#17452a;color:#e9fff0;padding:9px 12px;font-size:11px;font-weight:800;cursor:pointer}.bbb-sleeper-panel button:disabled{opacity:.5;cursor:wait}.bbb-sleeper-muted{color:#93aa9d;font-size:11px;line-height:1.55;margin:9px 0}.bbb-sleeper-status{color:#8ee1b0;font-size:11px;margin:10px 0}.bbb-sleeper-error{color:#ffa7a7;font-size:11px;margin:10px 0}.bbb-sleeper-leagues{max-height:300px;overflow-y:auto;margin:12px 0;padding:6px;background:#07120c;border-radius:9px}.bbb-sleeper-league{display:flex;gap:8px;align-items:start;padding:10px;border-bottom:1px solid #224130;font-size:11px;cursor:pointer}.bbb-sleeper-league:last-child{border:0}.bbb-sleeper-league input{margin-top:3px;accent-color:#40c980}.bbb-sleeper-league strong{display:block;color:#f1fff3;font-size:12px}.bbb-sleeper-league small{display:block;color:#93ae9e;margin-top:3px}.bbb-sleeper-secondary{background:#101b13!important;color:#a8cdb5!important}';
+  document.head.appendChild(style);
+}
+
+function bbbSleeperHtml(){
+  const st=bbbSleeperState, e=bbbAccountEsc;
+  if(!st.loaded)return '<div class="bbb-sleeper-muted">Loading saved Sleeper account…</div>';
+  let out='<div class="bbb-sleeper-muted">Read-only league import. No Sleeper password needed. This is a preview-only connection test.</div>';
+  if(st.error)out+='<div class="bbb-sleeper-error" role="alert">'+e(st.error)+'</div>';
+  if(st.message)out+='<div class="bbb-sleeper-status" role="status">'+e(st.message)+'</div>';
+  if(!st.connection){
+    out+='<form id="bbbSleeperConnectForm"><label for="bbbSleeperUsername">Sleeper username</label><div class="bbb-sleeper-row"><input id="bbbSleeperUsername" name="username" maxlength="40" autocomplete="off" spellcheck="false" placeholder="Your Sleeper username" required><button type="submit" '+(st.busy?'disabled':'')+'>CONNECT SLEEPER</button></div></form>';
+    return out;
+  }
+  out+='<div><strong>Connected: @'+e(st.connection.sleeper_username)+'</strong></div>';
+  out+='<div class="bbb-sleeper-row" style="margin-top:10px"><button id="bbbSleeperRefresh" type="button" '+(st.busy?'disabled':'')+'>FIND / REFRESH LEAGUES</button><button id="bbbSleeperDisconnect" class="bbb-sleeper-secondary" type="button" '+(st.busy?'disabled':'')+'>DISCONNECT</button></div>';
+  const saved=st.saved.filter(x=>x.selected);
+  if(saved.length)out+='<div class="bbb-sleeper-muted">Saved leagues: '+saved.map(x=>e(x.league_name)+' ('+e(x.season)+')'+(x.roster_id==null?' — roster not identified':'')).join(' · ')+'</div>';
+  if(st.season)out+='<div class="bbb-sleeper-muted">NFL season '+e(st.season)+'</div>';
+  if(st.available.length){
+    out+='<form id="bbbSleeperLeagueForm"><div class="bbb-sleeper-leagues">';
+    for(const league of st.available){
+      const id=String(league.league_id), existing=st.saved.find(x=>x.league_id===id);
+      const selected=Boolean(existing?.selected);
+      out+='<label class="bbb-sleeper-league"><input type="checkbox" data-sleeper-league="'+e(id)+'" '+(selected?'checked':'')+'><span><strong>'+e(league.name||'Untitled league')+'</strong><small>'+e(league.season||st.season)+' · '+e(league.total_rosters??'?')+' rosters · '+e(league.status||'unknown')+'</small></span></label>';
+    }
+    out+='</div><button type="submit" '+(st.busy?'disabled':'')+'>SAVE SELECTED LEAGUES</button></form>';
+  }else if(st.season)out+='<div class="bbb-sleeper-muted">No NFL leagues found for '+e(st.season)+'. Try another Sleeper username if this is unexpected.</div>';
+  return out;
+}
+
+function bbbSleeperPaint(){
+  if(!bbbSleeperPreviewOnly())return;
+  const panel=document.querySelector('#bbbSleeperPanel');
+  if(!panel)return;
+  bbbSleeperStyle();panel.innerHTML=bbbSleeperHtml();
+  panel.querySelector('#bbbSleeperConnectForm')?.addEventListener('submit',bbbSleeperConnect);
+  panel.querySelector('#bbbSleeperRefresh')?.addEventListener('click',bbbSleeperDiscover);
+  panel.querySelector('#bbbSleeperLeagueForm')?.addEventListener('submit',bbbSleeperSaveLeagues);
+  panel.querySelector('#bbbSleeperDisconnect')?.addEventListener('click',bbbSleeperDisconnect);
+}
+
+async function bbbSleeperDatabase(endpoint,method='GET',body=null){
+  const session=await bbbAccountRefreshSession();
+  if(!session?.user?.id||!session.access_token)throw new Error('Please sign in to your BBB account again.');
+  const url=BBB_SUPABASE_URL+'/rest/v1/'+endpoint;
+  const headers=bbbAccountHeaders(session.access_token);
+  if(method==='POST')headers.Prefer='resolution=merge-duplicates,return=representation';
+  const response=await fetch(url,{method,headers,body:body==null?undefined:JSON.stringify(body)});
+  if(!response.ok){
+    const err=await response.json().catch(()=>({}));
+    if(response.status===409)throw new Error('This Sleeper account is already linked to another BBB account.');
+    throw new Error(err.message||'Could not save Sleeper connection ('+response.status+').');
+  }
+  return response.status===204?[]:response.json().catch(()=>[]);
+}
+
+async function bbbSleeperGet(path){
+  const ctrl=new AbortController(),timeout=setTimeout(()=>ctrl.abort(),12000);
+  try{
+    const result=await fetch('https://api.sleeper.app/v1'+path,{signal:ctrl.signal,headers:{Accept:'application/json'},credentials:'omit'});
+    if(result.status===404)return null;
+    if(!result.ok)throw new Error('Sleeper is unavailable (HTTP '+result.status+'). Please retry.');
+    return await result.json();
+  }catch(err){
+    if(err.name==='AbortError')throw new Error('Sleeper request timed out. Please try again.');
+    if(err instanceof TypeError)throw new Error('Could not reach Sleeper. Check your browser connection or privacy settings.');
+    throw err;
+  }finally{clearTimeout(timeout);}
+}
+
+async function bbbSleeperInitialize(){
+  if(!bbbSleeperPreviewOnly()||!bbbAccountSession?.user?.id)return;
+  const uid=bbbAccountSession.user.id,st=bbbSleeperState;
+  if(st.userId!==uid){Object.assign(st,{userId:uid,connection:null,saved:[],available:[],season:null,loaded:false,loading:false,busy:false,message:'',error:''});}
+  if(st.loaded||st.loading){bbbSleeperPaint();return;}
+  st.loading=true;
+  try{
+    const [connection,leagues]=await Promise.all([
+      bbbSleeperDatabase('user_sleeper_connections?user_id=eq.'+encodeURIComponent(uid)+'&select=*'),
+      bbbSleeperDatabase('user_sleeper_leagues?user_id=eq.'+encodeURIComponent(uid)+'&select=*&order=league_name.asc')
+    ]);
+    if(st.userId!==uid)return;
+    st.connection=connection[0]||null;
+    st.saved=Array.isArray(leagues)?leagues:[];
+  }catch(err){st.error=err.message||'Could not read your saved leagues.';}
+  finally{if(st.userId===uid){st.loading=false;st.loaded=true;bbbSleeperPaint();}}
+}
+
+async function bbbSleeperConnect(event){
+  event.preventDefault();
+  const st=bbbSleeperState;
+  if(st.busy)return;
+  const username=String(event.currentTarget.querySelector('[name=username]')?.value||'').trim();
+  if(!/^[A-Za-z0-9_.-]{2,40}$/.test(username)){st.error='Enter a valid Sleeper username.';bbbSleeperPaint();return;}
+  st.busy=true;st.error='';st.message='Looking up Sleeper account…';bbbSleeperPaint();
+  try{
+    const remote=await bbbSleeperGet('/user/'+encodeURIComponent(username));
+    if(!remote?.user_id||!/^\d+$/.test(String(remote.user_id)))throw new Error('No Sleeper user was found for that username.');
+    const uid=bbbAccountSession?.user?.id;
+    if(!uid)throw new Error('BBB account session expired.');
+    const results=await bbbSleeperDatabase('user_sleeper_connections?on_conflict=user_id','POST',[{
+      user_id:uid,sleeper_user_id:String(remote.user_id),sleeper_username:String(remote.username||username),
+      display_name:String(remote.display_name||remote.username||username),avatar_id:remote.avatar||null,updated_at:new Date().toISOString()
+    }]);
+    st.connection=results[0]||{sleeper_user_id:String(remote.user_id),sleeper_username:String(remote.username||username)};
+    st.message='Sleeper username saved. Loading your leagues…';
+    st.busy=false;
+    await bbbSleeperDiscover();
+    return;
+  }catch(err){st.error=err.message||'Could not connect Sleeper.';st.message='';}
+  finally{st.busy=false;bbbSleeperPaint();}
+}
+
+async function bbbSleeperDiscover(){
+  const st=bbbSleeperState;
+  if(st.busy||!st.connection)return;
+  st.busy=true;st.error='';st.message='Loading current NFL leagues…';bbbSleeperPaint();
+  try{
+    const nfl=await bbbSleeperGet('/state/nfl');
+    const season=String(nfl?.season||new Date().getUTCFullYear());
+    if(!/^20\d{2}$/.test(season))throw new Error('Could not determine the NFL season.');
+    const leagues=await bbbSleeperGet('/user/'+encodeURIComponent(st.connection.sleeper_user_id)+'/leagues/nfl/'+season);
+    if(!Array.isArray(leagues))throw new Error('Sleeper did not return a league list.');
+    st.available=leagues.filter(x=>x&&/^\d+$/.test(String(x.league_id))).slice(0,100);
+    st.season=season;st.message=st.available.length?'Choose your leagues and save.':'No current-season leagues were found.';
+  }catch(err){st.error=err.message||'Unable to load Sleeper leagues.';st.message='';}
+  finally{st.busy=false;bbbSleeperPaint();}
+}
+
+async function bbbSleeperSaveLeagues(event){
+  event.preventDefault();
+  const st=bbbSleeperState;
+  if(st.busy||!st.connection)return;
+  const form=event.currentTarget;
+  const picked=new Set([...form.querySelectorAll('input[data-sleeper-league]:checked')].map(x=>x.dataset.sleeperLeague));
+  if(picked.size>20){st.error='Select up to 20 leagues for now.';bbbSleeperPaint();return;}
+  st.busy=true;st.error='';st.message='Saving selected leagues…';bbbSleeperPaint();
+  try{
+    const uid=bbbAccountSession?.user?.id;
+    if(!uid)throw new Error('BBB account session expired.');
+    const rows=[];
+    for(const league of st.available){
+      const id=String(league.league_id),selected=picked.has(id);
+      let rosterId=null;
+      if(selected){
+        const rosters=await bbbSleeperGet('/league/'+encodeURIComponent(id)+'/rosters');
+        const mine=Array.isArray(rosters)?rosters.find(x=>String(x.owner_id)===String(st.connection.sleeper_user_id)||Array.isArray(x.co_owners)&&x.co_owners.some(c=>String(c)===String(st.connection.sleeper_user_id))):null;
+        rosterId=Number.isInteger(Number(mine?.roster_id))?Number(mine.roster_id):null;
+      }
+      rows.push({
+        user_id:uid,league_id:id,season:String(league.season||st.season),
+        league_name:String(league.name||'Untitled league').slice(0,200),
+        avatar_id:league.avatar||null,
+        total_rosters:Number.isInteger(Number(league.total_rosters))?Number(league.total_rosters):null,
+        roster_id:rosterId,league_status:String(league.status||'unknown'),
+        selected,roster_positions:Array.isArray(league.roster_positions)?league.roster_positions:[],
+        scoring_settings:league.scoring_settings&&typeof league.scoring_settings==='object'?league.scoring_settings:{},
+        synced_at:new Date().toISOString()
+      });
+    }
+    const updated=await bbbSleeperDatabase('user_sleeper_leagues?on_conflict=user_id,league_id','POST',rows);
+    st.saved=[...st.saved.filter(s=>!rows.some(r=>r.league_id===s.league_id)),...updated];
+    st.message=picked.size+' league'+(picked.size===1?'':'s')+' saved to My BBB.';
+  }catch(err){st.error=err.message||'Could not save leagues.';st.message='';}
+  finally{st.busy=false;bbbSleeperPaint();}
+}
+
+async function bbbSleeperDisconnect(){
+  const st=bbbSleeperState;
+  if(st.busy||!st.connection||!window.confirm('Disconnect Sleeper and remove saved league selections from My BBB?'))return;
+  st.busy=true;st.error='';st.message='Disconnecting…';bbbSleeperPaint();
+  try{
+    const uid=encodeURIComponent(bbbAccountSession.user.id);
+    await bbbSleeperDatabase('user_sleeper_leagues?user_id=eq.'+uid,'DELETE');
+    await bbbSleeperDatabase('user_sleeper_connections?user_id=eq.'+uid,'DELETE');
+    Object.assign(st,{connection:null,saved:[],available:[],season:null,message:'Sleeper disconnected. Your BBB account remains active.'});
+  }catch(err){st.error=err.message||'Could not disconnect Sleeper.';st.message='';}
+  finally{st.busy=false;bbbSleeperPaint();}
 }
 
 function bbbAccountBindAuth(){
@@ -105,7 +305,7 @@ function bbbAccountBindAuth(){
   view.querySelector('#bbbAccountSignout')?.addEventListener('click',bbbAccountLogout);
 }
 
-function bbbAccountRender(){const view=bbbAccountEnsureView();view.innerHTML=bbbAccountSession?.access_token?bbbAccountSignedInHtml():bbbAccountSignedOutHtml();bbbAccountBindAuth();}
+function bbbAccountRender(){const view=bbbAccountEnsureView();view.innerHTML=bbbAccountSession?.access_token?bbbAccountSignedInHtml():bbbAccountSignedOutHtml();bbbAccountBindAuth();if(bbbAccountSession?.access_token)bbbSleeperInitialize();}
 
 function bbbAccountAppendYouTubeToExplore(){
   document.querySelectorAll('.bbb-nav-explore-menu').forEach(menu=>{if(menu.querySelector('.bbb-youtube-explore'))return;const a=document.createElement('a');a.className='bbb-youtube-explore';a.href='https://www.youtube.com/@bobbysbigboard';a.target='_blank';a.innerHTML='<strong>YouTube ↗</strong><span>Film breakdowns, rankings and dynasty content.</span>';menu.appendChild(a);});
