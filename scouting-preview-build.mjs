@@ -34,7 +34,7 @@ const memberPrepaint=`<script>(function(){
      /^(plus|account|watchlist|stats|terms|privacy|billing)$/.test(route)){
     document.documentElement.classList.add('bbb-embedded-member-boot');
   }
-})()<\\/script><style>
+})()</script><style>
 html.bbb-embedded-member-boot #rankingsView,
 html.bbb-embedded-member-boot #rookieView,
 html.bbb-embedded-member-boot #prospectView,
@@ -264,7 +264,8 @@ if(publicBuild){
 const qaErrors=[];
 const builtPreview=await readFile(root+'/index.html','utf8');
 const builtEngine=await readFile(root+'/dynasty-engine/index.html','utf8');
-if(!builtEngine.includes('bbb-embedded-member-boot')||
+if(!builtEngine.includes('})()</script><style>')||
+   !builtEngine.includes('bbb-embedded-member-boot')||
    !builtEngine.includes('html.bbb-embedded-member-boot #rankingsView')||
    !builtEngine.includes('plus|account|watchlist|stats|terms|privacy|billing'))
   throw new Error('Embedded member prepaint guard missing: legacy homepage would flash behind BBB+');
