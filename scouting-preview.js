@@ -18,6 +18,130 @@ let homepagePending=true;
 let activeRoute=0;
 const pageCache=new Map();
 const PAGE_CACHE_MS=90*1000;
+
+/* Shared scouting header: real player search and reliable Dynasty dropdown. */
+function installScoutingHeaderTools(){
+ const header=document.querySelector('header .top');
+ const nav=header?.querySelector('nav');
+ if(!header||!nav||header.dataset.bbbHeaderReady==='1')return;
+ header.dataset.bbbHeaderReady='1';
+ const dynasty=nav.querySelector('details.dropdown');
+ const closeDynasty=()=>{if(dynasty?.open)dynasty.open=false;};
+ // Remove <details open> on selection, external click, Esc or back/forward.
+ document.addEventListener('click',event=>{
+   if(!dynasty?.open)return;
+   const target=event.target;
+   if(target instanceof Element && target.closest('details.dropdown summary'))return;
+   if(target instanceof Element && target.closest('details.dropdown a')){closeDynasty();return;}
+   if(!dynasty.contains(target))closeDynasty();
+ },true);
+ window.addEventListener('popstate',closeDynasty);
+ const trigger=document.createElement('button');
+ trigger.type='button';trigger.className='bbb-header-search-trigger';
+ trigger.setAttribute('aria-label','Search players');
+ trigger.setAttribute('aria-haspopup','dialog');
+ trigger.innerHTML='<span aria-hidden="true">⌕</span><span>Search</span>';
+ nav.appendChild(trigger);
+ const backdrop=document.createElement('div');
+ backdrop.className='bbb-header-search-overlay';backdrop.hidden=true;
+ backdrop.innerHTML='<div class="bbb-header-search-backdrop" data-bbb-search-close></div>'+
+ '<section class="bbb-header-search-dialog" role="dialog" aria-modal="true" aria-label="Search Bobby’s Big Board">'+
+ '<div class="bbb-header-search-line"><span aria-hidden="true" class="bbb-header-search-glass">⌕</span>'+
+ '<input id="bbbHeaderSearchInput" autocomplete="off" type="search" placeholder="Search players, teams, or positions…" aria-label="Search players" />'+
+ '<button type="button" class="bbb-header-search-close" aria-label="Close search" data-bbb-search-close>×</button></div>'+
+ '<div class="bbb-header-search-description">SEARCH THE BOBBY’S BIG BOARD PLAYER DIRECTORY</div>'+
+ '<div id="bbbHeaderSearchResults" class="bbb-header-search-results" role="listbox" aria-label="Players"><div class="bbb-header-search-message">Start typing to find a player.</div></div></section>';
+ document.body.appendChild(backdrop);
+ const field=backdrop.querySelector('#bbbHeaderSearchInput'),results=backdrop.querySelector('#bbbHeaderSearchResults');
+ const styles=document.createElement('style');styles.id='bbb-header-search-styles';
+ styles.textContent=[
+ '.bbb-header-search-trigger{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #41664b;background:#142d1c;color:#e2f3e4;border-radius:10px;min-height:37px;padding:7px 12px;cursor:pointer;font:inherit;font-size:12px;font-weight:800;white-space:nowrap}',
+ '.bbb-header-search-trigger:hover,.bbb-header-search-trigger:focus-visible{border-color:#8de4a8;background:#22462d;outline:none}',
+ '.bbb-header-search-trigger span:first-child{font-size:21px;line-height:14px}',
+ '.bbb-header-search-overlay[hidden]{display:none!important}',
+ '.bbb-header-search-overlay{position:fixed;inset:0;z-index:300;display:flex;justify-content:center;align-items:flex-start;padding:clamp(58px,11vh,115px) 12px 20px}',
+ '.bbb-header-search-backdrop{position:absolute;inset:0;background:rgba(1,9,5,.83);backdrop-filter:blur(8px)}',
+ '.bbb-header-search-dialog{position:relative;width:min(680px,100%);background:#0c1c12;border:1px solid #4b7656;box-shadow:0 22px 90px #000b;border-radius:16px;overflow:hidden;color:#edf7ee}',
+ '.bbb-header-search-line{display:flex;align-items:center;gap:10px;padding:15px 17px;border-bottom:1px solid #345b3f}',
+ '.bbb-header-search-glass{font-size:31px;color:#9cdeb2}',
+ '.bbb-header-search-line input{flex:1;min-width:0;background:transparent;color:#fff;border:0;outline:0;font-size:16px;font-family:inherit}',
+ '.bbb-header-search-line input::placeholder{color:#849c8a}',
+ '.bbb-header-search-close{border:0;background:#21382a;border-radius:8px;color:#dbe8df;font-size:26px;width:34px;height:34px;cursor:pointer}',
+ '.bbb-header-search-description{color:#82ad8e;font-size:10px;font-weight:900;letter-spacing:.08em;padding:12px 18px 3px}',
+ '.bbb-header-search-results{padding:8px 10px 14px;overflow-y:auto;max-height:min(58vh,520px)}',
+ '.bbb-header-search-results a{display:flex;align-items:center;gap:12px;padding:12px 11px;border-radius:10px;color:#ebf3e9;text-decoration:none;border-bottom:1px solid #1d3625}',
+ '.bbb-header-search-results a:hover,.bbb-header-search-results a:focus-visible{background:#193d29;outline:2px solid #68bd86}',
+ '.bbb-header-search-avatar{width:37px;height:37px;border-radius:10px;display:grid;place-items:center;background:#244630;color:#9cebb6;font-size:14px;font-weight:900;flex:none}',
+ '.bbb-header-search-player{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}',
+ '.bbb-header-search-player strong{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+ '.bbb-header-search-player small{font-size:11px;color:#a2b6a8}',
+ '.bbb-header-search-rank{border:1px solid #345a40;border-radius:8px;padding:5px 8px;color:#96dba9;font-size:11px;font-weight:900}',
+ '.bbb-header-search-message{padding:23px 14px;color:#b4cbb8;font-size:13px;text-align:center}',
+ 'body.bbb-header-search-open{overflow:hidden}',
+ '@media(max-width:680px){.bbb-header-search-trigger{padding:8px 10px;min-height:39px}.bbb-header-search-trigger span:last-child{display:none}.bbb-header-search-overlay{padding-top:65px}.bbb-header-search-results{max-height:64dvh}}'
+ ].join('\n');
+ document.head.appendChild(styles);
+ let open=false,loadPromise=null,records=[],ranking=new Map();
+ const close=()=>{if(!open)return;open=false;backdrop.hidden=true;document.body.classList.remove('bbb-header-search-open');trigger.focus({preventScroll:true});};
+ const render=()=>{
+   if(!open)return;
+   const term=field.value.trim().toLowerCase();
+   if(!term){results.innerHTML='<div class="bbb-header-search-message">Start typing to find a player.</div>';return;}
+   if(!records.length){results.innerHTML='<div class="bbb-header-search-message">Loading player directory…</div>';return;}
+   const tokens=term.split(/\s+/).filter(Boolean);
+   const found=records.map(p=>{
+     const name=String(p.name||'').toLowerCase();
+     const hay=[p.name,p.team,p.pos,p.college].filter(Boolean).join(' ').toLowerCase();
+     if(!tokens.every(word=>hay.includes(word)))return null;
+     const score=name===term?0:name.startsWith(term)?1:name.includes(term)?2:3;
+     return {p,score};
+   }).filter(Boolean).sort((a,b)=>a.score-b.score||(ranking.get(a.p.player_key)||9999)-(ranking.get(b.p.player_key)||9999)||a.p.name.localeCompare(b.p.name)).slice(0,12);
+   results.innerHTML=found.length?found.map(({p})=>{
+     const initial=String(p.name||'?').split(/\s+/).slice(0,2).map(word=>word.charAt(0)).join('');
+     const rank=ranking.get(p.player_key);
+     return '<a href="/scouting/'+encodeURIComponent(p.player_key)+'" role="option"><span class="bbb-header-search-avatar">'+esc(initial)+'</span>'+
+     '<span class="bbb-header-search-player"><strong>'+esc(p.name)+'</strong><small>'+esc([p.pos,p.team||p.college].filter(Boolean).join(' · '))+'</small></span>'+
+     (rank?'<span class="bbb-header-search-rank">#'+rank+'</span>':'')+'</a>';
+   }).join(''):'<div class="bbb-header-search-message">No matching players. Try a shorter name or a different spelling.</div>';
+ };
+ async function loadSearch(){
+   if(loadPromise)return loadPromise;
+   loadPromise=Promise.all([
+     bbbDb('site_profiles','select=player_key,name,pos,team,college&order=name.asc&limit=1200'),
+     bbbDb('site_dynasty','select=player_key,rank&order=rank.asc&limit=500')
+   ]).then(([profiles,ranks])=>{
+     records=Array.isArray(profiles)?profiles.filter(p=>p.player_key&&p.name):[];
+     ranking=new Map((Array.isArray(ranks)?ranks:[]).map(p=>[p.player_key,p.rank]));
+     render();
+   }).catch(error=>{loadPromise=null;console.warn('BBB header player search',error);if(open)results.innerHTML='<div class="bbb-header-search-message">Player search is temporarily unavailable. Try again in a moment.</div>';});
+   return loadPromise;
+ }
+ trigger.addEventListener('click',()=>{
+   closeDynasty();open=true;backdrop.hidden=false;document.body.classList.add('bbb-header-search-open');
+   field.value='';render();
+   requestAnimationFrame(()=>field.focus({preventScroll:true}));
+   void loadSearch();
+ });
+ backdrop.querySelectorAll('[data-bbb-search-close]').forEach(el=>el.addEventListener('click',close));
+ results.addEventListener('click',e=>{if(e.target.closest('a[href]'))close();});
+ field.addEventListener('input',render);
+ field.addEventListener('keydown',event=>{
+   const links=[...results.querySelectorAll('a[href]')];
+   if(event.key==='ArrowDown'&&links.length){event.preventDefault();links[0].focus();}
+   if(event.key==='Enter'&&links.length){event.preventDefault();links[0].click();}
+ });
+ results.addEventListener('keydown',event=>{
+   const links=[...results.querySelectorAll('a[href]')],at=links.indexOf(document.activeElement);
+   if(event.key==='ArrowDown'&&at+1<links.length){event.preventDefault();links[at+1].focus();}
+   if(event.key==='ArrowUp'){event.preventDefault();if(at>0)links[at-1].focus();else field.focus();}
+ });
+ document.addEventListener('keydown',event=>{
+   if(event.key==='Escape'){closeDynasty();close();}
+   if(event.key==='/'&&!open&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||'')){event.preventDefault();trigger.click();}
+ });
+ window.addEventListener('popstate',close);
+}
+
 let cachedHeadshots=null;
 const assetHeadshots=()=>cachedHeadshots||(cachedHeadshots=fetch("/scouting-headshots.json",{cache:"force-cache"})
   .then(r=>r.ok?r.json():null).then(doc=>doc?.players||{})
@@ -447,5 +571,6 @@ window.addEventListener("message",event=>{
   window.scrollTo(0,0);
   requestAnimationFrame(()=>window.scrollTo(0,0));
 });
+installScoutingHeaderTools();
 renderRoute();
 })();

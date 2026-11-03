@@ -75,9 +75,48 @@ window.BBB_PROFILE_V5 = async function(ctx){
   '<div class="sp-dyn-actions"><a class="sp-link" href="/dynasty/rankings">Explore Top 500 rankings →</a><a class="sp-link secondary" href="/dynasty/compare?left='+encodeURIComponent(p.player_key)+'">Compare this player →</a></div>'+
   '<p class="sp-caption">Market comparison is contextual, not a consensus grade. BBB rankings and scouting grades are independent evaluations.</p></div>';
  };
+
+ const rankHistoryPanel=()=>'<div class="sp-panel sp-history-panel"><div class="sp-panel-head"><div><div class="sp-kicker">DYNASTY RANK HISTORY</div><h2>How his rank has moved.</h2><p>BBB’s recorded 30-day and 7-day reference ranks compared with today. Lower rank numbers are better.</p></div></div><div id="spRankHistory" aria-live="polite"><div class="sp-muted">Opening rank history…</div></div></div>';
+ let rankHistoryLoaded=false;
+ async function loadRankHistory(){
+  if(rankHistoryLoaded)return;
+  const mount=app.querySelector('#spRankHistory');if(!mount)return;
+  rankHistoryLoaded=true;
+  if(!r){mount.innerHTML='<div class="sp-no-data">This player is not currently on the Top 500 dynasty board. Rank history appears once the player is ranked.</div>';return;}
+  const numeric=v=>v==null||v===''?null:(Number.isFinite(Number(v))&&Number(v)>0?Number(v):null);
+  try{
+   const found=await bbbDb('site_movers','select=current_rank,bbb_7d_ref_rank,bbb_30d_ref_rank,bbb_move_7d,bbb_move_30d,current_market_rank,market_7d_ref_rank,market_30d_ref_rank&player_key=eq.'+encodeURIComponent(p.player_key)+'&limit=1');
+   const m=found?.[0];
+   if(!m){mount.innerHTML='<div class="sp-no-data">Rank tracking is not available for this player yet.</div>';return;}
+   const bbb=[numeric(m.bbb_30d_ref_rank),numeric(m.bbb_7d_ref_rank),numeric(m.current_rank)??numeric(r.rank)];
+   const market=[numeric(m.market_30d_ref_rank),numeric(m.market_7d_ref_rank),numeric(m.current_market_rank)??numeric(r.market)];
+   if(bbb.every(v=>v==null)){mount.innerHTML='<div class="sp-no-data">No recorded rank reference points yet.</div>';return;}
+   const vals=[...bbb,...market].filter(v=>v!=null);
+   const gap=Math.max(3,Math.ceil((Math.max(...vals)-Math.min(...vals))*.22));
+   const smallest=Math.max(1,Math.min(...vals)-gap),largest=Math.max(...vals)+gap;
+   const y=v=>35+(v-smallest)/Math.max(1,largest-smallest)*170;
+   const xs=[82,330,578],times=['30 DAYS AGO','7 DAYS AGO','NOW'];
+   const grid=[0,.5,1].map(t=>{const value=Math.round(smallest+(largest-smallest)*t);const yy=y(value);return '<line class="sp-history-gridline" x1="66" x2="604" y1="'+yy.toFixed(1)+'" y2="'+yy.toFixed(1)+'"/><text class="sp-history-axis" x="59" y="'+(yy+4).toFixed(1)+'" text-anchor="end">#'+value+'</text>'}).join('');
+   const plot=(data,css,name)=>{
+    const pts=data.map((v,i)=>v==null?null:{v,x:xs[i],y:y(v)}).filter(Boolean);
+    if(!pts.length)return '';
+    const paths=data.map((v,i)=>v==null?null:{v,x:xs[i],y:y(v)}).map((a,i,all)=>a&&i>0&&all[i-1]?'<line class="sp-history-line '+css+'" x1="'+all[i-1].x+'" y1="'+all[i-1].y.toFixed(1)+'" x2="'+a.x+'" y2="'+a.y.toFixed(1)+'"/>':'').join('');
+    return paths+pts.map((pt,i)=>'<circle class="sp-history-dot '+css+'" cx="'+pt.x+'" cy="'+pt.y.toFixed(1)+'" r="5"><title>'+name+' #'+pt.v+'</title></circle>').join('');
+   };
+   const change=(past,now)=>past==null||now==null?'<span class="sp-history-neutral">Not recorded</span>':past===now?'<span class="sp-history-neutral">No change</span>':'<span class="'+(past>now?'sp-history-up':'sp-history-down')+'">'+(past>now?'↑ '+(past-now)+' spots':'↓ '+(now-past)+' spots')+'</span>';
+   const stat=(title,ref,now)=>'<div class="sp-history-stat"><span>'+title+'</span><strong>'+(ref==null?'—':'#'+ref)+'</strong><small>'+change(ref,now)+'</small></div>';
+   mount.innerHTML='<div class="sp-history-legend"><span class="bbb">BBB RANK</span><span class="market">MARKET RANK</span></div>'+
+   '<div class="sp-history-graph"><svg viewBox="0 0 660 252" role="img" aria-label="BBB and market ranks at 30-day, 7-day, and current reference points">'+grid+
+   plot(bbb,'bbb','BBB rank')+plot(market,'market','Market rank')+
+   times.map((label,i)=>'<text class="sp-history-axis sp-history-date" text-anchor="middle" x="'+xs[i]+'" y="241">'+label+'</text>').join('')+'</svg></div>'+
+   '<div class="sp-history-stats">'+stat('BBB · 30D',bbb[0],bbb[2])+stat('BBB · 7D',bbb[1],bbb[2])+stat('MARKET · 30D',market[0],market[2])+stat('MARKET · 7D',market[1],market[2])+'</div>'+
+   '<p class="sp-caption">These are recorded reference points, not a day-by-day timeline. Detailed historical value analytics remain available through BBB+.</p>';
+  }catch(err){rankHistoryLoaded=false;console.warn('Player rank history',err);mount.innerHTML='<div class="sp-no-data">Rank history could not load right now. Please try again later.</div>';}
+ }
+
  app.innerHTML='<section class="sp-profile"><div class="wrap"><div class="sp-crumb"><a href="/players">Players</a> <span>›</span> '+esc(p.pos||"")+' <span>›</span> '+esc(p.name)+'</div>'+
   '<div class="sp-hero"><div class="sp-portrait sp-portrait-framed">'+head+'<span class="sp-portrait-fallback">'+esc(initials)+'</span></div><div class="sp-hero-content"><div class="sp-kicker">PLAYER EVALUATION · BOBBY’S BIG BOARD</div><h1>'+esc(p.name)+'</h1><p class="sp-identity">'+esc(p.pos||"")+' <span>·</span> '+esc(["donovan-smith","brant-kuithe"].includes(p.player_key)?"Undrafted (2025)":(p.team||"Draft Prospect"))+' <span>·</span> '+esc(p.college||"College not recorded")+'</p><div class="sp-measure-strip" aria-label="Player height and weight"><div class="sp-measure-quick"><span>HEIGHT</span><strong>'+esc(height(a?.height_in))+'</strong></div><div class="sp-measure-quick"><span>WEIGHT</span><strong>'+esc(a?.weight_lb==null?"Not recorded":display(a.weight_lb)+" lbs")+'</strong></div></div><div class="sp-hero-tags"><span class="sp-overall-chip">PROSPECT GRADE <strong>'+esc(gradeText)+'</strong></span>'+(g?.comp?'<span>PRO COMP <strong>'+esc(g.comp)+'</strong></span>':'')+(g?.year?'<span>'+(["donovan-smith","brant-kuithe"].includes(p.player_key)?"UNDRAFTED":"CLASS")+' <strong>'+esc(g.year)+'</strong></span>':'')+(r?'<span>DYNASTY <strong>#'+esc(r.rank)+'</strong></span>':'')+'</div></div></div>'+
-  '<div class="sp-tabs" role="tablist" aria-label="Player profile sections"><button type="button" class="sp-tab active" data-tab="overview" role="tab" aria-selected="true">Overview</button><button type="button" class="sp-tab" data-tab="traits" role="tab" aria-selected="false">Prospect Grades</button><button type="button" class="sp-tab" data-tab="athletic" role="tab" aria-selected="false">Athletic Profile</button><button type="button" class="sp-tab" data-tab="film" role="tab" aria-selected="false">Film Room</button><button type="button" class="sp-tab" data-tab="stats" role="tab" aria-selected="false">Stats & Logs</button><button type="button" class="sp-tab" data-tab="advanced" role="tab" aria-selected="false">Advanced Stats</button><button type="button" class="sp-tab" data-tab="dynasty" role="tab" aria-selected="false">Dynasty</button></div>'+
+  '<div class="sp-tabs" role="tablist" aria-label="Player profile sections"><button type="button" class="sp-tab active" data-tab="overview" role="tab" aria-selected="true">Overview</button><button type="button" class="sp-tab" data-tab="traits" role="tab" aria-selected="false">Prospect Grades</button><button type="button" class="sp-tab" data-tab="athletic" role="tab" aria-selected="false">Athletic Profile</button><button type="button" class="sp-tab" data-tab="film" role="tab" aria-selected="false">Film Room</button><button type="button" class="sp-tab" data-tab="stats" role="tab" aria-selected="false">Stats & Logs</button><button type="button" class="sp-tab" data-tab="advanced" role="tab" aria-selected="false">Advanced Stats</button><button type="button" class="sp-tab" data-tab="dynasty" role="tab" aria-selected="false">Dynasty</button><button type="button" class="sp-tab" data-tab="history" role="tab" aria-selected="false">Rank History</button></div>'+
   '<div class="sp-tab-content active" data-content="overview" role="tabpanel">'+V6.overview({p,g,s,report,r,sample,prospects,videos,esc})+'</div>'+
   '<div class="sp-tab-content" data-content="traits" role="tabpanel">'+grading()+'</div>'+
   '<div class="sp-tab-content" data-content="athletic" role="tabpanel">'+athletics()+'</div>'+
@@ -85,13 +124,14 @@ window.BBB_PROFILE_V5 = async function(ctx){
   '<div class="sp-tab-content" data-content="stats" role="tabpanel">'+statsUI()+'</div>'+
   '<div class="sp-tab-content" data-content="advanced" role="tabpanel"><div class="sp-panel" id="spAdvancedPanel"><div class="sp-muted">Loading advanced NFL production metrics…</div></div></div>'+
   '<div class="sp-tab-content" data-content="dynasty" role="tabpanel">'+dyn()+'</div>'+
+  '<div class="sp-tab-content" data-content="history" role="tabpanel">'+rankHistoryPanel()+'</div>'+
   '</div></section>';
  const profileRoot=app.querySelector(".sp-profile");
  window.BBB_FILM_ROOM.bindProfile(profileRoot,videos,esc);
  const tabs=Array.from(profileRoot.querySelectorAll(".sp-tab"));
  const compareSelector=profileRoot.querySelector("#spRadarCompare");
  if(compareSelector)compareSelector.addEventListener("change",()=>profileRoot.querySelector(".sp-v7-radar")?.classList.toggle("sp-compare-on",compareSelector.value==="peers"));
- const validTabs=new Set(["overview","traits","athletic","film","stats","advanced","dynasty"]);
+ const validTabs=new Set(["overview","traits","athletic","film","stats","advanced","dynasty","history"]);
  const showTab=tab=>{
   if(!validTabs.has(tab))return;
   tabs.forEach(el=>{const on=el.dataset.tab===tab;el.classList.toggle("active",on);el.setAttribute("aria-selected",String(on));el.tabIndex=on?0:-1});
@@ -103,6 +143,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
   if(updateUrl&&location.hash!=="#"+tab)history.replaceState(history.state,"",location.pathname+location.search+"#"+tab);
   if(tab==="stats")loadStats();
   if(tab==="advanced")loadPeerComparisons();
+  if(tab==="history")loadRankHistory();
  };
  tabs.forEach((button,index)=>{
   button.id="sp-tab-"+button.dataset.tab;
