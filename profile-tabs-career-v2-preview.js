@@ -350,6 +350,28 @@
         #profileView .bbb-compact-consensus-grid{grid-template-columns:1fr 1fr}
         #profileView .bbb-compact-consensus-grid .gap{grid-column:1/-1}
       }
+
+      #profileView .bbb-public-rank-history{border:1px solid #31543e;border-radius:12px;background:linear-gradient(145deg,#102319,#08130d);padding:20px;margin-bottom:12px}
+      #profileView .bbb-public-rank-history h2{margin:5px 0 7px;font-size:21px;color:#eff8f1}
+      #profileView .bbb-public-rank-history p{font-size:11px;color:#adc4b4;line-height:1.5;margin:0 0 13px}
+      #profileView .bbb-public-rank-chart{border:1px solid #294934;background:#06130b;border-radius:10px;padding:10px}
+      #profileView .bbb-public-rank-chart svg{display:block;width:100%;height:auto;max-height:260px}
+      #profileView .bbb-public-rank-grid{stroke:#23402c;stroke-dasharray:3 7;stroke-width:1}
+      #profileView .bbb-public-rank-axis{fill:#a3bbaa;font-size:11px;font-weight:800}
+      #profileView .bbb-public-rank-line.bbb{stroke:#72e0a7;stroke-width:3}
+      #profileView .bbb-public-rank-line.market{stroke:#e6c365;stroke-width:2.5;stroke-dasharray:7 6}
+      #profileView .bbb-public-rank-dot.bbb{fill:#72e0a7}
+      #profileView .bbb-public-rank-dot.market{fill:#e6c365}
+      #profileView .bbb-public-rank-key{display:flex;gap:12px;margin-bottom:10px;color:#bbcabb;font-size:10px;font-weight:900}
+      #profileView .bbb-public-rank-key span:before{content:"";display:inline-block;width:16px;height:3px;vertical-align:3px;margin-right:5px}
+      #profileView .bbb-public-rank-key .bbb:before{background:#72e0a7}
+      #profileView .bbb-public-rank-key .market:before{background:#e6c365}
+      #profileView .bbb-public-rank-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+      #profileView .bbb-public-rank-kpis>div{border:1px solid #294836;background:#10261a;border-radius:9px;padding:11px;min-width:0}
+      #profileView .bbb-public-rank-kpis span{display:block;color:#98ad9e;font-size:9px;font-weight:900;margin-bottom:6px}
+      #profileView .bbb-public-rank-kpis strong{display:block;color:#e6f7ea;font-size:17px;margin-bottom:3px}
+      #profileView .bbb-public-rank-kpis small{color:#acd0b5;font-size:11px}
+      @media(max-width:600px){#profileView .bbb-public-rank-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#profileView .bbb-public-rank-history{padding:14px}#profileView .bbb-public-rank-chart{padding:5px}}
     `;
     document.head.appendChild(s);
   }
@@ -515,7 +537,36 @@
       </div>`;
   }
 
-  function tabLabel(key){return ({stats:'Stats',gamelog:'Game Log',news:'News',notes:'Notes',prospect:'Prospect Profile',career:'Career',similar:'Similar Players'})[key]||key}
+  function tabLabel(key){return ({stats:'Stats',gamelog:'Game Log',news:'News',notes:'Rank History',prospect:'Prospect Profile',career:'Career',similar:'Similar Players'})[key]||key}
+
+  function rankHistoryCard(m){
+    const rk=v=>v==null||!Number.isFinite(Number(v))||Number(v)<1?null:Math.round(Number(v));
+    const bbb=[rk(m?.bbb_30d_ref_rank),rk(m?.bbb_7d_ref_rank),rk(m?.current_rank)];
+    const market=[rk(m?.market_30d_ref_rank),rk(m?.market_7d_ref_rank),rk(m?.current_market_rank)];
+    if(bbb.every(v=>v==null)){
+      return '<section class="bbb-public-rank-history"><div class="profile-card-kicker">RANK HISTORY</div><h2>Ranking tracking is building.</h2><p>Recent BBB reference ranks will appear here when enough history is recorded.</p></section>';
+    }
+    const vals=[...bbb,...market].filter(v=>v!=null),margin=Math.max(3,Math.ceil((Math.max(...vals)-Math.min(...vals))*.2));
+    const min=Math.max(1,Math.min(...vals)-margin),max=Math.max(...vals)+margin,xs=[76,320,560];
+    const y=v=>36+(v-min)/Math.max(1,max-min)*143;
+    const graph=([a,b,c],cls,legend)=>{
+      const values=[a,b,c];
+      const path=values.map((v,i)=>v==null?null:{v,x:xs[i],y:y(v)});
+      return path.map((pt,i)=>pt&&i>0&&path[i-1]?'<line class="bbb-public-rank-line '+cls+'" x1="'+path[i-1].x+'" y1="'+path[i-1].y+'" x2="'+pt.x+'" y2="'+pt.y+'"/>':'').join('')+
+        path.filter(Boolean).map(pt=>'<circle class="bbb-public-rank-dot '+cls+'" cx="'+pt.x+'" cy="'+pt.y+'" r="5"><title>'+legend+' #'+pt.v+'</title></circle>').join('');
+    };
+    const delta=(past,now)=>past==null||now==null?'Awaiting data':past===now?'No change':(past>now?'↑ '+(past-now)+' spots':'↓ '+(now-past)+' spots');
+    const stat=(title,oldRank,newRank)=>'<div><span>'+title+'</span><strong>'+(oldRank==null?'—':'#'+oldRank)+'</strong><small>'+delta(oldRank,newRank)+'</small></div>';
+    const grid=[0,.5,1].map(t=>{const v=Math.round(min+(max-min)*t),yy=y(v);return '<line class="bbb-public-rank-grid" x1="64" x2="591" y1="'+yy+'" y2="'+yy+'"/><text class="bbb-public-rank-axis" x="59" y="'+(yy+3)+'" text-anchor="end">#'+v+'</text>'}).join('');
+    return '<section class="bbb-public-rank-history"><div class="profile-card-kicker">RANK HISTORY</div><h2>30-day ranking movement.</h2>'+
+      '<p>BBB rank and market rank at recorded 30-day, 7-day, and current reference points. Smaller ranks mean higher value.</p>'+
+      '<div class="bbb-public-rank-key"><span class="bbb">BBB RANK</span><span class="market">MARKET RANK</span></div>'+
+      '<div class="bbb-public-rank-chart"><svg role="img" aria-label="Rank movement from thirty days ago to now" viewBox="0 0 640 230">'+grid+graph(bbb,'bbb','BBB Rank')+graph(market,'market','Market Rank')+
+      ['30 DAYS AGO','7 DAYS AGO','NOW'].map((text,i)=>'<text class="bbb-public-rank-axis" x="'+xs[i]+'" y="219" text-anchor="middle">'+text+'</text>').join('')+'</svg></div>'+
+      '<div class="bbb-public-rank-kpis">'+stat('BBB · 30D',bbb[0],bbb[2])+stat('BBB · 7D',bbb[1],bbb[2])+stat('MARKET · 30D',market[0],market[2])+stat('MARKET · 7D',market[1],market[2])+'</div>'+
+      '<p style="margin:12px 0 0">These are snapshot reference points, not daily observations. Full historical value analytics remain a BBB+ benefit.</p></section>';
+  }
+
 
   function setActive(system,key,focus=false){
     const btn=system.querySelector(`[data-bbb-tab="${key}"]`);
@@ -611,6 +662,8 @@
     if(!similar.dataset.built){similar.innerHTML=similarCard(player);similar.dataset.built='1';}
 
     const statsPanel=ensurePanel(system,'stats'),gamePanel=ensurePanel(system,'gamelog'),notesPanel=ensurePanel(system,'notes');
+    notesPanel.querySelector('.bbb-public-rank-history')?.remove();
+    notesPanel.insertAdjacentHTML('afterbegin',rankHistoryCard(data.mover));
     // The legacy V2 card could be rendered with an empty dataset before the
     // asynchronous season fetch completed. The Career tab already has the
     // authoritative season rows: rebuild Stats from those same rows, not the
