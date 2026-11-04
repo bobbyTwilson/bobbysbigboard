@@ -8,7 +8,9 @@ const num=v=>v==null?"—":Number(v).toLocaleString("en-US");
 // references, but the public scouting preview resolves them to one canonical player.
 const PROFILE_ALIASES=Object.freeze({"michael-penix":"michael-penix-jr","ben-sinnot":"ben-sinnott","lequint-allen":"lequint-allen-jr","erick-all":"erick-all-jr"});
 const canonicalKey=key=>PROFILE_ALIASES[String(key||"")]||String(key||"");
-const purl=p=>"/scouting/"+encodeURIComponent(canonicalKey(p.player_key));
+// Accept either a player row (directory/compare) or a player key (Film Room).
+// The Film Room supplies a string, so object-only access produced /scouting/undefined.
+const purl=p=>{const key=typeof p==="string"?p:p?.player_key;return key?"/scouting/"+encodeURIComponent(canonicalKey(key)):"/players";};
 const section=(k,t,s)=>'<div class="sectionHead"><div><div class="eyebrow">'+esc(k)+'</div><h2>'+esc(t)+'</h2><p>'+esc(s)+'</p></div></div>';
 const stat=(k,v)=>'<div class="grade"><small>'+esc(k)+'</small><strong>'+esc(v)+'</strong></div>';
 const chip=t=>'<span class="pill">'+esc(t)+'</span>';
