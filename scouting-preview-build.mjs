@@ -364,6 +364,39 @@ try {
     catalog[1].category!=='nfl')
    throw new Error('published film filtering, matching, sort or category failed');
  console.log('Film Room behavioral QA passed: approved-only, player matching, ID/duplicate guards, categories, newest-first.');
+// Verify each cross-section player link uses the same canonical route. Film
+// Room passes a string player key, while directory/compare pass a player row.
+// Exercising the actual shipped callbacks prevents /scouting/undefined.
+ const decls=['PROFILE_ALIASES','canonicalKey','purl'].map(name=>{
+   const line=scoutingJs.split('\\n').find(x=>x.startsWith('const '+name+'='));
+   if(!line)throw new Error('Missing player URL helper '+name);
+   return line;
+ });
+ const linkToPlayer=runInNewContext(decls.join('\\n')+'\\npurl',{}, {timeout:1200});
+ for(const key of ['kc-concepcion','bhayshul-tuten','adonai-mitchell','kj-duff','michael-penix']){
+   const expected='/scouting/'+(key==='michael-penix'?'michael-penix-jr':key);
+   if(linkToPlayer(key)!==expected||linkToPlayer({player_key:key})!==expected)
+     throw new Error('Player URL mismatch for '+key);
+ }
+ if(linkToPlayer(null)!=='/players')
+   throw new Error('Missing player key must fall back to directory');
+ const detailStart=filmJs.indexOf('function detail(');
+ const detailEnd=filmJs.indexOf('\\nfunction attach(',detailStart);
+ if(detailStart<0||detailEnd<0)throw new Error('Film Room profile CTA renderer missing');
+ const renderFilmDetail=runInNewContext(filmJs.slice(detailStart,detailEnd)+'\\ndetail',
+   {youtubeUrl:id=>'https://www.youtube.com/watch?v='+id,mustWatchExternally:()=>false},{timeout:1200});
+ const video={video_id:'abcDEFGHijk',player_key:'kc-concepcion',player_name:'KC Concepcion',
+   player_college:'Texas A&M',title:'KC Film Breakdown',category_label:'NFL Film'};
+ const detailHtml=renderFilmDetail(video,x=>String(x),linkToPlayer,false);
+ if(!detailHtml.includes('href="/scouting/kc-concepcion"')||
+    detailHtml.includes('/scouting/undefined')||
+    !detailHtml.includes('https://www.youtube.com/watch?v=abcDEFGHijk'))
+   throw new Error('Film Room player CTA must point to the real KC scouting profile');
+ const nativeProfile=await readFile(root+'/scouting-profile-v5.js','utf8');
+ if(nativeProfile.includes('Classic full profile ↗')||
+    !nativeProfile.includes('href="/dynasty/rankings">Explore Top 500 ↗'))
+   throw new Error('Scouting profile links back to itself through /player redirect');
+ console.log('Scouting link QA passed: player row/key parity, Film Room CTA, aliases, fallback and dynasty route.');
 }catch(error){qaErrors.push('Film Room behavioral QA failed: '+error.message)}
 
 const assetChecks=['scouting-preview.js','scouting-styles.css','scouting-profile-v5.js',
