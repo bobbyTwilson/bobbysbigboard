@@ -491,7 +491,7 @@ async function load(){
   const slimProspects="select=player_key,name,pos,year,grade,comp";
   const fullProspects="select=player_key,name,pos,year,grade,comp,traits";
   const videoFields="select=video_id,player_key,title,video_type,content_archetype,privacy_status,published_at";
-  const filmFields="select=video_id,player_key,title,video_type,editorial_status,published_at,created_at,updated_at";
+  const filmFields="select=video_id,player_key,title,description,video_type,editorial_status,published_at,created_at,updated_at";
   const query=(key,table,params)=>({key,table,params});
   let queries;
   if(profile){
