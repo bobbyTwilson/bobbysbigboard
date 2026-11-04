@@ -168,3 +168,5 @@
 .bbb-film-footer-note a{color:#a4e6b1;font-weight:850}
 @media(max-width:900px){.bbb-film-next-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:550px){.bbb-film-next{padding:15px}.bbb-film-next-grid{grid-template-columns:1fr}.bbb-film-next-card img{width:35%}}
+
+.bbb-film-description{color:#b9d1bd;font-size:12px;line-height:1.65;white-space:pre-line;margin:12px 0 0;max-width:68ch}
