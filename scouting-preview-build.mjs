@@ -439,6 +439,44 @@ if(!config.routes.some(route=>route.src.startsWith('/scouting/')))
  qaErrors.push('Scouting profile deep-link routing missing');
 if(!config.routes.some(route=>route.src.includes('/dynasty/')))
  qaErrors.push('Dynasty tools routing missing');
+// Growth-sprint regression tests. Run on the actual final build output so
+// content upgrades cannot silently replace live film with stale hardcoding.
+try{
+ const scouting=await readFile(root+'/scouting-preview.js','utf8');
+ const film=await readFile(root+'/scouting-film-room-v1.js','utf8');
+ const guide=await readFile(root+'/scouting-styles.css','utf8');
+ if(!scouting.includes('featuredFilmHtml(filmList()[0])')||
+    !scouting.includes('id="homeFeature"')||
+    !scouting.includes('id="homeMovers"')||
+    !scouting.includes('query("movers","site_movers"')||
+    scouting.includes('Parker Washington: Better Than You Think'))
+   throw new Error('Homepage must derive featured film and ranking risers from live content');
+ if(!film.includes('function relatedFilms(')||!film.includes('data-film-next')||
+    !film.includes('onChange(chosen)')||!film.includes('video.description'))
+   throw new Error('Film Room related studies or descriptions not enabled');
+ const start=film.indexOf('function relatedFilms('),end=film.indexOf('function watchNextMarkup(',start);
+ if(start<0||end<start)throw new Error('Watch Next selection function missing');
+ const pickRelated=runInNewContext(film.slice(start,end)+'\nrelatedFilms',{}, {timeout:1200});
+ const focused={video_id:'AAAAAAAAAAA',player_key:'one',player_position:'WR',category:'nfl',player_team:'NYJ'};
+ const other=[
+  focused,
+  {video_id:'BBBBBBBBBBB',player_key:'two',player_position:'RB',category:'nfl',player_team:'DAL'},
+  {video_id:'CCCCCCCCCCC',player_key:'three',player_position:'WR',category:'nfl',player_team:'GB'},
+  {video_id:'DDDDDDDDDDD',player_key:'one',player_position:'WR',category:'nfl',player_team:'NYJ'}
+ ];
+ const suggestions=pickRelated(other,focused);
+ if(suggestions.length!==3||suggestions[0].video_id!=='DDDDDDDDDDD'||
+   suggestions.some(v=>v.video_id===focused.video_id))
+   throw new Error('Watch Next must prefer closely related film without repeating current');
+ if(!builtPreview.includes('https://discord.gg/J26MZPyu6q')||
+    !builtPreview.includes('UCksffvipLdUOO4GGh4Lq_Fg')||
+    !guide.includes('.bbb-home-mover')||
+    !guide.includes('.bbb-film-next-grid'))
+   throw new Error('Community discovery and responsive navigation styling missing');
+ if(!scouting.includes('title,description,video_type,editorial_status'))
+   throw new Error('Published film descriptions not queried');
+ console.log('Growth sprint QA passed: newest film, rank risers, related studies, verified community links and approved notes.');
+}catch(error){qaErrors.push('Growth sprint QA failed: '+error.message)}
 if(qaErrors.length)throw new Error('Preview launch checks failed:\\n'+qaErrors.join('\\n'));
 console.log('Final preview QA passed: favicon, '+assetChecks.length+' app assets, player headshots, embedded movers/profile modules and deep-link routes.');
 console.log('Unified BBB scouting preview, green identity, dynamic ESPN headshots and integrated dynasty tools built. No production deployment.');
