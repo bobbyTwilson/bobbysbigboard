@@ -86,7 +86,7 @@ function catalog(approved,channel,profiles,prospects){
   const category=(!p.team&&(draftYear>=new Date().getFullYear()||v.video_type==="prospect_breakdown"))?"prospect":"nfl";
   seen.add(id);
   entries.push({
-   video_id:id,player_key:v.player_key,title:v.title||"Film Breakdown",
+   video_id:id,player_key:v.player_key,title:v.title||"Film Breakdown",description:String(v.description||"").slice(0,900),
    published_at:v.published_at||v.created_at||v.updated_at||null,
    player_name:p.name,player_position:p.pos,player_college:p.college,player_team:p.team,
    category,category_label:categoryLabels[category],draft_year:draftYear||null
@@ -108,6 +108,7 @@ function screen(video,playing,esc){
 }
 function detail(video,esc,profileLink,isProfile){
  return video?'<div class="bbb-film-info-head"><div><span class="bbb-film-eyebrow">'+esc(video.category_label)+'</span><h2>'+esc(video.title)+'</h2><p>'+esc(video.player_name)+(video.player_college?" · "+esc(video.player_college):"")+'</p></div></div>'+
+  (video.description?'<p class="bbb-film-description">'+esc(video.description)+'</p>':'')+
   '<div class="bbb-film-meta-actions"><a href="'+profileLink(video.player_key,video)+'" class="bbb-film-profile-link">'+(isProfile?'Explore the Film Room →':'View '+esc(video.player_name)+"'s scouting profile →")+'</a>'+
   '<a href="'+youtubeUrl(video.video_id)+'" target="_blank" rel="noopener noreferrer" class="bbb-film-youtube-link">'+(mustWatchExternally(video.video_id)?'Watch on YouTube ↗':'Open on YouTube ↗')+'</a></div>':"";
 }
