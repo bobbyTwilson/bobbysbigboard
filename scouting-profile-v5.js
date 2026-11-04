@@ -110,7 +110,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
    plot(bbb,'bbb','BBB rank')+plot(market,'market','Market rank')+
    times.map((label,i)=>'<text class="sp-history-axis sp-history-date" text-anchor="middle" x="'+xs[i]+'" y="241">'+label+'</text>').join('')+'</svg></div>'+
    '<div class="sp-history-stats">'+stat('BBB · 30D',bbb[0],bbb[2])+stat('BBB · 7D',bbb[1],bbb[2])+stat('MARKET · 30D',market[0],market[2])+stat('MARKET · 7D',market[1],market[2])+'</div>'+
-   '<p class="sp-caption">These are recorded reference points, not a day-by-day timeline. Detailed historical value analytics remain available through BBB+.</p>';
+   '<p class="sp-caption">These are recorded reference points, not a day-by-day timeline. <a href="/plus">Explore deeper history with BBB+ →</a></p>';
   }catch(err){rankHistoryLoaded=false;console.warn('Player rank history',err);mount.innerHTML='<div class="sp-no-data">Rank history could not load right now. Please try again later.</div>';}
  }
 
