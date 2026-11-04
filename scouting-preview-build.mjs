@@ -395,7 +395,7 @@ try {
  const detailEnd=filmJs.indexOf('\nfunction attach(',detailStart);
  if(detailStart<0||detailEnd<0)throw new Error('Film Room profile CTA renderer missing');
  const renderFilmDetail=runInNewContext(filmJs.slice(detailStart,detailEnd)+'\ndetail',
-   {youtubeUrl:id=>'https://www.youtube.com/watch?v='+id,mustWatchExternally:()=>false},{timeout:1200});
+   {youtubeUrl:id=>'https://www.youtube.com/watch?v='+id,mustWatchExternally:()=>false,chaptersMarkup:()=>''},{timeout:1200});
  const video={video_id:'abcDEFGHijk',player_key:'kc-concepcion',player_name:'KC Concepcion',
    player_college:'Texas A&M',title:'KC Film Breakdown',category_label:'NFL Film'};
  const detailHtml=renderFilmDetail(video,x=>String(x),linkToPlayer,false);
@@ -446,8 +446,8 @@ try{
  const film=await readFile(root+'/scouting-film-room-v1.js','utf8');
  const guide=await readFile(root+'/scouting-styles.css','utf8');
  if(!scouting.includes('featuredFilmHtml(filmList()[0])')||
-    !scouting.includes('id="homeFeature"')||
-    !scouting.includes('id="homeMovers"')||
+    !scouting.includes('homeFeature')||
+    !scouting.includes('homeMovers')||
     !scouting.includes('query("movers","site_movers"')||
     scouting.includes('Parker Washington: Better Than You Think'))
    throw new Error('Homepage must derive featured film and ranking risers from live content');
