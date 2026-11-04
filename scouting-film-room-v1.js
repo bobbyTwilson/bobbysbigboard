@@ -106,9 +106,32 @@ function screen(video,playing,esc){
  if(playing)return frame(video.video_id,esc);
  return '<div class="bbb-film-poster"><img class="bbb-film-poster-image" data-video-id="'+safeId(video.video_id)+'" alt="" decoding="async"><div class="bbb-film-poster-shade"></div><button class="bbb-film-bigplay" type="button" data-film-play aria-label="Play '+esc(video.title)+'">▶</button><div class="bbb-film-poster-info"><span>'+esc(video.category_label)+'</span><strong>'+esc(video.title)+'</strong></div></div>';
 }
+/* When an approved film description includes real YouTube chapter lines,
+   offer timestamp deep links. No timings are fabricated. */
+function chaptersMarkup(video,esc){
+ const rows=String(video?.description||"").split(/\r?\n/),found=[],seen=new Set();
+ for(const row of rows){
+  const m=row.trim().match(/^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})\s*(?:[-–—]\s*|:\s*)?(.{3,100})$/);
+  if(!m)continue;
+  const hrs=Number(m[1]||0),mins=Number(m[2]),secs=Number(m[3]);
+  if(mins>=60||secs>=60)continue;
+  const total=hrs*3600+mins*60+secs;
+  if(seen.has(total))continue;
+  const label=m[4].trim();if(!label)continue;
+  seen.add(total);
+  found.push({time:total,label,stamp:(m[1]?m[1]+":":"")+m[2]+":"+m[3]});
+  if(found.length===10)break;
+ }
+ if(!found.length)return "";
+ return '<div class="bbb-film-chapters"><strong>Jump to a play</strong><div>'+
+  found.map(ch=>'<a href="'+youtubeUrl(video.video_id)+'&t='+ch.time+'s" target="_blank" rel="noopener noreferrer">'+
+  '<time>'+esc(ch.stamp)+'</time><span>'+esc(ch.label)+'</span></a>').join("")+
+  '</div><small>Timestamp links open the selected play on YouTube.</small></div>';
+}
 function detail(video,esc,profileLink,isProfile){
  return video?'<div class="bbb-film-info-head"><div><span class="bbb-film-eyebrow">'+esc(video.category_label)+'</span><h2>'+esc(video.title)+'</h2><p>'+esc(video.player_name)+(video.player_college?" · "+esc(video.player_college):"")+'</p></div></div>'+
   (video.description?'<p class="bbb-film-description">'+esc(video.description)+'</p>':'')+
+  chaptersMarkup(video,esc)+
   '<div class="bbb-film-meta-actions"><a href="'+profileLink(video.player_key,video)+'" class="bbb-film-profile-link">'+(isProfile?'Explore the Film Room →':'View '+esc(video.player_name)+"'s scouting profile →")+'</a>'+
   '<a href="'+youtubeUrl(video.video_id)+'" target="_blank" rel="noopener noreferrer" class="bbb-film-youtube-link">'+(mustWatchExternally(video.video_id)?'Watch on YouTube ↗':'Open on YouTube ↗')+'</a></div>':"";
 }
