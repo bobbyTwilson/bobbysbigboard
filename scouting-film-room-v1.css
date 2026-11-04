@@ -170,3 +170,13 @@
 @media(max-width:550px){.bbb-film-next{padding:15px}.bbb-film-next-grid{grid-template-columns:1fr}.bbb-film-next-card img{width:35%}}
 
 .bbb-film-description{color:#b9d1bd;font-size:12px;line-height:1.65;white-space:pre-line;margin:12px 0 0;max-width:68ch}
+
+/* Optional verified video chapter markers from the public film description. */
+.bbb-film-chapters{margin-top:15px;padding:12px;border:1px solid #396046;border-radius:10px;background:#0a1b11}
+.bbb-film-chapters>strong{display:block;color:#a6e5b6;font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:9px}
+.bbb-film-chapters>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.bbb-film-chapters a{display:flex;align-items:center;gap:8px;padding:8px;color:#e2eee1;background:#152b1c;border-radius:7px;text-decoration:none;font-size:11px}
+.bbb-film-chapters a:hover,.bbb-film-chapters a:focus-visible{background:#244630;outline:1px solid #8be5ab}
+.bbb-film-chapters time{color:#9ee4b2;font-variant-numeric:tabular-nums;font-weight:900}
+.bbb-film-chapters small{display:block;margin-top:8px;color:#9bb4a0;font-size:10px}
+@media(max-width:600px){.bbb-film-chapters>div{grid-template-columns:1fr}}
