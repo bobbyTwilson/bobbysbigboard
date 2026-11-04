@@ -368,11 +368,11 @@ try {
 // Room passes a string player key, while directory/compare pass a player row.
 // Exercising the actual shipped callbacks prevents /scouting/undefined.
  const decls=['PROFILE_ALIASES','canonicalKey','purl'].map(name=>{
-   const line=scoutingJs.split('\\n').find(x=>x.startsWith('const '+name+'='));
+   const line=scoutingJs.split('\n').find(x=>x.startsWith('const '+name+'='));
    if(!line)throw new Error('Missing player URL helper '+name);
    return line;
  });
- const linkToPlayer=runInNewContext(decls.join('\\n')+'\\npurl',{}, {timeout:1200});
+ const linkToPlayer=runInNewContext(decls.join('\n')+'\npurl',{}, {timeout:1200});
  for(const key of ['kc-concepcion','bhayshul-tuten','adonai-mitchell','kj-duff','michael-penix']){
    const expected='/scouting/'+(key==='michael-penix'?'michael-penix-jr':key);
    if(linkToPlayer(key)!==expected||linkToPlayer({player_key:key})!==expected)
@@ -381,9 +381,9 @@ try {
  if(linkToPlayer(null)!=='/players')
    throw new Error('Missing player key must fall back to directory');
  const detailStart=filmJs.indexOf('function detail(');
- const detailEnd=filmJs.indexOf('\\nfunction attach(',detailStart);
+ const detailEnd=filmJs.indexOf('\nfunction attach(',detailStart);
  if(detailStart<0||detailEnd<0)throw new Error('Film Room profile CTA renderer missing');
- const renderFilmDetail=runInNewContext(filmJs.slice(detailStart,detailEnd)+'\\ndetail',
+ const renderFilmDetail=runInNewContext(filmJs.slice(detailStart,detailEnd)+'\ndetail',
    {youtubeUrl:id=>'https://www.youtube.com/watch?v='+id,mustWatchExternally:()=>false},{timeout:1200});
  const video={video_id:'abcDEFGHijk',player_key:'kc-concepcion',player_name:'KC Concepcion',
    player_college:'Texas A&M',title:'KC Film Breakdown',category_label:'NFL Film'};
