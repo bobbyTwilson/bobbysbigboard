@@ -137,6 +137,7 @@ if(publicBuild){
 }
 await writeFile(root+'/index.html',preview);
 await copyFile('scouting-preview.js',root+'/scouting-preview.js');
+await copyFile('bbb-growth-metrics.js',root+'/bbb-growth-metrics.js');
 await copyFile('scouting-samples.js',root+'/scouting-samples.js');
 await copyFile('scouting-green.css',root+'/scouting-green.css');
 await copyFile('scouting-atmosphere.css',root+'/scouting-atmosphere.css');
@@ -412,7 +413,7 @@ try {
 
 const assetChecks=['scouting-preview.js','scouting-styles.css','scouting-profile-v5.js',
  'scouting-intelligence-v6.js','scouting-film-room-v1.js','scouting-samples.js',
- 'scouting-headshots.json','bbb-core.js','movers-section.js',
+ 'scouting-headshots.json','bbb-growth-metrics.js','bbb-core.js','movers-section.js',
  'profile-ui-redesign-preview.js','dynasty-engine/index.html'];
 for(const asset of assetChecks){
  try{const bytes=await readFile(root+'/'+asset);if(bytes.length<50)qaErrors.push(asset+': unexpectedly empty')}
