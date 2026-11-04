@@ -86,7 +86,7 @@ function catalog(approved,channel,profiles,prospects){
   const category=(!p.team&&(draftYear>=new Date().getFullYear()||v.video_type==="prospect_breakdown"))?"prospect":"nfl";
   seen.add(id);
   entries.push({
-   video_id:id,player_key:v.player_key,title:v.title||"Film Breakdown",
+   video_id:id,player_key:v.player_key,title:v.title||"Film Breakdown",description:String(v.description||"").slice(0,900),
    published_at:v.published_at||v.created_at||v.updated_at||null,
    player_name:p.name,player_position:p.pos,player_college:p.college,player_team:p.team,
    category,category_label:categoryLabels[category],draft_year:draftYear||null
@@ -106,12 +106,36 @@ function screen(video,playing,esc){
  if(playing)return frame(video.video_id,esc);
  return '<div class="bbb-film-poster"><img class="bbb-film-poster-image" data-video-id="'+safeId(video.video_id)+'" alt="" decoding="async"><div class="bbb-film-poster-shade"></div><button class="bbb-film-bigplay" type="button" data-film-play aria-label="Play '+esc(video.title)+'">▶</button><div class="bbb-film-poster-info"><span>'+esc(video.category_label)+'</span><strong>'+esc(video.title)+'</strong></div></div>';
 }
+/* When an approved film description includes real YouTube chapter lines,
+   offer timestamp deep links. No timings are fabricated. */
+function chaptersMarkup(video,esc){
+ const rows=String(video?.description||"").split(/\r?\n/),found=[],seen=new Set();
+ for(const row of rows){
+  const m=row.trim().match(/^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})\s*(?:[-–—]\s*|:\s*)?(.{3,100})$/);
+  if(!m)continue;
+  const hrs=Number(m[1]||0),mins=Number(m[2]),secs=Number(m[3]);
+  if(mins>=60||secs>=60)continue;
+  const total=hrs*3600+mins*60+secs;
+  if(seen.has(total))continue;
+  const label=m[4].trim();if(!label)continue;
+  seen.add(total);
+  found.push({time:total,label,stamp:(m[1]?m[1]+":":"")+m[2]+":"+m[3]});
+  if(found.length===10)break;
+ }
+ if(!found.length)return "";
+ return '<div class="bbb-film-chapters"><strong>Jump to a play</strong><div>'+
+  found.map(ch=>'<a href="'+youtubeUrl(video.video_id)+'&t='+ch.time+'s" target="_blank" rel="noopener noreferrer">'+
+  '<time>'+esc(ch.stamp)+'</time><span>'+esc(ch.label)+'</span></a>').join("")+
+  '</div><small>Timestamp links open the selected play on YouTube.</small></div>';
+}
 function detail(video,esc,profileLink,isProfile){
  return video?'<div class="bbb-film-info-head"><div><span class="bbb-film-eyebrow">'+esc(video.category_label)+'</span><h2>'+esc(video.title)+'</h2><p>'+esc(video.player_name)+(video.player_college?" · "+esc(video.player_college):"")+'</p></div></div>'+
+  (video.description?'<p class="bbb-film-description">'+esc(video.description)+'</p>':'')+
+  chaptersMarkup(video,esc)+
   '<div class="bbb-film-meta-actions"><a href="'+profileLink(video.player_key,video)+'" class="bbb-film-profile-link">'+(isProfile?'Explore the Film Room →':'View '+esc(video.player_name)+"'s scouting profile →")+'</a>'+
   '<a href="'+youtubeUrl(video.video_id)+'" target="_blank" rel="noopener noreferrer" class="bbb-film-youtube-link">'+(mustWatchExternally(video.video_id)?'Watch on YouTube ↗':'Open on YouTube ↗')+'</a></div>':"";
 }
-function attach(root,list,initialId,esc,profileLink,isProfile=false){
+function attach(root,list,initialId,esc,profileLink,isProfile=false,onChange=null){
  let chosen=list.find(v=>v.video_id===initialId)||list[0]||null,playing=false;
  let activePlayer=null,renderToken=0;
  const screenNode=root.querySelector("[data-film-screen]"),infoNode=root.querySelector("[data-film-info]");
@@ -120,6 +144,7 @@ function attach(root,list,initialId,esc,profileLink,isProfile=false){
   if(activePlayer){try{activePlayer.destroy()}catch{}activePlayer=null}
   if(screenNode)screenNode.innerHTML=screen(chosen,playing,esc);
   if(infoNode)infoNode.innerHTML=detail(chosen,esc,profileLink,isProfile);
+  if(typeof onChange==="function")onChange(chosen);
   upgradePoster(screenNode?.querySelector(".bbb-film-poster-image"));
   root.querySelectorAll("[data-film-select]").forEach(el=>el.setAttribute("aria-pressed",String(!!chosen&&el.dataset.filmSelect===chosen.video_id)));
   const iframe=screenNode?.querySelector(".bbb-film-embed-wrap iframe");
@@ -163,6 +188,23 @@ function filmTile(video,esc){
  '<span class="bbb-film-tile-copy"><small>'+esc(video.category_label)+' · '+esc(video.player_position||"Player")+'</small>'+
  '<strong>'+esc(video.title)+'</strong><span>'+esc(video.player_name)+'</span>'+(mustWatchExternally(video.video_id)?'<span class="bbb-film-external-label">YouTube playback only</span>':'')+'</span></button>';
 }
+/* Watch Next suggestions are derived from published films; no extra API calls. */
+function relatedFilms(videos,current){
+ if(!current)return [];
+ const score=v=>(v.player_key===current.player_key?8:0)+
+  (v.player_position&&v.player_position===current.player_position?4:0)+
+  (v.category===current.category?2:0)+
+  (v.player_team&&v.player_team===current.player_team?1:0);
+ return videos.filter(v=>v.video_id!==current.video_id)
+  .sort((a,b)=>score(b)-score(a)||Date.parse(b.published_at||0)-Date.parse(a.published_at||0))
+  .slice(0,3);
+}
+function watchNextMarkup(videos,current,esc){
+ const choices=relatedFilms(videos,current);
+ return choices.map(v=>'<a class="bbb-film-next-card" href="/film?video='+encodeURIComponent(v.video_id)+'" aria-label="Watch '+esc(v.title)+'">'+
+  '<img loading="lazy" src="'+thumb(v.video_id)+'" alt=""><span><small>'+esc(v.player_name)+' · '+esc(v.category_label)+'</small>'+
+  '<strong>'+esc(v.title)+'</strong><em>Watch breakdown →</em></span></a>').join('');
+}
 function render(app,videos,ctx){
  const esc=ctx.esc||fallbackEsc;
  const profileLink=ctx.profileLink||((slug)=>"/scouting/"+encodeURIComponent(slug));
@@ -178,16 +220,20 @@ function render(app,videos,ctx){
  '<aside class="bbb-film-stage-side"><div class="bbb-film-side-label">FROM THE BIG BOARD</div><h3>Scouting on film.</h3><p>Breakdowns grounded in actual routes, technique, coverage, and performance—not just box scores.</p>'+
  '<div class="bbb-film-side-stat"><strong>'+totals.prospect+'</strong><span>Draft prospect breakdown'+(totals.prospect!==1?"s":"")+'</span></div>'+
  '<div class="bbb-film-side-stat"><strong>'+totals.nfl+'</strong><span>NFL player breakdowns</span></div>'+
- '</aside></div>'+
+ '</aside></div>'+ 
+ '<section class="bbb-film-next" aria-label="Recommended film breakdowns"><div class="bbb-film-next-heading"><span class="bbb-film-side-label">KEEP WATCHING</span><h2>More film worth studying.</h2></div><div class="bbb-film-next-grid" data-film-next></div></section>'+
  '<div class="bbb-film-catalog-head"><div><div class="eyebrow">VIDEO LIBRARY</div><h2>Browse the breakdowns</h2></div><span>'+videos.length+' published film studies</span></div>'+
  '<div class="bbb-film-toolbar"><div class="bbb-film-filters" role="group" aria-label="Film categories">'+
  [['nfl','NFL Film'],['prospect','Draft Prospects']].map(([id,label])=>'<button type="button" class="bbb-film-filter'+(id==="nfl"?" active":"")+'" data-film-category="'+id+'" aria-pressed="'+(id==="nfl"?"true":"false")+'">'+label+' <span>'+totals[id]+'</span></button>').join('')+
  '</div><input class="bbb-film-search" type="search" placeholder="Search player, video, or college…" aria-label="Search film breakdowns" data-film-search></div>'+
  '<div class="bbb-film-library" data-film-library></div><div class="bbb-film-no-results" data-film-empty hidden>No matching film breakdowns yet.</div>'+
- '<div class="bbb-film-footer-note">Only approved, public long-form films linked to BBB players appear here. Recent YouTube uploads are added when they are synced to the BBB film catalog.</div>'+
+ '<div class="bbb-film-footer-note">Only approved film studies are shown. Want a breakdown of another player? <a href="https://discord.gg/J26MZPyu6q" target="_blank" rel="noopener noreferrer">Request a player in the BBB Discord ↗</a> · <a href="https://www.youtube.com/channel/UCksffvipLdUOO4GGh4Lq_Fg?sub_confirmation=1" target="_blank" rel="noopener noreferrer">Subscribe on YouTube ↗</a></div>'+
  '</div></section>';
  const root=app.querySelector("[data-bbb-film-root]");
- const controller=attach(root,videos,fromUrl,esc,profileLink);
+ const controller=attach(root,videos,fromUrl,esc,profileLink,false,selected=>{
+  const target=app.querySelector("[data-film-next]");
+  if(target)target.innerHTML=watchNextMarkup(videos,selected,esc)||'<p class="bbb-film-next-empty">More studies will appear here as new film is published.</p>';
+ });
  // Film tiles are located outside the playback panel, so forward selection explicitly.
  const library=app.querySelector("[data-film-library]");
  let category="nfl",search="";
