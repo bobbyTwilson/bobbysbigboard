@@ -574,10 +574,13 @@ function localRoute(path){
     /^\/dynasty\/(rankings|trade|compare|rookies|movers|updates|watchlist|stats)\/?$/.test(path)||
     /^\/(account|plus|watchlist|stats|terms|privacy|billing)\/?$/.test(path);
 }
-const renderRoute=()=>load().catch(error=>{
+const renderRoute=()=>{
+ window.BBB_SITE_METRICS?.route();
+ return load().catch(error=>{
   console.error("Scouting route failed",error);
   app.innerHTML='<section class="section"><div class="wrap"><div class="empty">That section could not load. <a href="'+esc(location.pathname)+'">Retry page</a></div></div></section>';
 });
+};
 document.addEventListener("click",event=>{
   if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
   const a=event.target?.closest?.("a[href]");
