@@ -223,7 +223,18 @@ if(publicBuild){
     ||slug.split('-').map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join(' ');
   const title=person+' — Scouting Report, Stats & Film | Bobby’s Big Board';
   const description=person+' scouting report, prospect grades, verified football athletic testing, player stats and film breakdowns from Bobby’s Big Board.';
-  await writeFile(directory+'/'+slug+'.html',metaPage(preview,{title,description,path:'/scouting/'+slug}));
+  // Real, player-specific HTML for search engines and link previews. The
+  // hydrated app replaces this with the complete interactive scouting report.
+  // No unpublished editorial notes or speculative measurements are emitted.
+  const staticProfile='<section class="section bbb-seo-player-intro" id="bbbSeoPlayerIntro" aria-label="Player scouting overview">'+
+    '<div class="wrap"><div class="eyebrow">BOBBY’S BIG BOARD PLAYER SCOUTING</div><h1>'+htmlEscape(person)+'</h1>'+
+    '<p>Explore '+htmlEscape(person)+' on Bobby’s Big Board: available film breakdowns, player evaluation, recorded athletic testing, career production and dynasty context. Only verified and published information is displayed.</p>'+
+    '<p><a class="sectionlink" href="/film">Film Room →</a> · <a class="sectionlink" href="/players">Player Directory →</a> · <a class="sectionlink" href="/dynasty/rankings">Top 500 Dynasty Rankings →</a></p></div></section>';
+  const seoShell=metaPage(preview,{title,description,path:'/scouting/'+slug});
+  const staticDoc=seoShell.replace(/<main id="app">[\s\S]*?<\/main>/,
+    '<main id="app">'+staticProfile+'</main>');
+  if(!staticDoc.includes('id="bbbSeoPlayerIntro"'))throw new Error('Player-specific static SEO content missing for '+slug);
+  await writeFile(directory+'/'+slug+'.html',staticDoc);
   profileSlugs.push(slug);
  }
  const skipAliases=new Set(['michael-penix','ben-sinnot','lequint-allen','erick-all']);
@@ -411,6 +422,19 @@ try{
  const headshots=JSON.parse(await readFile(root+'/scouting-headshots.json','utf8'));
  if(Object.keys(headshots.players||{}).length<450)qaErrors.push('Player PNG manifest coverage unexpectedly low');
 }catch(error){qaErrors.push('Player PNG manifest invalid: '+error.message)}
+if(publicBuild){
+ for(const slug of ['kc-concepcion','drake-maye']){
+  try{
+   const doc=await readFile(root+'/seo/scouting/'+slug+'.html','utf8');
+   const displayName=slug==='kc-concepcion'?'KC Concepcion':'Drake Maye';
+   if(!doc.includes('id="bbbSeoPlayerIntro"')||
+      !doc.includes('<h1>'+displayName+'</h1>')||
+      !doc.includes('rel="canonical"')||
+      !doc.includes('href="/film"'))
+    qaErrors.push('Crawler-readable scouting profile missing for '+slug);
+  }catch(err){qaErrors.push('Static scouting SEO QA failed for '+slug+': '+err.message)}
+ }
+}
 if(!config.routes.some(route=>route.src.startsWith('/scouting/')))
  qaErrors.push('Scouting profile deep-link routing missing');
 if(!config.routes.some(route=>route.src.includes('/dynasty/')))
