@@ -1,6 +1,6 @@
 (function(){
 "use strict";
-const app=document.getElementById("app"),D={profiles:[],ranks:[],prospects:[],athletics:[],scouting:[],videos:[],films:[],media:{}},R=new Map(),P=new Map(),A=new Map(),S=new Map(),SAMPLES=window.BBB_SCOUTING_SAMPLES||{};
+const app=document.getElementById("app"),D={profiles:[],ranks:[],prospects:[],athletics:[],scouting:[],videos:[],films:[],movers:[],media:{}},R=new Map(),P=new Map(),A=new Map(),S=new Map(),SAMPLES=window.BBB_SCOUTING_SAMPLES||{};
 let filter="",position="ALL",limit=32,isDraftMode=false,draftYearFilter="2027";
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const num=v=>v==null?"—":Number(v).toLocaleString("en-US");
@@ -168,20 +168,49 @@ function playerCard(p){
  '<span class="bbb-directory-action" aria-hidden="true">View profile <b>→</b></span></a>'
 }
 function videoCard(v){return '<a class="card" href="/film?video='+encodeURIComponent(v.video_id)+'" style="padding:12px"><div class="featureImage"><img loading="lazy" src="https://i.ytimg.com/vi/'+encodeURIComponent(v.video_id)+'/hqdefault.jpg" alt="'+esc(v.title)+'"></div><div style="padding:12px 4px"><span class="tag">'+esc(v.category_label||"FILM STUDY")+'</span><h3 style="font-size:17px;margin:10px 0">'+esc(v.title)+'</h3><span class="arrow">Watch inside the Film Room →</span></div></a>'}
-function home(){setTitle("Scouting & Film");const picks=["denzel-boston","christian-watson","parker-washington","matthew-golden"].map(k=>D.profiles.find(p=>p.player_key===k)).filter(Boolean);
-app.innerHTML='<section class="hero"><div class="wrap heroGrid"><div><div class="eyebrow">A NEW ERA OF BOBBY’S BIG BOARD</div><h1>THE FILM<br>BEHIND <em>THE PLAYER.</em></h1><p class="lead">Scouting reports, verified athletic testing, real NFL production and independent film breakdowns—all in one place. Rankings are still here. Now the football comes first.</p><div class="actions"><a class="primary" href="/players">Explore Player Profiles →</a><a class="secondary" href="/film">Enter the Film Room ↗</a></div></div><div class="heroPanel"><a href="/film?video=ZpO1nYUEsqE"><div class="featureImage"><img src="https://i.ytimg.com/vi/ZpO1nYUEsqE/maxresdefault.jpg" alt="Parker Washington Film Breakdown"></div></a><div class="featureMeta"><span>FEATURED FILM STUDY</span><span>BBB ORIGINAL</span></div><h3>Parker Washington: Better Than You Think</h3><p>Route releases, leverage, ball skills and the details that turn production into evaluation.</p><a class="sectionlink" href="/film?video=ZpO1nYUEsqE">Watch inside the Film Room →</a></div></div></section>'+
-'<div class="statsstrip"><div class="wrap statgrid"><div class="micro"><b id="homeProfilesCount">'+(homepagePending?'…':num(D.profiles.length))+'</b> player records</div><div class="micro"><b id="homeProspectsCount">'+(homepagePending?'…':num(D.prospects.length))+'</b> draft prospect records</div><div class="micro"><b id="homeFilmsCount">'+(homepagePending?'…':num(filmList().length))+'</b> film videos</div><div class="micro"><b>500</b> dynasty rankings</div></div></div>'+
-'<section class="section"><div class="wrap">'+section("PLAYER LAB","Scouting spotlights","Player evaluations built on production and actual film.")+'<div class="bbb-directory-rows" id="homeSpotlights">'+(homepagePending?'<div class="empty">Loading player spotlights…</div>':picks.map(playerCard).join(""))+'</div></div></section>'+
-'<section class="section line"><div class="wrap">'+section("WATCH THE TAPE","Featured film breakdowns","From release technique to ball tracking, go deeper than highlights.")+'<div class="cards" id="homeFilmCards">'+(homepagePending?'<div class="card">Loading featured film…</div>':filmList().slice(0,3).map(videoCard).join(""))+'</div><p style="margin-top:22px"><a class="sectionlink" href="/film">Browse the Film Room →</a></p></div></section>'+
-'<section class="section"><div class="wrap">'+section("CONNECTED TO THE EVALUATION","One platform. More ways to study.","Film-first during the season, prospect scouting before the draft, dynasty tools whenever you need them.")+'<div class="cards"><a class="card" href="/players"><span class="tag">01 / NFL PLAYERS</span><h3>Scouting profiles</h3><p>How they win, size and testing, game production and video evaluations.</p><span class="arrow">Open directory →</span></a><a class="card" href="/draft"><span class="tag">02 / DRAFT</span><h3>Prospects and comps</h3><p>Grades, projections and film reports for future NFL talent.</p><span class="arrow">Explore prospects →</span></a><a class="card" href="/dynasty/rankings"><span class="tag">03 / DYNASTY</span><h3>Top 500 and trade tools</h3><p>Your existing rankings, trade calculator and comparisons are preserved.</p><span class="arrow">Go to dynasty →</span></a></div></div></section>'}
+function featuredFilmHtml(v){
+ if(!v)return '<div class="featureMeta"><span>FILM LIBRARY</span></div><h3>New film breakdowns are on the way.</h3><p>Browse our scouting evaluations and player profiles.</p><a class="sectionlink" href="/film">Open the Film Room →</a>';
+ const url="/film?video="+encodeURIComponent(v.video_id);
+ return '<a href="'+url+'"><div class="featureImage"><img loading="eager" src="https://i.ytimg.com/vi/'+encodeURIComponent(v.video_id)+'/hqdefault.jpg" alt="'+esc(v.title)+'"></div></a>'+
+ '<div class="featureMeta"><span>NEWEST FILM STUDY</span><span>BBB ORIGINAL</span></div>'+
+ '<h3>'+esc(v.title)+'</h3><p>'+esc(v.player_name)+' · '+esc(v.category_label)+'</p>'+
+ '<a class="sectionlink" href="'+url+'">Watch in the Film Room →</a>';
+}
+function spotlightPlayers(){
+ const seen=new Set(),featured=[];
+ for(const film of filmList()){
+  const p=D.profiles.find(row=>row.player_key===film.player_key);
+  if(p&&!seen.has(p.player_key)){featured.push(p);seen.add(p.player_key)}
+  if(featured.length===4)break;
+ }
+ if(featured.length<4)for(const rank of D.ranks){
+  const p=D.profiles.find(row=>row.player_key===rank.player_key);
+  if(p&&!seen.has(p.player_key)){featured.push(p);seen.add(p.player_key)}
+  if(featured.length===4)break;
+ }
+ return featured;
+}
+function home(){
+ setTitle("Scouting & Film");
+ app.innerHTML="<section class=\"hero\"><div class=\"wrap heroGrid\"><div><div class=\"eyebrow\">THE FILM BEHIND THE PLAYER</div><h1>THE FILM<br>BEHIND <em>THE PLAYER.</em></h1><p class=\"lead\">Scouting reports, verified athletic testing, real NFL production and independent film breakdowns—all in one place. Rankings are still here. Now the football comes first.</p><div class=\"actions\"><a class=\"primary\" href=\"/players\">Explore Player Profiles →</a><a class=\"secondary\" href=\"/film\">Enter the Film Room ↗</a></div></div><div id=\"homeFeature\" class=\"heroPanel\"><div class=\"featureMeta\"><span>NEWEST FILM STUDY</span></div><p>Loading our latest breakdown…</p></div></div></section>\n<div class=\"statsstrip\"><div class=\"wrap statgrid\"><div class=\"micro\"><b id=\"homeProfilesCount\">…</b> player records</div><div class=\"micro\"><b id=\"homeProspectsCount\">…</b> draft prospect records</div><div class=\"micro\"><b id=\"homeFilmsCount\">…</b> film studies</div><div class=\"micro\"><b id=\"homeRankCount\">500</b> dynasty rankings</div></div></div>\n<section class=\"section\"><div class=\"wrap\"><div class=\"sectionHead\"><div><div class=\"eyebrow\">LATEST ON FILM</div><h2>Fresh scouting spotlights.</h2><p>The players featured in our most recent film breakdowns. Updated automatically when new studies go public.</p></div></div><div class=\"bbb-directory-rows\" id=\"homeSpotlights\"><div class=\"empty\">Loading recent film subjects…</div></div></div></section>\n<section class=\"section line\"><div class=\"wrap\"><div class=\"sectionHead\"><div><div class=\"eyebrow\">WATCH THE TAPE</div><h2>Newest breakdowns.</h2><p>The latest published film evaluations, from releases and separation to contact balance and decision-making.</p></div></div><div class=\"cards\" id=\"homeFilmCards\"><div class=\"card\">Loading the film library…</div></div><p style=\"margin-top:22px\"><a class=\"sectionlink\" href=\"/film\">Explore all film studies →</a></p></div></section>\n<section class=\"section\"><div class=\"wrap\"><div class=\"sectionHead\"><div><div class=\"eyebrow\">DYNASTY MARKET</div><h2>Players climbing the board.</h2><p>Biggest recorded seven-day BBB ranking risers. Movement is based on actual rank snapshots.</p></div></div><div class=\"bbb-home-movers\" id=\"homeMovers\"><div class=\"empty\">Loading recent movement…</div></div><p style=\"margin-top:20px\"><a class=\"sectionlink\" href=\"/dynasty/movers\">All market movers →</a></p></div></section>\n<section class=\"section line\"><div class=\"wrap\"><div class=\"sectionHead\"><div><div class=\"eyebrow\">CONNECTED TO THE EVALUATION</div><h2>One platform. More ways to study.</h2><p>Scouting, the NFL Draft, and Superflex dynasty analysis—without leaving BBB.</p></div></div><div class=\"cards\"><a class=\"card\" href=\"/players\"><span class=\"tag\">01 / NFL PLAYERS</span><h3>Scouting profiles</h3><p>How they win, size and testing, game production and video evaluations.</p><span class=\"arrow\">Open directory →</span></a><a class=\"card\" href=\"/draft\"><span class=\"tag\">02 / DRAFT</span><h3>Prospects and comps</h3><p>Grades, projections and film reports for future NFL talent.</p><span class=\"arrow\">Explore prospects →</span></a><a class=\"card\" href=\"/dynasty/rankings\"><span class=\"tag\">03 / DYNASTY</span><h3>Top 500 and trade tools</h3><p>Superflex rankings, market movement, and dynasty comparisons.</p><span class=\"arrow\">Explore dynasty →</span></a></div></div></section>\n<section class=\"section bbb-community\" aria-label=\"Join Bobby's Big Board community\"><div class=\"wrap bbb-community-inner\"><div><div class=\"eyebrow\">WATCH · DISCUSS · RETURN</div><h2>More football between the videos.</h2><p>Get the latest film breakdowns on YouTube, talk scouting in our Discord, and explore the free player database.</p></div><div class=\"bbb-community-actions\"><a class=\"primary\" href=\"https://www.youtube.com/channel/UCksffvipLdUOO4GGh4Lq_Fg?sub_confirmation=1\" rel=\"noopener noreferrer\" target=\"_blank\">Subscribe on YouTube ↗</a><a class=\"secondary\" href=\"https://discord.gg/J26MZPyu6q\" rel=\"noopener noreferrer\" target=\"_blank\">Join the BBB Discord ↗</a></div></div></section>";
+}
 function hydrateHome(){
  homepagePending=false;
- document.getElementById("homeProfilesCount").textContent=num(D.profiles.length);
- document.getElementById("homeProspectsCount").textContent=num(D.prospects.length);
- document.getElementById("homeFilmsCount").textContent=num(filmList().length);
- const picks=["denzel-boston","christian-watson","parker-washington","matthew-golden"].map(k=>D.profiles.find(p=>p.player_key===k)).filter(Boolean);
- document.getElementById("homeSpotlights").innerHTML=picks.map(playerCard).join("");
- document.getElementById("homeFilmCards").innerHTML=filmList().slice(0,3).map(videoCard).join("");
+ const update=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=num(value)};
+ update("homeProfilesCount",D.profiles.length);
+ update("homeProspectsCount",D.prospects.length);
+ update("homeFilmsCount",filmList().length);
+ update("homeRankCount",D.ranks.length);
+ const featured=document.getElementById("homeFeature");
+ if(featured)featured.innerHTML=featuredFilmHtml(filmList()[0]);
+ const players=spotlightPlayers();
+ const spot=document.getElementById("homeSpotlights");
+ if(spot)spot.innerHTML=players.length?players.map(playerCard).join(""):'<div class="empty">More player evaluations are on the way.</div>';
+ const cards=document.getElementById("homeFilmCards");
+ if(cards)cards.innerHTML=filmList().length?filmList().slice(0,3).map(videoCard).join(""):'<div class="card">New film evaluations are coming soon.</div>';
+ const movers=document.getElementById("homeMovers");
+ const risers=(D.movers||[]).filter(x=>Number(x.bbb_move_7d)>0&&D.profiles.some(p=>p.player_key===x.player_key)).slice(0,5);
+ if(movers)movers.innerHTML=risers.length?risers.map(x=>'<a class="bbb-home-mover" href="'+purl(x.player_key)+'"><div><strong>'+esc(x.name)+'</strong><small>'+esc(x.pos||"")+' · '+esc(x.team||"")+' · BBB #'+esc(x.current_rank)+'</small></div><span>↑ '+esc(x.bbb_move_7d)+' spots</span></a>').join(""):'<div class="empty">No seven-day risers are recorded yet. See the full movers board.</div>';
 }
 function directory(isDraft){
  isDraftMode=!!isDraft;position="ALL";filter="";limit=40;window.BBB_SORT=isDraft?"grade":"featured";setTitle(isDraft?"NFL Draft Hub":"Player Directory");
@@ -496,7 +525,8 @@ async function load(){
       query("ranks","site_dynasty",slimRanks+"&order=rank.asc&limit=500"),
       query("prospects","site_prospects",slimProspects+"&limit=300"),
       query("videos","bbb_youtube_videos",videoFields+"&order=published_at.desc&limit=250"),
-      query("films","site_bbb_film_catalog",filmFields+"&order=created_at.desc&limit=500")
+      query("films","site_bbb_film_catalog",filmFields+"&order=created_at.desc&limit=500"),
+      ...(path==="/"?[query("movers","site_movers","select=player_key,name,pos,team,current_rank,bbb_move_7d&order=bbb_move_7d.desc&limit=30")]:[])
     ];
   }
 
@@ -527,6 +557,7 @@ async function load(){
   for(const key of ["profiles","ranks","prospects","athletics","scouting","videos","films"])
     D[key]=nextData[key]||[];
   D.media=nextData.media||{};
+  D.movers=nextData.movers||[];
 // Keep exactly one visible Michael Penix Jr. entry, with his existing Falcons
 // identity, college history, draft pick, and newly unified scouting grade.
 D.profiles=D.profiles.filter(p=>!Object.prototype.hasOwnProperty.call(PROFILE_ALIASES,p.player_key));
