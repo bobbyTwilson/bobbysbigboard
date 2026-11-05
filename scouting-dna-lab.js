@@ -292,5 +292,5 @@ function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,portrait,esc=esca
  getField("bbbLabRight",params.get("right"));
  if(left.value||right.value)void update();
 }
-window.BBB_SCOUTING_DNA=Object.freeze({traits,radar,profile,lab});
+window.BBB_SCOUTING_DNA=Object.freeze({traits,radar,profile,lab,edgeFor,edgeTotals});
 })();
