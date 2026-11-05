@@ -92,6 +92,56 @@ test.describe('public desktop visitor journeys', () => {
 });
 
 
+test.describe('guest account and BBB+ membership journeys', () => {
+  test('BBB+ plan pricing, billing information and guest signup CTA display without checkout', async ({ page }) => {
+    let billingRequests = 0;
+    page.on('request', request => {
+      if(/\/functions\/v1\/bbb-plus-(?:checkout|portal)/.test(request.url()))billingRequests++;
+    });
+    await page.goto('/plus');
+    const frame = page.frameLocator('#bbbMemberFrame');
+    await expect(frame.locator('.bbb-plus-title')).toBeVisible({ timeout: 30000 });
+    await expect(frame.locator('#bbbPlusCard .bbb-plus-price')).toContainText('$39.99');
+    await frame.locator('#bbbPlusCard [data-int="month"]').click();
+    await expect(frame.locator('#bbbPlusCard .bbb-plus-price')).toContainText('$4.99');
+    await frame.locator('#bbbPlusCard [data-int="year"]').click();
+    await expect(frame.locator('#bbbPlusCard .bbb-plus-price')).toContainText('$39.99');
+    await expect(frame.locator('#bbbPlusCheckout')).toHaveCount(0);
+    await expect(frame.locator('#bbbPlusPortal')).toHaveCount(0);
+    await expect(frame.locator('#bbbPlusSignin')).toBeVisible();
+    expect(billingRequests, 'guest must not start Stripe checkout or billing').toBe(0);
+  });
+
+  test('guest BBB+ signup CTA opens an actual free account form without creating an account', async ({ page }) => {
+    await page.goto('/plus');
+    const frame = page.frameLocator('#bbbMemberFrame');
+    await expect(frame.locator('#bbbPlusSignin')).toBeVisible({ timeout: 30000 });
+    await frame.locator('#bbbPlusSignin').click();
+    await expect(frame.locator('#bbbAccountForm')).toBeVisible({ timeout: 20000 });
+    await expect(frame.locator('#bbbAccountForm input[name="email"]')).toHaveAttribute('type','email');
+    await expect(frame.locator('#bbbAccountForm input[name="password"]')).toHaveAttribute('type','password');
+    await expect(frame.locator('#bbbAccountForm input[name="username"]')).toBeVisible();
+  });
+
+  test('account login and signup switch without a signup or authentication request', async ({ page }) => {
+    const authRequests = [];
+    page.on('request', request => {
+      if(/\/auth\/v1\/(?:signup|token)/.test(request.url()) &&
+         request.method() === 'POST')authRequests.push(request.url());
+    });
+    await page.goto('/account');
+    const frame = page.frameLocator('#bbbMemberFrame');
+    await expect(frame.locator('#bbbAccountForm')).toBeVisible({ timeout: 30000 });
+    await frame.locator('[data-auth-mode="login"]').click();
+    await expect(frame.locator('#bbbAccountForm .bbb-auth-submit')).toHaveText('SIGN IN');
+    await expect(frame.locator('#bbbAccountForm input[name="username"]')).toBeHidden();
+    await frame.locator('[data-auth-mode="signup"]').click();
+    await expect(frame.locator('#bbbAccountForm .bbb-auth-submit')).toHaveText('CREATE FREE ACCOUNT');
+    await expect(frame.locator('#bbbAccountForm input[name="username"]')).toBeVisible();
+    expect(authRequests, 'navigation alone must not create accounts').toEqual([]);
+  });
+});
+
 test.describe('growth feature and SEO checks', () => {
   test('Watch Next updates the selected Film Room video', async ({ page }) => {
     await page.goto('/film');
