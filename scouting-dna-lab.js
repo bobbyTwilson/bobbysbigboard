@@ -83,7 +83,7 @@ function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,esc=escapeHtml}){
  '<button type="button" class="bbb-lab-swap" id="bbbLabSwap" aria-label="Swap compared players">⇄ <span>SWAP</span></button>'+
  '<div class="bbb-lab-pick"><label for="bbbLabRight">PLAYER TWO</label><input id="bbbLabRight" list="bbbLabNames" autocomplete="off" placeholder="Search second player…"><small id="bbbLabRightHelp">Choose any listed NFL player</small></div></div>'+
  '<datalist id="bbbLabNames">'+opt+'</datalist>'+
- '<div class="bbb-lab-shortcuts"><span>QUICK MATCHUPS</span><button type="button" data-bbb-match="kc-concepcion|luther-burden">KC Concepcion vs. Luther Burden</button><button type="button" data-bbb-match="bhayshul-tuten|kc-concepcion">Tuten vs. KC</button></div>'+
+ '<div class="bbb-lab-shortcuts"><span>QUICK MATCHUPS</span><button type="button" data-bbb-match="kc-concepcion|luther-burden-iii">KC Concepcion vs. Luther Burden III</button><button type="button" data-bbb-match="bhayshul-tuten|kc-concepcion">Tuten vs. KC</button></div>'+
  '<div class="bbb-lab-result" id="bbbLabResult" aria-live="polite"><div class="bbb-lab-empty">Choose two players above to compare their actual BBB scouting data.</div></div>'+
  '<div class="bbb-lab-disclaimer">BBB scouting traits are historical prospect evaluations on their original grading scales. A 5/5 trait is displayed as 100% of its scale—not as a player percentile. Missing grades are not estimated. Film links use published studies only.</div>'+
  '</div></section>';
