@@ -1,0 +1,48 @@
+name: BBB Visitor Browser Tests
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/browser/**'
+      - 'playwright.config.mjs'
+      - '.github/workflows/bbb-browser-tests.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bbb-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  public-visitor:
+    name: Real Chrome desktop and mobile journeys
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright browser test runner
+        run: npm install --no-save --package-lock=false @playwright/test@1.64.1
+      - name: Install Chromium and browser dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Test public BBB routes and user journeys
+        run: npx playwright test
+        env:
+          BBB_BASE_URL: https://bobbysbigboard.com
+      - name: Save failure trace and screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bbb-browser-failure
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 3
