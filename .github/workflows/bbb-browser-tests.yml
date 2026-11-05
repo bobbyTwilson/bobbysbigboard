@@ -31,7 +31,7 @@ jobs:
       - name: Install Playwright browser test runner
         run: npm install --no-save --package-lock=false @playwright/test@1.64.1
       - name: Install Chromium and browser dependencies
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Test public BBB routes and user journeys
         run: npx playwright test
         env:
