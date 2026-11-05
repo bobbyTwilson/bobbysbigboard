@@ -85,3 +85,104 @@ nav{gap:22px!important}nav a{font-size:13px!important;color:#d3ddcf!important;tr
 @media(max-width:1150px){.bbb-home-movers{grid-template-columns:repeat(3,minmax(0,1fr))}.bbb-community-inner{flex-direction:column;align-items:flex-start}.bbb-community-actions{justify-content:flex-start}}
 @media(max-width:670px){.bbb-home-movers{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.bbb-home-mover{padding:12px}.bbb-home-mover strong{font-size:14px}.bbb-community-actions a{white-space:normal}}
 @media(max-width:370px){.bbb-home-movers{grid-template-columns:1fr}}
+
+
+/* BBB Scouting DNA + Comparison Lab: one graded-data source, two views. */
+.bbb-dna-panel{background:radial-gradient(ellipse at 86% 0,rgba(58,139,81,.13),transparent 46%),#101f15;border:1px solid #345940!important;color:#e7f1e6}
+.bbb-dna-status{padding:11px 14px;background:#193722;border:1px solid #416a4c;border-radius:11px;min-width:120px;text-align:center}
+.bbb-dna-status span{font-size:9px;font-weight:900;color:#acc4b1;letter-spacing:.07em;display:block}
+.bbb-dna-status strong{display:block;font-size:24px;color:#acebbb;margin-top:5px}
+.bbb-dna-core{display:grid;grid-template-columns:minmax(290px,1.02fr) minmax(280px,.98fr);gap:19px;align-items:stretch;margin-top:20px}
+.bbb-dna-visual{background:radial-gradient(ellipse at center,rgba(57,117,75,.19),transparent 67%),#08160d;border:1px solid #385b40;border-radius:14px;padding:14px;min-width:0}
+.bbb-dna-visual-label,.bbb-dna-overline{color:#91d9a4;font-size:10px;font-weight:900;letter-spacing:.12em}
+.bbb-dna-radar{width:100%;height:auto;max-height:390px;display:block}
+.bbb-dna-grid{stroke:#466e50;stroke-width:1;fill:none}
+.bbb-dna-axis{stroke:#25442e;stroke-width:1}
+.bbb-dna-shape{stroke:#8cebb4;stroke-width:2.6;fill:rgba(51,202,118,.23)}
+.bbb-dna-dot{fill:#b8f2cd;stroke:#132c1c;stroke-width:2}
+.bbb-dna-label{fill:#c0d6c5;font-size:11px;font-weight:800}
+.bbb-dna-core-notes{padding:20px;border:1px solid #31503a;border-radius:13px;background:#0b1c11}
+.bbb-dna-core-notes h3{font-size:25px;letter-spacing:-.035em;margin:9px 0 10px}
+.bbb-dna-core-notes p{font-size:13px;color:#c0d4c5;line-height:1.7}
+.bbb-dna-highlights{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.bbb-dna-highlights>div{display:flex;flex-direction:column;gap:9px;border:1px solid #31563c;padding:11px;border-radius:10px}
+.bbb-dna-highlights small{font-size:9px;color:#90b59a;font-weight:900;letter-spacing:.06em}
+.bbb-dna-highlights span{font-size:12px;line-height:1.45;color:#e5f4e9}
+.bbb-dna-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.bbb-dna-category{background:#0b1a11;border:1px solid #304d37;border-radius:12px;padding:17px;min-width:0}
+.bbb-dna-category h3{font-size:15px;margin:0 0 17px;color:#9fdfb5}
+.bbb-dna-trait{margin-bottom:15px}.bbb-dna-trait:last-child{margin-bottom:0}
+.bbb-dna-trait-title{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#dbeadf;margin-bottom:7px}
+.bbb-dna-trait-title span{white-space:nowrap;color:#b8ebc8;font-weight:900}
+.bbb-dna-track{height:8px;background:#254332;border-radius:99px;overflow:hidden}
+.bbb-dna-track span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#347c4d,#7fe3a3)}
+.bbb-dna-editorial{padding:17px 20px;background:#142b1b;border-left:3px solid #63bf83;border-radius:8px;margin-top:17px}
+.bbb-dna-editorial span{font-weight:900;color:#9ad7ac;font-size:10px;letter-spacing:.09em}
+.bbb-dna-editorial p{font-size:13px;color:#d3e6d6;line-height:1.7;margin:9px 0 0}
+.bbb-dna-empty{padding:26px;border:1px dashed #457257;background:#091b11;color:#c4d5c8;border-radius:12px;line-height:1.65}
+.bbb-dna-actions{display:flex;gap:11px;flex-wrap:wrap;margin-top:18px}
+.bbb-dna-actions a,.bbb-lab-view-dna{display:inline-flex;align-items:center;border:1px solid #4e7c59;border-radius:9px;padding:11px 14px;color:#b4e9c2!important;text-decoration:none;font-size:12px;font-weight:850}
+.bbb-dna-actions .bbb-dna-compare-link{background:#234c30;color:#effaef!important}
+.bbb-dna-actions a:hover,.bbb-lab-view-dna:hover{background:#356440;border-color:#95e1b0}
+.bbb-lab{padding-top:62px;background:radial-gradient(ellipse at 74% 0,rgba(46,116,66,.18),transparent 45%),#09180f}
+.bbb-lab-kicker{font-size:11px;font-weight:900;letter-spacing:.13em;color:#86d69e}
+.bbb-lab h1{font-size:clamp(36px,5vw,72px);line-height:1;letter-spacing:-.055em;margin:11px 0 16px;color:#f4f8f3}
+.bbb-lab h1 em{font-style:normal;color:#8be6a7}
+.bbb-lab-lead{max-width:750px;font-size:16px;line-height:1.7;color:#b2c6b4}
+.bbb-lab-setup{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;background:#10291a;border:1px solid #396246;border-radius:16px;padding:20px;margin-top:27px}
+.bbb-lab-pick{min-width:0;display:flex;flex-direction:column;gap:9px}
+.bbb-lab-pick label{color:#8dd8a1;font-size:10px;font-weight:900;letter-spacing:.08em}
+.bbb-lab-pick input{width:100%;min-width:0;box-sizing:border-box;background:#091c10;color:#f2f9f0;border:1px solid #4d7457;border-radius:10px;padding:14px;font-size:15px;outline:none;font-family:inherit}
+.bbb-lab-pick input:focus{border-color:#a4ecc0;box-shadow:0 0 0 2px rgba(113,216,155,.16)}
+.bbb-lab-pick small{font-size:11px;color:#a2bba6;min-height:16px}
+.bbb-lab-swap{display:flex;flex-direction:column;justify-content:center;align-items:center;background:#214a2e;border:1px solid #538366;color:#c1f4d2;border-radius:10px;min-width:54px;min-height:49px;font-size:19px;cursor:pointer}
+.bbb-lab-swap span{font-size:8px;font-weight:900;letter-spacing:.06em}
+.bbb-lab-shortcuts{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:16px 0 21px}
+.bbb-lab-shortcuts>span{font-size:10px;letter-spacing:.06em;color:#a9c1ae;font-weight:900}
+.bbb-lab-shortcuts button{background:#142b1c;color:#d2eedb;border:1px solid #3b6545;padding:9px 12px;border-radius:99px;cursor:pointer;font-size:11px;font-weight:800}
+.bbb-lab-shortcuts button:hover{background:#2b5737}
+.bbb-lab-empty{padding:36px 22px;border:1px dashed #457252;border-radius:12px;text-align:center;background:#0e2014;color:#bad0bf;line-height:1.6}
+.bbb-lab-headtohead{display:grid;grid-template-columns:minmax(0,1fr) 56px minmax(0,1fr);gap:10px;align-items:stretch;margin:20px 0}
+.bbb-lab-identity{border:1px solid #3d664b;background:linear-gradient(145deg,#1c3b25,#0e2116);border-radius:13px;padding:19px;min-width:0}
+.bbb-lab-name{font-size:clamp(19px,2.5vw,30px);font-weight:900;letter-spacing:-.03em;color:#ebfaed}
+.bbb-lab-badges{display:flex;flex-wrap:wrap;gap:6px;margin:13px 0}
+.bbb-lab-badges span{color:#c5dccb;border:1px solid #3c6448;border-radius:7px;background:#10291a;padding:5px 8px;font-size:10px}
+.bbb-lab-identity a{font-size:12px;font-weight:900;color:#9ceeb6}
+.bbb-lab-versus{color:#99d9a9;font-size:17px;font-weight:950;align-self:center;justify-self:center}
+.bbb-lab-panel{border:1px solid #345940;background:#101f15;border-radius:14px;padding:22px;margin-top:17px}
+.bbb-lab-panel-heading>span{font-size:10px;color:#93dfad;letter-spacing:.09em;font-weight:900}
+.bbb-lab-panel-heading h2{margin:7px 0 8px;font-size:clamp(21px,3vw,29px);color:#f0f8ee}
+.bbb-lab-panel-heading p{font-size:12px;color:#b2cab7;line-height:1.6;margin:0 0 21px}
+.bbb-lab-traits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.bbb-lab-trait{border:1px solid #30513b;background:#0c1a11;border-radius:10px;padding:14px;min-width:0}
+.bbb-lab-trait-title{font-size:12px;font-weight:900;color:#d2ead7;text-align:center;margin-bottom:11px}
+.bbb-lab-trait-values{display:flex;align-items:center;justify-content:space-between;gap:7px}
+.bbb-lab-trait-values strong{font-size:13px;color:#e5f6e9}
+.bbb-lab-trait-values span{font-size:9px;color:#9db8a2;text-align:center}
+.bbb-lab-trait-bars{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}
+.bbb-lab-trait-track{height:8px;background:#234432;border-radius:5px;overflow:hidden}
+.bbb-lab-trait-track i{display:block;height:100%;border-radius:5px;background:#73d89a}
+.bbb-lab-trait-track.left{display:flex;justify-content:flex-end}
+.bbb-lab-trait-track.right i{background:#cfba76}
+.bbb-lab-topnotes{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:15px}
+.bbb-lab-topnotes>div{padding:16px;border:1px solid #385540;border-radius:11px;background:#122a1b;display:flex;flex-direction:column;gap:8px}
+.bbb-lab-topnotes small{font-size:10px;color:#9adbac;font-weight:900}
+.bbb-lab-topnotes span{font-size:12px;color:#e4f2e6}
+.bbb-lab-rows{display:flex;flex-direction:column}
+.bbb-lab-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,.9fr) minmax(0,1fr);gap:10px;align-items:center;padding:14px 7px;border-bottom:1px solid #294732}
+.bbb-lab-row strong{font-size:13px;color:#e3efe5;overflow-wrap:anywhere}
+.bbb-lab-row strong:first-child{text-align:right}
+.bbb-lab-row strong:last-child{text-align:left}
+.bbb-lab-row span{font-size:11px;color:#92ba9e;text-align:center}
+.bbb-lab-source{margin:14px 0 0;color:#99b3a0;font-size:11px}
+.bbb-lab-editorial{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.bbb-lab-editorial article{min-width:0;padding:16px;border:1px solid #33553d;background:#0b1b11;border-radius:12px}
+.bbb-lab-editorial h3{margin:0 0 11px;color:#eaf6eb}
+.bbb-lab-editorial p{font-size:13px;color:#bbd1c0;line-height:1.7}
+.bbb-lab-film{display:flex;flex-direction:column;gap:8px;margin:18px 0}
+.bbb-lab-film a{font-size:12px;color:#92dfac;text-decoration:none}
+.bbb-lab-no-film{font-style:italic;color:#94ab9b}
+.bbb-lab-disclaimer{font-size:11px;color:#9fb6a5;line-height:1.65;margin:20px 0 30px}
+@media(max-width:950px){.bbb-dna-core{grid-template-columns:1fr}.bbb-lab-traits{grid-template-columns:1fr}}
+@media(max-width:680px){.bbb-dna-category-grid,.bbb-lab-editorial,.bbb-lab-topnotes{grid-template-columns:1fr}.bbb-dna-highlights{grid-template-columns:1fr 1fr}.bbb-lab{padding-top:32px}.bbb-lab-setup{grid-template-columns:1fr;padding:14px}.bbb-lab-swap{width:74px;min-height:37px;justify-self:center;flex-direction:row;gap:7px}.bbb-lab-headtohead{grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);gap:5px}.bbb-lab-identity{padding:12px}.bbb-lab-name{font-size:17px}.bbb-lab-badges span{font-size:9px}.bbb-lab-panel{padding:14px}.bbb-lab-row{grid-template-columns:minmax(0,1fr) 90px minmax(0,1fr);gap:5px}.bbb-lab-row strong{font-size:11px}.bbb-lab-row span{font-size:10px}}
+@media(max-width:390px){.bbb-lab-headtohead{grid-template-columns:1fr}.bbb-lab-versus{padding:0 12px}.bbb-dna-visual{padding:6px}.bbb-dna-radar{min-height:250px}}
