@@ -316,7 +316,14 @@
       });
       const body=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error(body.error||'Billing settings unavailable.');
-      if(body.url)location.href=body.url;
+      if(!body.url)throw new Error('Billing portal URL was not returned.');
+      const target=new URL(String(body.url));
+      if(target.protocol!=='https:'||target.hostname!=='billing.stripe.com'||target.username||target.password)
+        throw new Error('Billing provider returned an unexpected destination.');
+      // The Command Center runs inside the same-origin BBB member iframe.
+      // Stripe's billing portal cannot be rendered there: navigate the top tab.
+      const browser=window.top&&window.top!==window?window.top:window;
+      browser.location.assign(target.href);
     }catch(err){alert(err.message||'Billing settings unavailable.')}
     finally{buttons.forEach(btn=>btn.disabled=false)}
   }
