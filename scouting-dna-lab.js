@@ -133,13 +133,13 @@ function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,portrait,esc=esca
   const photoMarkup=photo?'<img class="bbb-lab-player-photo" loading="lazy" src="'+esc(photo)+'" alt="'+esc(p.name)+' player portrait" onerror="this.remove()">':'';
   const accent=teamAccent(p.team);
   const rankLabel=number(rank?.rank)==null?"UNRANKED":"#"+compact(rank.rank);
-  const gradeLabel=g==null?"—":compact(g);
+  const gradeLabel=g==null?"Not graded":compact(g);
   return '<article class="bbb-lab-identity bbb-lab-card bbb-lab-card-'+side+(overallWinner===side?' bbb-lab-card-leading':'')+'" style="--bbb-lab-team-accent:'+accent+'">'+
     '<div class="bbb-lab-card-art"><span class="bbb-lab-photo-fallback">'+esc(initials)+'</span>'+photoMarkup+'</div>'+
     '<div class="bbb-lab-card-info"><div class="bbb-lab-card-eyebrow">'+(side==="left"?"PLAYER ONE":"PLAYER TWO")+' <i></i> '+esc(p.team||"FREE AGENT")+'</div>'+
     '<div class="bbb-lab-name">'+esc(p.name)+'</div>'+
     '<div class="bbb-lab-card-sub">'+esc(p.pos||"PLAYER")+' <span>·</span> '+esc(p.team||"TEAM NOT RECORDED")+'</div>'+
-    '<div class="bbb-lab-card-ratings"><div><small>DYNASTY</small><strong>'+esc(rankLabel)+'</strong></div><div><small>BBB GRADE</small><strong>'+esc(gradeLabel)+'</strong></div></div>'+
+    '<div class="bbb-lab-card-ratings"><div><small>DYNASTY</small><strong>'+esc(rankLabel)+'</strong></div><div><small>BBB GRADE</small><strong class="'+(g==null?'bbb-lab-grade-missing':'')+'">'+esc(gradeLabel)+'</strong></div></div>'+
     '<div class="bbb-lab-badges"><span>'+esc(grade?.comp?"COMP · "+grade.comp:"SCOUTING · BBB")+'</span></div>'+
     '<a class="bbb-lab-profile-link" href="'+purl(p)+'">FULL PLAYER PROFILE <span aria-hidden="true">↗</span></a>'+
     '</div></article>';
