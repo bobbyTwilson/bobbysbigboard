@@ -1,0 +1,27 @@
+-- 2026-11-05: restore the intentionally public, one-row-per-player rank movement summary.
+-- Incident: public player Rank History and homepage seven-day risers queried
+-- public.site_movers. The view is security_invoker=true and references
+-- dynasty_market_history / dynasty_ranking_history, which are intentionally
+-- inaccessible to anon. PostgREST requests therefore fail with 42501.
+--
+-- The site_movers view definition already restricts output to current ranks,
+-- 7/30-day reference ranks, market gaps, movement, tracking-start summary and
+-- public player identity. It contains NO raw history series, account, subscriber,
+-- Stripe, or private draft/film data. Its SELECT grant to anon/authenticated
+-- already exists. Restore the intended public summary without granting history
+-- tables to visitors. Full chronological BBB+ history remains entitlement-gated.
+--
+-- Preserve security_barrier=true on the view. The view is owned by postgres.
+ALTER VIEW public.site_movers SET (security_invoker = false);
+
+-- Verify as anonymous visitor (run in a separate read-only transaction):
+-- BEGIN; SET LOCAL ROLE anon;
+-- SELECT player_key, current_rank, bbb_30d_ref_rank
+-- FROM public.site_movers WHERE player_key='drake-maye'; ROLLBACK;
+--
+-- Negative access checks (must remain false):
+-- SELECT has_table_privilege('anon','public.dynasty_market_history','SELECT'),
+--        has_table_privilege('anon','public.dynasty_ranking_history','SELECT');
+--
+-- Rollback if a public-data leak is discovered:
+-- ALTER VIEW public.site_movers SET (security_invoker = true);
