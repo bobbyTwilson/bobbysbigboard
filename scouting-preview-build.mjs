@@ -508,6 +508,35 @@ try{
    throw new Error('Comparison Lab navigation or script wiring incomplete');
  console.log('Scouting DNA & Comparison Lab QA passed: recorded scales, zero fabricated grades, player tab, shared data, navigation.');
 }catch(error){qaErrors.push('Scouting DNA & Comparison Lab QA failed: '+error.message)}
+// Lab V2: only meaningful, comparable metrics may glow. Section winners
+// are counted equally; portrait data reuses the existing safe headshot path.
+try {
+ const v2Js=await readFile(root+'/scouting-dna-lab.js','utf8');
+ const v2Css=await readFile(root+'/scouting-styles.css','utf8');
+ const v2={};
+ runInNewContext(v2Js,{window:v2},{timeout:1800});
+ const edge=v2.BBB_SCOUTING_DNA?.edgeFor;
+ const tally=v2.BBB_SCOUTING_DNA?.edgeTotals;
+ if(typeof edge!=='function'||typeof tally!=='function')
+  throw new Error('Pure comparison winner helpers missing');
+ if(edge(4.43,4.51,'lower')!=='left'||
+    edge(4.43,4.51,'higher')!=='right'||
+    edge(72,74,null)!=='neutral'||
+    edge(null,3,'higher')!=='neutral'||
+    edge(4,4,'higher')!=='even'||
+    tally(['left','right','neutral']).winner!=='even'||
+    tally(['left','left','right']).winner!=='left')
+  throw new Error('MUT-style glow rules misclassified a stat or tally');
+ if(!v2Js.includes('bbb-lab-card-art')||
+    !v2Js.includes('bbb-lab-overall')||
+    !v2Js.includes('bbb-lab-section-edge')||
+    !scoutingJs.includes('setTitle,portrait,esc')||
+    !scoutingJs.includes('||path==="/dynasty/compare"')||
+    !v2Css.includes('.bbb-lab-player-photo')||
+    !v2Css.includes('.bbb-lab-cell-win'))
+  throw new Error('New player portraits, score display or lab styling missing');
+ console.log('Comparison Lab V2 QA passed: source portraits, winner-only glow, neutral dimensions, section tally and mobile CSS.');
+}catch(error){qaErrors.push('Comparison Lab V2 QA failed: '+error.message)}
 if(qaErrors.length)throw new Error('Preview launch checks failed:\\n'+qaErrors.join('\\n'));
 console.log('Final preview QA passed: favicon, '+assetChecks.length+' app assets, player headshots, embedded movers/profile modules and deep-link routes.');
 console.log('Unified BBB scouting preview, green identity, dynamic ESPN headshots and integrated dynasty tools built. No production deployment.');
