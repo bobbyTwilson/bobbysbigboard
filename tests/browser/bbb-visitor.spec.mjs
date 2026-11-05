@@ -28,6 +28,7 @@ test.describe('public desktop visitor journeys', () => {
     await expect(page.locator('#homeFeature a[href^="/film?video="]').first()).toBeVisible();
     await expect(page.locator('#homeFilmCards a[href^="/film?video="]').first()).toBeVisible();
     await expect(page.locator('#homeMovers')).not.toContainText('Loading recent movement', {timeout:30000});
+    await expect(page.locator('#homeMovers .bbb-home-mover').first()).toBeVisible({ timeout: 30000 });
     await expect(page.locator('a[href="https://discord.gg/J26MZPyu6q"]').first()).toBeVisible();
     await page.locator('#homeFeature a[href^="/film?video="]').first().click();
     await expect(page).toHaveURL(/\/film\?video=/);
