@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+
+const commandCenterScript = await readFile(new URL('../../bbb-plus-command-center.js', import.meta.url), 'utf8');
 
 // These are isolated UI simulations. There is no real Stripe request, paid
 // subscription, login attempt, account mutation, or Supabase write.
@@ -34,6 +37,11 @@ async function mockMember(page,{entitled=true,subscription=member,source='member
     'access-control-allow-headers':'apikey, authorization, content-type',
     'access-control-allow-methods':'GET, POST, OPTIONS'
   };
+  // Public visitor tests hit the live domain. Simulations intentionally serve
+  // this PR's updated Command Center JS so the billing fix is tested BEFORE merge.
+  await page.route('**/bbb-plus-command-center.js',route=>route.fulfill({
+    status:200,contentType:'application/javascript',body:commandCenterScript
+  }));
   await page.route('https://twbduhmibbotregdxlla.supabase.co/**',async route=>{
     const request=route.request();
     const url=new URL(request.url());
