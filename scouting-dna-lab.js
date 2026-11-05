@@ -67,9 +67,36 @@ function profile({p,g,videos,esc=escapeHtml}){
  '<div class="bbb-dna-actions"><a class="bbb-dna-compare-link" href="'+url+'">Compare '+esc(p.name)+' with another player →</a>'+
  (filmed.length?'<a href="/film?video='+encodeURIComponent(filmed[0].video_id)+'">Watch related BBB film ↗</a>':'<a href="/film">Browse Film Room ↗</a>')+'</div></section>';
 }
+
+/* A player only receives an edge when BOTH values are comparable, numeric
+ * and have a meaningful better direction. No invented overall player score. */
+const edgeFor=(left,right,direction)=>{
+ if(direction!=="higher"&&direction!=="lower")return "neutral";
+ const a=number(left),b=number(right);
+ if(a===null||b===null)return "neutral";
+ if(Math.abs(a-b)<.00001)return "even";
+ return direction==="lower"?(a<b?"left":"right"):(a>b?"left":"right");
+};
+const edgeTotals=outcomes=>{
+ let left=0,right=0,ties=0;
+ for(const outcome of outcomes){
+  if(outcome==="left")left++;
+  else if(outcome==="right")right++;
+  else if(outcome==="even")ties++;
+ }
+ const compared=left+right+ties;
+ return {left,right,ties,compared,winner:!compared?"neutral":left===right?"even":left>right?"left":"right"};
+};
+const teamAccent=code=>({
+ ARI:"#CF4F59",ATL:"#D85355",BAL:"#AD86E0",BUF:"#D64D58",CAR:"#65B9EA",CHI:"#E8A15A",CIN:"#F29B53",CLE:"#E99A55",
+ DAL:"#9EBDDF",DEN:"#E38D53",DET:"#85B7E2",GB:"#E4C76B",HOU:"#CF6472",IND:"#AEC8E4",JAX:"#79CFC8",KC:"#DE5965",
+ LV:"#B5C7BE",LAC:"#65C8F3",LAR:"#6DAAEE",MIA:"#68D8CB",MIN:"#B6A0E6",NE:"#9CB6D7",NO:"#E4CF83",NYG:"#8CA9E8",
+ NYJ:"#77C59B",PHI:"#64C7B2",PIT:"#E7C564",SEA:"#7FD3BC",SF:"#D77D7E",TB:"#E5767F",TEN:"#7EC0DC",WAS:"#E2B26D"
+ })[clean(code).toUpperCase()]||"#7AD49B";
+
 const numberOrDash=(v,suffix="")=>number(v)==null?"Not recorded":compact(v)+suffix;
 const height=v=>number(v)==null?"Not recorded":Math.floor(number(v)/12)+"′"+(number(v)%12)+"″";
-function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,esc=escapeHtml}){
+function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,portrait,esc=escapeHtml}){
  setTitle("Player Comparison Lab");
  const byRank=new Map((ranks||[]).map(x=>[x.player_key,x]));
  const byGrade=new Map((prospects||[]).map(x=>[x.player_key,x]));
