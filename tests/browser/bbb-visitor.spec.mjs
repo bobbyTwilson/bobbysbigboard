@@ -90,6 +90,43 @@ test.describe('public desktop visitor journeys', () => {
   });
 });
 
+
+test.describe('growth feature and SEO checks', () => {
+  test('Watch Next updates the selected Film Room video', async ({ page }) => {
+    await page.goto('/film');
+    const item = page.locator('[data-film-next] a').first();
+    await expect(item).toBeVisible({ timeout: 30000 });
+    const target = await item.getAttribute('href');
+    expect(target).toMatch(/^\/film\?video=[A-Za-z0-9_-]{11}$/);
+    await item.click();
+    await expect(page).toHaveURL(new RegExp('video=' + target.split('video=')[1]));
+    await expect(page.locator('.bbb-film-info-head h2')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.bbb-film-youtube-link')).toHaveAttribute(
+      'href', new RegExp(target.split('video=')[1])
+    );
+    await expect(page.locator('[data-film-next] a')).toHaveCount(3);
+  });
+
+  test('ranked player shows actual 30-day and 7-day rank chart', async ({ page }) => {
+    await page.goto('/scouting/drake-maye#history');
+    await expect(page.locator('.sp-hero h1')).toHaveText('Drake Maye', { timeout: 30000 });
+    await expect(page.locator('.sp-tab[data-tab="history"]')).toHaveAttribute('aria-selected','true');
+    await expect(page.locator('.sp-history-graph svg')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sp-history-stats .sp-history-stat')).toHaveCount(4);
+  });
+
+  test('scouting profiles expose player-specific content to crawlers', async ({ request }) => {
+    for(const [slug,name] of [['kc-concepcion','KC Concepcion'],['drake-maye','Drake Maye']]){
+      const response = await request.get('/scouting/' + slug);
+      expect(response.status()).toBe(200);
+      const html = await response.text();
+      expect(html).toContain('<h1>' + name + '</h1>');
+      expect(html).toContain('id="bbbSeoPlayerIntro"');
+      expect(html).toContain('href="https://bobbysbigboard.com/scouting/' + slug + '"');
+    }
+  });
+});
+
 test.describe('mobile visitor journeys', () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
