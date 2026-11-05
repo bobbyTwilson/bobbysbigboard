@@ -111,7 +111,15 @@ test.describe('growth feature and SEO checks', () => {
     await page.goto('/scouting/drake-maye#history');
     await expect(page.locator('.sp-hero h1')).toHaveText('Drake Maye', { timeout: 30000 });
     await expect(page.locator('.sp-tab[data-tab="history"]')).toHaveAttribute('aria-selected','true');
-    await expect(page.locator('.sp-history-graph svg')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sp-history-graph svg')).toBeVisible({ timeout: 12000 }).catch(async error => {
+      const panel = await page.locator('#spRankHistory').innerText().catch(() => 'No #spRankHistory');
+      const state = await page.evaluate(() => ({
+        hash: location.hash,
+        rankText: document.querySelector('.sp-dyn-rank')?.textContent?.slice(0,180),
+        bodyRank: document.querySelector('#spRankHistory')?.innerHTML?.slice(0,600)
+      }));
+      throw new Error('Rank history chart missing. Panel=' + panel.slice(0,380) + ' state=' + JSON.stringify(state) + ' cause=' + error.message);
+    });
     await expect(page.locator('.sp-history-stats .sp-history-stat')).toHaveCount(4);
   });
 
