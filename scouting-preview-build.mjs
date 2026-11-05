@@ -137,6 +137,7 @@ if(publicBuild){
 }
 await writeFile(root+'/index.html',preview);
 await copyFile('scouting-preview.js',root+'/scouting-preview.js');
+await copyFile('scouting-dna-lab.js',root+'/scouting-dna-lab.js');
 await copyFile('bbb-growth-metrics.js',root+'/bbb-growth-metrics.js');
 await copyFile('scouting-samples.js',root+'/scouting-samples.js');
 await copyFile('scouting-green.css',root+'/scouting-green.css');
@@ -478,6 +479,35 @@ try{
    throw new Error('Published film descriptions not queried');
  console.log('Growth sprint QA passed: newest film, rank risers, related studies, verified community links and approved notes.');
 }catch(error){qaErrors.push('Growth sprint QA failed: '+error.message)}
+// The same shipped Scouting DNA rules power player profiles and the Compare Lab.
+try{
+ const dnaJs=await readFile(root+'/scouting-dna-lab.js','utf8');
+ const namespace={};
+ runInNewContext(dnaJs,{window:namespace},{timeout:1500});
+ const dna=namespace.BBB_SCOUTING_DNA;
+ if(!dna||typeof dna.traits!=='function'||typeof dna.profile!=='function'||typeof dna.lab!=='function')
+  throw new Error('Shared DNA and Lab module not exported');
+ const saved={grade:79.5,traits:{Speed:8.5,Acceleration:9,Releases:4,Catching:3,'Projected Draft Capital':4,Analytics:6}};
+ const scored=dna.traits(saved);
+ if(scored.length!==4||scored.find(x=>x.name==='Speed')?.max!==10||
+   scored.find(x=>x.name==='Catching')?.max!==5||
+   scored.some(x=>/Draft Capital|Analytics/.test(x.name)))
+   throw new Error('DNA did not preserve original BBB 5/10 scales or excluded non-film context');
+ const html=dna.profile({p:{player_key:'kc-concepcion',name:'KC Concepcion',overall_breakdown:'Approved film notes'},g:saved,videos:[],esc:s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')});
+ if(!html.includes('Scouting DNA')||!html.includes('79.5')||
+   !html.includes('/dynasty/compare?left=kc-concepcion')||
+   html.includes('Not graded'))
+   throw new Error('Player DNA card did not render source-based grades and direct lab link');
+ const missing=dna.profile({p:{player_key:'no-grades',name:'Ungraded Player'},g:null,videos:[]});
+ if(!missing.includes('No individual scouting traits')||!missing.includes('Not graded'))
+   throw new Error('Missing evaluations must be explicit, not invented');
+ if(!builtPreview.includes('src="/scouting-dna-lab.js"')||
+    !scoutingJs.includes('BBB_SCOUTING_DNA.lab')||
+    !builtPreview.includes('href="/dynasty/compare" data-nav="compare"')||
+    !builtPreview.includes('Comparison Lab'))
+   throw new Error('Comparison Lab navigation or script wiring incomplete');
+ console.log('Scouting DNA & Comparison Lab QA passed: recorded scales, zero fabricated grades, player tab, shared data, navigation.');
+}catch(error){qaErrors.push('Scouting DNA & Comparison Lab QA failed: '+error.message)}
 if(qaErrors.length)throw new Error('Preview launch checks failed:\\n'+qaErrors.join('\\n'));
 console.log('Final preview QA passed: favicon, '+assetChecks.length+' app assets, player headshots, embedded movers/profile modules and deep-link routes.');
 console.log('Unified BBB scouting preview, green identity, dynamic ESPN headshots and integrated dynasty tools built. No production deployment.');
