@@ -67,9 +67,36 @@ function profile({p,g,videos,esc=escapeHtml}){
  '<div class="bbb-dna-actions"><a class="bbb-dna-compare-link" href="'+url+'">Compare '+esc(p.name)+' with another player →</a>'+
  (filmed.length?'<a href="/film?video='+encodeURIComponent(filmed[0].video_id)+'">Watch related BBB film ↗</a>':'<a href="/film">Browse Film Room ↗</a>')+'</div></section>';
 }
+
+/* A player only receives an edge when BOTH values are comparable, numeric
+ * and have a meaningful better direction. No invented overall player score. */
+const edgeFor=(left,right,direction)=>{
+ if(direction!=="higher"&&direction!=="lower")return "neutral";
+ const a=number(left),b=number(right);
+ if(a===null||b===null)return "neutral";
+ if(Math.abs(a-b)<.00001)return "even";
+ return direction==="lower"?(a<b?"left":"right"):(a>b?"left":"right");
+};
+const edgeTotals=outcomes=>{
+ let left=0,right=0,ties=0;
+ for(const outcome of outcomes){
+  if(outcome==="left")left++;
+  else if(outcome==="right")right++;
+  else if(outcome==="even")ties++;
+ }
+ const compared=left+right+ties;
+ return {left,right,ties,compared,winner:!compared?"neutral":left===right?"even":left>right?"left":"right"};
+};
+const teamAccent=code=>({
+ ARI:"#CF4F59",ATL:"#D85355",BAL:"#AD86E0",BUF:"#D64D58",CAR:"#65B9EA",CHI:"#E8A15A",CIN:"#F29B53",CLE:"#E99A55",
+ DAL:"#9EBDDF",DEN:"#E38D53",DET:"#85B7E2",GB:"#E4C76B",HOU:"#CF6472",IND:"#AEC8E4",JAX:"#79CFC8",KC:"#DE5965",
+ LV:"#B5C7BE",LAC:"#65C8F3",LAR:"#6DAAEE",MIA:"#68D8CB",MIN:"#B6A0E6",NE:"#9CB6D7",NO:"#E4CF83",NYG:"#8CA9E8",
+ NYJ:"#77C59B",PHI:"#64C7B2",PIT:"#E7C564",SEA:"#7FD3BC",SF:"#D77D7E",TB:"#E5767F",TEN:"#7EC0DC",WAS:"#E2B26D"
+ })[clean(code).toUpperCase()]||"#7AD49B";
+
 const numberOrDash=(v,suffix="")=>number(v)==null?"Not recorded":compact(v)+suffix;
 const height=v=>number(v)==null?"Not recorded":Math.floor(number(v)/12)+"′"+(number(v)%12)+"″";
-function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,esc=escapeHtml}){
+function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,portrait,esc=escapeHtml}){
  setTitle("Player Comparison Lab");
  const byRank=new Map((ranks||[]).map(x=>[x.player_key,x]));
  const byGrade=new Map((prospects||[]).map(x=>[x.player_key,x]));
@@ -96,15 +123,44 @@ function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,esc=escapeHtml}){
   return byName?.player_key||(byKey.has(str)?str:null);
  };
  const pOf=key=>byKey.get(key)||null;
- const identity=(p,rank,grade)=>{
+
+ const identity=(p,rank,grade,side,overallWinner)=>{
   const g=number(grade?.grade);
-  return '<div class="bbb-lab-identity"><div class="bbb-lab-name">'+esc(p.name)+'</div><div class="bbb-lab-badges">'+
-   '<span>'+esc(p.pos||"Position unknown")+'</span><span>'+esc(p.team||"Team not recorded")+'</span>'+
-   (rank?.rank?'<span>BBB #'+esc(rank.rank)+'</span>':'<span>Not in Top 500</span>')+
-   '<span>Prospect grade: '+(g==null?'Not graded':compact(g))+'</span></div>'+
-   '<a href="'+purl(p)+'">Full scouting profile →</a></div>';
+  const photoUrl=typeof portrait==="function"?clean(portrait(p)):"";
+  // Identical allowlist to the existing BBB profile/directory portrait renderer.
+  const photo=/^https:\/\/(?:a\.)?espncdn\.com\//i.test(photoUrl)?photoUrl:"";
+  const initials=clean(p.name).split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase();
+  const photoMarkup=photo?'<img class="bbb-lab-player-photo" loading="lazy" src="'+esc(photo)+'" alt="'+esc(p.name)+' player portrait" onerror="this.remove()">':'';
+  const accent=teamAccent(p.team);
+  const rankLabel=number(rank?.rank)==null?"UNRANKED":"#"+compact(rank.rank);
+  const gradeLabel=g==null?"Not graded":compact(g);
+  return '<article class="bbb-lab-identity bbb-lab-card bbb-lab-card-'+side+(overallWinner===side?' bbb-lab-card-leading':'')+'" style="--bbb-lab-team-accent:'+accent+'">'+
+    '<div class="bbb-lab-card-art"><span class="bbb-lab-photo-fallback">'+esc(initials)+'</span>'+photoMarkup+'</div>'+
+    '<div class="bbb-lab-card-info"><div class="bbb-lab-card-eyebrow">'+(side==="left"?"PLAYER ONE":"PLAYER TWO")+' <i></i> '+esc(p.team||"FREE AGENT")+'</div>'+
+    '<div class="bbb-lab-name">'+esc(p.name)+'</div>'+
+    '<div class="bbb-lab-card-sub">'+esc(p.pos||"PLAYER")+' <span>·</span> '+esc(p.team||"TEAM NOT RECORDED")+'</div>'+
+    '<div class="bbb-lab-card-ratings"><div><small>DYNASTY</small><strong>'+esc(rankLabel)+'</strong></div><div><small>BBB GRADE</small><strong class="'+(g==null?'bbb-lab-grade-missing':'')+'">'+esc(gradeLabel)+'</strong></div></div>'+
+    '<div class="bbb-lab-badges"><span>'+esc(grade?.comp?"COMP · "+grade.comp:"SCOUTING · BBB")+'</span></div>'+
+    '<a class="bbb-lab-profile-link" href="'+purl(p)+'">FULL PLAYER PROFILE <span aria-hidden="true">↗</span></a>'+
+    '</div></article>';
  };
- const pairRow=(label,a,b)=>'<div class="bbb-lab-row"><strong>'+esc(a)+'</strong><span>'+esc(label)+'</span><strong>'+esc(b)+'</strong></div>';
+ const pairRow=(label,leftDisplay,rightDisplay,leftVal=null,rightVal=null,direction=null)=>{
+  const edge=edgeFor(leftVal,rightVal,direction);
+  return '<div class="bbb-lab-row bbb-lab-edge-'+edge+'" data-edge="'+edge+'">'+
+    '<strong class="bbb-lab-cell bbb-lab-cell-left'+(edge==="left"?' bbb-lab-cell-win':'')+'">'+esc(leftDisplay)+'</strong>'+
+    '<div class="bbb-lab-row-label"><span>'+esc(label)+'</span></div>'+
+    '<strong class="bbb-lab-cell bbb-lab-cell-right'+(edge==="right"?' bbb-lab-cell-win':'')+'">'+esc(rightDisplay)+'</strong></div>';
+ };
+ const sectionEdge=(outcomes,leftName,rightName)=>{
+  const tally=edgeTotals(outcomes);
+  const label=tally.winner==="left"?leftName:tally.winner==="right"?rightName:tally.winner==="even"?"EVEN MATCHUP":"NOT ENOUGH DATA";
+  return '<div class="bbb-lab-section-edge bbb-lab-section-'+tally.winner+'" data-edge="'+tally.winner+'"><div class="bbb-lab-section-edge-label">SECTION EDGE</div>'+
+    '<strong>'+(tally.winner==="left"||tally.winner==="right"?'EDGE · ':'')+esc(label)+'</strong>'+
+    '<small>'+tally.left+' - '+tally.right+' measurable wins'+(tally.ties?' · '+tally.ties+' ties':'')+'</small></div>';
+ };
+ const sectionHead=(index,title,description,edges,names)=>{
+  return '<div class="bbb-lab-panel-heading"><div><span>'+esc(index)+'</span><h2>'+esc(title)+'</h2><p>'+esc(description)+'</p></div>'+sectionEdge(edges,names[0],names[1])+'</div>';
+ };
  const filmCards=(videos,p)=>{
   if(!videos?.length)return '<p class="bbb-lab-no-film">No published BBB film study linked yet.</p>';
   return videos.slice(0,2).map(v=>'<a href="/film?video='+encodeURIComponent(v.video_id)+'">'+esc(v.title||p.name+" Film Study")+' ↗</a>').join("");
@@ -121,52 +177,93 @@ function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,esc=escapeHtml}){
   memo.set(key,task);
   return task;
  }
+
  const gradeLabel=g=>number(g?.grade)==null?"Not graded":compact(g.grade);
  const topTraits=g=>traits(g).slice(0,3).map(t=>'<span>'+esc(t.name)+' · '+compact(t.val)+'/'+t.max+'</span>').join("")||'<span>Not evaluated yet</span>';
- const testing=(a,b)=>{
-  const rows=[
-   ["Height",height(a?.height_in),height(b?.height_in)],
-   ["Weight",numberOrDash(a?.weight_lb," lb"),numberOrDash(b?.weight_lb," lb")],
-   ["40-yard dash",numberOrDash(a?.forty_seconds," sec"),numberOrDash(b?.forty_seconds," sec")],
-   ["Vertical",numberOrDash(a?.vertical_in," in"),numberOrDash(b?.vertical_in," in")],
-   ["Broad jump",numberOrDash(a?.broad_in," in"),numberOrDash(b?.broad_in," in")],
-   ["3-cone",numberOrDash(a?.three_cone_seconds," sec"),numberOrDash(b?.three_cone_seconds," sec")]
-  ];
-  return rows.map(([n,l,r])=>pairRow(n,l,r)).join("");
- };
- const compareTraits=(a,b)=>{
-  const la=traits(a),rb=traits(b),rightMap=new Map(rb.map(t=>[t.key,t]));
+ const testingRows=(a,b)=>[
+   {label:"Height",left:height(a?.height_in),right:height(b?.height_in)},
+   {label:"Weight",left:numberOrDash(a?.weight_lb," lb"),right:numberOrDash(b?.weight_lb," lb")},
+   {label:"40-yard dash",left:numberOrDash(a?.forty_seconds," sec"),right:numberOrDash(b?.forty_seconds," sec"),a:a?.forty_seconds,b:b?.forty_seconds,direction:"lower"},
+   {label:"Vertical",left:numberOrDash(a?.vertical_in," in"),right:numberOrDash(b?.vertical_in," in"),a:a?.vertical_in,b:b?.vertical_in,direction:"higher"},
+   {label:"Broad jump",left:numberOrDash(a?.broad_in," in"),right:numberOrDash(b?.broad_in," in"),a:a?.broad_in,b:b?.broad_in,direction:"higher"},
+   {label:"3-cone",left:numberOrDash(a?.three_cone_seconds," sec"),right:numberOrDash(b?.three_cone_seconds," sec"),a:a?.three_cone_seconds,b:b?.three_cone_seconds,direction:"lower"},
+   {label:"Short shuttle",left:numberOrDash(a?.shuttle_seconds," sec"),right:numberOrDash(b?.shuttle_seconds," sec"),a:a?.shuttle_seconds,b:b?.shuttle_seconds,direction:"lower"}
+ ];
+ const rowEdge=r=>edgeFor(r.a,r.b,r.direction);
+ const renderRows=rows=>rows.map(r=>pairRow(r.label,r.left,r.right,r.a,r.b,r.direction)).join("");
+ const sharedTraits=(first,second,samePosition)=>{
+  const la=traits(first),rb=traits(second),rightMap=new Map(rb.map(t=>[t.key,t]));
   const shared=la.filter(t=>rightMap.has(t.key)&&rightMap.get(t.key).max===t.max);
-  if(!shared.length)return '<div class="bbb-lab-empty">These players do not have shared BBB trait grades on the same scale yet. No scores have been estimated.</div>';
-  return shared.sort((x,y)=>x.group.localeCompare(y.group)||x.name.localeCompare(y.name)).map(t=>{
-   const u=rightMap.get(t.key);
-   return '<div class="bbb-lab-trait"><div class="bbb-lab-trait-title">'+esc(t.name)+'</div>'+
-    '<div class="bbb-lab-trait-values"><strong>'+compact(t.val)+'/'+t.max+'</strong><span>RECORDED TRAIT</span><strong>'+compact(u.val)+'/'+u.max+'</strong></div>'+
-    '<div class="bbb-lab-trait-bars"><div class="bbb-lab-trait-track left"><i style="width:'+t.pct.toFixed(1)+'%"></i></div><div class="bbb-lab-trait-track right"><i style="width:'+u.pct.toFixed(1)+'%"></i></div></div></div>';
+  const pairs=shared.sort((x,y)=>x.group.localeCompare(y.group)||x.name.localeCompare(y.name))
+    .map(t=>({l:t,r:rightMap.get(t.key)}));
+  const outcomes=pairs.map(x=>samePosition?edgeFor(x.l.val,x.r.val,"higher"):"neutral");
+  const html=pairs.map((pair,i)=>{
+   const {l:t,r:u}=pair,edge=outcomes[i];
+   return '<div class="bbb-lab-trait bbb-lab-edge-'+edge+'" data-edge="'+edge+'"><div class="bbb-lab-trait-title">'+esc(t.name)+'</div>'+
+    '<div class="bbb-lab-trait-values"><strong class="bbb-lab-trait-score bbb-lab-trait-score-left'+(edge==="left"?' bbb-lab-cell-win':'')+'">'+compact(t.val)+'/'+t.max+'</strong>'+
+    '<span>'+(edge==="left"||edge==="right"?'SCOUTING EDGE':edge==="even"?'EVEN':'RECORDED TRAIT')+'</span>'+
+    '<strong class="bbb-lab-trait-score bbb-lab-trait-score-right'+(edge==="right"?' bbb-lab-cell-win':'')+'">'+compact(u.val)+'/'+u.max+'</strong></div>'+
+    '<div class="bbb-lab-trait-bars"><div class="bbb-lab-trait-track left"><i style="width:'+t.pct.toFixed(1)+'%"></i></div>'+
+    '<div class="bbb-lab-trait-track right"><i style="width:'+u.pct.toFixed(1)+'%"></i></div></div></div>';
   }).join("");
+  return {outcomes,html:html||'<div class="bbb-lab-empty">These players do not have shared BBB trait grades on the same scale yet. No scores have been estimated.</div>'};
+ };
+ const overallPanel=(votes,leftName,rightName)=>{
+  const summary=edgeTotals(votes);
+  const leader=summary.winner==="left"?leftName:summary.winner==="right"?rightName:summary.winner==="even"?"Even matchup":"Insufficient comparable data";
+  return '<div class="bbb-lab-overall bbb-lab-overall-'+summary.winner+'" data-edge="'+summary.winner+'">'+
+    '<div class="bbb-lab-overall-copy"><span>HEAD-TO-HEAD / RECORDED METRICS</span>'+
+    '<h2>'+(summary.winner==="left"||summary.winner==="right"?'OVERALL SECTION EDGE · ':'')+esc(leader)+'</h2>'+
+    '<p>Each eligible section counts once. This is a comparison of recorded advantages, <strong>not a new BBB grade, player projection, or matchup prediction.</strong></p></div>'+
+    '<div class="bbb-lab-overall-score"><div class="bbb-lab-overall-score-names"><span>'+esc(leftName)+'</span><span>'+esc(rightName)+'</span></div>'+
+    '<div class="bbb-lab-overall-score-values"><strong class="'+(summary.winner==="left"?'bbb-lab-score-leading':'')+'">'+summary.left+'</strong><span>–</span><strong class="'+(summary.winner==="right"?'bbb-lab-score-leading':'')+'">'+summary.right+'</strong></div>'+
+    '<small>SECTION EDGES WON'+(summary.ties?' · '+summary.ties+' EVEN':'')+'</small></div></div>';
  };
  function renderPair(a,b){
   const p=a.p,q=b.p;
-  const positionsMatch=p.pos===q.pos;
-  const rankA=a.rank,rankB=b.rank;
-  const dataRows=[
-   ["BBB dynasty rank",rankA?.rank?"#"+rankA.rank:"Not ranked",rankB?.rank?"#"+rankB.rank:"Not ranked"],
-   ["Position rank",rankA?.pr?p.pos+rankA.pr:"—",rankB?.pr?q.pos+rankB.pr:"—"],
-   ["Market rank",number(rankA?.market)!=null?"#"+rankA.market:"Not recorded",number(rankB?.market)!=null?"#"+rankB.market:"Not recorded"],
-   ["BBB draft grade",gradeLabel(a.grade),gradeLabel(b.grade)],
-   ["Graded draft year",a.grade?.year||"Not recorded",b.grade?.year||"Not recorded"],
-   ["College",p.college||"Not recorded",q.college||"Not recorded"],
-   ["Prospect comp",a.grade?.comp||"Not recorded",b.grade?.comp||"Not recorded"]
+  const names=[p.name,q.name],samePos=p.pos===q.pos;
+  const rA=a.rank,rB=b.rank;
+  const dynastyRows=[
+   {label:"BBB dynasty rank",left:rA?.rank?"#"+rA.rank:"Not ranked",right:rB?.rank?"#"+rB.rank:"Not ranked",a:rA?.rank,b:rB?.rank,direction:"lower"},
+   {label:"Market rank",left:number(rA?.market)==null?"Not recorded":"#"+rA.market,right:number(rB?.market)==null?"Not recorded":"#"+rB.market,a:rA?.market,b:rB?.market,direction:"lower"},
+   {label:"Position rank",left:rA?.pr?p.pos+rA.pr:"Not recorded",right:rB?.pr?q.pos+rB.pr:"Not recorded",a:rA?.pr,b:rB?.pr,direction:samePos?"lower":null},
+   {label:"BBB draft grade",left:gradeLabel(a.grade),right:gradeLabel(b.grade),a:a.grade?.grade,b:b.grade?.grade,direction:samePos?"higher":null},
+   {label:"Graded draft year",left:a.grade?.year||"Not recorded",right:b.grade?.year||"Not recorded"},
+   {label:"College",left:p.college||"Not recorded",right:q.college||"Not recorded"},
+   {label:"Prospect comp",left:a.grade?.comp||"Not recorded",right:b.grade?.comp||"Not recorded"}
   ];
-  result.innerHTML='<div class="bbb-lab-headtohead">'+identity(p,rankA,a.grade)+'<div class="bbb-lab-versus">VS</div>'+identity(q,rankB,b.grade)+'</div>'+
-  '<section class="bbb-lab-panel"><div class="bbb-lab-panel-heading"><span>01 / SCOUTING DNA</span><h2>Trait-by-trait comparison.</h2><p>Same-named BBB traits, shown only where both players have recorded grades on matching scales.'+
-  (positionsMatch?'':' These players play different positions, so comparisons may be limited.')+'</p></div>'+
-  '<div class="bbb-lab-traits">'+compareTraits(a.grade,b.grade)+'</div>'+
-  '<div class="bbb-lab-topnotes"><div><small>'+esc(p.name)+' · HIGHEST GRADED</small>'+topTraits(a.grade)+'</div><div><small>'+esc(q.name)+' · HIGHEST GRADED</small>'+topTraits(b.grade)+'</div></div></section>'+
-  '<section class="bbb-lab-panel"><div class="bbb-lab-panel-heading"><span>02 / DYNASTY & DRAFT</span><h2>Value and scouting context.</h2><p>Independent dynasty rankings and original graded prospect evaluations are distinct measures.</p></div><div class="bbb-lab-rows">'+dataRows.map(row=>pairRow(row[0],row[1],row[2])).join("")+'</div></section>'+
-  '<section class="bbb-lab-panel"><div class="bbb-lab-panel-heading"><span>03 / VERIFIED TESTING</span><h2>How they measured.</h2><p>Missing Combine or pro-day results remain unrecorded rather than estimated.</p></div><div class="bbb-lab-rows">'+testing(a.athletic,b.athletic)+'</div><p class="bbb-lab-source">Measurement sources: '+esc(a.athletic?.source_name||"not recorded")+' · '+esc(b.athletic?.source_name||"not recorded")+'</p></section>'+
-  '<section class="bbb-lab-panel"><div class="bbb-lab-panel-heading"><span>04 / FILM & THE EVALUATION</span><h2>What Bobby saw on tape.</h2></div><div class="bbb-lab-editorial">'+
-  [a,b].map(o=>'<article><h3>'+esc(o.p.name)+'</h3><p>'+esc(o.p.overall_breakdown||"No published scouting breakdown yet.")+'</p><div class="bbb-lab-film">'+filmCards(o.videos,o.p)+'</div><a class="bbb-lab-view-dna" href="'+purl(o.p)+'#dna">Explore full Scouting DNA →</a></article>').join("")+'</div></section>';
+  const testing=testingRows(a.athletic,b.athletic);
+  const scout=sharedTraits(a.grade,b.grade,samePos);
+  const dynastyVotes=dynastyRows.map(rowEdge);
+  const athleticVotes=testing.map(rowEdge);
+  const sections=[edgeTotals(dynastyVotes),edgeTotals(scout.outcomes),edgeTotals(athleticVotes)];
+  const summary=edgeTotals(sections.map(x=>x.winner));
+  result.innerHTML='<div class="bbb-lab-headtohead">'+identity(p,rA,a.grade,"left",summary.winner)+
+   '<div class="bbb-lab-versus"><span>HEAD TO HEAD</span><strong>VS</strong><small>BBB LAB</small></div>'+
+   identity(q,rB,b.grade,"right",summary.winner)+'</div>'+
+   overallPanel(sections.map(x=>x.winner),p.name,q.name)+
+   '<section class="bbb-lab-panel bbb-lab-panel-dna">'+
+   sectionHead('01 / SCOUTING DNA','Trait-by-trait comparison.',
+     'Recorded grades on matching scales.'+(samePos?' Winning scores get the edge.':' Different positions: trait values are displayed without declaring a winner.'),scout.outcomes,names)+
+   '<div class="bbb-lab-traits">'+scout.html+'</div>'+
+   '<div class="bbb-lab-topnotes"><div><small>'+esc(p.name)+' · HIGHEST GRADED</small>'+topTraits(a.grade)+'</div>'+
+   '<div><small>'+esc(q.name)+' · HIGHEST GRADED</small>'+topTraits(b.grade)+'</div></div></section>'+
+   '<section class="bbb-lab-panel bbb-lab-panel-value">'+
+   sectionHead('02 / DYNASTY VALUE','Where they rank.',
+     'Lower rank numbers win. Original prospect grades only get an edge for the same position.',dynastyVotes,names)+
+   '<div class="bbb-lab-rows">'+renderRows(dynastyRows)+'</div></section>'+
+   '<section class="bbb-lab-panel bbb-lab-panel-athletic">'+
+   sectionHead('03 / VERIFIED ATHLETICS','How they measured.',
+     'Faster times and better jumps glow. Height and weight are context, never automatic winners.',athleticVotes,names)+
+   '<div class="bbb-lab-rows">'+renderRows(testing)+'</div>'+
+   '<p class="bbb-lab-source">Measurement sources: '+esc(a.athletic?.source_name||"not recorded")+' · '+esc(b.athletic?.source_name||"not recorded")+'</p></section>'+
+   '<section class="bbb-lab-panel bbb-lab-panel-film"><div class="bbb-lab-panel-heading"><div><span>04 / FILM & THE EVALUATION</span>'+
+   '<h2>What Bobby saw on tape.</h2><p>Scouting notes and film are evidence, not a subjective auto-winner.</p></div>'+
+   '<div class="bbb-lab-section-edge bbb-lab-section-neutral"><strong>NO AUTO EDGE</strong><small>Read the film context</small></div></div>'+
+   '<div class="bbb-lab-editorial">'+
+   [a,b].map(o=>'<article><h3>'+esc(o.p.name)+'</h3><p>'+esc(o.p.overall_breakdown||"No published scouting breakdown yet.")+'</p>'+
+   '<div class="bbb-lab-film">'+filmCards(o.videos,o.p)+'</div>'+
+   '<a class="bbb-lab-view-dna" href="'+purl(o.p)+'#dna">Explore full Scouting DNA →</a></article>').join("")+'</div></section>';
  }
  const getField=(id,key)=>{const n=$("#"+id);const obj=pOf(key);if(n&&obj)n.value=obj.name;};
  const update=async()=>{
@@ -195,5 +292,5 @@ function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,esc=escapeHtml}){
  getField("bbbLabRight",params.get("right"));
  if(left.value||right.value)void update();
 }
-window.BBB_SCOUTING_DNA=Object.freeze({traits,radar,profile,lab});
+window.BBB_SCOUTING_DNA=Object.freeze({traits,radar,profile,lab,edgeFor,edgeTotals});
 })();

@@ -289,7 +289,7 @@ function nativeCompare(){
  }
  return window.BBB_SCOUTING_DNA.lab({
   app,profiles:D.profiles,ranks:D.ranks,prospects:D.prospects,
-  bbbDb,purl,setTitle,esc
+  bbbDb,purl,setTitle,portrait,esc
  });
 }
 
@@ -500,7 +500,7 @@ async function load(){
     nextData=remembered.data;
   }else{
     const results={};
-    const imagesNeeded=profile||path==="/"||path==="/players"||path==="/draft";
+    const imagesNeeded=profile||path==="/"||path==="/players"||path==="/draft"||path==="/dynasty/compare";
     await Promise.all([
       ...queries.map(async q=>{
         try{results[q.key]=await bbbDb(q.table,q.params)||[]}
