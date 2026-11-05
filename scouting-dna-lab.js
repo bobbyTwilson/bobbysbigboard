@@ -123,15 +123,44 @@ function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,portrait,esc=esca
   return byName?.player_key||(byKey.has(str)?str:null);
  };
  const pOf=key=>byKey.get(key)||null;
- const identity=(p,rank,grade)=>{
+
+ const identity=(p,rank,grade,side,overallWinner)=>{
   const g=number(grade?.grade);
-  return '<div class="bbb-lab-identity"><div class="bbb-lab-name">'+esc(p.name)+'</div><div class="bbb-lab-badges">'+
-   '<span>'+esc(p.pos||"Position unknown")+'</span><span>'+esc(p.team||"Team not recorded")+'</span>'+
-   (rank?.rank?'<span>BBB #'+esc(rank.rank)+'</span>':'<span>Not in Top 500</span>')+
-   '<span>Prospect grade: '+(g==null?'Not graded':compact(g))+'</span></div>'+
-   '<a href="'+purl(p)+'">Full scouting profile →</a></div>';
+  const photoUrl=typeof portrait==="function"?clean(portrait(p)):"";
+  // Identical allowlist to the existing BBB profile/directory portrait renderer.
+  const photo=/^https:\/\/(?:a\.)?espncdn\.com\//i.test(photoUrl)?photoUrl:"";
+  const initials=clean(p.name).split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase();
+  const photoMarkup=photo?'<img class="bbb-lab-player-photo" loading="lazy" src="'+esc(photo)+'" alt="'+esc(p.name)+' player portrait" onerror="this.remove()">':'';
+  const accent=teamAccent(p.team);
+  const rankLabel=number(rank?.rank)==null?"UNRANKED":"#"+compact(rank.rank);
+  const gradeLabel=g==null?"—":compact(g);
+  return '<article class="bbb-lab-identity bbb-lab-card bbb-lab-card-'+side+(overallWinner===side?' bbb-lab-card-leading':'')+'" style="--bbb-lab-team-accent:'+accent+'">'+
+    '<div class="bbb-lab-card-art"><span class="bbb-lab-photo-fallback">'+esc(initials)+'</span>'+photoMarkup+'</div>'+
+    '<div class="bbb-lab-card-info"><div class="bbb-lab-card-eyebrow">'+(side==="left"?"PLAYER ONE":"PLAYER TWO")+' <i></i> '+esc(p.team||"FREE AGENT")+'</div>'+
+    '<div class="bbb-lab-name">'+esc(p.name)+'</div>'+
+    '<div class="bbb-lab-card-sub">'+esc(p.pos||"PLAYER")+' <span>·</span> '+esc(p.team||"TEAM NOT RECORDED")+'</div>'+
+    '<div class="bbb-lab-card-ratings"><div><small>DYNASTY</small><strong>'+esc(rankLabel)+'</strong></div><div><small>BBB GRADE</small><strong>'+esc(gradeLabel)+'</strong></div></div>'+
+    '<div class="bbb-lab-badges"><span>'+esc(grade?.comp?"COMP · "+grade.comp:"SCOUTING · BBB")+'</span></div>'+
+    '<a class="bbb-lab-profile-link" href="'+purl(p)+'">FULL PLAYER PROFILE <span aria-hidden="true">↗</span></a>'+
+    '</div></article>';
  };
- const pairRow=(label,a,b)=>'<div class="bbb-lab-row"><strong>'+esc(a)+'</strong><span>'+esc(label)+'</span><strong>'+esc(b)+'</strong></div>';
+ const pairRow=(label,leftDisplay,rightDisplay,leftVal=null,rightVal=null,direction=null)=>{
+  const edge=edgeFor(leftVal,rightVal,direction);
+  return '<div class="bbb-lab-row bbb-lab-edge-'+edge+'" data-edge="'+edge+'">'+
+    '<strong class="bbb-lab-cell bbb-lab-cell-left'+(edge==="left"?' bbb-lab-cell-win':'')+'">'+esc(leftDisplay)+'</strong>'+
+    '<div class="bbb-lab-row-label"><span>'+esc(label)+'</span></div>'+
+    '<strong class="bbb-lab-cell bbb-lab-cell-right'+(edge==="right"?' bbb-lab-cell-win':'')+'">'+esc(rightDisplay)+'</strong></div>';
+ };
+ const sectionEdge=(outcomes,leftName,rightName)=>{
+  const tally=edgeTotals(outcomes);
+  const label=tally.winner==="left"?leftName:tally.winner==="right"?rightName:tally.winner==="even"?"EVEN MATCHUP":"NOT ENOUGH DATA";
+  return '<div class="bbb-lab-section-edge bbb-lab-section-'+tally.winner+'" data-edge="'+tally.winner+'"><div class="bbb-lab-section-edge-label">SECTION EDGE</div>'+
+    '<strong>'+(tally.winner==="left"||tally.winner==="right"?'EDGE · ':'')+esc(label)+'</strong>'+
+    '<small>'+tally.left+' - '+tally.right+' measurable wins'+(tally.ties?' · '+tally.ties+' ties':'')+'</small></div>';
+ };
+ const sectionHead=(index,title,description,edges,names)=>{
+  return '<div class="bbb-lab-panel-heading"><div><span>'+esc(index)+'</span><h2>'+esc(title)+'</h2><p>'+esc(description)+'</p></div>'+sectionEdge(edges,names[0],names[1])+'</div>';
+ };
  const filmCards=(videos,p)=>{
   if(!videos?.length)return '<p class="bbb-lab-no-film">No published BBB film study linked yet.</p>';
   return videos.slice(0,2).map(v=>'<a href="/film?video='+encodeURIComponent(v.video_id)+'">'+esc(v.title||p.name+" Film Study")+' ↗</a>').join("");
