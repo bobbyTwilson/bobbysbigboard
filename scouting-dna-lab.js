@@ -94,6 +94,21 @@ const teamAccent=code=>({
  NYJ:"#77C59B",PHI:"#64C7B2",PIT:"#E7C564",SEA:"#7FD3BC",SF:"#D77D7E",TB:"#E5767F",TEN:"#7EC0DC",WAS:"#E2B26D"
  })[clean(code).toUpperCase()]||"#7AD49B";
 
+/* NFL marks are a decorative identification layer behind the player photo.
+ * Known current teams only. Free agents and unknown teams get the same
+ * tasteful card treatment without a bogus logo. */
+const nflLogoCodes=new Set([
+ "ARI","ATL","BAL","BUF","CAR","CHI","CIN","CLE","DAL","DEN","DET","GB",
+ "HOU","IND","JAX","KC","LV","LAC","LAR","MIA","MIN","NE","NO","NYG",
+ "NYJ","PHI","PIT","SEA","SF","TB","TEN","WAS"
+]);
+const nflLogoCode=code=>{
+ const alias={JAC:"JAX",WSH:"WAS",OAK:"LV",SD:"LAC",STL:"LAR"};
+ const raw=clean(code).toUpperCase();
+ const normalized=alias[raw]||raw;
+ return nflLogoCodes.has(normalized)?normalized.toLowerCase():null;
+};
+
 const numberOrDash=(v,suffix="")=>number(v)==null?"Not recorded":compact(v)+suffix;
 const height=v=>number(v)==null?"Not recorded":Math.floor(number(v)/12)+"′"+(number(v)%12)+"″";
 function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,portrait,esc=escapeHtml}){
@@ -131,11 +146,13 @@ function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,portrait,esc=esca
   const photo=/^https:\/\/(?:a\.)?espncdn\.com\//i.test(photoUrl)?photoUrl:"";
   const initials=clean(p.name).split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase();
   const photoMarkup=photo?'<img class="bbb-lab-player-photo" loading="lazy" src="'+esc(photo)+'" alt="'+esc(p.name)+' player portrait" onerror="this.remove()">':'';
+  const logoCode=nflLogoCode(p.team);
+  const teamLogoMarkup=logoCode?'<img class="bbb-lab-team-watermark" loading="lazy" decoding="async" src="https://a.espncdn.com/i/teamlogos/nfl/500/'+logoCode+'.png" alt="" aria-hidden="true" onerror="this.remove()">':'';
   const accent=teamAccent(p.team);
   const rankLabel=number(rank?.rank)==null?"UNRANKED":"#"+compact(rank.rank);
   const gradeLabel=g==null?"Not graded":compact(g);
   return '<article class="bbb-lab-identity bbb-lab-card bbb-lab-card-'+side+(overallWinner===side?' bbb-lab-card-leading':'')+'" style="--bbb-lab-team-accent:'+accent+'">'+
-    '<div class="bbb-lab-card-art"><span class="bbb-lab-photo-fallback">'+esc(initials)+'</span>'+photoMarkup+'</div>'+
+    '<div class="bbb-lab-card-art">'+teamLogoMarkup+'<span class="bbb-lab-photo-fallback">'+esc(initials)+'</span>'+photoMarkup+'</div>'+
     '<div class="bbb-lab-card-info"><div class="bbb-lab-card-eyebrow">'+(side==="left"?"PLAYER ONE":"PLAYER TWO")+' <i></i> '+esc(p.team||"FREE AGENT")+'</div>'+
     '<div class="bbb-lab-name">'+esc(p.name)+'</div>'+
     '<div class="bbb-lab-card-sub">'+esc(p.pos||"PLAYER")+' <span>·</span> '+esc(p.team||"TEAM NOT RECORDED")+'</div>'+
@@ -297,5 +314,5 @@ function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,portrait,esc=esca
  getField("bbbLabRight",params.get("right"));
  if(left.value||right.value)void update();
 }
-window.BBB_SCOUTING_DNA=Object.freeze({traits,radar,profile,lab,edgeFor,edgeTotals});
+window.BBB_SCOUTING_DNA=Object.freeze({traits,radar,profile,lab,edgeFor,edgeTotals,nflLogoCode});
 })();
