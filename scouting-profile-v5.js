@@ -63,7 +63,8 @@ window.BBB_PROFILE_V5 = async function(ctx){
   const gap=r.market==null?null:Number(r.rank)-Number(r.market);
   const marketText=gap==null?"Market data not recorded":gap===0?"Aligned with market":gap>0?gap+" spots below the market":Math.abs(gap)+" spots above the market";
   const rankDate=r.weekly_update_date?new Date(r.weekly_update_date+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
-  const note=window.BBB_PUBLIC_COPY.clean(r.latest_update||p.latest_weekly_update||"");
+  // Draft prospects do not have NFL weekly updates until they enter the league.
+  const note=isProspect&&(!p.team||p.team==="FA")?"":window.BBB_PUBLIC_COPY.clean(r.latest_update||p.latest_weekly_update||"");
   const summary=String(r.overview||p.overall_breakdown||"").trim();
   const strip=(label,val)=>'<div class="sp-dyn-stat"><span>'+esc(label)+'</span><strong>'+esc(val)+'</strong></div>';
   const progress=Math.max(0,100-Number(r.rank)/500*100);

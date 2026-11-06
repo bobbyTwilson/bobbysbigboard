@@ -448,7 +448,7 @@ async function load(){
     app.innerHTML='<section class="section"><div class="wrap"><div class="eyebrow">BOBBY’S BIG BOARD</div><div class="bbb-route-loading" role="status">Opening '+esc(profile?"scouting profile":path==="/players"?"player directory":path==="/draft"?"draft board":path==="/film"?"film room":"player comparison")+'…</div></div></section>';
   }
   const slimProfiles="select=player_key,name,pos,team,college,draft_year,overall_breakdown";
-  const fullProfiles="select=player_key,name,pos,team,age,college,draft_year,overall_breakdown,latest_weekly_update,injury_status";
+  const fullProfiles="select=player_key,name,pos,team,age,college,draft_year,overall_breakdown,latest_weekly_update,weekly_update_date,injury_status";
   const slimRanks="select=player_key,rank";
   const fullRanks="select=player_key,rank,pr,name,pos,team,age,market,gap,tier,view,overview,latest_update,weekly_update_date,injury_status,injury_note";
   const slimProspects="select=player_key,name,pos,year,grade,comp,photo_url,photo_credit";

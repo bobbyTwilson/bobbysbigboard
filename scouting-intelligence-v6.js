@@ -186,9 +186,12 @@ window.BBB_SCOUTING_V6 = {
     '<small>'+esc(raw(x))+' original BBB grade</small></div>').join("");
   const compare=canCompare?'<label class="sp-v7-compare">Compare <select id="spRadarCompare" aria-label="Trait radar comparison"><option value="none">Player only</option><option value="peers">'+esc(year+" "+pos+" cohort")+'</option></select></label>':
     '<span class="sp-v7-cohort">Recorded BBB traits</span>';
-  const note=p.latest_weekly_update?window.BBB_PUBLIC_COPY.clean(p.latest_weekly_update):"";
-  const stamp=r?.weekly_update_date&&/^\d{4}-\d{2}-\d{2}/.test(r.weekly_update_date)?
-    new Date(r.weekly_update_date+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
+  // NFL weekly/roster commentary is never a college prospect scouting update.
+  const collegeProspect=Number(g?.year||p?.draft_year)>=2027&&(!p?.team||p.team==="FA");
+  const note=!collegeProspect&&p.latest_weekly_update?window.BBB_PUBLIC_COPY.clean(p.latest_weekly_update):"";
+  const noteDate=p.weekly_update_date||r?.weekly_update_date;
+  const stamp=note&&/^\d{4}-\d{2}-\d{2}/.test(String(noteDate||""))?
+    new Date(noteDate+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
   return '<div class="sp-overview-v6 sp-overview-v7"><div class="sp-v7-dashboard">'+
     '<section class="sp-panel sp-verdict sp-v7-card sp-v7-report"><div class="sp-v7-card-label"><span aria-hidden="true">▤</span> THE BBB SCOUTING REPORT</div>'+
     '<h2>What the film <em>tells us.</em></h2><p class="sp-report">'+esc(report)+'</p>'+
