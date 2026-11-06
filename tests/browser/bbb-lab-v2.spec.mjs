@@ -159,3 +159,61 @@ test('single column and winner highlights remain readable on narrow mobile',asyn
  await expect(page.locator('.bbb-lab-trait').filter({hasText:'Speed'})).toHaveAttribute('data-edge','left');
  await expect(page.locator('.bbb-lab-trait').filter({hasText:'Catching'})).toHaveAttribute('data-edge','right');
 });
+
+
+test('team logo follows each current NFL team behind the correct portrait',async({page})=>{
+ await renderLab(page);
+ const left=page.locator('.bbb-lab-card-left .bbb-lab-card-art');
+ const right=page.locator('.bbb-lab-card-right .bbb-lab-card-art');
+ await expect(left.locator('.bbb-lab-team-watermark')).toHaveAttribute('src','https://a.espncdn.com/i/teamlogos/nfl/500/cle.png');
+ await expect(right.locator('.bbb-lab-team-watermark')).toHaveAttribute('src','https://a.espncdn.com/i/teamlogos/nfl/500/chi.png');
+ await expect(page.locator('.bbb-lab-team-watermark')).toHaveCount(2);
+ const styles=await page.evaluate(()=>{
+  return [...document.querySelectorAll('.bbb-lab-card-art')].map(panel=>{
+   const watermark=panel.querySelector('.bbb-lab-team-watermark');
+   const portrait=panel.querySelector('.bbb-lab-player-photo');
+   return {logoZ:Number(getComputedStyle(watermark).zIndex),photoZ:Number(getComputedStyle(portrait).zIndex),
+    opacity:Number(getComputedStyle(watermark).opacity),
+    pointerEvents:getComputedStyle(watermark).pointerEvents,
+    fallback:getComputedStyle(panel.querySelector('.bbb-lab-photo-fallback')).display};
+  });
+ });
+ expect(styles).toHaveLength(2);
+ for(const item of styles){
+  expect(item.logoZ).toBeLessThan(item.photoZ);
+  expect(item.opacity).toBeGreaterThan(0.15);
+  expect(item.opacity).toBeLessThan(0.5);
+  expect(item.pointerEvents).toBe('none');
+  expect(item.fallback).toBe('none');
+ }
+ const mappings=await page.evaluate(()=>['CLE','CHI','DAL','WSH','FA','UNKNOWN'].map(code=>window.BBB_SCOUTING_DNA.nflLogoCode(code)));
+ expect(mappings).toEqual(['cle','chi','dal','was',null,null]);
+ await page.locator('#bbbLabSwap').click();
+ await expect(page.locator('.bbb-lab-card-left .bbb-lab-team-watermark')).toHaveAttribute('src',/\/chi\.png$/);
+ await expect(page.locator('.bbb-lab-card-right .bbb-lab-team-watermark')).toHaveAttribute('src',/\/cle\.png$/);
+ await page.locator('#bbbLabRight').fill('Unknown Quarterback');
+ await expect(page.locator('.bbb-lab-card-right .bbb-lab-team-watermark')).toHaveCount(0);
+ await expect(page.locator('.bbb-lab-card-left .bbb-lab-team-watermark')).toHaveCount(1);
+});
+
+test('team watermark card styling is readable on narrow phones with one-column traits',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await renderLab(page);
+ const details=await page.evaluate(()=>{
+  const panels=[...document.querySelectorAll('.bbb-lab-card-art')];
+  const traits=document.querySelector('.bbb-lab-traits');
+  const rows=[...traits.querySelectorAll('.bbb-lab-trait')];
+  return {overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+   portraits:panels.map(panel=>!!panel.querySelector('.bbb-lab-player-photo')),
+   logos:panels.map(panel=>!!panel.querySelector('.bbb-lab-team-watermark')),
+   gradients:panels.map(panel=>getComputedStyle(panel).backgroundImage.includes('linear-gradient')),
+   rowsAligned:rows.slice(0,5).every(row=>Math.abs(row.getBoundingClientRect().width-traits.getBoundingClientRect().width)<2),
+   circles:panels.map(panel=>getComputedStyle(panel,'::before').display)};
+ });
+ expect(details.overflow).toBeLessThanOrEqual(12);
+ expect(details.portraits).toEqual([true,true]);
+ expect(details.logos).toEqual([true,true]);
+ expect(details.gradients).toEqual([true,true]);
+ expect(details.rowsAligned).toBe(true);
+ expect(details.circles).toEqual(['none','none']);
+});
