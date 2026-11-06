@@ -102,7 +102,9 @@ window.BBB_SCOUTING_V6 = {
     if(g?.grade==null||!Number.isFinite(Number(g.grade)))return "";
     const approved=s?.editorial_status==="approved";
     const notes=x=>Array.isArray(x)?x.filter(v=>typeof v==="string"&&v.trim()).map(v=>v.trim().slice(0,400)).slice(0,6):[];
-    const editorialPros=approved?notes(s.strengths):[],editorialCons=approved?notes(s.development_areas):[];
+    const manualLines=t=>String(t||'').split(/\r?\n/).map(x=>x.replace(/^\s*[-•]\s*/,'').trim()).filter(Boolean).slice(0,8);
+    const editorialPros=manualLines(g?.strengths).length?manualLines(g.strengths):(approved?notes(s.strengths):[]);
+    const editorialCons=manualLines(g?.concerns).length?manualLines(g.concerns):(approved?notes(s.development_areas):[]);
     const angles={
       speed:["offers a credible vertical-speed dimension to his projection","leaves the true vertical-speed ceiling to confirm on film"],
       acceleration:["adds first-step burst to his overall skill set","makes the initial burst an area for more film study"],
@@ -154,6 +156,17 @@ window.BBB_SCOUTING_V6 = {
       '<div class="sp-procon-grid">'+side("Pros · Strengths",good,"positive")+side("Cons · Questions",bad,"caution")+'</div>'+
       '<p class="sp-procon-source">'+(editorial?"Published BBB scouting notes.":"Grade-based scouting preview based on BBB’s recorded trait evaluations. These are relative projections, not independently confirmed play-by-play film observations.")+'</p></section>';
   };
+  const evaluationNotes=()=>{
+    const sections=[
+      ['NFL PROJECTION',g?.projection],
+      ['DEVELOPMENT PLAN',g?.development_plan],
+      ['PRO COMPARISON',g?.comp_explanation]
+    ].filter(x=>typeof x[1]==='string'&&x[1].trim());
+    if(!sections.length)return '';
+    return '<section class="sp-v7-card sp-prospect-projection"><div class="sp-kicker">BOBBY’S BIG BOARD · FILM EVALUATION</div><h2>Projection &amp; development.</h2><div class="sp-projection-columns">'+
+      sections.map(([heading,value])=>'<div class="sp-projection-item"><h3>'+esc(heading)+'</h3><p>'+esc(value)+'</p></div>').join('')+
+      '</div></section>';
+  };
   const insight=(label,items,negative=false)=>
     '<div class="sp-v7-traitgroup '+(negative?'sp-v7-development':'')+'"><h3><span aria-hidden="true">'+(negative?'−':'✓')+'</span>'+esc(label)+'</h3>'+
     (items.length?'<ul>'+items.map(x=>'<li><span class="sp-v7-bullet" aria-hidden="true">'+(negative?'−':'✓')+'</span><span>'+esc(x.name)+' <small>'+esc(raw(x))+'</small></span></li>').join("")+'</ul>':
@@ -198,7 +211,7 @@ window.BBB_SCOUTING_V6 = {
     '<button class="sp-v7-morelink" data-profile-tab="stats" type="button">View full stats →</button></div>'+
     '<div id="spOverviewProduction" aria-live="polite"><div class="sp-muted">Loading current season totals…</div></div></section>'+
     '</div></div>'+
-    prosCons()+
+    prosCons()+evaluationNotes()+
     '<div class="sp-overview-foot sp-v7-film-cta"><div><div class="sp-kicker">FILM LIBRARY</div><h3>'+(videos?.length?"Breakdowns are ready to watch.":"More film is coming.")+'</h3>'+
     '<p>'+(videos?.length?videos.length+" published breakdown"+(videos.length===1?"":"s")+" linked to this player.":"No published long-form film is linked yet.")+'</p></div>'+
     '<button class="sp-quicklink" data-profile-tab="film" type="button">Open Film Room →</button></div></div>';
