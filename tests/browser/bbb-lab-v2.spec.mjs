@@ -217,3 +217,61 @@ test('team watermark card styling is readable on narrow phones with one-column t
  expect(details.rowsAligned).toBe(true);
  expect(details.circles).toEqual(['none','none']);
 });
+
+
+test('compact art panels and centered team logos on desktop',async({page})=>{
+ await renderLab(page);
+ const layout=await page.evaluate(()=>[...document.querySelectorAll('.bbb-lab-card')].map(card=>{
+  const art=card.querySelector('.bbb-lab-card-art');
+  const logo=art.querySelector('.bbb-lab-team-watermark');
+  const portrait=art.querySelector('.bbb-lab-player-photo');
+  const cr=card.getBoundingClientRect();
+  const ar=art.getBoundingClientRect();
+  const lr=logo.getBoundingClientRect();
+  const style=getComputedStyle(logo);
+  return {
+   widthRatio:ar.width/cr.width,
+   cardHeight:cr.height,artHeight:ar.height,
+   deltaX:Math.abs((lr.left+lr.width/2)-(ar.left+ar.width/2)),
+   deltaY:Math.abs((lr.top+lr.height/2)-(ar.top+ar.height/2)),
+   opacity:Number(style.opacity),
+   photoFront:Number(getComputedStyle(portrait).zIndex)>Number(style.zIndex)
+  };
+ }));
+ expect(layout).toHaveLength(2);
+ for(const p of layout){
+  expect(p.widthRatio,'Art panel should occupy less than one-third of each card').toBeLessThan(.34);
+  expect(p.widthRatio,'Art panel should still hold a portrait').toBeGreaterThan(.24);
+  expect(p.artHeight,'Art panel should not be the old 300px tall block').toBeLessThan(285);
+  expect(p.deltaX,'Team logo should be exactly horizontally centered').toBeLessThanOrEqual(2);
+  expect(p.deltaY,'Team logo should be exactly vertically centered').toBeLessThanOrEqual(2);
+  expect(p.opacity).toBeGreaterThan(.2);
+  expect(p.opacity).toBeLessThan(.35);
+  expect(p.photoFront).toBe(true);
+ }
+ await expect(page.locator('.bbb-lab-trait-head').first()).toBeVisible();
+});
+
+test('centered logos and shorter portrait area remain usable at phone width',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await renderLab(page);
+ const layout=await page.evaluate(()=>{
+  const arts=[...document.querySelectorAll('.bbb-lab-card-art')].map(art=>{
+   const ar=art.getBoundingClientRect();
+   const logo=art.querySelector('.bbb-lab-team-watermark').getBoundingClientRect();
+   return {
+    height:ar.height,
+    deltaX:Math.abs((logo.left+logo.width/2)-(ar.left+ar.width/2)),
+    deltaY:Math.abs((logo.top+logo.height/2)-(ar.top+ar.height/2))
+   };
+  });
+  return {arts,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
+ });
+ expect(layout.overflow).toBeLessThanOrEqual(12);
+ for(const art of layout.arts){
+  expect(art.height).toBeLessThanOrEqual(135);
+  expect(art.deltaX).toBeLessThanOrEqual(2);
+  expect(art.deltaY).toBeLessThanOrEqual(2);
+ }
+ await expect(page.locator('.bbb-lab-headtohead .bbb-lab-card')).toHaveCount(2);
+});
