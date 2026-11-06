@@ -552,3 +552,71 @@ nav{gap:22px!important}nav a{font-size:13px!important;color:#d3ddcf!important;tr
 @media(max-width:520px){
  .bbb-lab-team-watermark{width:95%;height:85%;top:7%;opacity:.28}
 }
+
+
+/* Comparison Lab V2.3 — compact portrait panels and centered team logos.
+   Keep the V2.2 team tint and textured design, but make the portrait area
+   proportional to the actual player card instead of an oversized square. */
+.bbb-lab-card{
+ min-height:260px;
+}
+.bbb-lab-card-art{
+ flex:0 0 31%;
+ min-height:254px;
+ width:auto;
+}
+.bbb-lab-team-watermark,
+.bbb-lab-card-right .bbb-lab-team-watermark{
+ left:50%;
+ right:auto;
+ top:50%;
+ transform:translate(-50%,-50%);
+ width:77%;
+ height:70%;
+ max-width:100%;
+ object-fit:contain;
+ object-position:center;
+ opacity:.29;
+}
+.bbb-lab-player-photo{
+ width:100%;
+ height:100%;
+ object-fit:contain;
+ object-position:center bottom;
+}
+@media(max-width:780px){
+ .bbb-lab-card-art{
+  flex:0 0 auto;
+  width:100%;
+  height:144px;
+  min-height:144px;
+ }
+ .bbb-lab-team-watermark,
+ .bbb-lab-card-right .bbb-lab-team-watermark{
+  left:50%;
+  right:auto;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:73%;
+  height:72%;
+  opacity:.27;
+ }
+}
+@media(max-width:520px){
+ .bbb-lab-card-art{
+  height:130px;
+  min-height:130px;
+ }
+ .bbb-lab-team-watermark,
+ .bbb-lab-card-right .bbb-lab-team-watermark{
+  width:72%;
+  height:70%;
+  opacity:.26;
+ }
+}
+@media(max-width:390px){
+ .bbb-lab-card-art{
+  height:122px;
+  min-height:122px;
+ }
+}
