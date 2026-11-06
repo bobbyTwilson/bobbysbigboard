@@ -151,7 +151,7 @@ const assetHeadshots=()=>cachedHeadshots||(cachedHeadshots=fetch("/scouting-head
 
 const filmList=()=>filmCatalogCache||(filmCatalogCache=window.BBB_FILM_ROOM.catalog(D.films,D.videos,D.profiles,D.prospects));
 function setTitle(x){document.title=x+" | Bobby's Big Board";const k=location.pathname==="/dynasty/compare"?"compare":location.pathname.startsWith("/scouting/")?"players":location.pathname.split("/")[1]||"home";document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("active",a.dataset.nav===k))}
-function portrait(p){const m=D.media[p.player_key];return m&&/^https:\/\/(a\.)?espncdn\.com\//.test(m.url||"")?m.url:""}
+function portrait(p){const override=P.get(p.player_key)?.photo_url;if(override&&/^https:\/\//i.test(override))return override;const m=D.media[p.player_key];return m&&/^https:\/\/(a\.)?espncdn\.com\//.test(m.url||"")?m.url:""}
 function playerCard(p){
  const r=R.get(p.player_key),g=P.get(p.player_key),src=portrait(p);
  const hasGrade=g&&g.grade!=null&&Number.isFinite(Number(g.grade)),v=filmList().filter(x=>x.player_key===p.player_key);
@@ -451,8 +451,8 @@ async function load(){
   const fullProfiles="select=player_key,name,pos,team,age,college,draft_year,overall_breakdown,latest_weekly_update,injury_status";
   const slimRanks="select=player_key,rank";
   const fullRanks="select=player_key,rank,pr,name,pos,team,age,market,gap,tier,view,overview,latest_update,weekly_update_date,injury_status,injury_note";
-  const slimProspects="select=player_key,name,pos,year,grade,comp";
-  const fullProspects="select=player_key,name,pos,year,grade,comp,traits";
+  const slimProspects="select=player_key,name,pos,year,grade,comp,photo_url,photo_credit";
+  const fullProspects="select=player_key,name,pos,year,grade,comp,traits,overview,strengths,concerns,projection,development_plan,comp_explanation,photo_url,photo_credit";
   const videoFields="select=video_id,player_key,title,video_type,content_archetype,privacy_status,published_at";
   const filmFields="select=video_id,player_key,title,description,video_type,editorial_status,published_at,created_at,updated_at";
   const query=(key,table,params)=>({key,table,params});
