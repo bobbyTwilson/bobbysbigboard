@@ -102,3 +102,60 @@ test('MUT-style compare cards remain side-by-side and fit mobile viewport',async
  expect(info.right,'The two player cards should remain opposite each other').toBeGreaterThan(info.left);
  expect(Math.min(...info.heights)).toBeGreaterThan(250);
 });
+
+
+test('clean player photo panels and single stacked trait column on desktop',async({page})=>{
+ await renderLab(page);
+ const visual=await page.evaluate(()=>{
+  const grid=document.querySelector('.bbb-lab-traits');
+  const cards=[...grid.querySelectorAll('.bbb-lab-trait')];
+  const widths=cards.map(card=>Math.round(card.getBoundingClientRect().width));
+  const xs=cards.map(card=>Math.round(card.getBoundingClientRect().left));
+  const ys=cards.map(card=>Math.round(card.getBoundingClientRect().top));
+  const photoPanels=[...document.querySelectorAll('.bbb-lab-card-art')];
+  return {
+   cardCount:cards.length,gridWidth:Math.round(grid.getBoundingClientRect().width),
+   widths,xs,ys,
+   background:photoPanels.map(panel=>getComputedStyle(panel).backgroundImage),
+   circles:photoPanels.map(panel=>getComputedStyle(panel,'::before').display),
+   initials:photoPanels.map(panel=>getComputedStyle(panel.querySelector('.bbb-lab-photo-fallback')).display),
+   cardTextures:[...document.querySelectorAll('.bbb-lab-card')].map(card=>getComputedStyle(card,'::after').display),
+   filmGrid:getComputedStyle(document.querySelector('.bbb-lab-editorial')).gridTemplateColumns
+  };
+ });
+ expect(visual.cardCount).toBeGreaterThan(3);
+ expect(visual.widths.every(width=>Math.abs(width-visual.gridWidth)<=2),'Each trait occupies the full grid width').toBe(true);
+ expect(visual.xs.every(x=>x===visual.xs[0]),'All traits align in one column').toBe(true);
+ expect(visual.ys.every((y,i)=>i===0||y>visual.ys[i-1]),'Trait cards stack vertically').toBe(true);
+ expect(visual.circles).toEqual(['none','none']);
+ expect(visual.initials).toEqual(['none','none']);
+ expect(visual.cardTextures).toEqual(['none','none']);
+ expect(visual.background.every(background=>background.includes('linear-gradient'))).toBe(true);
+ const filmColumns=visual.filmGrid.trim().split(/\s+/);
+ expect(filmColumns,'Film notes also use one full-width column').toHaveLength(1);
+ await expect(page.locator('.bbb-lab-player-photo')).toHaveCount(2);
+ await expect(page.locator('.bbb-lab-trait-head').first()).toBeVisible();
+ await expect(page.locator('.bbb-lab-trait-edge-label').first()).toBeVisible();
+});
+
+test('single column and winner highlights remain readable on narrow mobile',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await renderLab(page);
+ const layout=await page.evaluate(()=>{
+  const grid=document.querySelector('.bbb-lab-traits');
+  const rows=[...grid.querySelectorAll('.bbb-lab-trait')];
+  return {
+   overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+   gridWidth:grid.getBoundingClientRect().width,
+   rowWidth:rows[0].getBoundingClientRect().width,
+   rowXs:rows.slice(0,4).map(row=>Math.round(row.getBoundingClientRect().x)),
+   fallback:getComputedStyle(document.querySelector('.bbb-lab-photo-fallback')).display
+  };
+ });
+ expect(layout.overflow).toBeLessThanOrEqual(12);
+ expect(Math.abs(layout.gridWidth-layout.rowWidth)).toBeLessThanOrEqual(2);
+ expect(layout.rowXs.every(x=>x===layout.rowXs[0])).toBe(true);
+ expect(layout.fallback).toBe('none');
+ await expect(page.locator('.bbb-lab-trait').filter({hasText:'Speed'})).toHaveAttribute('data-edge','left');
+ await expect(page.locator('.bbb-lab-trait').filter({hasText:'Catching'})).toHaveAttribute('data-edge','right');
+});
