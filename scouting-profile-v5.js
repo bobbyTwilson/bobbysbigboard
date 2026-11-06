@@ -12,7 +12,7 @@ window.BBB_PROFILE_V5 = async function(ctx){
  const statsLabel=p.pos==="QB"?"Passing yards":p.pos==="RB"?"Rushing yards":"Receiving yards";
  const isProspect=(Number(g?.year||p.draft_year)>=2027);
  const V6=window.BBB_SCOUTING_V6;
- const report=(s?.editorial_status==="approved"&&s?.scouting_summary)||p.overall_breakdown||"A complete player scouting evaluation has not been published yet. Statistics and film will be added as they are verified.";
+ const report=g?.overview||(s?.editorial_status==="approved"&&s?.scouting_summary)||p.overall_breakdown||"A complete player scouting evaluation has not been published yet. Statistics and film will be added as they are verified.";
  const height=x=>x==null?"Not recorded":Math.floor(Number(x)/12)+"′"+(Number(x)%12)+"″";
  const display=n=>n==null?"—":Number(n).toLocaleString("en-US",{maximumFractionDigits:1});
  const head=photo?'<img class="sp-player-image" src="'+esc(photo)+'" alt="'+esc(p.name)+' player portrait" onerror="this.remove()">':'';
