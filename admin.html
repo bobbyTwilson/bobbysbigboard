@@ -1218,6 +1218,19 @@ body:after{
   <link rel="stylesheet" href="/admin-ui-polish-v1.css?v=5">
   <link rel="stylesheet" href="/admin-design-system-v2.css?v=7">
   <link rel="stylesheet" href="/admin-ranking-intel-v2.css?v=3">
+<style id="bbb-prospect-editorial-styles">
+.bbb-editorial-form{margin:20px 0 16px;padding:20px;border:1px solid #173e2a;background:linear-gradient(145deg,#071910,#041009);border-radius:15px}
+.bbb-editorial-heading h3{font-size:18px;margin:6px 0;color:#e8fff1}.bbb-editorial-heading p{color:#81a38e;font-size:11px;line-height:1.6;margin:0 0 15px}
+.bbb-editorial-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bbb-editorial-field{margin:0 0 14px;min-width:0}.bbb-editorial-field label,.bbb-photo-controls label{display:block;color:#a0ceb3;font-size:10px;font-weight:800;margin:0 0 7px}.bbb-editorial-field label small{font-size:9px;color:#6f9880;font-weight:500}
+.bbb-editorial-field textarea{width:100%!important;display:block;min-height:76px;resize:vertical;line-height:1.6;font-size:12px!important;white-space:pre-wrap;padding:12px!important}
+.bbb-photo-editor{display:grid;grid-template-columns:118px minmax(0,1fr);gap:15px;align-items:start;border:1px solid #24563b;border-radius:12px;padding:13px;background:#03110a}
+.bbb-photo-frame{height:142px;display:grid;place-items:center;border-radius:11px;background:#092217;border:1px solid #256b46;color:#608e73;overflow:hidden;font-size:10px;font-weight:800}
+.bbb-photo-frame img{height:100%;width:100%;object-fit:contain;object-position:center bottom}.bbb-photo-controls{display:grid;gap:6px;min-width:0}.bbb-photo-controls input{width:100%}.bbb-photo-controls button{justify-self:start;margin-top:3px}.bbb-photo-help{color:#7d9f88;font-size:10px;line-height:1.5}
+.bbb-publish-toggle{display:flex;gap:12px;align-items:flex-start;border:1px solid #326d49;border-radius:10px;padding:13px;margin-top:16px;cursor:pointer;background:#0b2416}.bbb-publish-toggle input{accent-color:#10ce77;transform:scale(1.3);margin-top:5px}.bbb-publish-toggle strong{color:#b6f7d0;font-size:11px;display:block}.bbb-publish-toggle small{color:#80aa91;font-size:10px;display:block;margin-top:4px;line-height:1.5}
+.prospect-card-head{grid-template-columns:44px auto minmax(0,1fr) auto!important}.bbb-prospect-avatar{height:46px;width:44px;border-radius:9px;background:#10251b;border:1px solid #2c5c40;overflow:hidden;display:grid;place-items:center;color:#74b899;font-weight:900;font-size:12px}.bbb-prospect-avatar img{width:100%;height:100%;object-fit:cover;object-position:top center}
+@media(max-width:700px){.bbb-editorial-grid{grid-template-columns:1fr}.bbb-photo-editor{grid-template-columns:85px minmax(0,1fr)}.bbb-photo-frame{height:110px}.bbb-editorial-form{padding:13px}.prospect-card-head{grid-template-columns:36px auto minmax(0,1fr) auto!important}.bbb-prospect-avatar{width:36px;height:40px}}
+</style>
 </head>
 <body>
   <section id="loginView" class="login-wrap">
@@ -2422,6 +2435,30 @@ body:after{
         <div class="prospect-total"><span>YOUR OVERALL GRADE</span><strong id="prospectGradeTotal">0.0</strong><small>/ 100</small></div>
         <div class="field"><label>Final Pro Comp</label><input id="prospectFinalComp" class="input" placeholder="Your comp…"></div>
       </div>
+      <section class="bbb-editorial-form" aria-label="Public scouting profile editor">
+        <div class="bbb-editorial-heading"><div class="panel-kicker">PUBLIC SCOUTING PROFILE</div><h3>Your film evaluation</h3><p>Write your own scouting report. Drafts stay private until you check Publish. You can update it when you edit a grade.</p></div>
+        <div class="bbb-editorial-field"><label for="prospectScoutingOverview">Scouting overview</label><textarea id="prospectScoutingOverview" rows="5" maxlength="5000" class="input" placeholder="Your big-picture film evaluation, strengths, and what this player can become…"></textarea></div>
+        <div class="bbb-editorial-grid">
+          <div class="bbb-editorial-field"><label for="prospectScoutingStrengths">How he wins <small>One observation per line</small></label><textarea id="prospectScoutingStrengths" rows="5" maxlength="3000" class="input" placeholder="Anticipatory throws over the middle&#10;Touch and accuracy with a clean base"></textarea></div>
+          <div class="bbb-editorial-field"><label for="prospectScoutingConcerns">Areas to improve <small>One observation per line</small></label><textarea id="prospectScoutingConcerns" rows="5" maxlength="3000" class="input" placeholder="Footwork becomes inconsistent under pressure&#10;Forces throws against cornerback leverage"></textarea></div>
+          <div class="bbb-editorial-field"><label for="prospectNflProjection">NFL projection</label><textarea id="prospectNflProjection" rows="3" maxlength="1400" class="input" placeholder="Potential first-round developmental starter…"></textarea></div>
+          <div class="bbb-editorial-field"><label for="prospectDevelopmentPlan">Development plan</label><textarea id="prospectDevelopmentPlan" rows="3" maxlength="1400" class="input" placeholder="Sit behind a veteran while refining pocket mechanics…"></textarea></div>
+        </div>
+        <div class="bbb-editorial-field"><label for="prospectCompExplanation">Why this pro comp?</label><textarea id="prospectCompExplanation" rows="3" maxlength="1400" class="input" placeholder="What specifically connects this prospect to your final pro comp?"></textarea></div>
+        <div class="bbb-photo-editor">
+          <div class="bbb-photo-frame" id="prospectPhotoPreview"><span>NO PHOTO</span></div>
+          <div class="bbb-photo-controls">
+            <div class="panel-kicker">PLAYER PHOTO · PNG / HEADSHOT</div>
+            <label for="prospectPhotoUrl">Secure image URL (HTTPS)</label>
+            <input id="prospectPhotoUrl" type="url" class="input" placeholder="https://…/headshot.png">
+            <label for="prospectPhotoCredit">Photo source / credit</label>
+            <input id="prospectPhotoCredit" class="input" maxlength="180" placeholder="e.g. ESPN / Oklahoma State Athletics">
+            <button type="button" class="small-btn" id="prospectUseMatchedImage">USE MATCHED PLAYER IMAGE</button>
+            <small class="bbb-photo-help" id="prospectPhotoStatus">Matched ESPN photos appear automatically when identified. Only use photos you have permission to publish.</small>
+          </div>
+        </div>
+        <label class="bbb-publish-toggle"><input type="checkbox" id="prospectPublishReport"><span><strong>Publish scouting write-up on the website</strong><small>Off = draft stays in Admin, on = your report appears on the player's public profile.</small></span></label>
+      </section>
       <div class="save-row">
         <button id="saveProspectGrade" class="save-btn" type="submit">LOCK IN GRADE</button>
         <span id="prospectSaveStatus" class="save-status"></span>
