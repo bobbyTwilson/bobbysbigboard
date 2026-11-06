@@ -557,6 +557,10 @@ try {
     !v2Css.includes('.bbb-lab-team-watermark')||
     !v2Css.includes('z-index:3'))
    throw new Error('Dynamic logo watermark, portrait layering or premium card CSS missing');
+ if(!v2Css.includes('Comparison Lab V2.3')||
+    !v2Css.includes('flex:0 0 31%')||
+    !v2Css.includes('transform:translate(-50%,-50%)'))
+   throw new Error('Comparison Lab compact portrait panel / centered team logo CSS missing');
  console.log('Comparison Lab V2 QA passed: source portraits, winner-only glow, neutral dimensions, section tally and mobile CSS.');
 }catch(error){qaErrors.push('Comparison Lab V2 QA failed: '+error.message)}
 if(qaErrors.length)throw new Error('Preview launch checks failed:\\n'+qaErrors.join('\\n'));
