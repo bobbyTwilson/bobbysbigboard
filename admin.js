@@ -79,7 +79,15 @@ async function loadRankingMoveQueue(){
   rankingMoveQueue=rows;
   return rows;
 }
-async function loadProspectLab(){prospectLab=await rpc('admin_get_prospect_lab',{p_year:null,p_include_graded:true})||[]}
+let prospectImageManifest={};
+async function loadProspectLab(){
+ const [rows,manifest]=await Promise.all([
+  rpc('admin_get_prospect_lab',{p_year:null,p_include_graded:true}),
+  fetch('/scouting-headshots.json',{cache:'force-cache'}).then(r=>r.ok?r.json():null).catch(()=>null)
+ ]);
+ prospectLab=rows||[];
+ if(manifest?.players)prospectImageManifest=manifest.players;
+}
 async function loadDataHealth(){dataHealth=await rpc('admin_get_data_health',{})||{}}
 async function loadCounts(){const [r,p]=await Promise.all([rest('site_rookies?select=player_key'),rest('site_prospects?select=player_key')]);rookiesCount=r?.length??0;prospectsCount=p?.length??0}
 
@@ -749,6 +757,15 @@ RB:[['Speed',10],['Run IQ',5],['Vision',5],['Agility',5],['Catching',5],['Creati
 WR:[['Speed',10],['Agility',5],['Catching',5],['Releases',5],['Analytics',10],['DAWG Factor',5],['Deep Routes',5],['Acceleration',10],['Deceleration',5],['Double Moves',5],['Short Routes',5],['Medium Routes',5],['Run After Catch',5],['Catch in Traffic',5],['X/Z/Slot Ability',5],['Change of Direction',5],['Projected Draft Capital',5]],
 TE:[['Speed',10],['Agility',5],['Blocking',5],['Catching',5],['Analytics',10],['DAWG Factor',5],['Deep Routes',5],['Football IQ',5],['Acceleration',10],['Deceleration',5],['Short Routes',5],['Medium Routes',5],['Run After Catch',5],['Catch in Traffic',5],['Change of Direction',5],['Positional Versatility',5],['Projected Draft Capital',5]]
 };
+function prospectMatchedPhoto(x){const m=prospectImageManifest[x?.player_key];return m?.url&&/^https:\/\//i.test(m.url)?m.url:''}
+function prospectPhoto(x){const u=String(x?.photo_url||prospectMatchedPhoto(x)||'').trim();return /^https:\/\//i.test(u)?u:''}
+function prospectUpdatePhotoPreview(){
+ const frame=$('#prospectPhotoPreview'),status=$('#prospectPhotoStatus');if(!frame)return;
+ const url=String($('#prospectPhotoUrl')?.value||'').trim(),x=prospectByKey($('#prospectKey')?.value);
+ frame.innerHTML=url&&/^https:\/\//i.test(url)?'<img src="'+esc(url)+'" alt="Selected prospect headshot">':'<span>NO PHOTO</span>';
+ const img=frame.querySelector('img');if(img)img.onerror=()=>{frame.innerHTML='<span>IMAGE FAILED</span>'};
+ if(status)status.textContent=url?('Selected headshot for '+(x?.name||'prospect')+'. Confirm correct identity and image rights before publishing.'):'No image assigned. A matched headshot can be selected when available.';
+}
 function prospectReady(x){return x.research_status==='researched'||x.recommended_overall_grade!=null||Object.keys(x.recommended_traits||{}).length>0}
 function filteredProspects(){
   const q=($('#prospectSearch')?.value||'').toLowerCase();
@@ -769,7 +786,7 @@ function renderProspectLab(){
  const ungraded=prospectLab.filter(x=>!x.graded);
  $('#prospectUngraded').textContent=ungraded.length;$('#prospect2027').textContent=prospectLab.filter(x=>+x.class_year===2027).length;$('#prospect2028').textContent=prospectLab.filter(x=>+x.class_year===2028).length;$('#prospectResearched').textContent=prospectLab.filter(prospectReady).length;$('#prospectNavCount').textContent=ungraded.length||'04';
  const list=filteredProspects();
- grid.innerHTML=list.length?list.map(x=>`<article class="prospect-card" data-open-prospect="${esc(x.player_key)}">${x.graded?'<span class="prospect-graded">GRADED</span>':''}<div class="prospect-card-head"><span class="prospect-pos">${esc(x.position)}</span><div class="prospect-name"><strong>${esc(x.name)}</strong><span>${esc(x.school||'School TBD')}</span></div><span class="prospect-class">${x.class_year}${x.class_verified_at?' ✓':''}</span></div><div class="prospect-card-summary">${esc(x.summary||'Research profile pending. This player is in your scouting queue and ready for a BBB grading pass.')}</div><div class="prospect-card-rec"><div><span>RECOMMENDED GRADE</span><strong class="${x.recommended_overall_grade==null?'pending':''}">${x.recommended_overall_grade==null?'PENDING':Number(x.recommended_overall_grade).toFixed(1)}</strong></div><div><span>PRO COMP IDEA</span><strong class="${x.recommended_pro_comp?'':'pending'}">${esc(x.recommended_pro_comp||'PENDING')}</strong></div></div><div class="prospect-card-actions"><span class="research-state ${prospectReady(x)?'ready':''} ${esc(x.research_depth||'pending')}"><i></i>${prospectReady(x)?((x.research_depth==='deep'?'DEEP':'BASELINE')+' · '+String(x.research_confidence||'UNRATED').toUpperCase()):'RESEARCH PENDING'}</span><button class="small-btn grade-prospect-btn" data-grade-prospect="${esc(x.player_key)}">${x.graded?'EDIT GRADE':'GRADE PLAYER'}</button></div></article>`).join(''):'<div class="empty">No prospects match these filters.</div>';
+ grid.innerHTML=list.length?list.map(x=>`<article class="prospect-card" data-open-prospect="${esc(x.player_key)}">${x.graded?'<span class="prospect-graded">GRADED</span>':''}<div class="prospect-card-head"><span class="bbb-prospect-avatar">${prospectPhoto(x)?'<img loading="lazy" src="'+esc(prospectPhoto(x))+'" alt="" onerror="this.remove()">':esc(x.name.split(' ').map(w=>w[0]).slice(0,2).join(''))}</span><span class="prospect-pos">${esc(x.position)}</span><div class="prospect-name"><strong>${esc(x.name)}</strong><span>${esc(x.school||'School TBD')}</span></div><span class="prospect-class">${x.class_year}${x.class_verified_at?' ✓':''}</span></div><div class="prospect-card-summary">${esc(x.summary||'Research profile pending. This player is in your scouting queue and ready for a BBB grading pass.')}</div><div class="prospect-card-rec"><div><span>RECOMMENDED GRADE</span><strong class="${x.recommended_overall_grade==null?'pending':''}">${x.recommended_overall_grade==null?'PENDING':Number(x.recommended_overall_grade).toFixed(1)}</strong></div><div><span>PRO COMP IDEA</span><strong class="${x.recommended_pro_comp?'':'pending'}">${esc(x.recommended_pro_comp||'PENDING')}</strong></div></div><div class="prospect-card-actions"><span class="research-state ${prospectReady(x)?'ready':''} ${esc(x.research_depth||'pending')}"><i></i>${prospectReady(x)?((x.research_depth==='deep'?'DEEP':'BASELINE')+' · '+String(x.research_confidence||'UNRATED').toUpperCase()):'RESEARCH PENDING'}</span><button class="small-btn grade-prospect-btn" data-grade-prospect="${esc(x.player_key)}">${x.graded?'EDIT GRADE':'GRADE PLAYER'}</button></div></article>`).join(''):'<div class="empty">No prospects match these filters.</div>';
 }
 function prospectTotal(){const t=$$('[data-prospect-trait]').reduce((a,i)=>a+(+i.value||0),0);$('#prospectGradeTotal').textContent=t.toFixed(1);return +t.toFixed(1)}
 function prospectByKey(key){return prospectLab.find(v=>v.player_key===key)}
@@ -797,14 +814,40 @@ function openProspectReport(key){
 function startProspectGrade(key){
  const x=prospectByKey(key);if(!x)return;$('#prospectKey').value=key;setProspectDrawerHeader(x,'grade');$('#prospectGradeRecGrade').textContent=x.recommended_overall_grade==null?'Pending':(+x.recommended_overall_grade).toFixed(1);$('#prospectGradeRecComp').textContent=x.recommended_pro_comp||'Research pending';$('#prospectFinalComp').value=x.pro_comp||x.recommended_pro_comp||'';
  const current=x.traits||{},rec=x.recommended_traits||{};$('#prospectTraitGrid').innerHTML=(PROSPECT_TRAITS[x.position]||[]).map(([label,max])=>`<div class="prospect-trait"><label>${esc(label)} <small>/ ${max}</small></label><span class="trait-rec">REC ${rec[label]??'—'}</span><input class="input trait-input" type="number" min="0" max="${max}" step="0.5" data-prospect-trait="${esc(label)}" value="${current[label]??''}"></div>`).join('');
- $('#prospectApplyRec').disabled=!Object.keys(rec).length;$('#prospectApplyRec').dataset.playerKey=key;$$('[data-prospect-trait]').forEach(i=>i.oninput=prospectTotal);prospectTotal();$('#prospectSaveStatus').textContent='';showProspectGrade();$('#prospectDrawerBackdrop').classList.remove('hide');$('#prospectDrawer').classList.remove('hide');
+ $('#prospectApplyRec').disabled=!Object.keys(rec).length;$('#prospectApplyRec').dataset.playerKey=key;$$('[data-prospect-trait]').forEach(i=>i.oninput=prospectTotal);prospectTotal();for(const [id,field] of [['prospectScoutingOverview','scouting_overview'],['prospectScoutingStrengths','scouting_strengths'],['prospectScoutingConcerns','scouting_concerns'],['prospectNflProjection','nfl_projection'],['prospectDevelopmentPlan','development_plan'],['prospectCompExplanation','comp_explanation']])$('#'+id).value=x[field]||'';
+ $('#prospectPublishReport').checked=!!x.scouting_published;
+ $('#prospectPhotoUrl').value=prospectPhoto(x);
+ $('#prospectPhotoCredit').value=x.photo_credit||(prospectMatchedPhoto(x)?'ESPN':'');
+ $('#prospectUseMatchedImage').disabled=!prospectMatchedPhoto(x);
+ prospectUpdatePhotoPreview();
+ $('#prospectSaveStatus').textContent='';showProspectGrade();$('#prospectDrawerBackdrop').classList.remove('hide');$('#prospectDrawer').classList.remove('hide');
 }
 function closeProspectGrader(){$('#prospectDrawerBackdrop').classList.add('hide');$('#prospectDrawer').classList.add('hide')}
 function applyProspectRec(){const x=prospectByKey($('#prospectApplyRec').dataset.playerKey);if(!x)return;$$('[data-prospect-trait]').forEach(i=>{if(x.recommended_traits?.[i.dataset.prospectTrait]!=null)i.value=x.recommended_traits[i.dataset.prospectTrait]});if(x.recommended_pro_comp)$('#prospectFinalComp').value=x.recommended_pro_comp;prospectTotal()}
 async function saveProspectGrade(e){
- e.preventDefault();const x=prospectByKey($('#prospectKey').value);if(!x)return;const traits={};$$('[data-prospect-trait]').forEach(i=>{if(i.value!=='')traits[i.dataset.prospectTrait]=String(+i.value)});if(Object.keys(traits).length!==(PROSPECT_TRAITS[x.position]||[]).length)return alert('Finish every trait grade first.');
- const btn=$('#saveProspectGrade');btn.disabled=true;$('#prospectSaveStatus').textContent='Saving grade…';
- try{await rpc('admin_grade_prospect',{p_player_key:x.player_key,p_name:x.name,p_position:x.position,p_school:x.school||null,p_class_year:+x.class_year,p_overall_grade:prospectTotal(),p_pro_comp:$('#prospectFinalComp').value.trim()||null,p_traits:traits});await Promise.all([loadProspectLab(),loadCounts()]);renderProspectLab();$('#prospectSaveStatus').textContent='Grade locked ✓';setTimeout(closeProspectGrader,300)}catch(err){$('#prospectSaveStatus').textContent=err.message}finally{btn.disabled=false}
+ e.preventDefault();
+ const x=prospectByKey($('#prospectKey').value);if(!x)return;
+ const traits={};$$('[data-prospect-trait]').forEach(i=>{if(i.value!=='')traits[i.dataset.prospectTrait]=String(+i.value)});
+ if(Object.keys(traits).length!==(PROSPECT_TRAITS[x.position]||[]).length)return alert('Finish every trait grade first.');
+ const photoUrl=$('#prospectPhotoUrl').value.trim();
+ if(photoUrl&&!/^https:\/\/[^\s]+$/i.test(photoUrl)){ $('#prospectSaveStatus').textContent='Use an HTTPS image URL.';return}
+ const publish=$('#prospectPublishReport').checked;
+ if(publish&&!$('#prospectScoutingOverview').value.trim()){ $('#prospectSaveStatus').textContent='Write an overview before publishing.';return}
+ const btn=$('#saveProspectGrade');btn.disabled=true;$('#prospectSaveStatus').textContent='Saving grade and report…';
+ try{
+  await rpc('admin_grade_prospect',{p_player_key:x.player_key,p_name:x.name,p_position:x.position,p_school:x.school||null,p_class_year:+x.class_year,p_overall_grade:prospectTotal(),p_pro_comp:$('#prospectFinalComp').value.trim()||null,p_traits:traits});
+  await rpc('admin_save_prospect_editorial',{
+   p_player_key:x.player_key,p_overview:$('#prospectScoutingOverview').value.trim(),
+   p_strengths:$('#prospectScoutingStrengths').value.trim(),p_concerns:$('#prospectScoutingConcerns').value.trim(),
+   p_projection:$('#prospectNflProjection').value.trim(),p_development_plan:$('#prospectDevelopmentPlan').value.trim(),
+   p_comp_explanation:$('#prospectCompExplanation').value.trim(),p_photo_url:photoUrl,
+   p_photo_credit:$('#prospectPhotoCredit').value.trim(),p_publish:publish
+  });
+  await Promise.all([loadProspectLab(),loadCounts()]);renderProspectLab();
+  $('#prospectSaveStatus').textContent=publish?'Grade and scouting report published ✓':'Grade saved · editorial draft private ✓';
+  setTimeout(closeProspectGrader,650);
+ }catch(err){$('#prospectSaveStatus').textContent='Save incomplete: '+(err.message||String(err))}
+ finally{btn.disabled=false}
 }
 function reviewPriorityLabel(p){return Number(p)===1?'Critical':Number(p)===2?'High':'Normal'}
 function reviewAge(h){const x=Number(h);if(!Number.isFinite(x))return'—';if(x<1)return'<1h ago';if(x<48)return`${Math.round(x)}h ago`;return`${Math.round(x/24)}d ago`}
@@ -1623,6 +1666,13 @@ document.addEventListener('DOMContentLoaded',()=>{
     $('#prospectStartGrade')?.addEventListener('click',()=>startProspectGrade($('#prospectStartGrade').dataset.playerKey));
     $('#prospectBackToReport')?.addEventListener('click',()=>openProspectReport($('#prospectKey').value));
     $('#prospectGradeForm')?.addEventListener('submit',saveProspectGrade);
+ $('#prospectPhotoUrl')?.addEventListener('input',prospectUpdatePhotoPreview);
+ $('#prospectUseMatchedImage')?.addEventListener('click',()=>{
+  const x=prospectByKey($('#prospectKey').value);if(!x)return;
+  $('#prospectPhotoUrl').value=prospectMatchedPhoto(x);
+  $('#prospectPhotoCredit').value='ESPN';
+  prospectUpdatePhotoPreview();
+ });
   });
 
   bindControlGroup('research queue',()=>{
