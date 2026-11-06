@@ -2,7 +2,7 @@ const SUPA='https://twbduhmibbotregdxlla.supabase.co';
 const KEY='sb_publishable_R3-rucNypGm1DPd4LHV-0A_wIoT0jBS';
 const STORE='bbb_admin_session_v1';
 const BRIEF_SEEN='bbb_admin_brief_seen_v1';
-let session=null,board=[],profileMap=new Map(),reviewQueue=[],rankingMoveQueue=[],weeklyScanner=null,scannerLoaded=false,scannerLoading=false,prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,classAudit=[],classAuditLoaded=false,classAuditLoading=false,classAuditView='attention',prospectGradeOnly=false,commandBrief=null,commandBriefLoading=false,briefMode='ranking_decisions',activeAdminPage='dashboard';
+let session=null,board=[],profileMap=new Map(),reviewQueue=[],rankingMoveQueue=[],weeklyScanner=null,scannerLoaded=false,scannerLoading=false,prospectLab=[],dataHealth={},adminActivity=[],rookiesCount=0,prospectsCount=0,rankPage=0,playerPage=0,reviewPage=0,selectedRankKey=null,commandIndex=0,researchQueue=[],researchLoaded=false,researchLoading=false,classAudit=[],classAuditLoaded=false,classAuditLoading=false,classAuditView='attention',prospectView='all',commandBrief=null,commandBriefLoading=false,briefMode='ranking_decisions',activeAdminPage='dashboard';
 const PAGE=50;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -772,9 +772,8 @@ function filteredProspects(){
   const year=$('#prospectYear')?.value||'ALL';
   const pos=$('#prospectPos')?.value||'ALL';
   const research=$('#prospectResearch')?.value||'ALL';
-  const show=!!$('#prospectIncludeGraded')?.checked;
   return prospectLab.filter(x=>
-    (prospectGradeOnly?x.graded:(show||!x.graded))&&
+    (prospectView==='all'||(prospectView==='graded')===!!x.graded)&&
     (year==='ALL'||String(x.class_year)===year)&&
     (pos==='ALL'||x.position===pos)&&
     (research==='ALL'||(research==='READY')===prospectReady(x))&&
@@ -785,8 +784,18 @@ function renderProspectLab(){
  const grid=$('#prospectLabGrid');if(!grid)return;
  const ungraded=prospectLab.filter(x=>!x.graded);
  $('#prospectUngraded').textContent=ungraded.length;$('#prospect2027').textContent=prospectLab.filter(x=>+x.class_year===2027).length;$('#prospect2028').textContent=prospectLab.filter(x=>+x.class_year===2028).length;$('#prospectResearched').textContent=prospectLab.filter(prospectReady).length;$('#prospectNavCount').textContent=ungraded.length||'04';
- const list=filteredProspects();
- grid.innerHTML=list.length?list.map(x=>`<article class="prospect-card" data-open-prospect="${esc(x.player_key)}">${x.graded?'<span class="prospect-graded">GRADED</span>':''}<div class="prospect-card-head"><span class="bbb-prospect-avatar">${prospectPhoto(x)?'<img loading="lazy" src="'+esc(prospectPhoto(x))+'" alt="" onerror="this.remove()">':esc(x.name.split(' ').map(w=>w[0]).slice(0,2).join(''))}</span><span class="prospect-pos">${esc(x.position)}</span><div class="prospect-name"><strong>${esc(x.name)}</strong><span>${esc(x.school||'School TBD')}</span></div><span class="prospect-class">${x.class_year}${x.class_verified_at?' ✓':''}</span></div><div class="prospect-card-summary">${esc(x.summary||'Research profile pending. This player is in your scouting queue and ready for a BBB grading pass.')}</div><div class="prospect-card-rec"><div><span>RECOMMENDED GRADE</span><strong class="${x.recommended_overall_grade==null?'pending':''}">${x.recommended_overall_grade==null?'PENDING':Number(x.recommended_overall_grade).toFixed(1)}</strong></div><div><span>PRO COMP IDEA</span><strong class="${x.recommended_pro_comp?'':'pending'}">${esc(x.recommended_pro_comp||'PENDING')}</strong></div></div><div class="prospect-card-actions"><span class="research-state ${prospectReady(x)?'ready':''} ${esc(x.research_depth||'pending')}"><i></i>${prospectReady(x)?((x.research_depth==='deep'?'DEEP':'BASELINE')+' · '+String(x.research_confidence||'UNRATED').toUpperCase()):'RESEARCH PENDING'}</span><button class="small-btn grade-prospect-btn" data-grade-prospect="${esc(x.player_key)}">${x.graded?'EDIT GRADE':'GRADE PLAYER'}</button></div></article>`).join(''):'<div class="empty">No prospects match these filters.</div>';
+ const graded=prospectLab.filter(x=>x.graded).length;
+ for(const [id,value] of [['prospectViewAllCount',prospectLab.length],['prospectViewUngradedCount',prospectLab.length-graded],['prospectViewGradedCount',graded]]){
+   const target=$('#'+id);if(target)target.textContent=String(value);
+ }
+ $('[data-prospect-view]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.prospectView===prospectView)));
+ const list=filteredProspects().sort((a,b)=>(prospectView==='all'?Number(b.graded)-Number(a.graded):0)||a.name.localeCompare(b.name));
+ const summary=$('#prospectViewSummary');
+ if(summary)summary.textContent=prospectView==='graded'
+  ? 'Showing '+list.length+' saved grade'+(list.length===1?'':'s')+'. Select EDIT GRADE & REPORT to revise scores, comp, and scouting notes.'
+  : prospectView==='ungraded'?'Showing '+list.length+' prospects still waiting for your film grade.'
+  : 'Showing '+list.length+' prospects ('+graded+' already graded). Saved grades appear first; search includes everyone.';
+ grid.innerHTML=list.length?list.map(x=>`<article class="prospect-card" data-open-prospect="${esc(x.player_key)}">${x.graded?'<span class="prospect-graded">GRADED</span>':''}<div class="prospect-card-head"><span class="bbb-prospect-avatar">${prospectPhoto(x)?'<img loading="lazy" src="'+esc(prospectPhoto(x))+'" alt="" onerror="this.remove()">':esc(x.name.split(' ').map(w=>w[0]).slice(0,2).join(''))}</span><span class="prospect-pos">${esc(x.position)}</span><div class="prospect-name"><strong>${esc(x.name)}</strong><span>${esc(x.school||'School TBD')}</span></div><span class="prospect-class">${x.class_year}${x.class_verified_at?' ✓':''}</span></div><div class="prospect-card-summary">${esc(x.summary||'Research profile pending. This player is in your scouting queue and ready for a BBB grading pass.')}</div><div class="prospect-card-rec"><div><span>${x.graded?'YOUR SAVED BBB GRADE':'RECOMMENDED GRADE'}</span><strong class="${!x.graded&&x.recommended_overall_grade==null?'pending':''}">${x.graded?Number(x.overall_grade).toFixed(1):x.recommended_overall_grade==null?'PENDING':Number(x.recommended_overall_grade).toFixed(1)}</strong></div><div><span>${x.graded?'YOUR PRO COMP':'PRO COMP IDEA'}</span><strong class="${!x.graded&&!x.recommended_pro_comp?'pending':''}">${esc(x.graded?x.pro_comp||'NOT SET':x.recommended_pro_comp||'PENDING')}</strong></div></div><div class="prospect-card-actions"><span class="research-state ${prospectReady(x)?'ready':''} ${esc(x.research_depth||'pending')}"><i></i>${prospectReady(x)?((x.research_depth==='deep'?'DEEP':'BASELINE')+' · '+String(x.research_confidence||'UNRATED').toUpperCase()):'RESEARCH PENDING'}</span><button class="small-btn grade-prospect-btn" data-grade-prospect="${esc(x.player_key)}">${x.graded?'EDIT GRADE & REPORT':'GRADE PLAYER'}</button></div></article>`).join(''):'<div class="empty">No prospects match these filters.</div>';
 }
 function prospectTotal(){const t=$$('[data-prospect-trait]').reduce((a,i)=>a+(+i.value||0),0);$('#prospectGradeTotal').textContent=t.toFixed(1);return +t.toFixed(1)}
 function prospectByKey(key){return prospectLab.find(v=>v.player_key===key)}
@@ -1383,7 +1392,7 @@ function executeCommandItem(item){
   if(item.id==='injuries'){page('players');$('#playerAdminInjury').value='CONCERN';playerPage=0;renderPlayers();return}
   if(item.id==='buys'){goRankings({market:'BUY'});return}
   if(item.id==='fades'){goRankings({market:'FADE'});return}
-  if(item.id==='ungraded'){page('prospects');$('#prospectIncludeGraded').checked=false;renderProspectLab();return}
+  if(item.id==='ungraded'){page('prospects');prospectView='ungraded';renderProspectLab();return}
   page(item.id);
 }
 function executeActiveCommand(){const items=commandItems($('#commandPaletteInput')?.value||'');executeCommandItem(items[commandIndex])}
@@ -1410,7 +1419,7 @@ function page(name){
   if(name==='scanner'){renderWeeklyScanner();if(!scannerLoaded&&!scannerLoading)void loadWeeklyScanner(false)}
   if(name==='rankings')renderRankings();
   if(name==='players')renderPlayers();
-  if(name==='prospects'){prospectGradeOnly=false;renderProspectLab()}
+  if(name==='prospects'){renderProspectLab()}
   if(name==='research'){renderResearchQueue();if(!researchLoaded&&!researchLoading)void loadResearchQueue(false)}
   if(name==='eligibility'){renderClassAudit();if(!classAuditLoaded&&!classAuditLoading)void loadClassAudit(false)}
   if(name==='review'){renderReviewQueue();renderDataHealth()}
@@ -1515,12 +1524,12 @@ function adminClickRouter(e){
     }
     if(key==='prospectgrades'){
       page('prospects');
-      prospectGradeOnly=true;
+      prospectView='graded';
       if($('#prospectSearch'))$('#prospectSearch').value='';
       if($('#prospectYear'))$('#prospectYear').value='ALL';
       if($('#prospectPos'))$('#prospectPos').value='ALL';
       if($('#prospectResearch'))$('#prospectResearch').value='ALL';
-      if($('#prospectIncludeGraded'))$('#prospectIncludeGraded').checked=true;
+      
       renderProspectLab();
       return;
     }
@@ -1652,8 +1661,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 
   bindControlGroup('prospect lab',()=>{
-    ['#prospectSearch','#prospectYear','#prospectPos','#prospectResearch'].forEach(sel=>$(sel)?.addEventListener(sel==='#prospectSearch'?'input':'change',()=>{prospectGradeOnly=false;renderProspectLab()}));
-    $('#prospectIncludeGraded')?.addEventListener('change',()=>{prospectGradeOnly=false;renderProspectLab()});
+    ['#prospectSearch','#prospectYear','#prospectPos','#prospectResearch'].forEach(sel=>$(sel)?.addEventListener(sel==='#prospectSearch'?'input':'change',renderProspectLab));
+    $('[data-prospect-view]').forEach(btn=>btn.addEventListener('click',()=>{prospectView=btn.dataset.prospectView;renderProspectLab()}));
     $('#prospectLabGrid')?.addEventListener('click',e=>{
       const gradeBtn=e.target.closest('[data-grade-prospect]');
       if(gradeBtn){e.preventDefault();e.stopPropagation();startProspectGrade(gradeBtn.dataset.gradeProspect);return}
