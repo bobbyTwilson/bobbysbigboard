@@ -199,12 +199,17 @@ function lab({app,profiles,ranks,prospects,bbbDb,purl,setTitle,portrait,esc=esca
   const outcomes=pairs.map(x=>samePosition?edgeFor(x.l.val,x.r.val,"higher"):"neutral");
   const html=pairs.map((pair,i)=>{
    const {l:t,r:u}=pair,edge=outcomes[i];
-   return '<div class="bbb-lab-trait bbb-lab-edge-'+edge+'" data-edge="'+edge+'"><div class="bbb-lab-trait-title">'+esc(t.name)+'</div>'+
-    '<div class="bbb-lab-trait-values"><strong class="bbb-lab-trait-score bbb-lab-trait-score-left'+(edge==="left"?' bbb-lab-cell-win':'')+'">'+compact(t.val)+'/'+t.max+'</strong>'+
-    '<span>'+(edge==="left"||edge==="right"?'SCOUTING EDGE':edge==="even"?'EVEN':'RECORDED TRAIT')+'</span>'+
-    '<strong class="bbb-lab-trait-score bbb-lab-trait-score-right'+(edge==="right"?' bbb-lab-cell-win':'')+'">'+compact(u.val)+'/'+u.max+'</strong></div>'+
-    '<div class="bbb-lab-trait-bars"><div class="bbb-lab-trait-track left"><i style="width:'+t.pct.toFixed(1)+'%"></i></div>'+
-    '<div class="bbb-lab-trait-track right"><i style="width:'+u.pct.toFixed(1)+'%"></i></div></div></div>';
+   return '<div class="bbb-lab-trait bbb-lab-edge-'+edge+'" data-edge="'+edge+'">'+
+    '<div class="bbb-lab-trait-head">'+
+      '<strong class="bbb-lab-trait-score bbb-lab-trait-score-left'+(edge==="left"?' bbb-lab-cell-win':'')+'">'+compact(t.val)+'/'+t.max+'</strong>'+
+      '<div class="bbb-lab-trait-title">'+esc(t.name)+'</div>'+
+      '<strong class="bbb-lab-trait-score bbb-lab-trait-score-right'+(edge==="right"?' bbb-lab-cell-win':'')+'">'+compact(u.val)+'/'+u.max+'</strong>'+
+    '</div>'+
+    '<div class="bbb-lab-trait-bars">'+
+      '<div class="bbb-lab-trait-track left"><i style="width:'+t.pct.toFixed(1)+'%"></i></div>'+
+      '<span class="bbb-lab-trait-edge-label">'+(edge==="left"?'← LEFT EDGE':edge==="right"?'RIGHT EDGE →':edge==="even"?'EVEN':'RECORDED')+'</span>'+
+      '<div class="bbb-lab-trait-track right"><i style="width:'+u.pct.toFixed(1)+'%"></i></div>'+
+    '</div></div>';
   }).join("");
   return {outcomes,html:html||'<div class="bbb-lab-empty">These players do not have shared BBB trait grades on the same scale yet. No scores have been estimated.</div>'};
  };

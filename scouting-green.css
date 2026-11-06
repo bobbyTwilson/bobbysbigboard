@@ -429,3 +429,88 @@ nav{gap:22px!important}nav a{font-size:13px!important;color:#d3ddcf!important;tr
 @media(prefers-reduced-motion:reduce){
  .bbb-lab-card,.bbb-lab-trait{transition:none!important}
 }
+
+
+/* Comparison Lab V2.1: single-column scouting, clean portrait backgrounds.
+   Keep opposing headshots and stat winner glows; remove card decoration that
+   showed large initials and orbit circles behind real player cutouts. */
+.bbb-lab-card{
+ background:#0d2116;
+}
+.bbb-lab-card::after{display:none}
+.bbb-lab-card-art{
+ background:linear-gradient(180deg,#142d1e 0%,#0c2015 100%);
+}
+.bbb-lab-card-art::before,
+.bbb-lab-card-right .bbb-lab-card-art::before{
+ display:none;
+}
+.bbb-lab-card-art:has(> .bbb-lab-player-photo) > .bbb-lab-photo-fallback{
+ display:none;
+}
+/* If a portrait fails its onerror handler removes the image, revealing only
+   the initials fallback rather than leaving an empty photo panel. */
+.bbb-lab-player-photo{
+ transform:none;
+}
+/* All scouting traits stack vertically: one stat, one comparison, per row. */
+.bbb-lab-traits,
+.bbb-lab-editorial{
+ grid-template-columns:minmax(0,1fr);
+}
+.bbb-lab-traits{gap:9px}
+.bbb-lab-trait{
+ width:100%;
+ box-sizing:border-box;
+ padding:13px 16px;
+}
+.bbb-lab-trait-head,
+.bbb-lab-trait-bars{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) minmax(130px,.7fr) minmax(0,1fr);
+ gap:10px;
+ align-items:center;
+}
+.bbb-lab-trait-head{min-height:35px}
+.bbb-lab-trait-title{
+ text-align:center;
+ line-height:1.35;
+ font-size:13px;
+ font-weight:900;
+ margin:0;
+}
+.bbb-lab-trait-head .bbb-lab-trait-score-left{justify-self:start}
+.bbb-lab-trait-head .bbb-lab-trait-score-right{justify-self:end}
+.bbb-lab-trait-edge-label{
+ color:#a7cdb3;
+ text-align:center;
+ font-size:9px;
+ font-weight:900;
+ letter-spacing:.065em;
+ white-space:nowrap;
+}
+.bbb-lab-edge-left .bbb-lab-trait-edge-label,
+.bbb-lab-edge-right .bbb-lab-trait-edge-label{
+ color:#9dffbb;
+}
+.bbb-lab-trait-bars{margin-top:4px}
+.bbb-lab-trait-track{min-width:0}
+.bbb-lab-panel-dna .bbb-lab-traits{width:100%}
+@media(max-width:680px){
+ .bbb-lab-trait{padding:11px 10px}
+ .bbb-lab-trait-head,
+ .bbb-lab-trait-bars{
+  grid-template-columns:minmax(0,1fr) minmax(92px,.8fr) minmax(0,1fr);
+  gap:5px;
+ }
+ .bbb-lab-trait-title{font-size:12px}
+ .bbb-lab-trait-edge-label{font-size:8px;letter-spacing:0}
+ .bbb-lab-trait-score{min-width:0;padding:6px 7px}
+}
+@media(max-width:390px){
+ .bbb-lab-trait-head,
+ .bbb-lab-trait-bars{
+  grid-template-columns:minmax(0,1fr) minmax(83px,.82fr) minmax(0,1fr);
+  gap:4px;
+ }
+}

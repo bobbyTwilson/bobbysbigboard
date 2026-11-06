@@ -535,6 +535,13 @@ try {
     !v2Css.includes('.bbb-lab-player-photo')||
     !v2Css.includes('.bbb-lab-cell-win'))
   throw new Error('New player portraits, score display or lab styling missing');
+ if(!v2Js.includes('bbb-lab-trait-head')||
+    !v2Js.includes('bbb-lab-trait-edge-label')||
+    !v2Css.includes('Comparison Lab V2.1: single-column')||
+    !v2Css.includes('.bbb-lab-card-art:has(> .bbb-lab-player-photo)')||
+    !v2Css.includes('.bbb-lab-card-art::before,')||
+    !v2Css.includes('.bbb-lab-traits,\n.bbb-lab-editorial'))
+  throw new Error('Comparison Lab clean portraits or single-column trait rows missing');
  console.log('Comparison Lab V2 QA passed: source portraits, winner-only glow, neutral dimensions, section tally and mobile CSS.');
 }catch(error){qaErrors.push('Comparison Lab V2 QA failed: '+error.message)}
 if(qaErrors.length)throw new Error('Preview launch checks failed:\\n'+qaErrors.join('\\n'));
