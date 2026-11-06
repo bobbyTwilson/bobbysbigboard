@@ -514,3 +514,41 @@ nav{gap:22px!important}nav a{font-size:13px!important;color:#d3ddcf!important;tr
   gap:4px;
  }
 }
+
+
+/* Comparison Lab V2.2: team-logo sports-card art.
+   The mark comes from the player's current team, never the opponent or a
+   hardcoded matchup. Keep portrait sharp and the full-width stat rows intact. */
+.bbb-lab-card-art{
+ background:
+  radial-gradient(circle at 18% 12%,rgba(227,255,221,.115) 0 1px,transparent 1.8px) 0 0/19px 19px,
+  radial-gradient(ellipse at 72% 95%,color-mix(in srgb,var(--bbb-lab-team-accent) 18%,transparent) 0%,transparent 69%),
+  radial-gradient(ellipse at 48% 40%,color-mix(in srgb,var(--bbb-lab-team-accent) 26%,transparent) 0%,transparent 67%),
+  repeating-linear-gradient(135deg,transparent 0 26px,rgba(177,239,194,.028) 26px 27px),
+  linear-gradient(148deg,#183c29 0%,#0c2a1b 38%,#07180f 100%);
+}
+.bbb-lab-team-watermark{
+ position:absolute;z-index:1;display:block;pointer-events:none;
+ width:105%;height:81%;max-width:none;
+ left:5%;top:3%;
+ object-fit:contain;object-position:center;
+ opacity:.34;
+ filter:saturate(.93) drop-shadow(0 0 17px color-mix(in srgb,var(--bbb-lab-team-accent) 42%,transparent));
+ user-select:none;
+}
+.bbb-lab-card-right .bbb-lab-team-watermark{
+ left:auto;right:5%;
+}
+.bbb-lab-player-photo{
+ position:absolute;z-index:3;
+}
+.bbb-lab-photo-fallback{position:relative;z-index:3}
+@media(max-width:780px){
+ .bbb-lab-team-watermark{
+  width:88%;height:93%;top:3%;left:6%;opacity:.32;
+ }
+ .bbb-lab-card-right .bbb-lab-team-watermark{left:auto;right:6%}
+}
+@media(max-width:520px){
+ .bbb-lab-team-watermark{width:95%;height:85%;top:7%;opacity:.28}
+}

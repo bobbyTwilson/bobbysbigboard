@@ -542,6 +542,21 @@ try {
     !v2Css.includes('.bbb-lab-card-art::before,')||
     !v2Css.includes('.bbb-lab-traits,\n.bbb-lab-editorial'))
   throw new Error('Comparison Lab clean portraits or single-column trait rows missing');
+ const teamLogo=v2.BBB_SCOUTING_DNA?.nflLogoCode;
+ if(typeof teamLogo!=='function'||
+    teamLogo('CLE')!=='cle'||
+    teamLogo('CHI')!=='chi'||
+    teamLogo('WSH')!=='was'||
+    teamLogo('FA')!==null||
+    teamLogo('<script>')!==null)
+   throw new Error('Team logos must use a validated NFL abbreviation, with no logo for unknown teams');
+ if(!v2Js.includes('bbb-lab-team-watermark')||
+    !v2Js.includes('a.espncdn.com/i/teamlogos/nfl/500/')||
+    !v2Js.includes('teamLogoMarkup')||
+    !v2Css.includes('Comparison Lab V2.2: team-logo sports-card art')||
+    !v2Css.includes('.bbb-lab-team-watermark')||
+    !v2Css.includes('z-index:3'))
+   throw new Error('Dynamic logo watermark, portrait layering or premium card CSS missing');
  console.log('Comparison Lab V2 QA passed: source portraits, winner-only glow, neutral dimensions, section tally and mobile CSS.');
 }catch(error){qaErrors.push('Comparison Lab V2 QA failed: '+error.message)}
 if(qaErrors.length)throw new Error('Preview launch checks failed:\\n'+qaErrors.join('\\n'));
