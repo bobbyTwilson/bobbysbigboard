@@ -190,6 +190,7 @@ const metaPage=(source,{title,description,path,robots})=>{
   return doc.replace('</head>',metadata+'</head>');
 };
 let publicSitemap='';
+let routedProfileSlugs=[];
 if(publicBuild){
  const landing=[
   ['','Film, Scouting & Dynasty Rankings','Detailed football scouting reports, player film breakdowns, draft prospects and Superflex dynasty rankings from Bobby’s Big Board.'],
@@ -300,6 +301,7 @@ if(publicBuild){
   profileSlugs.push(slug);
   if(canIndex&&!skipAliases.has(slug))indexableSlugs.push({slug,modified:p.weekly_update_date||p.breakdown_updated||null});
  }
+ routedProfileSlugs=profileSlugs.slice();
  const siteRoutes=landing.map(x=>x[0]).filter(x=>!['terms','privacy','billing'].includes(x));
  const urls=[...siteRoutes.map(x=>({url:canonical+'/'+x,modified:null})),
   ...indexableSlugs.map(x=>({url:canonical+'/scouting/'+x.slug,modified:x.modified}))];
@@ -309,6 +311,17 @@ if(publicBuild){
  if(indexableSlugs.length<400)throw new Error('Scouting SEO coverage unexpectedly low: '+indexableSlugs.length+' eligible pages');
  console.log('Scouting SEO: '+profileSlugs.length+' player routes; '+indexableSlugs.length+' with substantive static content and indexable canonicals. Thin profiles are noindex and absent from sitemap.');}
 
+// Only known generated slugs route to static HTML; unknown paths hit 404.
+const scoutingGroups=new Map();
+for(const slug of routedProfileSlugs){
+ if(!/^[a-z0-9-]+$/.test(slug))continue;
+ const key=slug[0],group=scoutingGroups.get(key)||[];
+ group.push(slug);scoutingGroups.set(key,group);
+}
+const scoutingStaticRoutes=[...scoutingGroups.values()].map(slugs=>({
+ src:'/scouting/('+slugs.sort((a,b)=>b.length-a.length).join('|')+')/?$',
+ dest:'/seo/scouting/$1.html'
+}));
 let config=JSON.parse(await readFile('.vercel/output/config.json','utf8'));
 config.routes=[
  {src:'/players/?',dest:publicBuild?'/seo/scouting/landing/players.html':'/index.html'},
@@ -319,8 +332,8 @@ config.routes=[
  {src:'/scouting/ben-sinnot/?',dest:'/scouting/ben-sinnott',status:308},
  {src:'/scouting/lequint-allen/?',dest:'/scouting/lequint-allen-jr',status:308},
  {src:'/scouting/erick-all/?',dest:'/scouting/erick-all-jr',status:308},
- {src:'/scouting/([^/]+)/?',dest:publicBuild?'/seo/scouting/$1.html':'/index.html',check:publicBuild},
- // Unknown scouting slugs must return HTTP 404, not an empty shell with 200.
+ ...(publicBuild?scoutingStaticRoutes:[{src:'/scouting/([^/]+)/?',dest:'/index.html'}]),
+ // An unrecognized player slug cannot be served as the homepage.
  ...(publicBuild?[{src:'/scouting/([^/]+)/?',status:404,dest:'/404.html'}]:[]),
  {src:'/dynasty/?',dest:'/index.html'},
  {src:'/dynasty/(rankings|trade|compare|rookies|movers|updates|watchlist|stats)/?',dest:'/index.html'},
