@@ -214,40 +214,99 @@ if(publicBuild){
  for(const [path,title,description] of landing.slice(1)){
   await writeFile(directory+'/landing/'+path.replaceAll('/','-')+'.html',metaPage(preview,{title:title+' | Bobby’s Big Board',description,path:'/'+path}));
  }
+
+ // Google Search needs meaningful, player-specific HTML even before client-side
+ // Supabase hydration. The previous template rendered the exact same generic
+ // paragraph for every profile and could be classified as thin / soft 404.
+ const API=process.env.BBB_SUPABASE_URL;
+ const KEY=process.env.BBB_SUPABASE_KEY;
+ if(!API||!KEY)throw new Error('Missing public Supabase build credentials for scouting SEO');
+ async function publicRows(table,query){
+  const res=await fetch(API+'/rest/v1/'+table+'?'+query,{headers:{apikey:KEY}});
+  if(!res.ok)throw new Error('Scouting SEO public '+table+' fetch '+res.status);
+  const rows=await res.json();
+  if(!Array.isArray(rows))throw new Error('Scouting SEO '+table+' returned non-list data');
+  return rows;
+ }
+ const [profileRows,gradeRows,rankingRows]=await Promise.all([
+  publicRows('site_profiles','select=player_key,name,pos,team,college,draft_year,overall_breakdown,latest_weekly_update,weekly_update_date,breakdown_updated&limit=1000'),
+  publicRows('site_prospects','select=player_key,name,pos,year,grade,comp,traits,overview,strengths,concerns,projection&limit=600'),
+  publicRows('site_dynasty','select=player_key,name,pos,team,rank,pr,overview,latest_update,weekly_update_date&limit=600')
+ ]);
+ const byProfile=new Map(profileRows.map(row=>[row.player_key,row]));
+ const byGrade=new Map(gradeRows.map(row=>[row.player_key,row]));
+ const byRank=new Map(rankingRows.map(row=>[row.player_key,row]));
+ const normalize=value=>String(value??'').replace(/\s+/g,' ').trim();
+ // These are placeholder/auto-NFL narratives, not a usable college or player
+ // report. Never publish them as substantive Google-indexable content.
+ const filler=/not attached to an active NFL offense|has not logged a \d{4} offensive stat line yet|no sourced \d{4} NFL offensive box score|is a developmental receiver whose dynasty upside depends|no (?:current )?NFL team listed|a complete player scouting evaluation has not been published/i;
+ const useful=value=>{const s=normalize(value);return s.length>=115&&!filler.test(s)?s:''};
+ const clipText=(v,n=1000)=>{const s=normalize(v);return s.length>n?s.slice(0,n).replace(/\s+\S*$/,'')+'…':s};
+ const facts=(label,value)=>value!=null&&String(value).trim()!==''?
+   '<div class="bbb-seo-fact"><dt>'+htmlEscape(label)+'</dt><dd>'+htmlEscape(value)+'</dd></div>':'';
  const profileFiles=await readdir(profileDir);
- const profileSlugs=[];
+ const profileSlugs=[],indexableSlugs=[];
+ const skipAliases=new Set(['michael-penix','ben-sinnot','lequint-allen','erick-all']);
  for(const filename of profileFiles){
   if(!filename.endsWith('.html'))continue;
   const slug=filename.slice(0,-5);
   const old=await readFile(profileDir+'/'+filename,'utf8');
   const oldTitle=old.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]||'';
-  const person=oldTitle.replace(/&amp;/g,'&').split(/\s+(?:\d{4}\s+)?(?:Dynasty|NFL Draft|Scouting|Player|Stats|Fantasy)\b|\s+\|/i)[0].trim()
+  const fallbackName=oldTitle.replace(/&amp;/g,'&').split(/\s+(?:\d{4}\s+)?(?:Dynasty|NFL Draft|Scouting|Player|Stats|Fantasy)\b|\s+\|/i)[0].trim()
     ||slug.split('-').map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join(' ');
-  const title=person+' — Scouting Report, Stats & Film | Bobby’s Big Board';
-  const description=person+' scouting report, prospect grades, verified football athletic testing, player stats and film breakdowns from Bobby’s Big Board.';
-  // Real, player-specific HTML for search engines and link previews. The
-  // hydrated app replaces this with the complete interactive scouting report.
-  // No unpublished editorial notes or speculative measurements are emitted.
+  const p=byProfile.get(slug)||{},g=byGrade.get(slug)||{},r=byRank.get(slug)||{};
+  const person=p.name||g.name||r.name||fallbackName;
+  const pos=p.pos||g.pos||r.pos||'';
+  const team=p.team||r.team||'';
+  const college=p.college||'';
+  const draftYear=p.draft_year||g.year||'';
+  const ownedReport=useful(g.overview);
+  const analysis=ownedReport||useful(p.overall_breakdown)||useful(r.overview);
+  const futureProspect=Number(draftYear)>new Date().getUTCFullYear();
+  const note=futureProspect?'':useful(p.latest_weekly_update||r.latest_update);
+  const traitRows=Object.entries(g.traits&&typeof g.traits==='object'?g.traits:{})
+   .filter(([name,value])=>name&&Number.isFinite(Number(value)))
+   .slice(0,8);
+  const graded=g.grade!=null&&Number.isFinite(Number(g.grade))&&traitRows.length>=3;
+  const canIndex=Boolean(analysis||note||graded);
+  const gradeCaption=graded?Number(g.grade).toFixed(1)+'/100':'';
+  const context=[pos,team&&team!=='FA'?team:'',college, draftYear?draftYear+' draft class':''].filter(Boolean).join(' · ');
+  const title=person+' — '+(Number(draftYear)>=2027?'NFL Draft Scouting':'Football Scouting & Dynasty')+' | Bobby’s Big Board';
+  const description=clipText(analysis||note||([person,context,gradeCaption&&'BBB grade '+gradeCaption,g.comp&&'Pro comp: '+g.comp].filter(Boolean).join('. ')),165);
+  const details='<dl class="bbb-seo-details" aria-label="Verified player information">'+
+   facts('Position',pos)+facts('NFL team',team&&team!=='FA'?team:'')+
+   facts('College',college)+facts('Draft class',draftYear)+
+   facts('BBB prospect grade',gradeCaption)+facts('Pro comparison',graded?g.comp:'')+
+   facts('BBB dynasty rank',r.rank!=null?'#'+r.rank:'')+'</dl>';
+  const gradeDetails=graded?
+   '<section class="bbb-seo-grade"><h2>Prospect evaluation</h2><p>Bobby’s Big Board rates '+htmlEscape(person)+' '+htmlEscape(gradeCaption)+
+   (g.comp?' with a stylistic NFL comparison to '+htmlEscape(g.comp)+'.':'.')+
+   ' These are the recorded scouting traits, not estimates.</p><ul>'+
+   traitRows.map(([name,value])=>'<li>'+htmlEscape(name)+': '+htmlEscape(value)+'</li>').join('')+
+   '</ul></section>':'';
+  const reportBlock=analysis?'<section class="bbb-seo-report"><h2>Scouting report</h2><p>'+htmlEscape(clipText(analysis,1800))+'</p></section>':'';
+  const updateBlock=note?'<section class="bbb-seo-update"><h2>Latest player evaluation</h2><p>'+htmlEscape(clipText(note,1150))+'</p></section>':'';
   const staticProfile='<section class="section bbb-seo-player-intro" id="bbbSeoPlayerIntro" aria-label="Player scouting overview">'+
-    '<div class="wrap"><div class="eyebrow">BOBBY’S BIG BOARD PLAYER SCOUTING</div><h1>'+htmlEscape(person)+'</h1>'+
-    '<p>Explore '+htmlEscape(person)+' on Bobby’s Big Board: available film breakdowns, player evaluation, recorded athletic testing, career production and dynasty context. Only verified and published information is displayed.</p>'+
-    '<p><a class="sectionlink" href="/film">Film Room →</a> · <a class="sectionlink" href="/players">Player Directory →</a> · <a class="sectionlink" href="/dynasty/rankings">Top 500 Dynasty Rankings →</a></p></div></section>';
-  const seoShell=metaPage(preview,{title,description,path:'/scouting/'+slug});
-  const staticDoc=seoShell.replace(/<main id="app">[\s\S]*?<\/main>/,
-    '<main id="app">'+staticProfile+'</main>');
-  if(!staticDoc.includes('id="bbbSeoPlayerIntro"'))throw new Error('Player-specific static SEO content missing for '+slug);
+   '<div class="wrap"><div class="eyebrow">BOBBY’S BIG BOARD · PLAYER SCOUTING</div><h1>'+htmlEscape(person)+'</h1>'+
+   (context?'<p class="bbb-seo-context">'+htmlEscape(context)+'</p>':'')+
+   details+reportBlock+gradeDetails+updateBlock+
+   (!canIndex?'<p>Scouting coverage is being prepared. A full evaluation has not yet been published for this player.</p>':'')+
+   '<nav aria-label="Explore more football analysis"><a class="sectionlink" href="/film">Film Room</a> · <a class="sectionlink" href="/players">Player Directory</a> · <a class="sectionlink" href="/draft">NFL Draft Hub</a></nav></div></section>';
+  const seoShell=metaPage(preview,{title,description,path:'/scouting/'+slug,robots:canIndex?'index,follow':'noindex,follow'});
+  let staticDoc=seoShell.replace(/<main id="app">[\s\S]*?<\/main>/,'<main id="app">'+staticProfile+'</main>');
+  if(!staticDoc.includes('id="bbbSeoPlayerIntro"'))throw new Error('Player-specific SEO HTML was not generated for '+slug);
+  staticDoc=staticDoc.replace('</head>','<style>.bbb-seo-player-intro{padding:38px 0 65px}.bbb-seo-player-intro .wrap{max-width:950px}.bbb-seo-player-intro h1{font-size:clamp(38px,6vw,66px);line-height:1.1;margin:10px 0 18px}.bbb-seo-context{color:#add9bb;font-weight:750}.bbb-seo-details{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}.bbb-seo-fact{padding:10px 13px;min-width:100px;border-radius:9px;background:#0b2617;border:1px solid #285c3f}.bbb-seo-fact dt{font-size:10px;color:#8cad95;text-transform:uppercase}.bbb-seo-fact dd{font-size:14px;margin:4px 0 0;color:#e7ffec}.bbb-seo-player-intro section{margin:20px 0}.bbb-seo-player-intro h2{font-size:20px;margin:16px 0 8px}.bbb-seo-player-intro p,.bbb-seo-player-intro li{font-size:14px;line-height:1.75;color:#c8dacd}.bbb-seo-grade ul{columns:2;max-width:670px}.bbb-seo-player-intro nav{margin-top:24px}</style></head>');
   await writeFile(directory+'/'+slug+'.html',staticDoc);
   profileSlugs.push(slug);
+  if(canIndex&&!skipAliases.has(slug))indexableSlugs.push({slug,modified:p.weekly_update_date||p.breakdown_updated||null});
  }
- const skipAliases=new Set(['michael-penix','ben-sinnot','lequint-allen','erick-all']);
  const siteRoutes=landing.map(x=>x[0]).filter(x=>!['terms','privacy','billing'].includes(x));
- const urls=[...new Set([...siteRoutes.map(x=>canonical+'/'+x),...profileSlugs.filter(x=>!skipAliases.has(x)).map(x=>canonical+'/scouting/'+x)])];
- const modified=new Date().toISOString().slice(0,10);
+ const urls=[...siteRoutes.map(x=>({url:canonical+'/'+x,modified:null})),
+  ...indexableSlugs.map(x=>({url:canonical+'/scouting/'+x.slug,modified:x.modified}))];
  publicSitemap='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+
-   urls.map(url=>'  <url><loc>'+htmlEscape(url)+'</loc><lastmod>'+modified+'</lastmod></url>').join('\n')+'\n</urlset>\n';
+  urls.map(({url,modified})=>'  <url><loc>'+htmlEscape(url)+'</loc>'+(modified&&/^\d{4}-\d{2}-\d{2}/.test(modified)?'<lastmod>'+htmlEscape(String(modified).slice(0,10))+'</lastmod>':'')+'</url>').join('\n')+'\n</urlset>\n';
  await writeFile(root+'/sitemap.xml',publicSitemap);
- console.log('Scouting SEO: '+profileSlugs.length+' static share/indexing profiles; preview remains excluded.');
-}
+ console.log('Scouting SEO: '+profileSlugs.length+' player routes; '+indexableSlugs.length+' with substantive static content and indexable canonicals. Thin profiles are noindex and absent from sitemap.');}
 
 let config=JSON.parse(await readFile('.vercel/output/config.json','utf8'));
 config.routes=[
