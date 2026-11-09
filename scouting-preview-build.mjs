@@ -268,7 +268,7 @@ if(publicBuild){
    .filter(([name,value])=>name&&Number.isFinite(Number(value)))
    .slice(0,8);
   const graded=g.grade!=null&&Number.isFinite(Number(g.grade))&&traitRows.length>=3;
-  const canIndex=Boolean(analysis||note||graded);
+  const canIndex=!skipAliases.has(slug)&&Boolean(analysis||note||graded);
   const gradeCaption=graded?Number(g.grade).toFixed(1)+'/100':'';
   const context=[pos,team&&team!=='FA'?team:'',college, draftYear?draftYear+' draft class':''].filter(Boolean).join(' · ');
   const title=person+' — '+(Number(draftYear)>=2027?'NFL Draft Scouting':'Football Scouting & Dynasty')+' | Bobby’s Big Board';
@@ -306,6 +306,7 @@ if(publicBuild){
  publicSitemap='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+
   urls.map(({url,modified})=>'  <url><loc>'+htmlEscape(url)+'</loc>'+(modified&&/^\d{4}-\d{2}-\d{2}/.test(modified)?'<lastmod>'+htmlEscape(String(modified).slice(0,10))+'</lastmod>':'')+'</url>').join('\n')+'\n</urlset>\n';
  await writeFile(root+'/sitemap.xml',publicSitemap);
+ if(indexableSlugs.length<400)throw new Error('Scouting SEO coverage unexpectedly low: '+indexableSlugs.length+' eligible pages');
  console.log('Scouting SEO: '+profileSlugs.length+' player routes; '+indexableSlugs.length+' with substantive static content and indexable canonicals. Thin profiles are noindex and absent from sitemap.');}
 
 let config=JSON.parse(await readFile('.vercel/output/config.json','utf8'));
@@ -314,6 +315,10 @@ config.routes=[
  {src:'/film/?',dest:publicBuild?'/seo/scouting/landing/film.html':'/index.html'},
  {src:'/draft/?',dest:publicBuild?'/seo/scouting/landing/draft.html':'/index.html'},
  {src:'/player/([^/]+)/?',dest:'/scouting/$1',status:308},
+ {src:'/scouting/michael-penix/?',dest:'/scouting/michael-penix-jr',status:308},
+ {src:'/scouting/ben-sinnot/?',dest:'/scouting/ben-sinnott',status:308},
+ {src:'/scouting/lequint-allen/?',dest:'/scouting/lequint-allen-jr',status:308},
+ {src:'/scouting/erick-all/?',dest:'/scouting/erick-all-jr',status:308},
  {src:'/scouting/([^/]+)/?',dest:publicBuild?'/seo/scouting/$1.html':'/index.html',check:publicBuild},
  // Unknown scouting slugs must return HTTP 404, not an empty shell with 200.
  ...(publicBuild?[{src:'/scouting/([^/]+)/?',status:404,dest:'/404.html'}]:[]),
@@ -487,14 +492,15 @@ try{
  if(Object.keys(headshots.players||{}).length<450)qaErrors.push('Player PNG manifest coverage unexpectedly low');
 }catch(error){qaErrors.push('Player PNG manifest invalid: '+error.message)}
 if(publicBuild){
- for(const slug of ['kc-concepcion','drake-maye']){
+ for(const slug of ['kc-concepcion','drake-maye','drew-mestemaker']){
   try{
    const doc=await readFile(root+'/seo/scouting/'+slug+'.html','utf8');
-   const displayName=slug==='kc-concepcion'?'KC Concepcion':'Drake Maye';
+   const displayName=slug==='kc-concepcion'?'KC Concepcion':slug==='drake-maye'?'Drake Maye':'Drew Mestemaker';
    if(!doc.includes('id="bbbSeoPlayerIntro"')||
       !doc.includes('<h1>'+displayName+'</h1>')||
       !doc.includes('rel="canonical"')||
-      !doc.includes('href="/film"'))
+      !doc.includes('href="/film"')||
+     !doc.includes('<h2>Scouting report</h2>'))
     qaErrors.push('Crawler-readable scouting profile missing for '+slug);
   }catch(err){qaErrors.push('Static scouting SEO QA failed for '+slug+': '+err.message)}
  }
