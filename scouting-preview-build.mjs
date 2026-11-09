@@ -239,7 +239,7 @@ if(publicBuild){
  const normalize=value=>String(value??'').replace(/\s+/g,' ').trim();
  // These are placeholder/auto-NFL narratives, not a usable college or player
  // report. Never publish them as substantive Google-indexable content.
- const filler=/not attached to an active NFL offense|has not logged a \d{4} offensive stat line yet|no sourced \d{4} NFL offensive box score|is a developmental receiver whose dynasty upside depends|no (?:current )?NFL team listed|a complete player scouting evaluation has not been published/i;
+ const filler=/not attached to an active NFL offense|has not logged a \d{4} offensive stat line yet|(?:no sourced|do not have a sourced) \d{4} NFL offensive box score|is a developmental receiver whose dynasty upside depends|no (?:current )?NFL team listed|a complete player scouting evaluation has not been published/i;
  const useful=value=>{const s=normalize(value);return s.length>=115&&!filler.test(s)?s:''};
  const clipText=(v,n=1000)=>{const s=normalize(v);return s.length>n?s.slice(0,n).replace(/\s+\S*$/,'')+'…':s};
  const facts=(label,value)=>value!=null&&String(value).trim()!==''?
@@ -314,7 +314,9 @@ config.routes=[
  {src:'/film/?',dest:publicBuild?'/seo/scouting/landing/film.html':'/index.html'},
  {src:'/draft/?',dest:publicBuild?'/seo/scouting/landing/draft.html':'/index.html'},
  {src:'/player/([^/]+)/?',dest:'/scouting/$1',status:308},
- {src:'/scouting/([^/]+)/?',dest:publicBuild?'/seo/scouting/$1.html':'/index.html'},
+ {src:'/scouting/([^/]+)/?',dest:publicBuild?'/seo/scouting/$1.html':'/index.html',check:publicBuild},
+ // Unknown scouting slugs must return HTTP 404, not an empty shell with 200.
+ ...(publicBuild?[{src:'/scouting/([^/]+)/?',status:404,dest:'/404.html'}]:[]),
  {src:'/dynasty/?',dest:'/index.html'},
  {src:'/dynasty/(rankings|trade|compare|rookies|movers|updates|watchlist|stats)/?',dest:'/index.html'},
  {src:'/(account|plus|watchlist|stats|terms|privacy|billing)/?',dest:'/index.html'},
@@ -329,6 +331,7 @@ config.routes=[
  ...config.routes
 ];
 await writeFile('.vercel/output/config.json',JSON.stringify(config,null,2));
+await writeFile(root+'/404.html','<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Player not found | Bobby’s Big Board</title><style>body{margin:0;font:16px/1.6 system-ui;background:#07150c;color:#e5fae8;display:grid;place-items:center;min-height:100vh}main{max-width:620px;padding:30px}a{color:#71e3a0}</style></head><body><main><h1>Player profile not found</h1><p>This scouting page is not available. You can browse all recorded player evaluations in the directory.</p><p><a href="/players">Player Directory</a> · <a href="/draft">NFL Draft Hub</a></p></main></body></html>');
 if(publicBuild){
   await writeFile(root+'/robots.txt','User-agent: *\\nDisallow: /admin\\nDisallow: /dynasty-engine\\nDisallow: /account\\nDisallow: /watchlist\\nDisallow: /seo\\nSitemap: https://bobbysbigboard.com/sitemap.xml\\n'.replaceAll('\\n','\n'));
 }else{
