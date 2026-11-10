@@ -426,3 +426,9 @@
   #pageContent .content-youtube-kpis>div{padding:13px!important}
   #pageContent .content-youtube-kpis strong{font-size:22px!important}
 }
+
+/* Never imply an old channel analytics snapshot is current simply because the
+   owned-channel public video inventory was independently refreshed. */
+.content-youtube-freshness{padding:11px 18px;background:#20190d;border-bottom:1px solid rgba(244,193,102,.22);color:#f2d29c;font-size:10px;line-height:1.6;font-weight:650}
+.content-youtube-freshness[hidden]{display:none!important}
+.content-youtube-clear.stale{color:#d4b27d;font-weight:700;line-height:1.65}
