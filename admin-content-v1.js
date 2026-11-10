@@ -176,6 +176,16 @@
   function renderYoutubeDNA(){
     const y=youtube();
     if($('#contentYoutubeSync'))$('#contentYoutubeSync').textContent=timeText(y.synced_at);
+    const stamp=Date.parse(y.synced_at||'');
+    const daysOld=Number.isFinite(stamp)?Math.max(0,Math.floor((Date.now()-stamp)/86400000)):null;
+    const stale=daysOld===null||daysOld>7;
+    const notice=$('#contentYoutubeFreshness');
+    if(notice){
+      notice.hidden=!stale;
+      notice.textContent=stale
+       ? 'PERFORMANCE DATA NEEDS REFRESH · '+(daysOld===null?'No channel analytics snapshot is available.':'Channel metrics were captured '+daysOld+' days ago.')+' Recent public uploads may be newer, but the median views, performance comparisons, and scheduled queue are historical. Check YouTube Studio before relying on them.'
+       : '';
+    }
     if($('#contentYTLongMedian'))$('#contentYTLongMedian').textContent=compactViews(y.long_median_views);
     if($('#contentYTShortMedian'))$('#contentYTShortMedian').textContent=compactViews(y.short_median_views);
     if($('#contentYT7Day'))$('#contentYT7Day').textContent=compactViews(y.median_views_7d);
@@ -191,7 +201,9 @@
     const sched=$('#contentYTScheduleList');
     if(sched)sched.innerHTML=(Array.isArray(y.scheduled)&&y.scheduled.length)?y.scheduled.slice(0,5).map(v=>
       '<article class="content-youtube-row scheduled"><div class="content-youtube-thumb">'+(v.thumbnail_url?'<img src="'+esc(v.thumbnail_url)+'" alt="" loading="lazy">':'<span>◷</span>')+'</div><div><strong>'+esc(v.title||'Scheduled upload')+'</strong><span>'+esc(String(v.video_type||'').toUpperCase())+' · '+timeText(v.scheduled_publish_at)+'</span></div></article>'
-    ).join(''):'<div class="content-youtube-clear">✓ Nothing scheduled in the synced window.</div>';
+    ).join(''):stale
+      ? '<div class="content-youtube-clear stale">Schedule is not current. Check YouTube Studio for upcoming uploads.</div>'
+      : '<div class="content-youtube-clear">No scheduled uploads found in the latest snapshot.</div>';
   }
 
   function renderRightNow(){

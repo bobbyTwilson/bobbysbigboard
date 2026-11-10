@@ -52,6 +52,8 @@ if(!production){
  // shipped with a TEST Stripe checkout button or preview-only billing stub.
  assert(!memberJs.includes('PREVIEW_PAYMENT_LOCK'),
   'preview payment stub leaked into production');
+ const contentJs=await get('admin-content-v1.js');
+ contains(contentJs,['contentYoutubeFreshness','PERFORMANCE DATA NEEDS REFRESH','daysOld>7'],'creator analytics freshness warning');
  const sitemap=await get('sitemap.xml');
  const links=[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
  assert(links.length>=400,'public sitemap lost most player coverage');
