@@ -210,6 +210,7 @@ function render(app,videos,ctx){
  const profileLink=ctx.profileLink||((slug)=>"/scouting/"+encodeURIComponent(slug));
  const fromUrl=new URLSearchParams(location.search).get("video");
  const totals={
+  all:videos.length,
   prospect:videos.filter(x=>x.category==="prospect").length,
   nfl:videos.filter(x=>x.category==="nfl").length
  };
@@ -224,9 +225,9 @@ function render(app,videos,ctx){
  '<section class="bbb-film-next" aria-label="Recommended film breakdowns"><div class="bbb-film-next-heading"><span class="bbb-film-side-label">KEEP WATCHING</span><h2>More film worth studying.</h2></div><div class="bbb-film-next-grid" data-film-next></div></section>'+
  '<div class="bbb-film-catalog-head"><div><div class="eyebrow">VIDEO LIBRARY</div><h2>Browse the breakdowns</h2></div><span>'+videos.length+' published film studies</span></div>'+
  '<div class="bbb-film-toolbar"><div class="bbb-film-filters" role="group" aria-label="Film categories">'+
- [['nfl','NFL Film'],['prospect','Draft Prospects']].map(([id,label])=>'<button type="button" class="bbb-film-filter'+(id==="nfl"?" active":"")+'" data-film-category="'+id+'" aria-pressed="'+(id==="nfl"?"true":"false")+'">'+label+' <span>'+totals[id]+'</span></button>').join('')+
- '</div><input class="bbb-film-search" type="search" placeholder="Search player, video, or college…" aria-label="Search film breakdowns" data-film-search></div>'+
- '<div class="bbb-film-library" data-film-library></div><div class="bbb-film-no-results" data-film-empty hidden>No matching film breakdowns yet.</div>'+
+ [['all','All Breakdowns'],['nfl','NFL Film'],['prospect','Draft Prospects']].map(([id,label])=>'<button type="button" class="bbb-film-filter'+(id==="all"?" active":"")+'" data-film-category="'+id+'" aria-pressed="'+(id==="all"?"true":"false")+'">'+label+' <span>'+totals[id]+'</span></button>').join('')+
+ '</div><div class="bbb-film-library-actions"><input class="bbb-film-search" type="search" placeholder="Find Caleb, Bucky, Kyren, or any player…" aria-label="Search all film breakdowns" data-film-search><select class="bbb-film-sort" aria-label="Sort film breakdowns" data-film-sort><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></div></div>'+
+ '<p class="bbb-film-results" role="status" aria-live="polite" data-film-results></p><div class="bbb-film-library" data-film-library></div><div class="bbb-film-no-results" data-film-empty hidden>No matching film breakdowns. Try searching for the player by name or switch to All Breakdowns.</div>'+
  '<div class="bbb-film-footer-note">Only approved film studies are shown. Want a breakdown of another player? <a href="https://discord.gg/J26MZPyu6q" target="_blank" rel="noopener noreferrer">Request a player in the BBB Discord ↗</a> · <a href="https://www.youtube.com/channel/UCksffvipLdUOO4GGh4Lq_Fg?sub_confirmation=1" target="_blank" rel="noopener noreferrer">Subscribe on YouTube ↗</a></div>'+
  '</div></section>';
  const root=app.querySelector("[data-bbb-film-root]");
@@ -236,10 +237,14 @@ function render(app,videos,ctx){
  });
  // Film tiles are located outside the playback panel, so forward selection explicitly.
  const library=app.querySelector("[data-film-library]");
- let category="nfl",search="";
+ let category="all",search="",sort="newest";
  const draw=()=>{
-  const filtered=videos.filter(v=>v.category===category&&(!search||[v.title,v.player_name,v.player_college,v.player_team].join(" ").toLowerCase().includes(search)));
+  const filtered=videos.filter(v=>(category==="all"||v.category===category)&&
+    (!search||[v.title,v.player_name,v.player_college,v.player_team].join(" ").toLowerCase().includes(search)));
+  if(sort==="oldest")filtered.reverse();
   library.innerHTML=filtered.map(v=>filmTile(v,esc)).join("");
+  const counter=app.querySelector("[data-film-results]");
+  if(counter)counter.textContent="Showing "+filtered.length+" of "+videos.length+" verified BBB film breakdowns"+(search?" matching “"+search+"”":"")+".";
   app.querySelector("[data-film-empty]").hidden=filtered.length>0;
   library.querySelectorAll("[data-film-select]").forEach(b=>b.setAttribute("aria-pressed",String(controller.current()?.video_id===b.dataset.filmSelect)));
  };
@@ -256,6 +261,7 @@ function render(app,videos,ctx){
   draw();
  }));
  app.querySelector("[data-film-search]").addEventListener("input",e=>{search=e.target.value.toLowerCase().trim();draw()});
+ app.querySelector("[data-film-sort]").addEventListener("change",e=>{sort=e.target.value==="oldest"?"oldest":"newest";draw()});
  draw();
 }
 function playlistItem(video,index,esc){
