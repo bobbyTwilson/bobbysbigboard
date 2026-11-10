@@ -180,3 +180,11 @@
 .bbb-film-chapters time{color:#9ee4b2;font-variant-numeric:tabular-nums;font-weight:900}
 .bbb-film-chapters small{display:block;margin-top:8px;color:#9bb4a0;font-size:10px}
 @media(max-width:600px){.bbb-film-chapters>div{grid-template-columns:1fr}}
+
+/* Complete public film back-catalog: search across all categories by default. */
+.bbb-film-library-actions{display:flex;align-items:center;gap:8px;flex:1 1 330px;justify-content:flex-end;flex-wrap:wrap}
+.bbb-film-library-actions .bbb-film-search{flex:1 1 265px;min-width:min(270px,100%)}
+.bbb-film-sort{appearance:auto;min-width:128px;max-width:150px;padding:11px 9px;color:#edf8e9;background:#14291b;border:1px solid #4a6d51;border-radius:8px;font:700 12px/1.4 system-ui,sans-serif;cursor:pointer}
+.bbb-film-sort:focus-visible{outline:3px solid #a5d7ac;outline-offset:2px}
+.bbb-film-results{margin:-5px 0 14px;color:#b3cdb6;font-size:12px;line-height:1.6}
+@media(max-width:650px){.bbb-film-library-actions{justify-content:stretch;flex-basis:100%}.bbb-film-library-actions .bbb-film-search{flex:1 1 180px}.bbb-film-sort{min-width:115px}}
