@@ -39,6 +39,9 @@ contains(scoutingJs,['overview,strengths,concerns,projection',
  'const override=P.get(p.player_key)?.photo_url','function portrait('],
  'public scouting client');
 new Function(scoutingJs);
+const filmRoomJs=await get('scouting-film-room-v1.js');
+contains(filmRoomJs,["['all','All Breakdowns']","data-film-sort","category=\"all\"","data-film-search"],'complete Film Room library filters');
+new Function(filmRoomJs);
 
 // No live subscription requests must be reachable from a preview checkout.
 if(!production){
