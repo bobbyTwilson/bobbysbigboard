@@ -126,6 +126,19 @@ const profileJs=await get('scouting-profile-v5.js');
 const intelJs=await get('scouting-intelligence-v6.js');
 const commandJs=await get('bbb-plus-command-center.js');
 new Function(premiumJs);
+const testWindow={};
+runInNewContext(premiumJs,{window:testWindow},{timeout:1000});
+const notebookUi=testWindow.BBB_PLUS_FILM_NOTEBOOK;
+assert(typeof notebookUi?.teaser==='function'&&typeof notebookUi?.bind==='function',
+ 'Premium notebook interface failed to initialize');
+const testGrade={year:2027,grade:74,notebook_available:true,pos:'QB'};
+const lockedPreview=notebookUi.teaser(testGrade,{player_key:'cj-carr',name:'CJ Carr'});
+assert(lockedPreview.includes('data-profile-tab="notebook"')&&
+       !lockedPreview.includes('Original private scouting note'),
+       'Public Film Notebook teaser unexpectedly contains private scouting text');
+const memberPane=notebookUi.initial({name:'CJ Carr',pos:'QB',draft_year:2027},testGrade);
+assert(memberPane.includes('data-bfn-load')&&!memberPane.includes('bfn-unlocked'),
+ 'Protected Film Notebook was rendered before access verification');
 contains(home,['src="/bbb-plus-film-notebook.js"'],'Film Notebook browser runtime');
 contains(profileJs,['data-content="notebook"','BBB_PLUS_FILM_NOTEBOOK?.bind','"notebook"'],'premium profile tab');
 contains(intelJs,['BBB_PLUS_FILM_NOTEBOOK?.teaser(g,p)'],'premium teaser, not unprotected notes');
