@@ -2485,6 +2485,20 @@ body:after{
       <div class="save-row">
         <button id="saveProspectGrade" class="save-btn" type="submit">SAVE GRADE &amp; REPORT</button>
         <span id="prospectSaveStatus" class="save-status" role="status" aria-live="polite"></span>
+        <button type="button" class="small-btn" id="prospectCopyDraft" title="Copy all current film notes and trait scores to clipboard">COPY NOTES BACKUP</button>
+      </div>
+      <div id="prospectReauth" class="prospect-reauth hide" role="alert" aria-live="polite">
+        <div class="panel-kicker">LOGIN EXPIRED · UNSAVED FILM NOTES PROTECTED</div>
+        <h3>Sign in again to finish saving.</h3>
+        <p>Your scouting fields and trait grades are still in this editor and have been backed up locally on this browser. Sign back in with the same BBB Admin account; no refreshing or retyping necessary.</p>
+        <div class="prospect-reauth-fields">
+          <label>Email <input id="prospectReauthEmail" type="email" class="input" autocomplete="username" placeholder="Your Admin email"></label>
+          <label>Password <input id="prospectReauthPassword" type="password" class="input" autocomplete="current-password" placeholder="Your Admin password"></label>
+        </div>
+        <div class="prospect-reauth-actions">
+          <button type="button" id="prospectReauthSubmit" class="save-btn">SIGN IN &amp; RETRY SAVE</button>
+          <span id="prospectReauthMessage" class="save-status"></span>
+        </div>
       </div>
     </form>
   </aside>
@@ -3547,6 +3561,20 @@ body:after{
 #prospectSaveStatus a{color:#8ef0bb;font-weight:900;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
 #prospectSaveStatus a:hover,#prospectSaveStatus a:focus-visible{color:#c6ffe0}
 #prospectPublishReport{accent-color:#64d994}
+</style>
+<style id="bbb-admin-prospect-session-recovery">
+#prospectGradeForm .save-row{flex-wrap:wrap;align-items:center;gap:10px}
+#prospectCopyDraft{margin-left:auto;white-space:nowrap}
+.prospect-reauth{border:1px solid #688743;background:linear-gradient(130deg,#142719,#091b12);border-radius:14px;padding:19px 21px;margin:16px 0 8px}
+.prospect-reauth .panel-kicker{color:#e9cc75}
+.prospect-reauth h3{color:#f1f7e8;margin:9px 0 7px;font-size:19px}
+.prospect-reauth p{color:#b9d2bf;font-size:12px;line-height:1.65;margin:0 0 14px}
+.prospect-reauth-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.prospect-reauth-fields label{display:grid;gap:6px;color:#a2c8af;font-size:10px;font-weight:850}
+.prospect-reauth-fields input{min-width:0;width:100%}
+.prospect-reauth-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}
+.prospect-reauth-actions .save-btn{font-size:11px}
+@media(max-width:680px){.prospect-reauth-fields{grid-template-columns:1fr}.prospect-reauth{padding:16px}}
 </style>
 
 <script id="bbb-admin-modal-hotfix-v6">

@@ -32,6 +32,33 @@ contains(adminJs,["admin_get_prospect_lab","admin_grade_prospect",
  "prospectView='all'"],'admin grade workflow');
 assert(!adminJs.includes('prospectIncludeGraded'),'old hidden-grade filter restored');
 new Function(adminJs);
+
+contains(admin,['id="prospectReauth"','id="prospectReauthSubmit"','id="prospectCopyDraft"'],
+ 'expired-session recovery panel and backup action');
+contains(adminJs,[
+ 'if(!session?.access_token)throw adminAuthExpired()',
+ 'refreshSessionPromise',
+ 'saveSession({...previous,...sessionFromAuth(x)})',
+ 'restoreProspectDraft(key)',
+ 'saveProspectDraft(true)',
+ 'clearProspectDraft(x.player_key)',
+ 'retryProspectSignIn',
+ 'navigator.clipboard.writeText(notes)'
+], 'expired Admin auth and draft protection');
+assert(!adminJs.includes('Authorization:'+String.fromCharCode(96)+'Bearer '), 
+ 'Admin must not transmit an empty Bearer JWT');
+const authSliceStart=adminJs.indexOf('function adminAuthExpired(){');
+const authSliceEnd=adminJs.indexOf('async function jsonFetch(',authSliceStart);
+assert(authSliceStart>0&&authSliceEnd>authSliceStart,'auth guard extraction anchors missing');
+const authCheck=runInNewContext(
+  adminJs.slice(authSliceStart,authSliceEnd)+
+  '(()=>{try{authHeaders();return "invalid"}catch(e){return e.code}})()',
+  {session:null,KEY:'test_public_key'},
+  {timeout:1000}
+);
+assert(authCheck==='BBB_ADMIN_SESSION_EXPIRED',
+ 'missing Admin session must raise a recoverable error rather than send an empty JWT');
+
 const prospectButtonSelector=String.fromCharCode(36,36)+"('[data-prospect-view]').forEach";
 assert(adminJs.split(prospectButtonSelector).length-1===2,
   'Prospect Lab must use querySelectorAll for rendering and binding all three view buttons');
