@@ -214,7 +214,7 @@ window.BBB_SCOUTING_V6 = {
     '<button class="sp-v7-morelink" data-profile-tab="stats" type="button">View full stats →</button></div>'+
     '<div id="spOverviewProduction" aria-live="polite"><div class="sp-muted">Loading current season totals…</div></div></section>'+
     '</div></div>'+
-    prosCons()+evaluationNotes()+
+    (collegeProspect?(window.BBB_PLUS_FILM_NOTEBOOK?.teaser(g,p)||""):prosCons()+evaluationNotes())+
     '<div class="sp-overview-foot sp-v7-film-cta"><div><div class="sp-kicker">FILM LIBRARY</div><h3>'+(videos?.length?"Breakdowns are ready to watch.":"More film is coming.")+'</h3>'+
     '<p>'+(videos?.length?videos.length+" published breakdown"+(videos.length===1?"":"s")+" linked to this player.":"No published long-form film is linked yet.")+'</p></div>'+
     '<button class="sp-quicklink" data-profile-tab="film" type="button">Open Film Room →</button></div></div>';
