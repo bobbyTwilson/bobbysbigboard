@@ -884,6 +884,102 @@ function openProspectReport(key){
  $('#prospectSummary').textContent=x.summary||'A full scouting breakdown has not been completed yet. The player is tracked so he stays on the BBB radar.';$('#prospectRecommendationNotes').textContent=x.recommendation_notes||'No additional recommendation notes yet.';
  renderProspectRecommendationTraits(x);renderProspectSources(x);$('#prospectStartGrade').dataset.playerKey=key;showProspectReport();$('#prospectDrawerBackdrop').classList.remove('hide');$('#prospectDrawer').classList.remove('hide');
 }
+// Save the owner's unsent scouting work locally, without passwords or tokens.
+// Drafts are keyed to the signed-in Admin user, never sent to public endpoints.
+const PROSPECT_DRAFT_FIELDS=[
+ 'prospectFinalComp','prospectScoutingOverview','prospectScoutingStrengths',
+ 'prospectScoutingConcerns','prospectNflProjection','prospectDevelopmentPlan',
+ 'prospectCompExplanation','prospectPhotoUrl','prospectPhotoCredit'
+];
+let prospectDraftDirty=false;
+function prospectDraftKey(playerKey){
+ return 'bbb_admin_prospect_draft_v1:'+(session?.user?.id||'unknown')+':'+String(playerKey||'');
+}
+function prospectSnapshot(){
+ const playerKey=$('#prospectKey')?.value||'';
+ if(!playerKey)return null;
+ const traits={};
+ $('[data-prospect-trait]').forEach(i=>traits[i.dataset.prospectTrait]=i.value);
+ const fields={};
+ for(const id of PROSPECT_DRAFT_FIELDS)fields[id]=$('#'+id)?.value||'';
+ return {version:1,playerKey,updated_at:Date.now(),traits,fields,
+  publish:!!$('#prospectPublishReport')?.checked,
+  manualPublish:prospectPublishManuallyChosen};
+}
+function saveProspectDraft(force=false){
+ if(!force&&!prospectDraftDirty)return;
+ const snapshot=prospectSnapshot();
+ if(!snapshot)return;
+ try{localStorage.setItem(prospectDraftKey(snapshot.playerKey),JSON.stringify(snapshot));}
+ catch(err){console.warn('Unable to store local prospect draft:',err?.message||err);}
+}
+function restoreProspectDraft(playerKey){
+ let saved=null;
+ try{saved=JSON.parse(localStorage.getItem(prospectDraftKey(playerKey))||'null');}catch{}
+ if(!saved||saved.version!==1||saved.playerKey!==playerKey||!saved.fields)return false;
+ for(const id of PROSPECT_DRAFT_FIELDS){
+  if(typeof saved.fields[id]==='string'&&$('#'+id))$('#'+id).value=saved.fields[id];
+ }
+ $('[data-prospect-trait]').forEach(input=>{
+  const score=saved.traits?.[input.dataset.prospectTrait];
+  if(score!==undefined)input.value=score;
+ });
+ $('#prospectPublishReport').checked=!!saved.publish;
+ prospectPublishManuallyChosen=!!saved.manualPublish;
+ prospectHasSavedPrivateDraft=false;
+ prospectDraftDirty=true;
+ prospectTotal();
+ return true;
+}
+function clearProspectDraft(playerKey){
+ try{localStorage.removeItem(prospectDraftKey(playerKey));}catch{}
+ prospectDraftDirty=false;
+}
+function prospectDraftAsText(){
+ const snapshot=prospectSnapshot();if(!snapshot)return '';
+ const rows=['BBB UNSAVED SCOUTING · '+snapshot.playerKey,'','FINAL PRO COMP',snapshot.fields.prospectFinalComp||'',
+  'TRAIT SCORES',...Object.entries(snapshot.traits).map(([k,v])=>k+': '+v),''];
+ for(const [id,title] of [
+  ['prospectScoutingOverview','SCOUTING OVERVIEW'],['prospectScoutingStrengths','HOW HE WINS'],
+  ['prospectScoutingConcerns','AREAS TO IMPROVE'],['prospectNflProjection','NFL PROJECTION'],
+  ['prospectDevelopmentPlan','DEVELOPMENT PLAN'],['prospectCompExplanation','WHY THIS PRO COMP'],
+  ['prospectPhotoUrl','HEADSHOT URL'],['prospectPhotoCredit','PHOTO CREDIT']
+ ])rows.push(title,snapshot.fields[id]||'','');
+ rows.push('PUBLISH REPORT',String(snapshot.publish));
+ return rows.join('\n');
+}
+function showProspectReauth(){
+ saveProspectDraft(true);
+ const reauth=$('#prospectReauth');if(!reauth)return;
+ reauth.classList.remove('hide');
+ const email=$('#prospectReauthEmail');
+ if(email&&!email.value)email.value=session?.user?.email||'';
+ $('#prospectReauthPassword').value='';
+ $('#prospectReauthMessage').textContent='Sign in again here to retry the save without closing your editor.';
+ reauth.scrollIntoView({block:'nearest',behavior:'auto'});
+}
+async function retryProspectSignIn(){
+ const btn=$('#prospectReauthSubmit');
+ const email=$('#prospectReauthEmail').value.trim().toLowerCase();
+ const password=$('#prospectReauthPassword').value;
+ const message=$('#prospectReauthMessage');
+ if(!email||!password){message.textContent='Enter your email and password.';return}
+ btn.disabled=true;message.textContent='Restoring your Admin session…';
+ const originalId=session?.user?.id;
+ try{
+  const admin=await signIn(email,password);
+  if(originalId&&session?.user?.id!==originalId)
+   throw new Error('Sign in with the same BBB Admin account that created this draft.');
+  if(!admin?.active)throw new Error('This account does not have active Admin access.');
+  $('#prospectReauthPassword').value='';
+  $('#prospectReauth').classList.add('hide');
+  message.textContent='';
+  // Reattempt the existing grade and report; the owner has not lost any text.
+  await saveProspectGrade({preventDefault(){}});
+ }catch(err){
+  message.textContent=err?.message||'Sign in failed. Your unsaved notes are still in this editor.';
+ }finally{btn.disabled=false}
+}
 function startProspectGrade(key){
  const x=prospectByKey(key);if(!x)return;$('#prospectKey').value=key;setProspectDrawerHeader(x,'grade');$('#prospectGradeRecGrade').textContent=x.recommended_overall_grade==null?'Pending':(+x.recommended_overall_grade).toFixed(1);$('#prospectGradeRecComp').textContent=x.recommended_pro_comp||'Research pending';$('#prospectFinalComp').value=x.pro_comp||x.recommended_pro_comp||'';
  const current=x.traits||{},rec=x.recommended_traits||{};$('#prospectTraitGrid').innerHTML=(PROSPECT_TRAITS[x.position]||[]).map(([label,max])=>`<div class="prospect-trait"><label>${esc(label)} <small>/ ${max}</small></label><span class="trait-rec">REC ${rec[label]??'—'}</span><input class="input trait-input" type="number" min="0" max="${max}" step="0.5" data-prospect-trait="${esc(label)}" value="${current[label]??''}"></div>`).join('');
@@ -895,9 +991,13 @@ function startProspectGrade(key){
  $('#prospectPhotoCredit').value=x.photo_credit||(prospectMatchedPhoto(x)?'ESPN':'');
  $('#prospectUseMatchedImage').disabled=!prospectMatchedPhoto(x);
  prospectUpdatePhotoPreview();
- $('#prospectSaveStatus').textContent='';showProspectGrade();$('#prospectDrawerBackdrop').classList.remove('hide');$('#prospectDrawer').classList.remove('hide');
+ prospectDraftDirty=false;
+ const recovered=restoreProspectDraft(key);
+ $('#prospectReauth')?.classList.add('hide');
+ $('#prospectSaveStatus').textContent=recovered?'Unsaved scouting draft recovered from this browser ✓':'';
+ showProspectGrade();$('#prospectDrawerBackdrop').classList.remove('hide');$('#prospectDrawer').classList.remove('hide');
 }
-function closeProspectGrader(){$('#prospectDrawerBackdrop').classList.add('hide');$('#prospectDrawer').classList.add('hide')}
+function closeProspectGrader(){saveProspectDraft();$('#prospectDrawerBackdrop').classList.add('hide');$('#prospectDrawer').classList.add('hide')}
 function applyProspectRec(){const x=prospectByKey($('#prospectApplyRec').dataset.playerKey);if(!x)return;$$('[data-prospect-trait]').forEach(i=>{if(x.recommended_traits?.[i.dataset.prospectTrait]!=null)i.value=x.recommended_traits[i.dataset.prospectTrait]});if(x.recommended_pro_comp)$('#prospectFinalComp').value=x.recommended_pro_comp;prospectTotal()}
 async function saveProspectGrade(e){
  e.preventDefault();
@@ -911,6 +1011,7 @@ async function saveProspectGrade(e){
  prospectSyncPublishChoice();
  const publish=$('#prospectPublishReport').checked;
  if(publish&&!$('#prospectScoutingOverview').value.trim()){ $('#prospectSaveStatus').textContent='Write an overview before publishing.';return}
+ saveProspectDraft(true);
  const btn=$('#saveProspectGrade');btn.disabled=true;$('#prospectSaveStatus').textContent='Saving grade and report…';
  try{
   await rpc('admin_grade_prospect',{p_player_key:x.player_key,p_name:x.name,p_position:x.position,p_school:x.school||null,p_class_year:+x.class_year,p_overall_grade:prospectTotal(),p_pro_comp:$('#prospectFinalComp').value.trim()||null,p_traits:traits});
@@ -928,10 +1029,18 @@ async function saveProspectGrade(e){
   if(!saved?.graded||(publish&&!saved.scouting_published))throw new Error('Saved data could not be verified in Prospect Lab. Refresh before making another edit.');
   const liveUrl='/scouting/'+encodeURIComponent(x.player_key);
   const notice=publish?'Grade and scouting report published ✓':($('#prospectScoutingOverview').value.trim()?'Grade saved ✓ · scouting report kept private':'Grade saved ✓ · add an overview to publish a scouting report');
+  clearProspectDraft(x.player_key);
+  $('#prospectReauth')?.classList.add('hide');
   $('#prospectSaveStatus').innerHTML=esc(notice)+' <a href="'+esc(liveUrl)+'" target="_blank" rel="noopener noreferrer">VIEW PUBLIC PROFILE ↗</a>';
   // Keep the editor open so the owner can inspect the confirmed result; no
   // second trip into the drawer is needed to find the live profile.
- }catch(err){$('#prospectSaveStatus').textContent='Save incomplete: '+(err.message||String(err))}
+ }catch(err){
+  saveProspectDraft(true);
+  if(err?.code==='BBB_ADMIN_SESSION_EXPIRED'){
+   $('#prospectSaveStatus').textContent='Session expired. Sign in below to retry — your notes are preserved.';
+   showProspectReauth();
+  }else $('#prospectSaveStatus').textContent='Save incomplete: '+(err.message||String(err));
+ }
  finally{btn.disabled=false}
 }
 function reviewPriorityLabel(p){return Number(p)===1?'Critical':Number(p)===2?'High':'Normal'}
@@ -1751,6 +1860,19 @@ document.addEventListener('DOMContentLoaded',()=>{
     $('#prospectStartGrade')?.addEventListener('click',()=>startProspectGrade($('#prospectStartGrade').dataset.playerKey));
     $('#prospectBackToReport')?.addEventListener('click',()=>openProspectReport($('#prospectKey').value));
     $('#prospectGradeForm')?.addEventListener('submit',saveProspectGrade);
+    $('#prospectGradeForm')?.addEventListener('input',()=>{prospectDraftDirty=true;saveProspectDraft()});
+    $('#prospectGradeForm')?.addEventListener('change',()=>{prospectDraftDirty=true;saveProspectDraft()});
+    $('#prospectReauthSubmit')?.addEventListener('click',retryProspectSignIn);
+    $('#prospectCopyDraft')?.addEventListener('click',async()=>{
+      const notes=prospectDraftAsText();if(!notes)return;
+      try{
+       await navigator.clipboard.writeText(notes);
+       $('#prospectCopyDraft').textContent='NOTES COPIED ✓';
+      }catch{
+       $('#prospectSaveStatus').textContent='Could not access clipboard. Please copy your notes before leaving the editor.';
+      }
+    });
+    window.addEventListener('pagehide',()=>saveProspectDraft());
     $('#prospectScoutingOverview')?.addEventListener('input',prospectSyncPublishChoice);
     $('#prospectPublishReport')?.addEventListener('change',()=>{prospectPublishManuallyChosen=true});
  $('#prospectPhotoUrl')?.addEventListener('input',prospectUpdatePhotoPreview);
