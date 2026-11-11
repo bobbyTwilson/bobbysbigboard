@@ -159,6 +159,7 @@
         #plusView .bbbcc-edge-col.market{display:none}
       }
     `;
+    s.textContent+='\n#plusView .bbbcc-film-section{margin-bottom:35px}#plusView .bbbcc-film-index{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}#plusView .bbbcc-film-card{display:flex;flex-direction:column;gap:8px;min-width:0;padding:19px;border-radius:13px;border:1px solid #66552d;background:linear-gradient(130deg,#211c10,#101c14);text-decoration:none;transition:.2s}#plusView .bbbcc-film-card:hover{border-color:#f0c75e;transform:translateY(-2px)}#plusView .bbbcc-film-class{color:#e5c775;font-size:9px;font-weight:900;letter-spacing:.12em}#plusView .bbbcc-film-card strong{color:#f2f5ed;font-size:19px}#plusView .bbbcc-film-card small{color:#9caea0;font-size:11px;line-height:1.55}#plusView .bbbcc-film-cta{margin-top:auto;padding-top:16px;color:#efd078;font-size:10px;font-weight:950}@media(max-width:900px){#plusView .bbbcc-film-index{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){#plusView .bbbcc-film-index{grid-template-columns:1fr}}';
     document.head.appendChild(s);
   }
 
@@ -282,6 +283,8 @@
         pulseHtml()+
         '</div></div></section>'+
       '<div class="shell bbbcc-main">'+
+        '<section class="bbbcc-film-section" aria-label="BBB+ Film Notebook library"><div class="bbbcc-section-head"><div><h2>Film Notebook library <span style="color:#f0c75e">✦</span></h2><p>Original player-by-player scouting behind the 2027 Draft Guide. More reports appear here as Bobby grades film.</p></div><div class="bbbcc-section-meta">BBB+ ORIGINAL ANALYSIS</div></div><div class="bbbcc-film-index" id="bbbccFilmIndex" aria-live="polite">Loading published notebooks…</div></section>'+
+
         '<div class="bbbcc-section-head"><div><h2>Your players</h2><p>Live BBB rank, market position, current note and a 30-day value trace.</p></div><div class="bbbcc-section-meta">'+esc(watched)+' ON YOUR BOARD</div></div>'+
         (p.length?'<div class="bbbcc-player-grid">'+p.map(playerCard).join('')+'</div>':'<div class="bbbcc-empty"><strong>Your command center needs players.</strong><p>Star players anywhere on Bobby’s Big Board and they’ll appear here with premium value history and live movement context.</p><a class="bbbcc-action primary" href="#rankings">ADD PLAYERS FROM THE TOP 500</a></div>')+
         '<div class="bbbcc-lower">'+
@@ -292,6 +295,21 @@
     '</div>';
   }
 
+  async function loadNotebookIndex(){
+    const mount=document.querySelector('#bbbccFilmIndex');if(!mount)return;
+    try{
+      const path='/rest/v1/site_prospects?select=player_key,name,pos,year,grade,comp,notebook_available&notebook_available=eq.true&year=gte.2027&order=year.asc,grade.desc&limit=30';
+      const r=await fetch(BBB_SUPABASE_URL+path,{headers:{apikey:BBB_SUPABASE_KEY},cache:'no-store'});
+      if(!r.ok)throw Error('Unavailable');
+      const items=await r.json();if(!mount.isConnected)return;
+      mount.innerHTML=Array.isArray(items)&&items.length?items.map(p=>
+       '<a class="bbbcc-film-card" href="/scouting/'+encodeURIComponent(p.player_key)+'#notebook" target="_top">'+
+       '<span class="bbbcc-film-class">'+esc(p.year)+' DRAFT · '+esc(p.pos)+'</span>'+
+       '<strong>'+esc(p.name)+'</strong><small>BBB '+(p.grade==null?'Unrated':Number(p.grade).toFixed(1))+' · '+esc(p.comp||'Original Film Report')+'</small>'+
+       '<span class="bbbcc-film-cta">READ COMPLETE NOTEBOOK →</span></a>').join(''):
+       '<div class="bbbcc-empty">New film notebooks are being prepared. Check the public draft board while Bobby reviews the next prospects.</div>';
+    }catch{if(mount.isConnected)mount.innerHTML='<a href="/draft" target="_top" class="bbbcc-action">BROWSE THE DRAFT BOARD →</a>'}
+  }
   function renderLoading(){
     const v=view();if(!v)return;
     v.classList.add('bbbcc-active');
@@ -302,6 +320,7 @@
     const v=view();if(!v||!dashboard)return;
     v.classList.add('bbbcc-active');
     v.innerHTML=contentHtml();
+    void loadNotebookIndex();
     document.querySelectorAll('[data-bbbcc-billing]').forEach(btn=>btn.addEventListener('click',openBilling));
     document.querySelectorAll('[data-bbbcc-billing-preview]').forEach(btn=>btn.addEventListener('click',()=>alert('Owner preview: paid BBB+ members use this exact control to open Stripe billing, where they can cancel or resume their membership. Your owner account is not a paid Stripe subscription.')));
   }
