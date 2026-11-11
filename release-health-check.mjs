@@ -115,9 +115,33 @@ assert(config.routes.some(x=>x.src==='/admin/?'&&x.dest==='/admin.html'),
  'admin deep-link route missing');
 
 // Published scouting copy, photo overrides, and college draft notes.
-contains(scoutingJs,['overview,strengths,concerns,projection',
+contains(scoutingJs,['overview,notebook_available,photo_url',
  'const override=P.get(p.player_key)?.photo_url','function portrait('],
  'public scouting client');
+assert(!scoutingJs.includes('overview,strengths,concerns,projection'),
+ 'Premium scouting sections must not be fetched from public site_prospects');
+const premiumJs=await get('bbb-plus-film-notebook.js');
+const premiumCss=await get('bbb-plus-film-notebook.css');
+const profileJs=await get('scouting-profile-v5.js');
+const intelJs=await get('scouting-intelligence-v6.js');
+const commandJs=await get('bbb-plus-command-center.js');
+new Function(premiumJs);
+contains(home,['src="/bbb-plus-film-notebook.js"'],'Film Notebook browser runtime');
+contains(profileJs,['data-content="notebook"','BBB_PLUS_FILM_NOTEBOOK?.bind','"notebook"'],'premium profile tab');
+contains(intelJs,['BBB_PLUS_FILM_NOTEBOOK?.teaser(g,p)'],'premium teaser, not unprotected notes');
+contains(premiumJs,['getToken()','/functions/v1/bbb-plus-film-notebook','res.status===403','cache:"no-store"','data?.access?.has_access!==true'],
+ 'server-validated premium Film Notebook');
+contains(premiumCss,['.bfn-teaser','.bfn-shell','.bfn-analysis-grid','@media(max-width:700px)'],'Film Notebook responsive design');
+contains(commandJs,['#bbbccFilmIndex','notebook_available=eq.true','target="_top"'],'subscriber notebook library');
+contains(memberJs,['2027 Film Notebook','LIVE · EXPANDING','Film Notebook · full strengths'],'BBB+ film notebook marketing');
+contains(admin,['BBB+ FILM NOTEBOOK · MEMBERS ONLY','FREE ON PLAYER PROFILE'],'one-editor free/premium mapping');
+const notebookEndpoint=await readFile('supabase/functions/bbb-plus-film-notebook/index.ts','utf8');
+const notebookMigration=await readFile('supabase/migrations/20261111171600_bbb_plus_film_notebook_public_boundary.sql','utf8');
+contains(notebookEndpoint,['authenticatedUser(req)','entitlementFor(user)','access.has_access','scouting_published','GET'],
+ 'Film Notebook server authorization');
+contains(notebookMigration,['REVOKE SELECT ON TABLE public.prospect_grades','NULL::text AS strengths',
+ 'NULL::text AS projection','notebook_available','GRANT SELECT ('],
+ 'premium source-data access hardening');
 new Function(scoutingJs);
 assert(memberJs.includes('FREE IF APPROVED')&&memberJs.includes('not a BBB+ benefit')&&memberJs.includes('commercial API use'),
  'Sleeper must remain a free, permission-dependent feature, not a paid BBB+ entitlement');
