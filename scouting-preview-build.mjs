@@ -74,8 +74,8 @@ cardSource=cardSource.slice(0,btnStart)+
   `const p=price(), active=isActive(), btn='<button class="bbb-plus-btn" id="bbbPlusCheckout" type="button">TEST STRIPE CHECKOUT · NO REAL CHARGE</button>'`+
   cardSource.slice(btnEnd);
 cardSource=cardSource.replace(
-  '<div class="bbb-plus-note">Rankings and Sleeper integration stay free.',
-  '<div class="bbb-plus-note"><strong>PREVIEW TEST MODE:</strong> This uses a separate Stripe sandbox, charges no real money, and will not activate a live BBB+ subscription.<br>Rankings and Sleeper integration stay free.'
+  '<div class="bbb-plus-note">Rankings stay free. Sleeper league connections will also be free for everyone if third-party API permission is granted.',
+  '<div class="bbb-plus-note"><strong>PREVIEW TEST MODE:</strong> This uses a separate Stripe sandbox, charges no real money, and will not activate a live BBB+ subscription.<br>Rankings stay free. Sleeper league connections are free if approved.'
 );
 billingSource=billingSource.slice(0,cardStart)+cardSource+billingSource.slice(cardEnd);
 // Card markup changed length; locate the payment functions again before slicing.
