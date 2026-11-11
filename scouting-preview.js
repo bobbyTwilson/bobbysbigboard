@@ -499,7 +499,7 @@ async function load(){
   const slimRanks="select=player_key,rank";
   const fullRanks="select=player_key,rank,pr,name,pos,team,age,market,gap,tier,view,overview,latest_update,weekly_update_date,injury_status,injury_note";
   const slimProspects="select=player_key,name,pos,year,grade,comp,photo_url,photo_credit";
-  const fullProspects="select=player_key,name,pos,year,grade,comp,traits,overview,strengths,concerns,projection,development_plan,comp_explanation,photo_url,photo_credit";
+  const fullProspects="select=player_key,name,pos,year,grade,comp,traits,overview,notebook_available,photo_url,photo_credit";
   const videoFields="select=video_id,player_key,title,video_type,content_archetype,privacy_status,published_at";
   const filmFields="select=video_id,player_key,title,description,video_type,editorial_status,published_at,created_at,updated_at";
   const query=(key,table,params)=>({key,table,params});
