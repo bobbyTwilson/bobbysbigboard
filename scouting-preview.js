@@ -87,13 +87,13 @@ function installScoutingHeaderTools(){
  trigger.type='button';trigger.className='bbb-header-search-trigger';
  trigger.setAttribute('aria-label','Search players');
  trigger.setAttribute('aria-haspopup','dialog');
- trigger.innerHTML='<span aria-hidden="true">⌕</span><span>Search</span>';
+ trigger.innerHTML='<span class="bbb-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></span><span>Search</span>';
  nav.appendChild(trigger);
  const backdrop=document.createElement('div');
  backdrop.className='bbb-header-search-overlay';backdrop.hidden=true;
  backdrop.innerHTML='<div class="bbb-header-search-backdrop" data-bbb-search-close></div>'+
  '<section class="bbb-header-search-dialog" role="dialog" aria-modal="true" aria-label="Search Bobby’s Big Board">'+
- '<div class="bbb-header-search-line"><span aria-hidden="true" class="bbb-header-search-glass">⌕</span>'+
+ '<div class="bbb-header-search-line"><span aria-hidden="true" class="bbb-header-search-glass"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></span>'+
  '<input id="bbbHeaderSearchInput" autocomplete="off" type="search" placeholder="Search players, teams, or positions…" aria-label="Search players" />'+
  '<button type="button" class="bbb-header-search-close" aria-label="Close search" data-bbb-search-close>×</button></div>'+
  '<div class="bbb-header-search-description">SEARCH THE BOBBY’S BIG BOARD PLAYER DIRECTORY</div>'+
@@ -104,13 +104,15 @@ function installScoutingHeaderTools(){
  styles.textContent=[
  '.bbb-header-search-trigger{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #41664b;background:#142d1c;color:#e2f3e4;border-radius:10px;min-height:37px;padding:7px 12px;cursor:pointer;font:inherit;font-size:12px;font-weight:800;white-space:nowrap}',
  '.bbb-header-search-trigger:hover,.bbb-header-search-trigger:focus-visible{border-color:#8de4a8;background:#22462d;outline:none}',
- '.bbb-header-search-trigger span:first-child{font-size:21px;line-height:14px}',
+ '.bbb-header-search-trigger .bbb-search-icon{display:inline-grid;place-items:center;width:18px;height:18px;line-height:1;flex:0 0 18px}',
+  '.bbb-header-search-trigger .bbb-search-icon svg,.bbb-header-search-glass svg{display:block;vertical-align:middle;stroke:currentColor;transform:none}',
  '.bbb-header-search-overlay[hidden]{display:none!important}',
  '.bbb-header-search-overlay{position:fixed;inset:0;z-index:300;display:flex;justify-content:center;align-items:flex-start;padding:clamp(58px,11vh,115px) 12px 20px}',
  '.bbb-header-search-backdrop{position:absolute;inset:0;background:rgba(1,9,5,.83);backdrop-filter:blur(8px)}',
  '.bbb-header-search-dialog{position:relative;width:min(680px,100%);background:#0c1c12;border:1px solid #4b7656;box-shadow:0 22px 90px #000b;border-radius:16px;overflow:hidden;color:#edf7ee}',
  '.bbb-header-search-line{display:flex;align-items:center;gap:10px;padding:15px 17px;border-bottom:1px solid #345b3f}',
- '.bbb-header-search-glass{font-size:31px;color:#9cdeb2}',
+ '.bbb-header-search-glass{display:inline-grid;place-items:center;width:28px;height:28px;flex:0 0 28px;color:#9cdeb2}',
+  '.bbb-header-search-glass svg{width:24px;height:24px}',
  '.bbb-header-search-line input{flex:1;min-width:0;background:transparent;color:#fff;border:0;outline:0;font-size:16px;font-family:inherit}',
  '.bbb-header-search-line input::placeholder{color:#849c8a}',
  '.bbb-header-search-close{border:0;background:#21382a;border-radius:8px;color:#dbe8df;font-size:26px;width:34px;height:34px;cursor:pointer}',

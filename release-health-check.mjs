@@ -39,7 +39,16 @@ contains(scoutingJs,['overview,strengths,concerns,projection',
  'const override=P.get(p.player_key)?.photo_url','function portrait('],
  'public scouting client');
 new Function(scoutingJs);
+assert(memberJs.includes('FREE IF APPROVED')&&memberJs.includes('not a BBB+ benefit')&&memberJs.includes('commercial API use'),
+ 'Sleeper must remain a free, permission-dependent feature, not a paid BBB+ entitlement');
+const sleeperAccountJs=await get('account-v1-preview.js');
+assert(sleeperAccountJs.includes('no BBB+ required')&&sleeperAccountJs.includes('bbbSleeperPreviewOnly()'),
+ 'Sleeper linking must remain free and gated to preview pending third-party authorization');
 const navCss=await get('scouting-atmosphere.css');
+contains(navCss,['body>header .bbb-mobile-menu-toggle{display:none!important}'],'desktop-only mobile menu hide');
+contains(scoutingJs,['bbb-search-icon','viewBox="0 0 24 24"','place-items:center'],'centered SVG search control');
+assert(!scoutingJs.includes('>⌕</span>'),'misaligned Unicode search icon was restored');
+
 contains(home,['class="bbb-mobile-menu-toggle"','id="bbb-site-nav"','<details class="dropdown"'],'accessible mobile site header');
 contains(navCss,['@media (max-width:1120px)','body>header .top.bbb-mobile-nav-open>nav','details.dropdown:not([open])','body>.bbb-mobile-nav-scrim:not([hidden])'],'mobile menu containment and Dynasty submenu');
 contains(scoutingJs,['toggleMobileMenu','closeMobileMenu','bbb-mobile-nav-scrim','mobileScrim.addEventListener','closeMobileMenu(false);closeDynasty();open=true'],'mobile menu interaction and search handoff');

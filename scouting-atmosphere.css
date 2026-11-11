@@ -247,7 +247,10 @@ body>main#app .bbb-directory-page .sectionHead,body>main#app .bbb-film-header,bo
 
 /* Mobile navigation V3 — keep the full nav and Dynasty submenu inside a
    single accessible viewport-contained panel. Desktop dropdown is unchanged. */
-.bbb-mobile-menu-toggle,.bbb-mobile-nav-scrim{display:none}
+/* Hide with selector specificity and !important: base header styles otherwise
+   display the mobile-only button on wide desktop screens. */
+body>header .bbb-mobile-menu-toggle{display:none!important}
+.bbb-mobile-nav-scrim{display:none!important}
 @media (max-width:1120px){
   body>header{position:sticky!important;top:0;z-index:50!important}
   body>header .top{
