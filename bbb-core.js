@@ -3,7 +3,7 @@ const BBB_SUPABASE_KEY='__BBB_SUPABASE_KEY__';
 const BBB_DB_CACHE=new Map();
 const BBB_DB_PERSIST_PREFIX='bbb-db-swr-v1:';
 const BBB_DB_MAX_STALE_MS=24*60*60*1000;
-const BBB_DB_PERSIST_TABLES=new Set(['site_dynasty','site_rookies','site_prospects','site_draft_picks']);
+const BBB_DB_PERSIST_TABLES=new Set(['site_dynasty','site_rookies','site_draft_picks']);
 
 function bbbBuildDbUrl(table,query=''){
   return BBB_SUPABASE_URL+'/rest/v1/'+table+(query?'?'+query:'');
@@ -67,6 +67,8 @@ function bbbRevalidate(table,query,key){
 }
 
 function bbbDb(table,query='',options={}){
+  // Prospect grades are editorial data: never serve stale local or in-memory copies.
+  if(table==='site_prospects')return bbbDbFresh(table,query);
   const key=table+'?'+query;
   if(options.refresh)BBB_DB_CACHE.delete(key);
   if(BBB_DB_CACHE.has(key))return BBB_DB_CACHE.get(key);
