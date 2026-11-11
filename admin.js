@@ -12,10 +12,65 @@ const healthy=s=>!s||String(s).trim()===''||String(s).trim().toLowerCase()==='he
 function msg(t,ok=false){$('#authMessage').textContent=t||'';$('#authMessage').style.color=ok?'#69d99d':'#ef8585'}
 function saveSession(x){session=x;localStorage.setItem(STORE,JSON.stringify(x))}
 function clearSession(){session=null;localStorage.removeItem(STORE)}
-function authHeaders(extra={}){return {apikey:KEY,Authorization:`Bearer ${session?.access_token||''}`,...extra}}
-async function jsonFetch(url,opt={}){const r=await fetch(url,opt);let data=null;try{data=await r.json()}catch{}if(!r.ok)throw new Error(data?.msg||data?.message||data?.error_description||data?.error||`Request failed (${r.status})`);return data}
-async function refreshSession(){if(!session?.refresh_token)return false;try{const x=await jsonFetch(`${SUPA}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token})});saveSession(x);return true}catch{clearSession();return false}}
-async function rest(path,opt={}){if(session?.expires_at&&Date.now()/1000>session.expires_at-60)await refreshSession();const headers=authHeaders(opt.headers||{});let r=await fetch(`${SUPA}/rest/v1/${path}`,{...opt,headers});if(r.status===401&&await refreshSession())r=await fetch(`${SUPA}/rest/v1/${path}`,{...opt,headers:authHeaders(opt.headers||{})});let data=null;const txt=await r.text();if(txt)try{data=JSON.parse(txt)}catch{data=txt}if(!r.ok)throw new Error(data?.message||data?.hint||`Database request failed (${r.status})`);return data}
+function adminAuthExpired(){
+ const error=new Error('Your Admin session expired. Your unsaved scouting notes are still here. Sign in below to retry.');
+ error.code='BBB_ADMIN_SESSION_EXPIRED';
+ return error;
+}
+function authHeaders(extra={}){
+ // Never send an empty Bearer JWT to Supabase.
+ if(!session?.access_token)throw adminAuthExpired();
+ return {apikey:KEY,...extra,Authorization:'Bearer '+session.access_token};
+}
+async function jsonFetch(url,opt={}){
+ const r=await fetch(url,opt);let data=null;
+ try{data=await r.json()}catch{}
+ if(!r.ok)throw new Error(data?.msg||data?.message||data?.error_description||data?.error||'Request failed ('+r.status+')');
+ return data;
+}
+let refreshSessionPromise=null;
+async function refreshSession(){
+ if(refreshSessionPromise)return refreshSessionPromise;
+ if(!session?.refresh_token)return false;
+ const previous=session;
+ refreshSessionPromise=(async()=>{
+  try{
+   const x=await jsonFetch(SUPA+'/auth/v1/token?grant_type=refresh_token',{
+    method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({refresh_token:previous.refresh_token})
+   });
+   if(!x?.access_token)throw new Error('Refresh response had no access token.');
+   saveSession({...previous,...sessionFromAuth(x)});
+   return true;
+  }catch(err){
+   console.warn('BBB Admin session refresh unavailable:',err?.message||err);
+   // Preserve the account identity while the editor offers inline sign-in.
+   // Do not clear unsaved film notes or dispatch an empty JWT.
+   return false;
+  }finally{refreshSessionPromise=null}
+ })();
+ return refreshSessionPromise;
+}
+async function rest(path,opt={}){
+ if(!session?.access_token||(session?.expires_at&&Date.now()/1000>Number(session.expires_at)-60)){
+  if(!await refreshSession())throw adminAuthExpired();
+ }
+ const request=()=>fetch(SUPA+'/rest/v1/'+path,{...opt,headers:authHeaders(opt.headers||{})});
+ let r=await request();
+ if(r.status===401){
+  if(!await refreshSession())throw adminAuthExpired();
+  r=await request();
+  if(r.status===401)throw adminAuthExpired();
+ }
+ let data=null;
+ const txt=await r.text();
+ if(txt)try{data=JSON.parse(txt)}catch{data=txt}
+ if(!r.ok){
+  if(String(data?.message||'').toLowerCase().includes('empty jwt'))throw adminAuthExpired();
+  throw new Error(data?.message||data?.hint||'Database request failed ('+r.status+')');
+ }
+ return data;
+}
 async function rpc(name,body){return rest(`rpc/${name}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}
 async function checkAdmin(){const email=session?.user?.email;if(!email)return null;const rows=await rest(`bbb_admin_users?select=email,role,active&email=eq.${encodeURIComponent(email)}`);return rows?.[0]||null}
 function sessionFromAuth(x){if(!x?.access_token)return null;return {...x,expires_at:Math.floor(Date.now()/1000)+(x.expires_in||3600)}}
