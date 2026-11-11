@@ -39,6 +39,10 @@ contains(scoutingJs,['overview,strengths,concerns,projection',
  'const override=P.get(p.player_key)?.photo_url','function portrait('],
  'public scouting client');
 new Function(scoutingJs);
+const navCss=await get('scouting-atmosphere.css');
+contains(home,['class="bbb-mobile-menu-toggle"','id="bbb-site-nav"','<details class="dropdown"'],'accessible mobile site header');
+contains(navCss,['@media (max-width:1120px)','body>header .top.bbb-mobile-nav-open>nav','details.dropdown:not([open])','body>.bbb-mobile-nav-scrim:not([hidden])'],'mobile menu containment and Dynasty submenu');
+contains(scoutingJs,['toggleMobileMenu','closeMobileMenu','bbb-mobile-nav-scrim','mobileScrim.addEventListener','closeMobileMenu(false);closeDynasty();open=true'],'mobile menu interaction and search handoff');
 const filmRoomJs=await get('scouting-film-room-v1.js');
 contains(filmRoomJs,["['all','All Breakdowns']","data-film-sort","category=\"all\"","data-film-search"],'complete Film Room library filters');
 new Function(filmRoomJs);
