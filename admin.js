@@ -788,7 +788,7 @@ function renderProspectLab(){
  for(const [id,value] of [['prospectViewAllCount',prospectLab.length],['prospectViewUngradedCount',prospectLab.length-graded],['prospectViewGradedCount',graded]]){
    const target=$('#'+id);if(target)target.textContent=String(value);
  }
- $('[data-prospect-view]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.prospectView===prospectView)));
+ $$('[data-prospect-view]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.prospectView===prospectView)));
  const list=filteredProspects().sort((a,b)=>(prospectView==='all'?Number(b.graded)-Number(a.graded):0)||a.name.localeCompare(b.name));
  const summary=$('#prospectViewSummary');
  if(summary)summary.textContent=prospectView==='graded'
@@ -799,6 +799,15 @@ function renderProspectLab(){
 }
 function prospectTotal(){const t=$$('[data-prospect-trait]').reduce((a,i)=>a+(+i.value||0),0);$('#prospectGradeTotal').textContent=t.toFixed(1);return +t.toFixed(1)}
 function prospectByKey(key){return prospectLab.find(v=>v.player_key===key)}
+// A new written overview is ready to publish by default. If the owner
+// deliberately turns publishing off, or is editing a saved private draft,
+// the editor keeps that choice. A grade without a write-up still saves.
+let prospectPublishManuallyChosen=false,prospectHasSavedPrivateDraft=false;
+function prospectSyncPublishChoice(){
+ const overview=$('#prospectScoutingOverview'),toggle=$('#prospectPublishReport');
+ if(!overview||!toggle||prospectPublishManuallyChosen||prospectHasSavedPrivateDraft)return;
+ toggle.checked=!!overview.value.trim();
+}
 function renderProspectRecommendationTraits(x){
  const el=$('#prospectRecommendationTraits');if(!el)return;const traits=x?.recommended_traits||{},schema=PROSPECT_TRAITS[x?.position]||[];
  if(!Object.keys(traits).length){el.innerHTML='<div class="empty">Full trait recommendations are still being researched.</div>';return}
@@ -824,6 +833,8 @@ function startProspectGrade(key){
  const x=prospectByKey(key);if(!x)return;$('#prospectKey').value=key;setProspectDrawerHeader(x,'grade');$('#prospectGradeRecGrade').textContent=x.recommended_overall_grade==null?'Pending':(+x.recommended_overall_grade).toFixed(1);$('#prospectGradeRecComp').textContent=x.recommended_pro_comp||'Research pending';$('#prospectFinalComp').value=x.pro_comp||x.recommended_pro_comp||'';
  const current=x.traits||{},rec=x.recommended_traits||{};$('#prospectTraitGrid').innerHTML=(PROSPECT_TRAITS[x.position]||[]).map(([label,max])=>`<div class="prospect-trait"><label>${esc(label)} <small>/ ${max}</small></label><span class="trait-rec">REC ${rec[label]??'—'}</span><input class="input trait-input" type="number" min="0" max="${max}" step="0.5" data-prospect-trait="${esc(label)}" value="${current[label]??''}"></div>`).join('');
  $('#prospectApplyRec').disabled=!Object.keys(rec).length;$('#prospectApplyRec').dataset.playerKey=key;$$('[data-prospect-trait]').forEach(i=>i.oninput=prospectTotal);prospectTotal();for(const [id,field] of [['prospectScoutingOverview','scouting_overview'],['prospectScoutingStrengths','scouting_strengths'],['prospectScoutingConcerns','scouting_concerns'],['prospectNflProjection','nfl_projection'],['prospectDevelopmentPlan','development_plan'],['prospectCompExplanation','comp_explanation']])$('#'+id).value=x[field]||'';
+ prospectPublishManuallyChosen=false;
+ prospectHasSavedPrivateDraft=!!x.scouting_overview&&!x.scouting_published;
  $('#prospectPublishReport').checked=!!x.scouting_published;
  $('#prospectPhotoUrl').value=prospectPhoto(x);
  $('#prospectPhotoCredit').value=x.photo_credit||(prospectMatchedPhoto(x)?'ESPN':'');
@@ -840,21 +851,31 @@ async function saveProspectGrade(e){
  if(Object.keys(traits).length!==(PROSPECT_TRAITS[x.position]||[]).length)return alert('Finish every trait grade first.');
  const photoUrl=$('#prospectPhotoUrl').value.trim();
  if(photoUrl&&!/^https:\/\/[^\s]+$/i.test(photoUrl)){ $('#prospectSaveStatus').textContent='Use an HTTPS image URL.';return}
+ // Ensure pasted overview text defaults to publication unless the owner
+ // explicitly chose a private draft.
+ prospectSyncPublishChoice();
  const publish=$('#prospectPublishReport').checked;
  if(publish&&!$('#prospectScoutingOverview').value.trim()){ $('#prospectSaveStatus').textContent='Write an overview before publishing.';return}
  const btn=$('#saveProspectGrade');btn.disabled=true;$('#prospectSaveStatus').textContent='Saving grade and report…';
  try{
   await rpc('admin_grade_prospect',{p_player_key:x.player_key,p_name:x.name,p_position:x.position,p_school:x.school||null,p_class_year:+x.class_year,p_overall_grade:prospectTotal(),p_pro_comp:$('#prospectFinalComp').value.trim()||null,p_traits:traits});
-  await rpc('admin_save_prospect_editorial',{
+  const editorial=await rpc('admin_save_prospect_editorial',{
    p_player_key:x.player_key,p_overview:$('#prospectScoutingOverview').value.trim(),
    p_strengths:$('#prospectScoutingStrengths').value.trim(),p_concerns:$('#prospectScoutingConcerns').value.trim(),
    p_projection:$('#prospectNflProjection').value.trim(),p_development_plan:$('#prospectDevelopmentPlan').value.trim(),
    p_comp_explanation:$('#prospectCompExplanation').value.trim(),p_photo_url:photoUrl,
    p_photo_credit:$('#prospectPhotoCredit').value.trim(),p_publish:publish
   });
-  await Promise.all([loadProspectLab(),loadCounts()]);renderProspectLab();
-  $('#prospectSaveStatus').textContent=publish?'Grade and scouting report published ✓':'Grade saved · editorial draft private ✓';
-  setTimeout(closeProspectGrader,650);
+  if(editorial?.saved!==true||editorial?.published!==publish)throw new Error('Scouting report save could not be verified.');
+  await Promise.all([loadProspectLab(),loadCounts()]);
+  renderProspectLab();
+  const saved=prospectByKey(x.player_key);
+  if(!saved?.graded||(publish&&!saved.scouting_published))throw new Error('Saved data could not be verified in Prospect Lab. Refresh before making another edit.');
+  const liveUrl='/scouting/'+encodeURIComponent(x.player_key);
+  const notice=publish?'Grade and scouting report published ✓':($('#prospectScoutingOverview').value.trim()?'Grade saved ✓ · scouting report kept private':'Grade saved ✓ · add an overview to publish a scouting report');
+  $('#prospectSaveStatus').innerHTML=esc(notice)+' <a href="'+esc(liveUrl)+'" target="_blank" rel="noopener noreferrer">VIEW PUBLIC PROFILE ↗</a>';
+  // Keep the editor open so the owner can inspect the confirmed result; no
+  // second trip into the drawer is needed to find the live profile.
  }catch(err){$('#prospectSaveStatus').textContent='Save incomplete: '+(err.message||String(err))}
  finally{btn.disabled=false}
 }
@@ -1662,7 +1683,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   bindControlGroup('prospect lab',()=>{
     ['#prospectSearch','#prospectYear','#prospectPos','#prospectResearch'].forEach(sel=>$(sel)?.addEventListener(sel==='#prospectSearch'?'input':'change',renderProspectLab));
-    $('[data-prospect-view]').forEach(btn=>btn.addEventListener('click',()=>{prospectView=btn.dataset.prospectView;renderProspectLab()}));
+    $$('[data-prospect-view]').forEach(btn=>btn.addEventListener('click',()=>{prospectView=btn.dataset.prospectView;renderProspectLab()}));
     $('#prospectLabGrid')?.addEventListener('click',e=>{
       const gradeBtn=e.target.closest('[data-grade-prospect]');
       if(gradeBtn){e.preventDefault();e.stopPropagation();startProspectGrade(gradeBtn.dataset.gradeProspect);return}
@@ -1675,6 +1696,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     $('#prospectStartGrade')?.addEventListener('click',()=>startProspectGrade($('#prospectStartGrade').dataset.playerKey));
     $('#prospectBackToReport')?.addEventListener('click',()=>openProspectReport($('#prospectKey').value));
     $('#prospectGradeForm')?.addEventListener('submit',saveProspectGrade);
+    $('#prospectScoutingOverview')?.addEventListener('input',prospectSyncPublishChoice);
+    $('#prospectPublishReport')?.addEventListener('change',()=>{prospectPublishManuallyChosen=true});
  $('#prospectPhotoUrl')?.addEventListener('input',prospectUpdatePhotoPreview);
  $('#prospectUseMatchedImage')?.addEventListener('click',()=>{
   const x=prospectByKey($('#prospectKey').value);if(!x)return;

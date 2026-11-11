@@ -2458,7 +2458,7 @@ body:after{
         <div class="field"><label>Final Pro Comp</label><input id="prospectFinalComp" class="input" placeholder="Your comp…"></div>
       </div>
       <section class="bbb-editorial-form" aria-label="Public scouting profile editor">
-        <div class="bbb-editorial-heading"><div class="panel-kicker">PUBLIC SCOUTING PROFILE</div><h3>Your film evaluation</h3><p>Write your own scouting report. Drafts stay private until you check Publish. You can update it when you edit a grade.</p></div>
+        <div class="bbb-editorial-heading"><div class="panel-kicker">PUBLIC SCOUTING PROFILE</div><h3>Your film evaluation</h3><p>Grade the player and paste your evaluation once. A new written overview automatically selects Publish, and saving updates the public player profile. Uncheck Publish if you deliberately want a private draft.</p></div>
         <div class="bbb-editorial-field"><label for="prospectScoutingOverview">Scouting overview</label><textarea id="prospectScoutingOverview" rows="5" maxlength="5000" class="input" placeholder="Your big-picture film evaluation, strengths, and what this player can become…"></textarea></div>
         <div class="bbb-editorial-grid">
           <div class="bbb-editorial-field"><label for="prospectScoutingStrengths">How he wins <small>One observation per line</small></label><textarea id="prospectScoutingStrengths" rows="5" maxlength="3000" class="input" placeholder="Anticipatory throws over the middle&#10;Touch and accuracy with a clean base"></textarea></div>
@@ -2479,11 +2479,11 @@ body:after{
             <small class="bbb-photo-help" id="prospectPhotoStatus">Matched ESPN photos appear automatically when identified. Only use photos you have permission to publish.</small>
           </div>
         </div>
-        <label class="bbb-publish-toggle"><input type="checkbox" id="prospectPublishReport"><span><strong>Publish scouting write-up on the website</strong><small>Off = draft stays in Admin, on = your report appears on the player's public profile.</small></span></label>
+        <label class="bbb-publish-toggle"><input type="checkbox" id="prospectPublishReport"><span><strong>Publish scouting write-up when saving</strong><small>New reports publish automatically when you add an overview. Uncheck to keep the report private. Your overall prospect grade is public either way.</small></span></label>
       </section>
       <div class="save-row">
-        <button id="saveProspectGrade" class="save-btn" type="submit">LOCK IN GRADE</button>
-        <span id="prospectSaveStatus" class="save-status"></span>
+        <button id="saveProspectGrade" class="save-btn" type="submit">SAVE GRADE &amp; REPORT</button>
+        <span id="prospectSaveStatus" class="save-status" role="status" aria-live="polite"></span>
       </div>
     </form>
   </aside>
@@ -2947,7 +2947,7 @@ body:after{
       var editor='<div class="pw-prospect-editor-head"><div class="pw-prospect-grade-hero"><span>FINAL BBB GRADE</span><strong id="pwProspectGradeTotal">'+esc(grade.overall_grade==null?"0.0":Number(grade.overall_grade).toFixed(1))+'</strong><small>LIVE TOTAL</small></div><div class="pw-field pw-prospect-comp-field"><label>PRO COMP</label><input id="pwProspectComp" class="pw-input" value="'+esc(comp)+'" placeholder="Enter pro comp"><small>Edit the saved historical comparison.</small></div></div>'+
         '<div class="pw-prospect-section-title"><div><span>TRAIT GRADES</span><strong>'+esc(profile.position||"PLAYER")+' SCORECARD</strong></div><small>Edit any score below. Overall grade updates automatically.</small></div>'+
         '<div id="pwProspectTraitGrid" class="pw-prospect-traits">'+traitsHtml+'</div>'+
-        '<div class="pw-inline-actions pw-prospect-savebar"><button type="button" class="pw-action primary" data-pw-action="prospectsave">'+(grade.overall_grade==null?"SAVE PROSPECT GRADE":"SAVE PROSPECT PROFILE")+'</button><span id="pwProspectSaveStatus" class="pw-status-line">Editing this profile does not change dynasty rank.</span></div>';
+        '<div class="pw-inline-actions pw-prospect-savebar"><button type="button" class="pw-action primary" data-pw-action="grade">EDIT FULL GRADE &amp; SCOUTING REPORT</button><button type="button" class="pw-action" data-pw-action="prospectsave">SAVE TRAIT SCORES ONLY</button><span id="pwProspectSaveStatus" class="pw-status-line">For new or updated scouting notes, use Edit Full Grade & Scouting Report. Dynasty ranks stay unchanged.</span></div>';
       return '<div class="pw-metrics">'+metrics+'</div><div class="pw-grid"><div class="pw-stack">'+pwPanel("HISTORICAL PROSPECT PROFILE","Editable BBB trait card",editor)+'</div><div class="pw-stack">'+pwPanel("SCOUTING ARCHIVE","Original research",researchHtml)+pwPanel("SOURCE TRAIL","Archived scouting links",sourceHtml)+'</div></div>';
     }
 
@@ -3541,6 +3541,11 @@ body:after{
   #pageReview .queue-priority{font-size:9px!important}
   #bbbPlayerWorkspace .pw-title p{font-size:10px!important}
 }
+</style>
+<style id="bbb-admin-prospect-save-feedback">
+#prospectSaveStatus a{color:#8ef0bb;font-weight:900;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+#prospectSaveStatus a:hover,#prospectSaveStatus a:focus-visible{color:#c6ffe0}
+#prospectPublishReport{accent-color:#64d994}
 </style>
 
 <script id="bbb-admin-modal-hotfix-v6">
