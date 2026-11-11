@@ -788,7 +788,7 @@ function renderProspectLab(){
  for(const [id,value] of [['prospectViewAllCount',prospectLab.length],['prospectViewUngradedCount',prospectLab.length-graded],['prospectViewGradedCount',graded]]){
    const target=$('#'+id);if(target)target.textContent=String(value);
  }
- $('[data-prospect-view]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.prospectView===prospectView)));
+ $$('[data-prospect-view]').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.prospectView===prospectView)));
  const list=filteredProspects().sort((a,b)=>(prospectView==='all'?Number(b.graded)-Number(a.graded):0)||a.name.localeCompare(b.name));
  const summary=$('#prospectViewSummary');
  if(summary)summary.textContent=prospectView==='graded'
@@ -1683,7 +1683,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   bindControlGroup('prospect lab',()=>{
     ['#prospectSearch','#prospectYear','#prospectPos','#prospectResearch'].forEach(sel=>$(sel)?.addEventListener(sel==='#prospectSearch'?'input':'change',renderProspectLab));
-    $('[data-prospect-view]').forEach(btn=>btn.addEventListener('click',()=>{prospectView=btn.dataset.prospectView;renderProspectLab()}));
+    $$('[data-prospect-view]').forEach(btn=>btn.addEventListener('click',()=>{prospectView=btn.dataset.prospectView;renderProspectLab()}));
     $('#prospectLabGrid')?.addEventListener('click',e=>{
       const gradeBtn=e.target.closest('[data-grade-prospect]');
       if(gradeBtn){e.preventDefault();e.stopPropagation();startProspectGrade(gradeBtn.dataset.gradeProspect);return}
