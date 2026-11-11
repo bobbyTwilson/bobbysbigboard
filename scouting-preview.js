@@ -489,7 +489,9 @@ async function load(){
   }
   const profileFilter=profile?"&player_key=eq."+encodeURIComponent(playerKey):"";
   const remembered=pageCache.get(path);
-  const hasFreshCopy=remembered&&Date.now()-remembered.savedAt<PAGE_CACHE_MS;
+  // Always re-read live prospect grades after navigation, including a previously visited profile.
+  const liveProspectRoute=profile||["/","/draft","/players","/film","/dynasty/compare"].includes(path);
+  const hasFreshCopy=!liveProspectRoute&&remembered&&Date.now()-remembered.savedAt<PAGE_CACHE_MS;
   if(!hasFreshCopy&&path!=="/"){
     setTitle(profile?"Player Scouting":path==="/players"?"Players":path==="/draft"?"NFL Draft":path==="/film"?"Film Room":"Player Comparison");
     app.innerHTML='<section class="section"><div class="wrap"><div class="eyebrow">BOBBY’S BIG BOARD</div><div class="bbb-route-loading" role="status">Opening '+esc(profile?"scouting profile":path==="/players"?"player directory":path==="/draft"?"draft board":path==="/film"?"film room":"player comparison")+'…</div></div></section>';
