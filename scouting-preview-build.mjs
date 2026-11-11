@@ -115,16 +115,20 @@ let preview=await readFile('scouting-preview.html','utf8');
 // Emit a single, cacheable asset; keep original assets for existing references.
 const styleSources=[
   'scouting-green.css','scouting-directory.css','scouting-profile-v5.css',
-  'scouting-intelligence-v6.css','scouting-film-room-v1.css','scouting-atmosphere.css'
+  'scouting-intelligence-v6.css','scouting-film-room-v1.css','scouting-atmosphere.css',
+  'bbb-plus-film-notebook.css'
 ];
 const styleText=(await Promise.all(styleSources.map(file=>readFile(file,'utf8')))).join('\n');
 await writeFile(root+'/scouting-styles.css',styleText);
 for(const [i,file] of styleSources.entries()){
+  if(file==='bbb-plus-film-notebook.css')continue;
   const originalTag='<link rel="stylesheet" href="/'+file+'">';
   if(!preview.includes(originalTag))throw new Error('Missing style link '+file);
   preview=preview.replace(originalTag,i===0?'<link rel="stylesheet" href="/scouting-styles.css">':'');
 }
 // Warm the public database origin before its API calls start.
+preview=preview.replace('<script src="/scouting-profile-v5.js"></script>',
+  '<script src="/bbb-plus-film-notebook.js"></script><script src="/scouting-profile-v5.js"></script>');
 preview=preview.replace('</head>',
   '<link rel="preconnect" href="https://twbduhmibbotregdxlla.supabase.co" crossorigin>'+
   '<link rel="dns-prefetch" href="//i.ytimg.com">'+
@@ -147,6 +151,8 @@ await copyFile('scouting-profile-v5.js',root+'/scouting-profile-v5.js');
 await copyFile('scouting-profile-v5.css',root+'/scouting-profile-v5.css');
 await copyFile('scouting-intelligence-v6.js',root+'/scouting-intelligence-v6.js');
 await copyFile('scouting-intelligence-v6.css',root+'/scouting-intelligence-v6.css');
+await copyFile('bbb-plus-film-notebook.js',root+'/bbb-plus-film-notebook.js');
+await copyFile('bbb-plus-film-notebook.css',root+'/bbb-plus-film-notebook.css');
 await copyFile('scouting-film-room-v1.js',root+'/scouting-film-room-v1.js');
 await copyFile('scouting-film-room-v1.css',root+'/scouting-film-room-v1.css');
 /* The existing BBB rich profile UI is available inside scouting pages without a second site header. */
@@ -493,6 +499,7 @@ try {
 }catch(error){qaErrors.push('Film Room behavioral QA failed: '+error.message)}
 
 const assetChecks=['scouting-preview.js','scouting-styles.css','scouting-profile-v5.js',
+  'bbb-plus-film-notebook.js','bbb-plus-film-notebook.css',
  'scouting-intelligence-v6.js','scouting-film-room-v1.js','scouting-samples.js',
  'scouting-headshots.json','bbb-growth-metrics.js','bbb-core.js','movers-section.js',
  'profile-ui-redesign-preview.js','dynasty-engine/index.html'];
