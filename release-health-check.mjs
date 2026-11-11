@@ -4,6 +4,7 @@
  * All assertions are read-only, local to .vercel/output, and fail closed.
  */
 import {readFile,access} from 'node:fs/promises';
+import {runInNewContext} from 'node:vm';
 
 const root='.vercel/output/static';
 const production=process.env.VERCEL_ENV==='production';
@@ -31,6 +32,83 @@ contains(adminJs,["admin_get_prospect_lab","admin_grade_prospect",
  "prospectView='all'"],'admin grade workflow');
 assert(!adminJs.includes('prospectIncludeGraded'),'old hidden-grade filter restored');
 new Function(adminJs);
+assert(!adminJs.includes("$('\\[data-prospect-view]')"),'single-element selector restored in Prospect Lab');
+contains(adminJs,[
+  "$('[data-prospect-view]').forEach",
+  "prospectSyncPublishChoice",
+  "prospectPublishManuallyChosen=true",
+  "Grade and scouting report published",
+  "VIEW PUBLIC PROFILE",
+  "editorial?.saved!==true",
+], 'Prospect Lab controls and one-save publication');
+assert(!adminJs.includes('setTimeout(closeProspectGrader,650)'),'prospect editor closes before owner can confirm publication');
+// Exercise the actual Prospect Lab filtering/render functions with a tiny DOM
+// fixture, catching broken Node-vs-NodeList selectors that syntax checks miss.
+const filtersStart=adminJs.indexOf('function filteredProspects(){');
+const filtersEnd=adminJs.indexOf('function prospectTotal(){',filtersStart);
+assert(filtersStart>0&&filtersEnd>filtersStart,'prospect filter test boundaries missing');
+const mockDom={};
+for(const selector of [
+ '#prospectLabGrid','#prospectUngraded','#prospect2027','#prospect2028',
+ '#prospectResearched','#prospectNavCount','#prospectViewAllCount',
+ '#prospectViewUngradedCount','#prospectViewGradedCount',
+ '#prospectSearch','#prospectYear','#prospectPos','#prospectResearch',
+ '#prospectViewSummary'
+])mockDom[selector]={textContent:'',innerHTML:'',value:''};
+for(const sel of ['#prospectYear','#prospectPos','#prospectResearch'])mockDom[sel].value='ALL';
+const viewButtons=['all','ungraded','graded'].map(view=>({
+ dataset:{prospectView:view},setAttribute(name,value){this[name]=value}
+}));
+const exampleProspects=[
+ {name:'Graded Example',player_key:'graded-example',position:'QB',school:'Notre Dame',
+  class_year:2027,graded:true,overall_grade:74,pro_comp:'Pocket passer'},
+ {name:'Ungraded Example',player_key:'ungraded-example',position:'QB',school:'Oregon',
+  class_year:2027,graded:false,recommended_overall_grade:78,summary:'Watchlist player'}
+];
+const sandbox={
+ $:sel=>mockDom[sel]||null,
+ $:sel=>sel==='[data-prospect-view]'?viewButtons:[],
+ prospectLab:exampleProspects,prospectView:'all',
+ prospectReady:()=>false,prospectPhoto:()=>'',esc:v=>String(v??'')
+};
+runInNewContext(adminJs.slice(filtersStart,filtersEnd),sandbox,{timeout:1000});
+sandbox.renderProspectLab();
+assert(mockDom['#prospectLabGrid'].innerHTML.includes('Graded Example')&&
+       mockDom['#prospectLabGrid'].innerHTML.includes('Ungraded Example'),
+       'All prospects view fails to show both saved and pending grades');
+sandbox.prospectView='graded';sandbox.renderProspectLab();
+assert(mockDom['#prospectLabGrid'].innerHTML.includes('Graded Example')&&
+       !mockDom['#prospectLabGrid'].innerHTML.includes('Ungraded Example')&&
+       viewButtons[2]['aria-pressed']==='true',
+       'My graded prospects button/filter is broken');
+sandbox.prospectView='ungraded';sandbox.renderProspectLab();
+assert(!mockDom['#prospectLabGrid'].innerHTML.includes('Graded Example')&&
+       mockDom['#prospectLabGrid'].innerHTML.includes('Ungraded Example')&&
+       viewButtons[1]['aria-pressed']==='true',
+       'To grade button/filter is broken');
+sandbox.prospectView='all';mockDom['#prospectSearch'].value='Notre Dame';
+sandbox.renderProspectLab();
+assert(mockDom['#prospectLabGrid'].innerHTML.includes('Graded Example')&&
+       !mockDom['#prospectLabGrid'].innerHTML.includes('Ungraded Example'),
+       'Prospect search by school fails');
+const publishStart=adminJs.indexOf('let prospectPublishManuallyChosen=');
+const publishEnd=adminJs.indexOf('function renderProspectRecommendationTraits(',publishStart);
+assert(publishStart>0&&publishEnd>publishStart,'auto-publish test boundaries missing');
+const publishElements={
+ '#prospectScoutingOverview':{value:'Original film evaluation'},
+ '#prospectPublishReport':{checked:false}
+};
+const autoPublishState=runInNewContext(adminJs.slice(publishStart,publishEnd)+`
+prospectSyncPublishChoice();
+const autoChecked=$('#prospectPublishReport').checked;
+prospectPublishManuallyChosen=true;
+$('#prospectPublishReport').checked=false;
+prospectSyncPublishChoice();
+({autoChecked,privateChoiceRespected:!$('#prospectPublishReport').checked});
+`,{$:sel=>publishElements[sel]||null},{timeout:1000});
+assert(autoPublishState.autoChecked&&autoPublishState.privateChoiceRespected,
+       'New overview should auto-publish unless manually kept private');
+
 assert(config.routes.some(x=>x.src==='/admin/?'&&x.dest==='/admin.html'),
  'admin deep-link route missing');
 
