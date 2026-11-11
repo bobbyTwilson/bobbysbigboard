@@ -32,9 +32,11 @@ contains(adminJs,["admin_get_prospect_lab","admin_grade_prospect",
  "prospectView='all'"],'admin grade workflow');
 assert(!adminJs.includes('prospectIncludeGraded'),'old hidden-grade filter restored');
 new Function(adminJs);
-assert(!adminJs.includes("$('\\[data-prospect-view]')"),'single-element selector restored in Prospect Lab');
+const prospectButtonSelector=String.fromCharCode(36,36)+"('[data-prospect-view]').forEach";
+assert(adminJs.split(prospectButtonSelector).length-1===2,
+  'Prospect Lab must use querySelectorAll for rendering and binding all three view buttons');
 contains(adminJs,[
-  "$('[data-prospect-view]').forEach",
+  prospectButtonSelector,
   "prospectSyncPublishChoice",
   "prospectPublishManuallyChosen=true",
   "Grade and scouting report published",
@@ -67,7 +69,7 @@ const exampleProspects=[
 ];
 const sandbox={
  $:sel=>mockDom[sel]||null,
- $:sel=>sel==='[data-prospect-view]'?viewButtons:[],
+ ["$$"]:sel=>sel==='[data-prospect-view]'?viewButtons:[],
  prospectLab:exampleProspects,prospectView:'all',
  prospectReady:()=>false,prospectPhoto:()=>'',esc:v=>String(v??'')
 };
