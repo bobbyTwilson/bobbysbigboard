@@ -29,6 +29,51 @@ function installScoutingHeaderTools(){
  header.dataset.bbbHeaderReady='1';
  const dynasty=nav.querySelector('details.dropdown');
  const closeDynasty=()=>{if(dynasty?.open)dynasty.open=false;};
+ // On phones/tablets the long desktop navigation is a single contained panel.
+ // The native Dynasty <details> stays keyboard-accessible inside that panel.
+ const mobileButton=header.querySelector('.bbb-mobile-menu-toggle');
+ const mobileViewport=window.matchMedia('(max-width:1120px)');
+ const mobileScrim=document.createElement('div');
+ mobileScrim.className='bbb-mobile-nav-scrim';
+ mobileScrim.hidden=true;
+ mobileScrim.setAttribute('aria-hidden','true');
+ document.body.appendChild(mobileScrim);
+ const mobileMenuOpen=()=>header.classList.contains('bbb-mobile-nav-open');
+ const closeMobileMenu=(restoreFocus=false)=>{
+   const wasOpen=mobileMenuOpen();
+   header.classList.remove('bbb-mobile-nav-open');
+   document.body.classList.remove('bbb-mobile-nav-visible');
+   mobileScrim.hidden=true;
+   closeDynasty();
+   mobileButton?.setAttribute('aria-expanded','false');
+   mobileButton?.setAttribute('aria-label','Open site navigation');
+   if(restoreFocus&&wasOpen)mobileButton?.focus({preventScroll:true});
+ };
+ const toggleMobileMenu=()=>{
+   if(!mobileViewport.matches)return;
+   const shouldOpen=!mobileMenuOpen();
+   closeMobileMenu(false);
+   if(!shouldOpen)return;
+   header.classList.add('bbb-mobile-nav-open');
+   document.body.classList.add('bbb-mobile-nav-visible');
+   mobileScrim.hidden=false;
+   mobileButton?.setAttribute('aria-expanded','true');
+   mobileButton?.setAttribute('aria-label','Close site navigation');
+ };
+ mobileButton?.addEventListener('click',toggleMobileMenu);
+ mobileScrim.addEventListener('click',()=>closeMobileMenu(true));
+ nav.addEventListener('click',event=>{
+   if(event.target instanceof Element&&event.target.closest('a[href]'))closeMobileMenu(false);
+ });
+ document.addEventListener('keydown',event=>{
+   if(event.key==='Escape'&&mobileMenuOpen()){event.preventDefault();closeMobileMenu(true);}
+ });
+ window.addEventListener('popstate',()=>closeMobileMenu(false));
+ if(mobileViewport.addEventListener){
+   mobileViewport.addEventListener('change',event=>{if(!event.matches)closeMobileMenu(false);});
+ }else if(mobileViewport.addListener){
+   mobileViewport.addListener(event=>{if(!event.matches)closeMobileMenu(false);});
+ }
  // Remove <details open> on selection, external click, Esc or back/forward.
  document.addEventListener('click',event=>{
    if(!dynasty?.open)return;
@@ -84,7 +129,7 @@ function installScoutingHeaderTools(){
  ].join('\n');
  document.head.appendChild(styles);
  let open=false,loadPromise=null,records=[],ranking=new Map();
- const close=()=>{if(!open)return;open=false;backdrop.hidden=true;document.body.classList.remove('bbb-header-search-open');trigger.focus({preventScroll:true});};
+ const close=()=>{if(!open)return;open=false;backdrop.hidden=true;document.body.classList.remove('bbb-header-search-open');(mobileViewport.matches?mobileButton:trigger)?.focus({preventScroll:true});};
  const render=()=>{
    if(!open)return;
    const term=field.value.trim().toLowerCase();
@@ -119,7 +164,7 @@ function installScoutingHeaderTools(){
    return loadPromise;
  }
  trigger.addEventListener('click',()=>{
-   closeDynasty();open=true;backdrop.hidden=false;document.body.classList.add('bbb-header-search-open');
+   closeMobileMenu(false);closeDynasty();open=true;backdrop.hidden=false;document.body.classList.add('bbb-header-search-open');
    field.value='';render();
    requestAnimationFrame(()=>field.focus({preventScroll:true}));
    void loadSearch();
