@@ -39,6 +39,11 @@ contains(scoutingJs,['overview,strengths,concerns,projection',
  'const override=P.get(p.player_key)?.photo_url','function portrait('],
  'public scouting client');
 new Function(scoutingJs);
+assert(memberJs.includes('FREE IF APPROVED')&&memberJs.includes('not a BBB+ benefit')&&memberJs.includes('commercial API use'),
+ 'Sleeper must remain a free, permission-dependent feature, not a paid BBB+ entitlement');
+const sleeperAccountJs=await get('account-v1-preview.js');
+assert(sleeperAccountJs.includes('no BBB+ required')&&sleeperAccountJs.includes('bbbSleeperPreviewOnly()'),
+ 'Sleeper linking must remain free and gated to preview pending third-party authorization');
 contains(navCss,['body>header .bbb-mobile-menu-toggle{display:none!important}'],'desktop-only mobile menu hide');
 contains(scoutingJs,['bbb-search-icon','viewBox="0 0 24 24"','place-items:center'],'centered SVG search control');
 assert(!scoutingJs.includes('>⌕</span>'),'misaligned Unicode search icon was restored');
