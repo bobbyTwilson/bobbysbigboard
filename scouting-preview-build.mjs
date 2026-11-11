@@ -127,8 +127,11 @@ for(const [i,file] of styleSources.entries()){
   preview=preview.replace(originalTag,i===0?'<link rel="stylesheet" href="/scouting-styles.css">':'');
 }
 // Warm the public database origin before its API calls start.
-preview=preview.replace('<script src="/scouting-profile-v5.js"></script>',
-  '<script src="/bbb-plus-film-notebook.js"></script><script src="/scouting-profile-v5.js"></script>');
+// The source shell loads its modules with defer; preserve the load order.
+if(!preview.includes('<script defer src="/scouting-profile-v5.js"></script>'))
+ throw new Error('Scouting profile module tag missing; cannot insert Film Notebook runtime');
+preview=preview.replace('<script defer src="/scouting-profile-v5.js"></script>',
+  '<script defer src="/bbb-plus-film-notebook.js"></script><script defer src="/scouting-profile-v5.js"></script>');
 preview=preview.replace('</head>',
   '<link rel="preconnect" href="https://twbduhmibbotregdxlla.supabase.co" crossorigin>'+
   '<link rel="dns-prefetch" href="//i.ytimg.com">'+
