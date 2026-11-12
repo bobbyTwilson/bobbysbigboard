@@ -284,7 +284,7 @@ function directory(isDraft){
   '<option value="ALL"'+(draftYearFilter==="ALL"?' selected':'')+'>All Draft Classes</option></select></label></div>':'')+
  '<div class="bbb-directory-controls"><input id="directorySearch" class="search" aria-label="Find player" placeholder="Search players, colleges, or teams…">'+
  '<div class="bbb-directory-filter-buttons"><button class="filter active" data-pos="ALL">All</button><button class="filter" data-pos="QB">QB</button><button class="filter" data-pos="RB">RB</button><button class="filter" data-pos="WR">WR</button><button class="filter" data-pos="TE">TE</button></div>'+
- '<label class="bbb-sortlabel">Sort <select id="directorySort"><option value="featured">Featured</option><option value="name">Name A–Z</option><option value="grade">Prospect grade</option><option value="rank">Dynasty rank</option></select></label></div>'+
+ '<label class="bbb-sortlabel">Sort <select id="directorySort"><option value="featured">Featured</option><option value="name">Name A–Z</option><option value="grade">Prospect grade</option><option value="draft-year">Draft class (newest)</option><option value="rank">Dynasty rank</option></select></label></div>'+
  '<div class="bbb-directory-meta"><span id="resultCount" aria-live="polite"></span><span id="draftClassContext">Grades shown only when recorded in BBB</span></div>'+
  '<div class="bbb-directory-head"><span>PLAYER</span><span>COLLEGE</span><span>PROSPECT GRADE</span><span>SCOUTING COVERAGE</span><span>DYNASTY</span><span></span></div>'+
  '<div id="directoryCards" class="bbb-directory-rows"></div><div style="margin-top:24px;text-align:center"><button class="secondary" id="loadMore">Load more players</button></div>'+
@@ -313,12 +313,21 @@ function draw(){
  let rows=window.BBB_DIR.filter(p=>(!isDraftMode||draftYearFilter==="ALL"||String(P.get(p.player_key)?.year||"")===draftYearFilter)&&(position==="ALL"||p.pos===position)&&(!filter||[p.name,p.team,p.college].join(" ").toLowerCase().includes(filter)));
  const grade=p=>{const g=P.get(p.player_key)?.grade;return g!=null&&Number.isFinite(Number(g))?Number(g):-1};
  const rank=p=>Number(R.get(p.player_key)?.rank||9999);
- const featured=p=>(videos.has(p.player_key)?2:0)+(p.overall_breakdown||P.get(p.player_key)?.notebook_available?1:0);
+ // A published scouting notebook is more meaningful than a legacy profile summary.
+ // Featured should surface the newest 2027 film evaluations, rather than bury them
+ // behind older NFL prospect notes. Non-published grades still remain discoverable.
+ const featured=p=>{
+  const g=P.get(p.player_key);
+  const graded=g?.grade!=null&&Number.isFinite(Number(g.grade));
+  const published=!!g?.notebook_available||!!String(g?.overview||'').trim();
+  return (published?12:0)+(videos.has(p.player_key)?5:0)+
+   (graded&&Number(g.year)>=2027?3:0)+(p.overall_breakdown?1:0);
+ };
  const sort=window.BBB_SORT;
- rows.sort((a,b)=>sort==="name"?a.name.localeCompare(b.name):sort==="rank"?rank(a)-rank(b)||a.name.localeCompare(b.name):sort==="grade"?grade(b)-grade(a)||a.name.localeCompare(b.name):featured(b)-featured(a)||grade(b)-grade(a)||a.name.localeCompare(b.name));
+ rows.sort((a,b)=>sort==="name"?a.name.localeCompare(b.name):sort==="rank"?rank(a)-rank(b)||a.name.localeCompare(b.name):sort==="grade"?grade(b)-grade(a)||a.name.localeCompare(b.name):sort==="draft-year"?Number(P.get(b.player_key)?.year||0)-Number(P.get(a.player_key)?.year||0)||grade(b)-grade(a)||a.name.localeCompare(b.name):featured(b)-featured(a)||grade(b)-grade(a)||a.name.localeCompare(b.name));
  document.getElementById("resultCount").textContent=rows.length+" "+(rows.length===1?"player":"players")+(isDraftMode&&draftYearFilter!=="ALL"?" · "+draftYearFilter+" class":"")+" found";
  const context=document.getElementById("draftClassContext");
- if(context)context.textContent=isDraftMode?(draftYearFilter==="ALL"?"All recorded BBB draft evaluations":rows.length?"Graded evaluations · "+draftYearFilter+" NFL Draft":"Scouting grades coming soon · "+draftYearFilter+" NFL Draft"):"Grades shown only when recorded in BBB";
+ if(context)context.textContent=isDraftMode?(draftYearFilter==="ALL"?"All recorded BBB draft evaluations":rows.length?"Graded evaluations · "+draftYearFilter+" NFL Draft":"Scouting grades coming soon · "+draftYearFilter+" NFL Draft"):(sort==="featured"?"Featured · published scouting reports and film first":sort==="draft-year"?"Newest NFL Draft classes first":"Grades shown only when recorded in BBB");
  document.getElementById("directoryCards").innerHTML=rows.length?rows.slice(0,limit).map(playerCard).join(""):'<div class="empty">'+
   (isDraftMode&&draftYearFilter==="2028"&&!filter&&position==="ALL"?"2028 scouting is coming. The class is ready for player grades and breakdowns as they are added.":
    isDraftMode&&draftYearFilter!=="ALL"&&!filter&&position==="ALL"?"No grades are recorded for the "+esc(draftYearFilter)+" NFL Draft class yet.":
