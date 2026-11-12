@@ -145,6 +145,43 @@ assert(config.routes.some(x=>x.src==='/admin/?'&&x.dest==='/admin.html'),
 contains(scoutingJs,['overview,notebook_available,photo_url',
  'const override=P.get(p.player_key)?.photo_url','function portrait('],
  'public scouting client');
+// Regression: the Draft Board must use real grade/publication status, not
+// a legacy player-notes field. Never advertise private notebook text.
+assert(scoutingJs.includes('grade,comp,notebook_available,photo_url'),
+ 'draft directory must request the published notebook availability flag');
+const cardStart=scoutingJs.indexOf('function playerCard(p){');
+const cardEnd=scoutingJs.indexOf('\nfunction videoCard(',cardStart);
+assert(cardStart>0&&cardEnd>cardStart,'directory player-card renderer not found');
+const cardFixture={
+ P:new Map([
+  ['darian-mensah',{grade:80,notebook_available:true}],
+  ['drew-mestemaker',{grade:77,notebook_available:true}],
+  ['cam-coleman',{grade:79.5,notebook_available:false}],
+  ['draft-with-overview',{grade:74,overview:'Published free scouting analysis'}]
+ ]),
+ R:new Map(),D:{media:{}},portrait:()=>'',filmList:()=>[],
+ esc:v=>String(v??''),purl:p=>'/scouting/'+p.player_key
+};
+const cards=runInNewContext(
+ scoutingJs.slice(cardStart,cardEnd)+
+ '\n({mensah:playerCard({player_key:"darian-mensah",name:"Darian Mensah",pos:"QB",college:"Miami"}),'+
+ 'mestemaker:playerCard({player_key:"drew-mestemaker",name:"Drew Mestemaker",pos:"QB",college:"Oklahoma State"}),'+
+ 'gradedOnly:playerCard({player_key:"cam-coleman",name:"Cam Coleman",pos:"WR",college:"Texas"}),'+
+ 'publicOverview:playerCard({player_key:"draft-with-overview",name:"Published Prospect",pos:"QB"}),'+
+ 'ungraded:playerCard({player_key:"prospect-without-grade",name:"New Prospect",pos:"QB"})})',
+ cardFixture,{timeout:1000}
+);
+for(const name of ['mensah','mestemaker']){
+ assert(cards[name].includes('Scouting notes')&&cards[name].includes('BBB+ Notebook')&&
+ !cards[name].includes('Evaluation in progress'),
+ name+' published notebook incorrectly marked as evaluation in progress');
+}
+assert(cards.gradedOnly.includes('Grade recorded')&&!cards.gradedOnly.includes('Evaluation in progress'),
+ 'graded player without editorial notes incorrectly marked in progress');
+assert(cards.publicOverview.includes('Scouting notes')&&!cards.publicOverview.includes('Evaluation in progress'),
+ 'published free overview incorrectly marked in progress');
+assert(cards.ungraded.includes('Evaluation in progress')&&!cards.ungraded.includes('Grade recorded'),
+ 'ungraded player must retain evaluation-in-progress label');
 assert(!scoutingJs.includes('overview,strengths,concerns,projection'),
  'Premium scouting sections must not be fetched from public site_prospects');
 const premiumJs=await get('bbb-plus-film-notebook.js');

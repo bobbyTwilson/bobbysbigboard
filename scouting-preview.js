@@ -205,7 +205,14 @@ function playerCard(p){
  const name=esc(p.name),team=esc(p.team||"—"),college=esc(p.college||"College not recorded"),grade=hasGrade?Number(g.grade).toFixed(1):"Not graded";
  const head=src?'<img loading="lazy" src="'+esc(src)+'" alt="ESPN player headshot" onerror="this.remove()">':'';
  const initials=esc(String(p.name||"?").split(/\s+/).slice(0,2).map(x=>x[0]).join(""));
- const badges=(p.overall_breakdown?'<span class="coverageTag">Scouting notes</span>':'')+(v.length?'<span class="coverageTag filmed">'+v.length+' film video'+(v.length>1?'s':'')+'</span>':'')+(!p.overall_breakdown&&!v.length?'<span class="coverageEmpty">Evaluation in progress</span>':'');
+ // A grade is already an evaluation. Published reports and BBB+ notebooks
+ // are stored on the prospect row, not in the legacy overall_breakdown field.
+ const hasPublishedReport=!!g?.notebook_available||!!String(g?.overview||'').trim();
+ const hasScoutingNotes=hasPublishedReport||!!String(p.overall_breakdown||'').trim();
+ const badges=(hasScoutingNotes?'<span class="coverageTag">Scouting notes</span>':hasGrade?'<span class="coverageTag">Grade recorded</span>':'')+
+  (g?.notebook_available?'<span class="coverageTag premium">BBB+ Notebook</span>':'')+
+  (v.length?'<span class="coverageTag filmed">'+v.length+' film video'+(v.length>1?'s':'')+'</span>':'')+
+  (!hasGrade&&!hasScoutingNotes&&!v.length?'<span class="coverageEmpty">Evaluation in progress</span>':'');
  return '<a class="bbb-directory-row" href="'+purl(p)+'" aria-label="Open '+name+' scouting profile">'+
  '<div class="bbb-directory-person"><div class="bbb-directory-avatar"><span>'+initials+'</span>'+head+'</div><div class="bbb-directory-person-text"><strong>'+name+'</strong><small>'+esc(p.pos||'')+' <span class="metaDot">·</span> '+team+'</small></div></div>'+
  '<div class="bbb-directory-cell bbb-directory-college"><small>COLLEGE</small><strong>'+college+'</strong></div>'+
@@ -306,7 +313,7 @@ function draw(){
  let rows=window.BBB_DIR.filter(p=>(!isDraftMode||draftYearFilter==="ALL"||String(P.get(p.player_key)?.year||"")===draftYearFilter)&&(position==="ALL"||p.pos===position)&&(!filter||[p.name,p.team,p.college].join(" ").toLowerCase().includes(filter)));
  const grade=p=>{const g=P.get(p.player_key)?.grade;return g!=null&&Number.isFinite(Number(g))?Number(g):-1};
  const rank=p=>Number(R.get(p.player_key)?.rank||9999);
- const featured=p=>(videos.has(p.player_key)?2:0)+(p.overall_breakdown?1:0);
+ const featured=p=>(videos.has(p.player_key)?2:0)+(p.overall_breakdown||P.get(p.player_key)?.notebook_available?1:0);
  const sort=window.BBB_SORT;
  rows.sort((a,b)=>sort==="name"?a.name.localeCompare(b.name):sort==="rank"?rank(a)-rank(b)||a.name.localeCompare(b.name):sort==="grade"?grade(b)-grade(a)||a.name.localeCompare(b.name):featured(b)-featured(a)||grade(b)-grade(a)||a.name.localeCompare(b.name));
  document.getElementById("resultCount").textContent=rows.length+" "+(rows.length===1?"player":"players")+(isDraftMode&&draftYearFilter!=="ALL"?" · "+draftYearFilter+" class":"")+" found";
@@ -500,7 +507,7 @@ async function load(){
   const fullProfiles="select=player_key,name,pos,team,age,college,draft_year,overall_breakdown,latest_weekly_update,weekly_update_date,injury_status";
   const slimRanks="select=player_key,rank";
   const fullRanks="select=player_key,rank,pr,name,pos,team,age,market,gap,tier,view,overview,latest_update,weekly_update_date,injury_status,injury_note";
-  const slimProspects="select=player_key,name,pos,year,grade,comp,photo_url,photo_credit";
+  const slimProspects="select=player_key,name,pos,year,grade,comp,notebook_available,photo_url,photo_credit";
   const fullProspects="select=player_key,name,pos,year,grade,comp,traits,overview,notebook_available,photo_url,photo_credit";
   const videoFields="select=video_id,player_key,title,video_type,content_archetype,privacy_status,published_at";
   const filmFields="select=video_id,player_key,title,description,video_type,editorial_status,published_at,created_at,updated_at";
