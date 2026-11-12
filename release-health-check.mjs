@@ -182,6 +182,33 @@ assert(cards.publicOverview.includes('Scouting notes')&&!cards.publicOverview.in
  'published free overview incorrectly marked in progress');
 assert(cards.ungraded.includes('Evaluation in progress')&&!cards.ungraded.includes('Grade recorded'),
  'ungraded player must retain evaluation-in-progress label');
+
+// The all-player directory must prioritize newly published scouting reports
+// without overwriting grades or suppressing 2027 grade-only players.
+const featuredStart=scoutingJs.indexOf(' const featured=p=>{');
+const featuredEnd=scoutingJs.indexOf(' const sort=window.BBB_SORT;',featuredStart);
+assert(featuredStart>0&&featuredEnd>featuredStart,
+ 'Featured sort weights are missing');
+const featuredValues=runInNewContext(
+ scoutingJs.slice(featuredStart,featuredEnd)+
+ '\n({mensah:featured({player_key:"darian-mensah"}),mestemaker:featured({player_key:"drew-mestemaker"}),carr:featured({player_key:"cj-carr"}),legacyFilm:featured({player_key:"veteran-film",overall_breakdown:"Old notes"}),gradedOnly:featured({player_key:"new-grade-only"})})',
+ {P:new Map([
+  ['darian-mensah',{grade:80,year:2027,notebook_available:true}],
+  ['drew-mestemaker',{grade:77,year:2027,notebook_available:true}],
+  ['cj-carr',{grade:74,year:2027,notebook_available:true}],
+  ['veteran-film',{grade:81,year:2024}],
+  ['new-grade-only',{grade:77,year:2027}]
+ ]),videos:new Set(['veteran-film'])},
+ {timeout:1000}
+);
+assert(featuredValues.mensah>featuredValues.legacyFilm&&
+ featuredValues.mestemaker>featuredValues.legacyFilm&&
+ featuredValues.carr>featuredValues.legacyFilm,
+ 'Published scouting reports must rank above older film-only entries');
+assert(featuredValues.gradedOnly>0,
+ 'Newly graded 2027 prospects must count toward featured coverage');
+assert(scoutingJs.includes('value="draft-year">Draft class (newest)'),
+ 'Players directory lacks a way to surface 2027 draft classes');
 assert(!scoutingJs.includes('overview,strengths,concerns,projection'),
  'Premium scouting sections must not be fetched from public site_prospects');
 const premiumJs=await get('bbb-plus-film-notebook.js');
