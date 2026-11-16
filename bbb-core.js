@@ -67,8 +67,9 @@ function bbbRevalidate(table,query,key){
 }
 
 function bbbDb(table,query='',options={}){
-  // Prospect grades are editorial data: never serve stale local or in-memory copies.
-  if(table==='site_prospects')return bbbDbFresh(table,query);
+  // Published scouting and approved film are editorial data: do not keep stale
+  // copies in memory between route visits or after a creator publishes a video.
+  if(table==='site_prospects'||table==='site_bbb_film_catalog')return bbbDbFresh(table,query);
   const key=table+'?'+query;
   if(options.refresh)BBB_DB_CACHE.delete(key);
   if(BBB_DB_CACHE.has(key))return BBB_DB_CACHE.get(key);
