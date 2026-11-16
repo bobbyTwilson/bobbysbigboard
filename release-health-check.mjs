@@ -265,6 +265,24 @@ contains(scoutingOverviewCss,['.sp-overview-v7 .sp-v7-report .sp-report','white-
 const filmRoomJs=await get('scouting-film-room-v1.js');
 contains(filmRoomJs,["['all','All Breakdowns']","data-film-sort","category=\"all\"","data-film-search"],'complete Film Room library filters');
 new Function(filmRoomJs);
+// New public films must appear on the next visit, even if the same browser tab
+// previously loaded a pre-publication Film Room catalog.
+const coreJs=await get('bbb-core.js');
+assert(coreJs.includes("table==='site_prospects'||table==='site_bbb_film_catalog')return bbbDbFresh(table,query)"),
+ 'published film catalog must bypass indefinite in-memory cached REST results');
+const filmWindow={};
+runInNewContext(filmRoomJs,{window:filmWindow,sessionStorage:{getItem:()=>'[]'}},{timeout:1000});
+const approvedStudies=[
+ {youtube_video_id:'GIiKIRsH6fA',player_key:'c-j-stroud',title:'C.J. Stroud Film Breakdown',video_type:'nfl_film_study',editorial_status:'approved',published_at:'2026-11-13T23:00:11Z'},
+ {youtube_video_id:'IEYPHL7pYFE',player_key:'caleb-douglas',title:'Caleb Douglas Film Breakdown',video_type:'nfl_film_study',editorial_status:'approved',published_at:'2026-11-12T15:42:57Z'}
+];
+const filmPlayers=[
+ {player_key:'c-j-stroud',name:'C.J. Stroud',pos:'QB',team:'HOU'},
+ {player_key:'caleb-douglas',name:'Caleb Douglas',pos:'WR',team:'MIA'}
+];
+const assembled=filmWindow.BBB_FILM_ROOM.catalog(approvedStudies,[],filmPlayers,[]);
+assert(assembled.length===2&&assembled[0].video_id==='GIiKIRsH6fA'&&assembled[1].video_id==='IEYPHL7pYFE'&&assembled.every(x=>x.category==='nfl'),
+ 'approved C.J. Stroud and Caleb Douglas breakdowns must display even before YouTube sync');
 
 // No live subscription requests must be reachable from a preview checkout.
 if(!production){
