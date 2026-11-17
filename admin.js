@@ -899,7 +899,7 @@ function prospectSnapshot(){
  const playerKey=$('#prospectKey')?.value||'';
  if(!playerKey)return null;
  const traits={};
- $('[data-prospect-trait]').forEach(i=>traits[i.dataset.prospectTrait]=i.value);
+ $$('[data-prospect-trait]').forEach(i=>traits[i.dataset.prospectTrait]=i.value);
  const fields={};
  for(const id of PROSPECT_DRAFT_FIELDS)fields[id]=$('#'+id)?.value||'';
  return {version:1,playerKey,updated_at:Date.now(),traits,fields,
@@ -920,7 +920,7 @@ function restoreProspectDraft(playerKey){
  for(const id of PROSPECT_DRAFT_FIELDS){
   if(typeof saved.fields[id]==='string'&&$('#'+id))$('#'+id).value=saved.fields[id];
  }
- $('[data-prospect-trait]').forEach(input=>{
+ $$('[data-prospect-trait]').forEach(input=>{
   const score=saved.traits?.[input.dataset.prospectTrait];
   if(score!==undefined)input.value=score;
  });

@@ -137,6 +137,45 @@ prospectSyncPublishChoice();
 `,{$:sel=>publishElements[sel]||null},{timeout:1000});
 assert(autoPublishState.autoChecked&&autoPublishState.privateChoiceRespected,
        'New overview should auto-publish unless manually kept private');
+// Prospect Lab save must back up every trait input and restore them without
+// a querySelector/.forEach exception before the database RPC runs.
+const draftStart=adminJs.indexOf('const PROSPECT_DRAFT_FIELDS=[');
+const draftEnd=adminJs.indexOf('function prospectDraftAsText(){',draftStart);
+assert(draftStart>0&&draftEnd>draftStart,'prospect backup functions missing');
+const draftElements={
+ '#prospectKey':{value:'jeremiah-smith'},
+ '#prospectScoutingOverview':{value:'Draft report for Jeremiah Smith'},
+ '#prospectPublishReport':{checked:true}
+};
+const draftTraits=[
+ {dataset:{prospectTrait:'Speed'},value:'9.5'},
+ {dataset:{prospectTrait:'Catching'},value:'5'}
+];
+const draftStore=new Map();
+const draftState=runInNewContext(
+ adminJs.slice(draftStart,draftEnd)+"\nsaveProspectDraft(true);\nconst saved=prospectSnapshot();\ndraftTraits[0].value='0';draftTraits[1].value='0';\n$('#prospectScoutingOverview').value='Overwritten temporarily';\n$('#prospectPublishReport').checked=false;\nconst restored=restoreProspectDraft('jeremiah-smith');\n({saved,restored,restoredOverview:$('#prospectScoutingOverview').value,\n  restoredPublish:$('#prospectPublishReport').checked,\n  restoredTraits:draftTraits.map(t=>t.value),\n  storedCount:draftStore.size});\n",
+ {
+  $:selector=>selector==='[data-prospect-trait]'?draftTraits[0]:(draftElements[selector]||null),
+  ["$$"]:selector=>selector==='[data-prospect-trait]'?draftTraits:[],
+  draftTraits,draftStore,
+  session:{user:{id:'test-owner'}},
+  localStorage:{
+   setItem:(key,value)=>draftStore.set(key,value),
+   getItem:key=>draftStore.get(key)||null,
+   removeItem:key=>draftStore.delete(key)
+  },
+  prospectPublishManuallyChosen:false,prospectHasSavedPrivateDraft:false,
+  prospectTotal:()=>14.5
+ },{timeout:1000}
+);
+assert(draftState.storedCount===1&&draftState.restored&&
+       draftState.saved.traits.Speed==='9.5'&&
+       draftState.saved.traits.Catching==='5'&&
+       draftState.restoredTraits.join(',')==='9.5,5'&&
+       draftState.restoredOverview==='Draft report for Jeremiah Smith'&&
+       draftState.restoredPublish===true,
+ 'Prospect Lab grade save must back up and restore every trait and written field');
+
 
 assert(config.routes.some(x=>x.src==='/admin/?'&&x.dest==='/admin.html'),
  'admin deep-link route missing');
