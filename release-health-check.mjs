@@ -156,7 +156,7 @@ const draftState=runInNewContext(
  adminJs.slice(draftStart,draftEnd)+"\nsaveProspectDraft(true);\nconst saved=prospectSnapshot();\ndraftTraits[0].value='0';draftTraits[1].value='0';\n$('#prospectScoutingOverview').value='Overwritten temporarily';\n$('#prospectPublishReport').checked=false;\nconst restored=restoreProspectDraft('jeremiah-smith');\n({saved,restored,restoredOverview:$('#prospectScoutingOverview').value,\n  restoredPublish:$('#prospectPublishReport').checked,\n  restoredTraits:draftTraits.map(t=>t.value),\n  storedCount:draftStore.size});\n",
  {
   $:selector=>selector==='[data-prospect-trait]'?draftTraits[0]:(draftElements[selector]||null),
-  ["$"]:selector=>selector==='[data-prospect-trait]'?draftTraits:[],
+  ["$$"]:selector=>selector==='[data-prospect-trait]'?draftTraits:[],
   draftTraits,draftStore,
   session:{user:{id:'test-owner'}},
   localStorage:{
