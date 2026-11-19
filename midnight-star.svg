@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-labelledby="title desc">
+<title id="title">The Midnight Star</title>
+<desc id="desc">A warm golden four-pointed star on a deep burgundy rounded square</desc>
+<rect width="80" height="80" rx="17" fill="#2B1B25"/>
+<rect x="5.5" y="5.5" width="69" height="69" rx="12.5" fill="none" stroke="#C18E73" stroke-opacity=".72" stroke-width="1.8"/>
+<path d="M40 11.5 C43.6 28.4 48.6 35 68.5 40 C48.6 45 43.6 51.6 40 68.5 C36.4 51.6 31.4 45 11.5 40 C31.4 35 36.4 28.4 40 11.5Z" fill="#E8BB86"/>
+<circle cx="40" cy="40" r="4.75" fill="#F7DED1"/>
+</svg>
