@@ -56,4 +56,31 @@ for (const { name, key, otherName, otherKey } of [
   await mkdir(dir, { recursive: true });
   await writeFile(dir + '/index.html', page);
 }
-console.log('Built unlisted /midnight-archive/ with ' + films.length + ' reviews, Bobby/Lisa ranking pages, and isolated Midnight Star SVG/PNG favicons. All pages noindex; no changes to main BBB favicon, sitemap or navigation.');
+
+// Movie database live loader and five extra archival views.
+const sharedJS=await readFile('movie-vault-shared.js','utf8');
+new Script(sharedJS,{filename:'movie-vault-shared.js'});
+await writeFile(output+'/shared.js',sharedJS);
+const extrasTemplate=await readFile('movie-vault-extras.template.html','utf8');
+for(const [slug,title] of [
+  ['movie','Individual Movie Review'],
+  ['compare','Bobby vs Lisa'],
+  ['stats','Movie Night Statistics'],
+  ['timeline','Watch History'],
+  ['add','Add or Edit Movie']
+]){
+  const rendered=extrasTemplate
+    .replaceAll('__PAGE__',slug)
+    .replaceAll('__PAGE_TITLE__',title)
+    .replaceAll('__COMPARE_ACTIVE__',slug==='compare'?'active':'')
+    .replaceAll('__STATS_ACTIVE__',slug==='stats'?'active':'')
+    .replaceAll('__TIMELINE_ACTIVE__',slug==='timeline'?'active':'')
+    .replaceAll('__ADD_ACTIVE__',slug==='add'?'active':'')
+    .replace('__FILMS_JSON__',match[1]);
+  if(/__(?:PAGE|PAGE_TITLE|COMPARE_ACTIVE|STATS_ACTIVE|TIMELINE_ACTIVE|ADD_ACTIVE|FILMS_JSON)__/.test(rendered))throw new Error('Unresolved Movie Archive template placeholder for '+slug);
+  verifyPage(rendered,'movie-'+slug);
+  const dir=output+'/'+slug;
+  await mkdir(dir,{recursive:true});
+  await writeFile(dir+'/index.html',rendered);
+}
+console.log('Built unlisted Midnight Archive: '+films.length+' recorded films, both ranking pages, comparison, stats, timeline, individual reviews, protected editor, Supabase read-only runtime, and isolated Midnight Star favicon. All noindex; BBB untouched.');

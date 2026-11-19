@@ -79,12 +79,13 @@ p.lead{font-size:15px;color:#c4b6b8;line-height:1.85}
 
 </style>
 </head><body>
-<div class="edge"></div><nav class="wrap"><a href="/midnight-archive/" class="identity"><span class="crest">✦</span><span><b>The Midnight Archive</b><small>BOBBY &amp; LISA • EST. 2026</small></span></a><div class="navlinks"><a href="/midnight-archive/">Movie Vault</a><a class="__BOBBY_ACTIVE__" href="/midnight-archive/bobby/">Bobby's Rankings</a><a class="__LISA_ACTIVE__" href="/midnight-archive/lisa/">Lisa's Rankings</a></div></nav>
+<div class="edge"></div><nav class="wrap"><a href="/midnight-archive/" class="identity"><span class="crest">✦</span><span><b>The Midnight Archive</b><small>BOBBY &amp; LISA • EST. 2026</small></span></a><div class="navlinks"><a href="/midnight-archive/">Movie Vault</a><a class="__BOBBY_ACTIVE__" href="/midnight-archive/bobby/">Bobby's Rankings</a><a class="__LISA_ACTIVE__" href="/midnight-archive/lisa/">Lisa's Rankings</a><a href="/midnight-archive/compare/">Compare</a><a href="/midnight-archive/stats/">Stats</a><a href="/midnight-archive/timeline/">Timeline</a><a href="/midnight-archive/add/">Add movie</a></div></nav>
 <main><section class="hero wrap"><div><span class="eyebrow">Personal rankings • Bobby &amp; Lisa</span><h1>__CRITIC_NAME__'s <em>Top Films.</em></h1><p class="lead">Every movie we've watched together, ordered by __CRITIC_NAME__'s highest to lowest rating. Compare scores, skim the reviews, and open the full movie notes.</p><div class="heroactions"><a href="/midnight-archive/">Explore all reviews ↗</a><a class="alt" href="/midnight-archive/__OTHER_SLUG__/">See __OTHER_NAME__'s list</a></div></div><div class="featured" id="featured" aria-label="Number one ranked film"></div></section>
 <div class="summary"><div class="summary-inner wrap"><div class="metric"><strong id="total">17</strong><small>Movies ranked</small></div><div class="metric"><strong id="avg">—</strong><small>Personal average</small></div><div class="metric"><strong id="top-score">—</strong><small>Highest rating</small></div></div></div>
 <section class="content wrap"><div class="heading"><div><span class="eyebrow">The definitive list</span><h2>Highest rated first.</h2></div><p>One ranking, one person's ratings. Each entry links to our full side-by-side review and favorite moments.</p></div><div class="controls"><label for="film-search">__CRITIC_NAME__'s personal rankings</label><input type="search" id="film-search" placeholder="Find a film in this list…" aria-label="Find a film in this ranking"></div><div id="ranking" class="ranking" aria-live="polite"></div></section></main>
 <footer class="wrap privacy"><span><strong>THE MIDNIGHT ARCHIVE</strong> • Bobby &amp; Lisa's movie-night journal</span><span>Unlisted page • Noindex • All film artwork belongs to its owners</span></footer>
 <script id="vault-data" type="application/json">__FILMS_JSON__</script>
+<script src="/midnight-archive/shared.js"></script>
 <script>
 (function(){
 'use strict';
@@ -104,15 +105,24 @@ document.getElementById('ranking').innerHTML=matches.length?matches.map(f=>{
 const ownRank=rankings.indexOf(f)+1,otherPosition=otherRank.get(f.id),diff=otherPosition-ownRank;
 let move=diff>0?'↑ '+diff+' '+(diff===1?'spot':'spots')+' higher than '+otherName:diff<0?'↓ '+Math.abs(diff)+' '+(diff===-1?'spot':'spots')+' lower than '+otherName:'Same position on both lists';
 const picks=[f[char(key)]?'Favorite character: <b>'+esc(f[char(key)])+'</b>':'',f[scene(key)]?'Favorite scene: <b>'+esc(f[scene(key)])+'</b>':'',f[kill(key)]?'Favorite kill / moment: <b>'+esc(f[kill(key)])+'</b>':''].filter(Boolean).join(' • ');
-return '<article class="rank-row"><div class="place">'+String(ownRank).padStart(2,'0')+'</div><a class="thumb" href="/midnight-archive/?film='+f.id+'" aria-label="View full review for '+esc(f.title)+'"><span class="fallback">'+esc(f.title)+'</span>'+img(f)+'</a><div class="info"><h3 class="row-title">'+esc(f.title)+'</h3><div class="row-meta">'+esc(f.year)+' · '+esc(f.genre)+'</div><p class="review">'+esc(short(f[summary(key)]||'Review notes not yet confirmed.'))+'</p><div class="detail">'+picks+'</div><a class="more" href="/midnight-archive/?film='+f.id+'">Full screening notes ↗</a></div><div class="scores"><div class="score">'+f[key].toFixed(1)+' <small>/ 10</small></div><div class="their">'+otherName+': <b>'+f[other].toFixed(1)+'</b></div><div class="movement '+(diff>0?'up':diff<0?'down':'')+'">'+move+'</div></div></article>';
+return '<article class="rank-row"><div class="place">'+String(ownRank).padStart(2,'0')+'</div><a class="thumb" href="/midnight-archive/movie/?id='+f.id+'" aria-label="View full review for '+esc(f.title)+'"><span class="fallback">'+esc(f.title)+'</span>'+img(f)+'</a><div class="info"><h3 class="row-title">'+esc(f.title)+'</h3><div class="row-meta">'+esc(f.year)+' · '+esc(f.genre)+'</div><p class="review">'+esc(short(f[summary(key)]||'Review notes not yet confirmed.'))+'</p><div class="detail">'+picks+'</div><a class="more" href="/midnight-archive/movie/?id='+f.id+'">Full screening notes ↗</a></div><div class="scores"><div class="score">'+f[key].toFixed(1)+' <small>/ 10</small></div><div class="their">'+otherName+': <b>'+f[other].toFixed(1)+'</b></div><div class="movement '+(diff>0?'up':diff<0?'down':'')+'">'+move+'</div></div></article>';
 }).join(''):'<div class="nothing">No films match that search.</div>';
 }
+function renderHero(){
 const winner=rankings[0];
 document.getElementById('featured').innerHTML='<div class="feature-poster">'+img(winner)+'</div><div class="featurecopy"><div><small>✦ Number one on the board</small><h2>'+esc(winner.title)+'</h2><p>'+esc(short(winner[summary(key)]))+'</p></div><div class="hero-score">'+winner[key].toFixed(1)+' <span>/ 10</span></div></div>';
 document.getElementById('total').textContent=films.length;
 document.getElementById('avg').textContent=(films.reduce((s,f)=>s+f[key],0)/films.length).toFixed(2);
 document.getElementById('top-score').textContent=winner[key].toFixed(1);
+}
 document.getElementById('film-search').addEventListener('input',render);
-render();
+renderHero();render();
+window.MidnightArchive.load().then(rows=>{
+if(!Array.isArray(rows)||rows.length<17)return;
+films.splice(0,films.length,...rows);
+rankings.splice(0,rankings.length,...sorted(key));
+otherRank.clear();sorted(other).forEach((f,i)=>otherRank.set(f.id,i+1));
+renderHero();render();
+}).catch(err=>console.warn('Movie ranking sync unavailable',err));
 })();
 </script></body></html>
