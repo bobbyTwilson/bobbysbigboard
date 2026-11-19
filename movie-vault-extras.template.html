@@ -173,7 +173,7 @@ const fields=["title","year","genre","franchise","poster","posterSource","imdb_i
 function inputKey(k){return "edit-"+({posterSource:"poster-source",imdb_id:"imdb"}[k]||k);}
 function resetForm(){form.reset();select.value="";for(const k of fields){const el=document.getElementById(inputKey(k));if(el)el.value="";}document.getElementById("edit-watched").value="";message("New movie. Fill in the details and both ratings.");}
 function chooseMovie(){
-const movie=films.find(f=>String(f.id)===select.value);form.reset();
+const selectedId=select.value;const movie=films.find(f=>String(f.id)===selectedId);form.reset();select.value=selectedId;
 if(!movie){resetForm();return;}
 for(const k of fields){const el=document.getElementById(inputKey(k));if(el)el.value=movie[k]??"";}
 document.getElementById("edit-watched").value=movie.watched_on||"";
