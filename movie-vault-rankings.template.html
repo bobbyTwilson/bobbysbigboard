@@ -24,24 +24,75 @@ h1{font:400 clamp(58px,6.5vw,98px)/1.02 var(--serif);letter-spacing:-.065em;marg
 @media(max-width:900px){.hero{grid-template-columns:1fr;gap:33px;padding:55px 0}.featured{max-width:560px;width:100%;transform:none}.feature-poster{min-height:290px}.featured{min-height:290px}.rank-row{grid-template-columns:55px 80px minmax(0,1fr) 95px;gap:14px;padding:12px}.thumb{width:80px;height:120px}.score{font-size:43px}.place{font-size:30px}.review{font-size:11px}}
 @media(max-width:600px){.wrap{width:calc(100% - 28px)}nav{align-items:start;gap:15px;flex-direction:column}.navlinks{width:100%;gap:0}.navlinks a{padding:9px 11px;font-size:10px}h1{font-size:62px}.featured{grid-template-columns:43% 57%}.featurecopy{padding:18px}.featurecopy h2{font-size:27px}.hero-score{font-size:46px}.summary-inner{grid-template-columns:1fr 1fr}.metric{padding:15px 13px 15px 0}.metric+ .metric{padding-left:13px}.metric:nth-child(2){border-right:0}.metric:last-child{display:none}.metric strong{font-size:30px}.metric small{font-size:9px}.content{padding-top:56px}.heading{display:block}.heading p{text-align:left;margin:13px 0 0}.rank-row{grid-template-columns:45px 64px minmax(0,1fr);gap:10px;padding:11px}.thumb{width:64px;height:96px}.place{font-size:27px}.rank-row .scores{grid-column:3;text-align:left;display:flex;align-items:baseline;gap:13px}.score{font-size:30px}.their{margin-top:0}.movement{display:none}.review{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-top:7px}.row-title{font-size:22px}.detail{font-size:10px}.privacy{display:block}.privacy span{display:block;margin-top:8px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+
+/* Rankings UI refinement — visual parity with the shared movie collection. */
+:root{--bg:#111016;--surface:#1d1a20;--cream:#f5eee9;--muted:#b3a5a8;--gold:#e9c08b;--rose:#e0a0a8;--stroke:rgba(239,218,208,.16)}
+body{background:var(--bg);-webkit-font-smoothing:antialiased}
+.wrap{width:min(1200px,calc(100% - 64px))}
+nav{padding:20px 0 22px;gap:14px}
+.crest{width:43px;height:43px;border-radius:12px;border-color:#a78679;background:#2c222b}
+.identity b{font-size:21px;font-weight:600;letter-spacing:-.025em}
+.navlinks a{font-size:12px;font-weight:700;border-radius:8px}
+.navlinks a.active{background:#d5a77c20;color:#f2c69c;border-color:#926b60}
+.hero{gap:44px;padding:57px 0 60px}
+.hero:before{background:radial-gradient(ellipse at 75% 40%,#753e4230,transparent 58%)}
+h1{font-size:clamp(54px,5.6vw,82px);line-height:1.08;margin:25px 0 18px;font-weight:500}
+h1 em{color:var(--rose)}
+p.lead{font-size:15px;color:#c4b6b8;line-height:1.85}
+.heroactions a{border-radius:8px;background:#dbae7e;color:#251920;border-color:#dbae7e}
+.heroactions a.alt{background:#252027;color:#e0c1ab;border-color:#665158}
+.featured{border-radius:12px;overflow:hidden;transform:none;min-height:340px;box-shadow:0 21px 65px #0008;border:1px solid #8c697455}
+.feature-poster{min-height:340px}
+.featurecopy{background:linear-gradient(140deg,#3a2930,#231c25);padding:25px}
+.featurecopy h2{font-size:35px;font-weight:500}
+.hero-score{font-size:53px}
+.summary{background:#18161b}
+.metric{padding-top:23px;padding-bottom:23px}
+.metric strong{font-size:35px}
+.content{padding:68px 0 92px}
+.heading h2{font-size:clamp(36px,4vw,57px);font-weight:500}
+.heading p{font-size:13px;line-height:1.75}
+.controls{border-color:var(--stroke)}
+.controls input{border-radius:8px;background:#27232b;border-color:#65535c}
+.ranking{gap:10px}
+.rank-row{border-radius:10px;overflow:hidden;border-color:#ffffff18;background:linear-gradient(125deg,#211d24,#19171d);transition:transform .16s,border-color .16s}
+.rank-row:hover{transform:translateY(-2px);border-color:#9b7372;background:linear-gradient(125deg,#30242b,#1f1b21)}
+.rank-row:nth-child(1){border-color:#d9ae7e80;background:linear-gradient(110deg,#3b2c2a,#241c23)}
+.rank-row:nth-child(2){border-color:#aea5a15b}
+.rank-row:nth-child(3){border-color:#b9927b50}
+.place{color:#e3b888;font-size:37px}
+.thumb{border-radius:6px;overflow:hidden}
+.row-title{font-weight:500}
+.review{color:#cdbfbf;font-size:13px;line-height:1.7}
+.row-meta{color:#c4a4a0}
+.detail{color:#c2aeb0;font-size:11px}
+.detail b{color:#e8c29e}
+.more{color:#efc8a9;font-weight:700;padding-bottom:5px}
+.scores .score{font-size:48px;color:#f1c796}
+.scores .their{color:#beafb2}
+.privacy{border-color:var(--stroke)}
+@media(max-width:900px){.wrap{width:calc(100% - 36px)}.hero{gap:28px;padding:43px 0}.featured,.feature-poster{min-height:300px}.rank-row{grid-template-columns:54px 82px minmax(0,1fr) 91px;gap:14px}.review{font-size:12px}}
+@media(max-width:600px){.wrap{width:calc(100% - 28px)}nav{gap:9px}.navlinks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.navlinks a{padding:10px 4px;text-align:center;font-size:10px}h1{font-size:50px}.hero{padding:36px 0}.featured{grid-template-columns:44% 56%;min-height:265px}.feature-poster{min-height:265px}.featurecopy{padding:17px}.featurecopy h2{font-size:25px}.hero-score{font-size:41px}.content{padding:52px 0}.heading h2{font-size:37px}.rank-row{grid-template-columns:38px 65px minmax(0,1fr);gap:9px;padding:11px}.thumb{width:65px;height:97px}.place{font-size:27px}.row-title{font-size:22px}.review{font-size:11px}.scores .score{font-size:31px}}
+
 </style>
 </head><body>
 <div class="edge"></div><nav class="wrap"><a href="/midnight-archive/" class="identity"><span class="crest">✦</span><span><b>The Midnight Archive</b><small>BOBBY &amp; LISA • EST. 2026</small></span></a><div class="navlinks"><a href="/midnight-archive/">Movie Vault</a><a class="__BOBBY_ACTIVE__" href="/midnight-archive/bobby/">Bobby's Rankings</a><a class="__LISA_ACTIVE__" href="/midnight-archive/lisa/">Lisa's Rankings</a></div></nav>
-<main><section class="hero wrap"><div><span class="eyebrow">One critic. Seventeen verdicts.</span><h1>__CRITIC_NAME__'s <em>Top Films.</em></h1><p class="lead">Every movie night, sorted by __CRITIC_NAME__'s own score. No critics' consensus, no audience averages—just personal favorites, hot takes, and some very questionable slashers.</p><div class="heroactions"><a href="/midnight-archive/">Explore all reviews ↗</a><a class="alt" href="/midnight-archive/__OTHER_SLUG__/">See __OTHER_NAME__'s list</a></div></div><div class="featured" id="featured" aria-label="Number one ranked film"></div></section>
+<main><section class="hero wrap"><div><span class="eyebrow">Personal rankings • Bobby &amp; Lisa</span><h1>__CRITIC_NAME__'s <em>Top Films.</em></h1><p class="lead">Every movie we've watched together, ordered by __CRITIC_NAME__'s highest to lowest rating. Compare scores, skim the reviews, and open the full movie notes.</p><div class="heroactions"><a href="/midnight-archive/">Explore all reviews ↗</a><a class="alt" href="/midnight-archive/__OTHER_SLUG__/">See __OTHER_NAME__'s list</a></div></div><div class="featured" id="featured" aria-label="Number one ranked film"></div></section>
 <div class="summary"><div class="summary-inner wrap"><div class="metric"><strong id="total">17</strong><small>Movies ranked</small></div><div class="metric"><strong id="avg">—</strong><small>Personal average</small></div><div class="metric"><strong id="top-score">—</strong><small>Highest rating</small></div></div></div>
-<section class="content wrap"><div class="heading"><div><span class="eyebrow">The definitive list</span><h2>In order of obsession.</h2></div><p>Click “full screening notes” for our side-by-side review, favorite characters, standout scenes, and kills.</p></div><div class="controls"><label for="film-search">__CRITIC_NAME__'s personal rankings</label><input type="search" id="film-search" placeholder="Find a film in this list…" aria-label="Find a film in this ranking"></div><div id="ranking" class="ranking" aria-live="polite"></div></section></main>
+<section class="content wrap"><div class="heading"><div><span class="eyebrow">The definitive list</span><h2>Highest rated first.</h2></div><p>One ranking, one person's ratings. Each entry links to our full side-by-side review and favorite moments.</p></div><div class="controls"><label for="film-search">__CRITIC_NAME__'s personal rankings</label><input type="search" id="film-search" placeholder="Find a film in this list…" aria-label="Find a film in this ranking"></div><div id="ranking" class="ranking" aria-live="polite"></div></section></main>
 <footer class="wrap privacy"><span><strong>THE MIDNIGHT ARCHIVE</strong> • Bobby &amp; Lisa's movie-night journal</span><span>Unlisted page • Noindex • All film artwork belongs to its owners</span></footer>
 <script id="vault-data" type="application/json">__FILMS_JSON__</script>
 <script>
 (function(){
 'use strict';
 const films=JSON.parse(document.getElementById('vault-data').textContent);
+document.addEventListener('error',e=>{const t=e.target;if(t&&t.tagName==='IMG'&&t.hasAttribute('data-backup')){if(t.dataset.backup&&!t.dataset.tried){t.dataset.tried='1';t.src=t.dataset.backup;}else{t.style.display='none';}}},true);
 const name='__CRITIC_NAME__',key='__CRITIC_KEY__',other='__OTHER_KEY__',otherName='__OTHER_NAME__';
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sorted=k=>[...films].sort((a,b)=>b[k]-a[k]||((b.b+b.l)-(a.b+a.l))||a.title.localeCompare(b.title));
 const rankings=sorted(key),otherRank=new Map(sorted(other).map((f,i)=>[f.id,i+1]));
 const summary=k=>k==='b'?'br':'lr',char=k=>k==='b'?'bc':'lc',scene=k=>k==='b'?'bs':'ls',kill=k=>k==='b'?'bk':'lk';
-const img=(f)=>'<img alt="'+esc(f.title)+' movie poster" src="'+esc(f.poster)+'" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">';
+const img=(f)=>'<img alt="'+esc(f.title)+' theatrical movie poster" src="'+esc(f.poster)+'" data-backup="'+esc(f.posterBackup||'')+'" loading="lazy" decoding="async" referrerpolicy="no-referrer">';
 const short=t=>t.length>270?t.slice(0,267).replace(/\s+\S*$/,'')+'…':t;
 function render(){
 const q=document.getElementById('film-search').value.trim().toLowerCase();
