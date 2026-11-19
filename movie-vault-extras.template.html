@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#2B1B25">
+<title>__PAGE_TITLE__ | The Midnight Archive</title>
+<meta name="description" content="Bobby and Lisa's personal movie reviews, rankings, watch history and movie-night editor.">
+<link rel="icon" type="image/svg+xml" href="/midnight-archive/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/midnight-archive/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/midnight-archive/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#111016;--surface:#211d24;--surface2:#2b252d;--line:#e9c7b12a;--text:#f4eae2;--muted:#aea0a5;--gold:#ecc18c;--rose:#e4a4ae;--serif:'Playfair Display',Georgia,serif;--sans:'DM Sans',Arial,sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}.wrap{width:min(1140px,calc(100% - 50px));margin:0 auto}
+.topline{height:4px;background:linear-gradient(90deg,#dda976,#713d4a 50%,#d8a878)}
+header{border-bottom:1px solid var(--line);background:#161319}
+.header-inner{display:flex;gap:18px;align-items:center;justify-content:space-between;padding:21px 0}
+.brand{display:flex;align-items:center;gap:11px;flex-shrink:0}.brand-icon{height:41px;width:41px;background:#2b1b25;border:1px solid #997466;border-radius:11px;display:grid;place-items:center;color:#e6bf8e;font-size:25px}
+.brand strong{display:block;font:500 21px/1.1 var(--serif);letter-spacing:-.03em}.brand small{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.16em;color:#bba49f;margin-top:5px;font-weight:700}
+nav{display:flex;gap:3px;align-items:center;flex-wrap:wrap}
+nav a{padding:11px 12px;color:#c9babc;font-size:11px;font-weight:800;border-radius:8px}nav a:hover{background:#342b32;color:#fff}nav a.active{background:#4d3638;color:#f7cfaa}
+main{min-height:70vh}.eyebrow{text-transform:uppercase;font-size:11px;letter-spacing:.2em;color:var(--gold);font-weight:800}
+.page-hero{padding:61px 0 36px;border-bottom:1px solid var(--line);margin-bottom:32px}
+.page-hero h1{font:500 clamp(42px,5vw,69px)/1.12 var(--serif);letter-spacing:-.055em;margin:15px 0 15px}.page-hero h1 em{color:var(--rose);font-style:normal}.page-hero p{max-width:690px;font-size:14px;line-height:1.9;color:#bbafb0;margin:0}
+.breadcrumb{font-size:11px;color:#bda6a7;display:flex;gap:8px;align-items:center;padding:20px 0 0}.breadcrumb a:hover{color:var(--gold)}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:25px 0}.toolbar .hint{color:var(--muted);font-size:12px}
+.btn,.btn-plain{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:8px;padding:12px 16px;font-size:12px;font-weight:800;line-height:1.2;text-align:center}.btn{background:var(--gold);border:1px solid var(--gold);color:#271b1e}.btn:hover{background:#f8d4a6}.btn-plain{background:#29232a;border:1px solid #765d62;color:#efdfd4}.btn-plain:hover{background:#3b2c34}
+.stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 34px}.stat{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:20px}.stat strong{font:500 35px/1.2 var(--serif);letter-spacing:-.04em;display:block;color:var(--gold)}.stat small{display:block;text-transform:uppercase;letter-spacing:.12em;color:#bcaeaf;font-size:10px;font-weight:700;margin-top:8px}
+.section{margin:42px 0}.section-heading{display:flex;justify-content:space-between;align-items:end;gap:17px;margin-bottom:18px}.section-heading h2{font:500 clamp(26px,3.3vw,40px)/1.19 var(--serif);letter-spacing:-.03em;margin:0}.section-heading p{max-width:360px;font-size:12px;color:var(--muted);line-height:1.6;margin:0}
+.section-label{font-size:11px;letter-spacing:.12em;color:var(--gold);font-weight:800;text-transform:uppercase}
+.surface{border:1px solid var(--line);background:var(--surface);border-radius:11px;overflow:hidden}
+.compare-row{display:grid;grid-template-columns:49px 84px minmax(180px,1fr) minmax(240px,1.3fr);align-items:center;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line);transition:background .16s}.compare-row:last-child{border-bottom:0}.compare-row:hover{background:#302630}
+.rank{font:500 26px var(--serif);color:var(--gold)}.poster-mini{width:84px;height:124px;position:relative;background:#362a35;border-radius:6px;overflow:hidden}.poster-mini img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.poster-fallback{position:absolute;inset:0;display:grid;place-items:center;padding:10px;text-align:center;font:14px var(--serif);color:#dcc1c1}
+.movie-name{font:500 22px/1.28 var(--serif);margin:0 0 6px}.movie-name a:hover{color:var(--gold)}.meta{font-size:11px;color:#ac9ca3}.difference{font-size:11px;color:#d6bab2;margin-top:8px}
+.bars{display:grid;gap:9px}.bar-line{display:grid;grid-template-columns:43px 1fr 39px;align-items:center;gap:9px}.bar-line label{font-size:11px;color:#c8b9bc;font-weight:700}.bar-line strong{font-size:13px;text-align:right}.bar-shell{height:10px;border-radius:20px;background:#483740;overflow:hidden}.bar-fill{height:100%;border-radius:20px;background:var(--gold)}.bar-line.lisa .bar-fill{background:var(--rose)}
+.split-card{background:#272027;border:1px solid var(--line);padding:18px;border-radius:10px}.split-card h3{font:500 21px var(--serif);margin:0 0 7px}.split-card p{font-size:12px;color:var(--muted);margin:0;line-height:1.7}
+.favorites{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.favorite{display:grid;grid-template-columns:82px minmax(0,1fr);gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);padding:12px;border-radius:10px}.favorite:hover{border-color:#ad8780}.favorite .poster-mini{width:82px;height:123px}.favorite strong{font:500 20px/1.2 var(--serif);display:block}.favorite small{display:block;color:#baa8a8;font-size:11px;margin-top:9px;line-height:1.6}
+.genre-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.genre-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:19px}.genre-card h3{margin:0 0 9px;font:500 20px var(--serif)}.genre-card p{color:var(--muted);font-size:11px;margin:0 0 12px}.genre-meter{height:8px;background:#473640;border-radius:99px;overflow:hidden}.genre-meter i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--rose));border-radius:99px}
+.timeline-intro{color:#bcb0b1;font-size:13px;line-height:1.8}.timeline{position:relative;padding-left:26px;margin:24px 0}.timeline:before{content:"";position:absolute;top:12px;bottom:20px;left:8px;width:1px;background:#9d767a85}
+.time-row{display:grid;grid-template-columns:102px minmax(0,1fr);gap:18px;position:relative;margin:0 0 15px}.time-row:before{content:"";position:absolute;left:-23px;top:20px;width:11px;height:11px;border:2px solid var(--gold);border-radius:50%;background:#251b22}
+.time-stamp{font-size:11px;color:#c9a68f;font-weight:800;line-height:1.7;padding-top:12px}.time-content{display:grid;grid-template-columns:75px 1fr;gap:14px;align-items:center;padding:10px;border:1px solid var(--line);background:var(--surface);border-radius:9px}.time-content .poster-mini{width:75px;height:112px}.time-content h3{font:500 20px var(--serif);margin:0 0 5px}.time-content p{font-size:11px;line-height:1.7;color:#b6a5ac;margin:5px 0}.time-content a:hover{color:var(--gold)}
+.movie-layout{display:grid;grid-template-columns:minmax(200px,280px) minmax(0,1fr);gap:34px;align-items:start;margin:33px 0}
+.movie-poster{background:#35252e;border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative;aspect-ratio:2/3}.movie-poster img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.movie-side .btn-plain{width:100%;margin-top:12px}.movie-main h1{font:500 clamp(35px,4.3vw,59px)/1.1 var(--serif);letter-spacing:-.04em;margin:8px 0 15px}.movie-sub{font-size:12px;letter-spacing:.06em;color:#b6a4a5}
+.score-trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:25px 0}.score-tile{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:17px}.score-tile strong{font:500 33px var(--serif);color:var(--gold);display:block}.score-tile:nth-child(2) strong{color:var(--rose)}.score-tile span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#bcacac;font-weight:700;margin-top:4px}
+.review-panel{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:20px;margin-bottom:12px}.review-panel h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 12px}.review-panel.lisa-review h2{color:var(--rose)}.review-panel p{font-size:13px;line-height:1.9;color:#ddd0cf;margin:0}.picks{display:grid;grid-template-columns:1fr 1fr;gap:12px}.picks .review-panel{margin:0}.picks dl{margin:0}.picks dt{font-size:10px;color:#b59ca2;font-weight:800;text-transform:uppercase;letter-spacing:.07em;margin:12px 0 3px}.picks dt:first-child{margin-top:0}.picks dd{margin:0;font-size:12px;line-height:1.6;color:#f0e5de}
+.nextprev{display:flex;align-items:center;justify-content:space-between;gap:13px;border-top:1px solid var(--line);padding:28px 0 64px}.nextprev a{max-width:45%}
+.form-intro{background:#2b222a;border:1px solid #ab7e745a;padding:20px;border-radius:10px;margin:18px 0 27px;color:#d8cbc5;font-size:13px;line-height:1.8}.form-intro strong{color:var(--gold)}
+.editor{width:min(820px,100%);margin:0 auto 78px}.edit-card{background:#211c23;border:1px solid var(--line);padding:24px;border-radius:12px;margin:16px 0}.edit-card h2{font:500 27px var(--serif);margin:0 0 12px}.edit-card .intro{font-size:12px;line-height:1.8;color:var(--muted)}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#d2c2bc;font-weight:700}.field input,.field select,.field textarea{min-height:42px;width:100%;padding:11px 12px;color:#f4e8e1;background:#17141a;border:1px solid #69545d;border-radius:7px;outline:0}.field textarea{min-height:95px;resize:vertical;line-height:1.5}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}.field small{color:#9f9298;font-size:10px}
+.edit-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:20px}.form-message{border-left:3px solid var(--gold);padding:12px 15px;color:#e8d7c8;background:#35272e;font-size:12px;line-height:1.6;margin:17px 0}.form-message.error{border-left-color:#e88391;color:#f6c3cc}.form-message.success{border-left-color:#94c5a6;color:#cef1d5}.hidden{display:none!important}.empty{padding:40px 20px;text-align:center;color:#c5b3b5;border:1px dashed #755c65;border-radius:9px}
+footer{border-top:1px solid var(--line);padding:29px 0 46px;margin-top:50px;background:#17141a;font-size:11px;color:#a5979a}footer .foot{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}footer strong{color:var(--gold)}
+@media(max-width:960px){.header-inner{flex-wrap:wrap}.compare-row{grid-template-columns:37px 66px 1fr;gap:11px}.poster-mini{width:66px;height:100px}.compare-row .bars{grid-column:3}.favorites{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.wrap{width:calc(100% - 28px)}.header-inner{padding:15px 0}.brand strong{font-size:19px}.header-inner nav{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px}nav a{font-size:10px;text-align:center;padding:9px 3px}.page-hero{padding:39px 0 26px;margin-bottom:24px}.page-hero h1{font-size:44px}.page-hero p{font-size:12px}.stat-grid{gap:9px}.stat{padding:15px}.stat strong{font-size:27px}.stat small{font-size:9px}.compare-row{grid-template-columns:30px 56px 1fr;padding:10px;gap:8px}.compare-row .poster-mini{width:56px;height:84px}.movie-name{font-size:17px}.bars{gap:6px}.bar-line{grid-template-columns:35px 1fr 27px;gap:6px}.bar-line label,.difference{font-size:10px}.favorites,.genre-grid,.picks{grid-template-columns:1fr}.movie-layout{grid-template-columns:1fr;gap:20px}.movie-side{display:grid;grid-template-columns:135px 1fr;gap:15px;align-items:start}.movie-side .btn-plain{margin-top:0}.movie-poster{max-width:135px}.score-trio{gap:7px}.score-tile{padding:11px}.score-tile strong{font-size:27px}.review-panel{padding:16px}.time-row{grid-template-columns:69px 1fr;gap:10px}.time-content{grid-template-columns:56px 1fr;gap:9px}.time-content .poster-mini{width:56px;height:83px}.time-content h3{font-size:16px}.time-stamp{font-size:10px}.fields{grid-template-columns:1fr}.edit-card{padding:18px}.nextprev a{font-size:11px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body data-page="__PAGE__">
+<div class="topline"></div>
+<header><div class="header-inner wrap"><a href="/midnight-archive/" class="brand"><span class="brand-icon">✦</span><span><strong>The Midnight Archive</strong><small>BOBBY & LISA • EST. 2026</small></span></a>
+<nav aria-label="Movie archive pages"><a href="/midnight-archive/">All movies</a><a href="/midnight-archive/bobby/">Bobby</a><a href="/midnight-archive/lisa/">Lisa</a><a href="/midnight-archive/compare/" class="__COMPARE_ACTIVE__">Compare</a><a href="/midnight-archive/stats/" class="__STATS_ACTIVE__">Stats</a><a href="/midnight-archive/timeline/" class="__TIMELINE_ACTIVE__">Watch history</a><a href="/midnight-archive/add/" class="__ADD_ACTIVE__">Add movie</a></nav></div></header>
+<main class="wrap"><div id="root" aria-live="polite"><div class="page-hero"><div class="eyebrow">The Midnight Archive</div><h1>Loading the collection…</h1></div></div></main>
+<footer><div class="wrap foot"><span><strong>The Midnight Archive</strong> • Movie nights, rated by us.</span><span>Unlisted archive • Noindex • Artwork belongs to its respective owners</span></div></footer>
+<script id="vault-data" type="application/json">__FILMS_JSON__</script>
+<script src="/midnight-archive/shared.js"></script>
+<script>
+(function(){
+"use strict";
+const MA=window.MidnightArchive,page="__PAGE__",root=document.getElementById("root"),e=MA.escapeHTML;
+let films=MA.initial;
+const avg=MA.combined;
+const fmt=n=>Number(n).toFixed(1);
+const avgFmt=n=>Number(n).toFixed(2);
+function hero(title,description,eyebrow="Bobby & Lisa • Film journal"){return '<div class="page-hero"><div class="eyebrow">'+e(eyebrow)+'</div><h1>'+title+'</h1><p>'+e(description)+'</p></div>';}
+function poster(f,cls="poster-mini"){return '<div class="'+cls+'"><span class="poster-fallback">'+e(f.title)+'</span><img src="'+e(MA.safeUrl(f.poster))+'" data-backup="'+e(MA.safeUrl(f.posterBackup||""))+'" loading="lazy" alt="'+e(f.title)+' movie poster"></div>';}
+document.addEventListener("error",evt=>{const img=evt.target;if(img?.tagName==="IMG"&&img.hasAttribute("data-backup")){if(img.dataset.backup&&!img.dataset.used){img.dataset.used="1";img.src=img.dataset.backup;}else{img.style.display="none";}}},true);
+const byCombined=()=>MA.rank(films);
+const stat=(v,t)=>'<div class="stat"><strong>'+e(v)+'</strong><small>'+e(t)+'</small></div>';
+const link=f=>MA.movieUrl(f);
+function movieLabel(f){return '<a href="'+link(f)+'">'+e(f.title)+'</a>';}
+function statsData(){return {bAvg:films.reduce((s,f)=>s+f.b,0)/films.length,lAvg:films.reduce((s,f)=>s+f.l,0)/films.length,shared:films.filter(f=>f.b>=7&&f.l>=7),agree:films.filter(f=>Math.abs(f.b-f.l)<=0.5),diff:MA.rank(films).sort((a,b)=>Math.abs(b.b-b.l)-Math.abs(a.b-a.l))};}
+function renderCompare(){
+const {bAvg,lAvg,agree,diff,shared}=statsData();
+root.innerHTML=hero('Two critics. <em>Two perspectives.</em>','Where Bobby and Lisa agree, disagree, and fall on opposite sides of a movie night. Every comparison uses our own ratings.','Head-to-head • The verdicts')+
+'<section class="stat-grid">'+stat(films.length,'Movies compared')+stat(agree.length,'Close calls (≤ 0.5)')+stat(diff.length?avgFmt(Math.abs(diff[0].b-diff[0].l)):'—','Biggest disagreement')+stat(bAvg<lAvg?'Bobby':'Lisa','Tougher average critic')+'</section>'+
+'<section class="section"><div class="section-heading"><h2>Biggest disagreements.</h2><p>Sorted by the absolute difference between our scores. Bigger gaps mean stronger disagreement.</p></div><div class="surface">'+diff.map((f,i)=>{
+ const gap=Math.abs(f.b-f.l);const winner=f.b>f.l?'Bobby':f.l>f.b?'Lisa':'Tie';
+ return '<article class="compare-row"><div class="rank">'+String(i+1).padStart(2,'0')+'</div><a href="'+link(f)+'">'+poster(f)+'</a><div><h3 class="movie-name">'+movieLabel(f)+'</h3><div class="meta">'+e(f.year)+' · '+e(f.genre)+'</div><div class="difference">'+(gap===0?'Same score':winner+' rated it '+avgFmt(gap)+' higher')+'</div></div><div class="bars"><div class="bar-line"><label>Bobby</label><div class="bar-shell"><div class="bar-fill" style="width:'+(f.b*10)+'%"></div></div><strong>'+fmt(f.b)+'</strong></div><div class="bar-line lisa"><label>Lisa</label><div class="bar-shell"><div class="bar-fill" style="width:'+(f.l*10)+'%"></div></div><strong>'+fmt(f.l)+'</strong></div></div></article>';
+ }).join('')+'</div></section>'+
+'<section class="section"><div class="section-heading"><h2>Movies we both loved.</h2><p>Each of us scored these at least 7.0 out of 10.</p></div><div class="favorites">'+(shared.length?MA.rank(shared).map(f=>'<a class="favorite" href="'+link(f)+'">'+poster(f)+'<div><strong>'+e(f.title)+'</strong><small>Bobby '+fmt(f.b)+' / Lisa '+fmt(f.l)+'<br>Combined '+avgFmt(avg(f))+'</small></div></a>').join(''):'<div class="empty">More shared favorites will appear as we rate new movies.</div>')+'</div></section>';
+}
+function renderStats(){
+const {bAvg,lAvg,agree,shared,diff}=statsData();const topB=MA.rank(films,"b")[0],topL=MA.rank(films,"l")[0],top=byCombined()[0];const who=films.filter(f=>f.b>f.l).length,her=films.filter(f=>f.l>f.b).length,ties=films.length-who-her;
+const genres=[
+ {label:'Slashers',match:f=>/slasher/i.test(f.genre)||f.franchise==='Friday the 13th'},
+ {label:'Horror & thrillers',match:f=>/horror|thriller|footage|slasher/i.test(f.genre)},
+ {label:'Comedy',match:f=>/comedy/i.test(f.genre)},
+ {label:'Friday the 13th',match:f=>f.franchise==='Friday the 13th'},
+ {label:'Other movies',match:f=>!/horror|thriller|footage|slasher|comedy/i.test(f.genre)}
+];const max=Math.max(1,...genres.map(g=>films.filter(g.match).length));
+root.innerHTML=hero('The numbers <em>behind the nights.</em>','Our personal movie statistics, favorites and patterns. Automatically updated whenever a new review is added.','Our movie-night report card')+
+'<section class="stat-grid">'+stat(films.length,'Total screenings')+stat(avgFmt(bAvg),'Bobby’s average')+stat(avgFmt(lAvg),'Lisa’s average')+stat(avgFmt(avg(top)),'Top combined score')+'</section>'+
+'<section class="section"><div class="section-heading"><h2>Our personal number ones.</h2><p>No averaged taste here—just each person’s own favorite.</p></div><div class="favorites">'+
+[[topB,'Bobby’s #1'],[topL,'Lisa’s #1'],[top,'Our combined #1']].map(([f,label])=>'<a class="favorite" href="'+link(f)+'">'+poster(f)+'<div><span class="section-label">'+e(label)+'</span><strong style="margin-top:8px">'+e(f.title)+'</strong><small>'+avgFmt(label.includes('combined')?avg(f):label.includes('Bobby')?f.b:f.l)+'/10</small></div></a>').join('')+'</div></section>'+
+'<section class="section"><div class="section-heading"><h2>Our viewing habits.</h2><p>Tags overlap when a movie fits more than one category.</p></div><div class="genre-grid">'+genres.map(g=>{const count=films.filter(g.match).length;return '<div class="genre-card"><h3>'+e(g.label)+'</h3><p>'+count+' '+(count===1?'film':'films')+'</p><div class="genre-meter"><i style="width:'+(count/max*100)+'%"></i></div></div>';}).join('')+'</div></section>'+
+'<section class="section"><div class="section-heading"><h2>Rating patterns.</h2><p>A small scoreboard of our disagreements—not a prediction of future ratings.</p></div><div class="stat-grid">'+stat(who,'Bobby scored higher')+stat(her,'Lisa scored higher')+stat(ties,'Exact rating ties')+stat(agree.length,'Within half a point')+'</div></section>'+
+'<section class="section"><div class="section-heading"><h2>More to explore.</h2></div><div class="toolbar"><a class="btn" href="/midnight-archive/compare/">See our biggest disagreements ↗</a><a class="btn-plain" href="/midnight-archive/timeline/">Our watch-history timeline</a></div></section>';
+}
+function formatDate(iso){if(!iso)return "Date not recorded";const d=new Date(iso+"T12:00:00");return Number.isNaN(d.valueOf())?"Date not recorded":new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric'}).format(d);}
+function renderTimeline(){
+const chronological=[...films].sort((a,b)=>(a.watch_order||a.id)-(b.watch_order||b.id));const dated=chronological.filter(f=>f.watched_on).length;const series=[...new Set(films.map(f=>f.franchise).filter(Boolean))];
+root.innerHTML=hero('Our movie-night <em>history.</em>','Every film in watch order, with actual dates when we recorded them. Unknown dates are intentionally left blank rather than guessed.','Watch history • Our story')+
+'<section class="stat-grid">'+stat(films.length,'Movies watched')+stat(dated,'Dates confirmed')+stat(series.length,'Series represented')+stat(films.filter(f=>f.franchise==='Friday the 13th').length,'Fridays watched')+'</section>'+
+'<div class="form-intro"><strong>About the dates:</strong> We recorded the order of our 17 original movies, but not every exact screening date. Confirmed dates appear on their cards; you can fill in missing dates securely from the Add/Edit Movie page.</div>'+
+'<section class="section"><div class="section-heading"><h2>From the first movie night on.</h2><p>Oldest logged screening first. New reviews join the end of the timeline automatically.</p></div><div class="timeline">'+chronological.map((f,i)=>'<article class="time-row"><div class="time-stamp">'+(f.watched_on?formatDate(f.watched_on):'#'+String(i+1).padStart(2,'0')+' in watch order')+'</div><div class="time-content"><a href="'+link(f)+'">'+poster(f)+'</a><div><h3>'+movieLabel(f)+'</h3><p>'+e(f.year)+' · '+e(f.franchise||f.genre)+'</p><p><strong style="color:#eac28f">Combined '+avgFmt(avg(f))+'</strong> · Bobby '+fmt(f.b)+' · Lisa '+fmt(f.l)+'</p>'+(f.watched_on?'':'<p>Screening date not recorded</p>')+'</div></div></article>').join('')+'</div></section>'+
+'<section class="section"><div class="section-heading"><h2>Keep the history accurate.</h2></div><div class="toolbar"><a class="btn" href="/midnight-archive/add/">Add a film or correct a date</a><a class="btn-plain" href="/midnight-archive/">Browse the highest-rated films</a></div></section>';
+}
+function field(label,value){return value?'<dt>'+e(label)+'</dt><dd>'+e(value)+'</dd>':'';}
+function renderMovie(){
+const id=Number(new URLSearchParams(location.search).get("id"));const f=films.find(f=>f.id===id);
+if(!f){
+root.innerHTML=hero('Pick a <em>screening.</em>','Choose a movie from the collection to open its full personal review.')+'<div class="favorites">'+byCombined().map(f=>'<a class="favorite" href="'+link(f)+'">'+poster(f)+'<div><strong>'+e(f.title)+'</strong><small>Combined '+avgFmt(avg(f))+'</small></div></a>').join('')+'</div>';return;
+}
+const ordered=byCombined(),idx=ordered.findIndex(m=>m.id===f.id),prev=ordered[idx-1],next=ordered[idx+1];
+document.title=f.title+' ('+f.year+') — The Midnight Archive';
+const tagline=()=>'<a class="btn-plain" href="'+e(MA.imdbUrl(f))+'" target="_blank" rel="noopener noreferrer">View on IMDb ↗</a>';
+root.innerHTML='<div class="breadcrumb"><a href="/midnight-archive/">Movie Vault</a> / <span>'+e(f.title)+'</span></div>'+
+'<div class="movie-layout"><aside class="movie-side">'+poster(f,"movie-poster")+'<div>'+tagline()+'<a class="btn-plain" href="/midnight-archive/compare/">Compare our taste ↗</a></div></aside>'+
+'<article class="movie-main"><div class="eyebrow">Our #'+(idx+1)+' movie together • The after-credits report</div><h1>'+e(f.title)+'</h1><div class="movie-sub">'+e(f.year)+' · '+e(f.genre)+' · '+e(f.franchise||'Standalone film')+(f.watched_on?' · Watched '+formatDate(f.watched_on):'')+'</div>'+
+'<div class="score-trio"><div class="score-tile"><strong>'+fmt(f.b)+'</strong><span>Bobby / 10</span></div><div class="score-tile"><strong>'+fmt(f.l)+'</strong><span>Lisa / 10</span></div><div class="score-tile"><strong>'+avgFmt(avg(f))+'</strong><span>Combined / 10</span></div></div>'+
+'<section class="review-panel"><h2>Bobby’s take</h2><p>'+e(f.br||"Detailed notes not recorded.")+'</p></section>'+
+'<section class="review-panel lisa-review"><h2>Lisa’s take</h2><p>'+e(f.lr||"Detailed notes not recorded.")+'</p></section>'+
+'<div class="picks"><section class="review-panel"><h2>Bobby’s favorites</h2><dl>'+field("Favorite character",f.bc)+field("Favorite scene",f.bs)+field("Favorite kill / moment",f.bk)+field("Rewatch?",f.rb)+'</dl></section>'+
+'<section class="review-panel lisa-review"><h2>Lisa’s favorites</h2><dl>'+field("Favorite character",f.lc)+field("Favorite scene",f.ls)+field("Favorite kill / moment",f.lk)+field("Rewatch?",f.rl)+'</dl></section></div>'+
+'<div class="toolbar"><a class="btn-plain" href="/midnight-archive/add/?edit='+f.id+'">Edit this movie ↗</a><span class="hint">Spoilers are part of our reviews.</span></div>'+
+'</article></div><nav class="nextprev" aria-label="Other ranked movies"><span>'+(prev?'<a class="btn-plain" href="'+link(prev)+'">← #'+idx+' '+e(prev.title)+'</a>':'')+'</span><span>'+(next?'<a class="btn-plain" href="'+link(next)+'">#'+(idx+2)+' '+e(next.title)+' →</a>':'')+'</span></nav>';
+}
+async function renderAdd(){
+root.innerHTML=hero('Add to the <em>archive.</em>','Bobby and Lisa can securely add a movie or improve an existing review. Only the two authorized accounts can save changes.','Private screening journal • Editors only')+
+'<div class="editor"><div class="form-intro"><strong>Private editor.</strong> Everyone with the archive link can read the reviews, but only Bobby and Lisa’s existing BBB accounts are allowed to add or change movies. Changes appear across the collection automatically.</div>'+
+'<section class="edit-card" id="auth-card"><h2>Sign in to edit.</h2><p class="intro" id="auth-status">Checking your account…</p>'+
+'<form id="auth-form" class="hidden"><div class="fields"><div class="field"><label for="login-email">Account email</label><input type="email" id="login-email" required autocomplete="username"></div><div class="field"><label for="login-password">Password</label><input type="password" id="login-password" autocomplete="current-password"></div></div><div class="edit-tools"><button class="btn" type="submit">Sign in with password</button><button class="btn-plain" type="button" id="magic-link">Email me a sign-in link</button></div></form></section>'+
+'<section class="edit-card hidden" id="editor-card"><div class="section-heading"><h2>Our movie journal.</h2><button id="sign-out" class="btn-plain" type="button">Sign out</button></div><p class="intro" id="account-line"></p>'+
+'<form id="movie-form"><div class="fields"><div class="field full"><label for="edit-movie">Choose a movie to edit, or add a new one</label><select id="edit-movie"></select></div>'+
+'<div class="field"><label for="edit-title">Film title *</label><input id="edit-title" required maxlength="180" placeholder="e.g. A Nightmare on Elm Street"></div>'+
+'<div class="field"><label for="edit-year">Release year *</label><input id="edit-year" required type="number" min="1880" max="2200"></div>'+
+'<div class="field"><label for="edit-genre">Genre</label><input id="edit-genre" placeholder="Horror / Thriller"></div>'+
+'<div class="field"><label for="edit-franchise">Franchise / series</label><input id="edit-franchise" placeholder="Friday the 13th"></div>'+
+'<div class="field"><label for="edit-watched">Date we watched (optional)</label><input type="date" id="edit-watched"><small>Leave blank unless the date is confirmed.</small></div>'+
+'<div class="field"><label for="edit-imdb">IMDb title ID (optional)</label><input id="edit-imdb" placeholder="tt1234567" pattern="tt[0-9]{7,9}"></div>'+
+'<div class="field full"><label for="edit-poster">Official poster image URL (HTTPS)</label><input id="edit-poster" type="url" placeholder="https://…"></div>'+
+'<div class="field full"><label for="edit-poster-source">Poster source</label><input id="edit-poster-source" placeholder="IMDb, Paramount, TMDb, etc."></div>'+
+'<div class="field"><label for="edit-b">Bobby’s rating (0–10) *</label><input id="edit-b" type="number" min="0" max="10" step=".1" required></div>'+
+'<div class="field"><label for="edit-l">Lisa’s rating (0–10) *</label><input id="edit-l" type="number" min="0" max="10" step=".1" required></div>'+
+'<div class="field full"><label for="edit-br">Bobby’s review</label><textarea id="edit-br" rows="5"></textarea></div>'+
+'<div class="field full"><label for="edit-lr">Lisa’s review</label><textarea id="edit-lr" rows="5"></textarea></div>'+
+'<div class="field"><label for="edit-bc">Bobby’s favorite character</label><input id="edit-bc"></div><div class="field"><label for="edit-lc">Lisa’s favorite character</label><input id="edit-lc"></div>'+
+'<div class="field"><label for="edit-bs">Bobby’s favorite scene</label><textarea id="edit-bs" rows="2"></textarea></div><div class="field"><label for="edit-ls">Lisa’s favorite scene</label><textarea id="edit-ls" rows="2"></textarea></div>'+
+'<div class="field"><label for="edit-bk">Bobby’s favorite kill / moment</label><input id="edit-bk"></div><div class="field"><label for="edit-lk">Lisa’s favorite kill / moment</label><input id="edit-lk"></div>'+
+'<div class="field"><label for="edit-rb">Bobby rewatch plans</label><input id="edit-rb"></div><div class="field"><label for="edit-rl">Lisa rewatch plans</label><input id="edit-rl"></div></div>'+
+'<div class="edit-tools"><button id="save-movie" class="btn" type="submit">Save movie</button><button id="reset-movie" class="btn-plain" type="button">Start a new movie</button></div><div id="editor-status" role="status"></div></form></section></div>';
+const authStatus=document.getElementById("auth-status"),authForm=document.getElementById("auth-form"),card=document.getElementById("editor-card"),select=document.getElementById("edit-movie"),form=document.getElementById("movie-form"),status=document.getElementById("editor-status");
+let client=null,activeUser=null;
+const authors=new Set(["01cfc6c7-68d9-4803-997c-3ff2060c1987","76350a76-1034-454b-8f73-0bd4033888f7"]);
+function message(msg,kind=""){status.innerHTML='<div class="form-message '+kind+'">'+e(msg)+'</div>';}
+function signinStatus(msg,isError=false){authStatus.textContent=msg;authStatus.style.color=isError?"#f2b4be":"";}
+function makeOptions(){select.innerHTML='<option value="">＋ Add a new movie</option>'+[...films].sort((a,b)=>a.title.localeCompare(b.title)).map(f=>'<option value="'+f.id+'">'+e(f.title)+' ('+f.year+')</option>').join('');}
+const fields=["title","year","genre","franchise","poster","posterSource","imdb_id","b","l","br","lr","bc","lc","bs","ls","bk","lk","rb","rl"];
+function inputKey(k){return "edit-"+({posterSource:"poster-source",imdb_id:"imdb"}[k]||k);}
+function resetForm(){form.reset();select.value="";for(const k of fields){const el=document.getElementById(inputKey(k));if(el)el.value="";}document.getElementById("edit-watched").value="";message("New movie. Fill in the details and both ratings.");}
+function chooseMovie(){
+const movie=films.find(f=>String(f.id)===select.value);form.reset();
+if(!movie){resetForm();return;}
+for(const k of fields){const el=document.getElementById(inputKey(k));if(el)el.value=movie[k]??"";}
+document.getElementById("edit-watched").value=movie.watched_on||"";
+message("Editing "+movie.title+". Save to update its record throughout the archive.");
+}
+function showEditor(user){
+activeUser=user;document.getElementById("auth-card").classList.add("hidden");card.classList.remove("hidden");document.getElementById("account-line").textContent="Signed in as "+user.email+". Only Bobby and Lisa have database write permission.";
+makeOptions();const requested=new URLSearchParams(location.search).get("edit");
+if(requested&&films.find(x=>String(x.id)===requested)){select.value=requested;chooseMovie();}else resetForm();
+}
+async function checkAuth(){
+const {data,error}=await client.auth.getUser();
+if(error||!data?.user||!authors.has(data.user.id)){
+ authForm.classList.remove("hidden");
+ signinStatus(data?.user?"This account cannot edit The Midnight Archive. Sign out of the account or sign in as Bobby/Lisa.":"Sign in with your existing Bobby or Lisa BBB account to continue.",!!data?.user);
+ if(data?.user)document.getElementById("auth-form").querySelector('button[type="submit"]').textContent="Switch account";
+ return;
+}
+showEditor(data.user);
+}
+try{
+if(!window.supabase?.createClient){
+ const tag=document.createElement("script");tag.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.84.0/dist/umd/supabase.js";
+ await new Promise((resolve,reject)=>{tag.onload=resolve;tag.onerror=()=>reject(new Error("Sign-in library could not load"));document.head.appendChild(tag);});
+}
+client=window.supabase.createClient(MA.SUPABASE_URL,MA.PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+await checkAuth();
+}catch(err){signinStatus("Secure login is temporarily unavailable. Please try again later.",true);return;}
+authForm.addEventListener("submit",async ev=>{ev.preventDefault();signinStatus("Signing in…");
+const email=document.getElementById("login-email").value.trim(),password=document.getElementById("login-password").value;
+if(!email||!password){signinStatus("Enter your email and password, or choose the sign-in link option.",true);return;}
+const {error}=await client.auth.signInWithPassword({email,password});
+if(error){signinStatus(error.message,true);return;}await checkAuth();});
+document.getElementById("magic-link").addEventListener("click",async()=>{
+const email=document.getElementById("login-email").value.trim();if(!email){signinStatus("Enter your account email first.",true);return;}
+const {error}=await client.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+"/midnight-archive/add/"}});
+signinStatus(error?error.message:"If the account exists, an email sign-in link was sent. Open it and return to this page.",!!error);
+});
+document.getElementById("sign-out").addEventListener("click",async()=>{await client.auth.signOut();location.replace("/midnight-archive/add/");});
+select.addEventListener("change",chooseMovie);
+document.getElementById("reset-movie").addEventListener("click",resetForm);
+form.addEventListener("submit",async ev=>{
+ev.preventDefault();if(!activeUser||!authors.has(activeUser.id)){message("Not authorized to save movies.","error");return;}
+const get=k=>String(document.getElementById(inputKey(k)).value||"").trim();
+const b=Number(get("b")),l=Number(get("l")),year=Number(get("year"));
+if(!Number.isFinite(b)||!Number.isFinite(l)||b<0||b>10||l<0||l>10||!Number.isInteger(year)||year<1880||year>2200){message("Both scores must be between 0 and 10, and the release year must be valid.","error");return;}
+const poster=get("poster");
+if(poster&&!MA.safeUrl(poster)){message("The poster URL must use HTTPS.","error");return;}
+const imdb=get("imdb_id");if(imdb&&!/^tt\d{7,9}$/.test(imdb)){message("IMDb ID must look like tt1234567.","error");return;}
+const existing=films.find(f=>String(f.id)===select.value);
+const data={...(existing||{}),title:get("title"),year,genre:get("genre"),franchise:get("franchise"),poster,posterSource:get("posterSource")||"Poster source not specified",imdb_id:imdb,b,l};
+for(const k of ["br","lr","bc","lc","bs","ls","bk","lk","rb","rl"])data[k]=get(k);
+if(!data.title){message("Enter a film title.","error");return;}
+delete data.watched_on;delete data.watch_order;delete data.updated_at;
+const watchedOn=document.getElementById("edit-watched").value||null,button=document.getElementById("save-movie");
+button.disabled=true;button.textContent="Saving…";message("Saving your movie securely…");
+try{
+let result;
+if(existing){
+ result=await client.from("midnight_archive_films").update({payload:data,watched_on:watchedOn,updated_at:new Date().toISOString()}).eq("id",existing.id).select("id").single();
+}else{
+ const order=1+Math.max(0,...films.map(f=>f.watch_order||f.id));
+ result=await client.from("midnight_archive_films").insert({payload:data,watched_on:watchedOn,watch_order:order}).select("id").single();
+}
+if(result.error)throw result.error;
+MA.clearCache();films=await MA.load(true);makeOptions();
+select.value=String(result.data.id);chooseMovie();message("Saved! "+data.title+" is now in the archive. The rankings, stats, timeline and movie page will reflect it.","success");
+}catch(err){message("Could not save: "+(err.message||"Please try again."),"error");}
+finally{button.disabled=false;button.textContent="Save movie";}
+});
+}
+async function start(){
+try{films=await MA.load();}catch(err){console.warn(err);films=MA.initial;}
+if(!films.length){root.innerHTML=hero('No movies available.','The archive is temporarily empty.');return;}
+if(page==='compare')renderCompare();
+else if(page==='stats')renderStats();
+else if(page==='timeline')renderTimeline();
+else if(page==='movie')renderMovie();
+else if(page==='add')await renderAdd();
+}
+start();
+})();
+</script>
+</body>
+</html>
