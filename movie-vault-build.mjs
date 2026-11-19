@@ -34,10 +34,11 @@ for (const { name, key, otherName, otherKey } of [
     .replaceAll('__CRITIC_KEY__', key)
     .replaceAll('__OTHER_NAME__', otherName)
     .replaceAll('__OTHER_KEY__', otherKey)
+    .replaceAll('__OTHER_SLUG__', otherName.toLowerCase())
     .replaceAll('__BOBBY_ACTIVE__', key === 'b' ? 'active' : '')
     .replaceAll('__LISA_ACTIVE__', key === 'l' ? 'active' : '')
     .replace('__FILMS_JSON__', match[1]);
-  if (/__CRITIC_|__OTHER_|__FILMS_|__BOBBY_ACTIVE__|__LISA_ACTIVE__/.test(page)) throw new Error('Unresolved ranking template placeholder for ' + name);
+  if (/__CRITIC_|__OTHER_|__FILMS_|__BOBBY_ACTIVE__|__LISA_ACTIVE__|__OTHER_SLUG__/.test(page)) throw new Error('Unresolved ranking template placeholder for ' + name);
   verifyPage(page, name.toLowerCase() + '-rankings');
   const dir = output + '/' + name.toLowerCase();
   await mkdir(dir, { recursive: true });
