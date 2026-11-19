@@ -39,12 +39,12 @@ dialog{border:1px solid #805455;background:#191418;color:#efe6db;padding:0;width
 <main id="top">
 <section class="hero wrap">
 <div><div class="kicker">A private screening room</div><h1>Two critics.<br><em>Our rankings.</em></h1><p class="intro">Our after-dark collection of movies we've watched, argued over, loved, hated, and occasionally agreed on. Real scores. Favorite kills. Unfiltered movie-night opinions.</p><div class="hero-links"><a class="btn-primary" href="#collection">Explore the collection ↗</a><a class="btn-secondary" href="/midnight-archive/bobby/">Bobby’s Rankings</a><a class="btn-secondary" href="/midnight-archive/lisa/">Lisa’s Rankings</a></div></div>
-<div class="hero-card"><img class="hero-image" src="https://images.contentstack.io/v3/assets/blt13adb7e2033fcee5/blt6b668a35c6c79764/6a3afe3f95d6e1fbb167a548/ArmyofDarkness_keyart_digital_poster_2000x3000.jpg?width=2560" alt="Army of Darkness original movie poster"><div class="hero-card-text"><div><span class="tiny">★ Highest combined score</span><h3>Army of Darkness</h3><p>Two very different opinions. One very memorable skeleton army.</p></div><div><div class="bigscore">8.25 <span>/ 10</span></div><button class="hero-open" id="feature-open" type="button">See our verdict ↗</button></div></div></div>
+<div class="hero-card"><img class="hero-image" data-backup="https://www.movieposters.com/cdn/shop/products/b4261a9c91022958a7d82c4955d1a2b8_9734f41a-7869-49da-906b-2054cd134d90_1024x1024.jpg?v=1762493890" src="https://images.contentstack.io/v3/assets/blt13adb7e2033fcee5/blt6b668a35c6c79764/6a3afe3f95d6e1fbb167a548/ArmyofDarkness_keyart_digital_poster_2000x3000.jpg?width=2560" alt="Army of Darkness original movie poster"><div class="hero-card-text"><div><span class="tiny">★ Highest combined score</span><h3>Army of Darkness</h3><p>Two very different opinions. One very memorable skeleton army.</p></div><div><div class="bigscore">8.25 <span>/ 10</span></div><button class="hero-open" id="feature-open" type="button">See our verdict ↗</button></div></div></div>
 </section>
 <div class="strip"><div class="stripin wrap"><div class="stat"><strong id="stat-count">17</strong><small>Movies logged</small></div><div class="stat"><strong id="stat-avg-b">5.96</strong><small>Bobby's average</small></div><div class="stat"><strong id="stat-avg-l">6.82</strong><small>Lisa's average</small></div><div class="stat"><strong id="stat-best">8.25</strong><small>Highest together</small></div></div></div>
 <section id="personal-boards" class="leaderboards wrap"><div class="leaderboard-head"><div class="kicker">Head-to-head rankings</div><h2>Same movies. <em>Different taste.</em></h2><p>Two personal lists, ranked entirely by our own scores—not anyone else's consensus.</p></div><div class="leaderboard-grid"><a class="leaderboard-tile bobby-tile" href="/midnight-archive/bobby/"><span class="tile-tag">BOBBY'S BIG SCREEN</span><strong>Bobby's <i>Top 17.</i></strong><span class="tile-note">#1 Blade (1998) • 8.3 / 10</span><span class="tile-cta">Explore Bobby's rankings ↗</span></a><a class="leaderboard-tile lisa-tile" href="/midnight-archive/lisa/"><span class="tile-tag">LISA'S WATCHLIST</span><strong>Lisa's <i>Top 17.</i></strong><span class="tile-note">#1 Army of Darkness (1992) • 9.5 / 10</span><span class="tile-cta">Explore Lisa's rankings ↗</span></a></div></section><section id="collection" class="library wrap">
 <div class="sectionhead"><div><div class="kicker">The collection</div><h2>Our highest-rated films.</h2></div><p>Sorted by our highest combined ratings. Tap any poster to read both reviews, favorite scenes, characters and kills.</p></div>
-<div class="toolbar">
+<div class="view-switch" aria-label="Choose whose ranking to view"><a class="current" aria-current="page" href="/midnight-archive/">Our combined rankings</a><a href="/midnight-archive/bobby/">Bobby’s rankings</a><a href="/midnight-archive/lisa/">Lisa’s rankings</a></div><div class="toolbar">
 <div class="filters" role="group" aria-label="Movie filters">
 <button class="filter active" data-filter="all" aria-pressed="true">All films</button>
 <button class="filter" data-filter="Friday the 13th" aria-pressed="false">Camp Crystal Lake</button>
@@ -54,7 +54,7 @@ dialog{border:1px solid #805455;background:#191418;color:#efe6db;padding:0;width
 </div>
 <div class="searchsort"><input id="search" type="search" aria-label="Search movies" placeholder="Search films…"><select id="sort" aria-label="Sort collection"><option value="top" selected>Highest combined rating</option><option value="newest">Recently watched</option><option value="bobby">Bobby's favorites</option><option value="lisa">Lisa's favorites</option><option value="split">Biggest disagreement</option><option value="year">Release year</option></select></div>
 </div>
-<p class="count" id="count-label">17 titles in the archive</p>
+<div class="ranking-summary"><p class="count" id="count-label">17 titles in the archive</p><p id="order-note">Combined average • Highest to lowest</p></div>
 <div class="movies" id="movie-grid" aria-live="polite"></div>
 </section>
 <section class="between" id="marathon"><div class="betweenin wrap"><div><small>Camp Crystal Lake chronicles</small><strong>Seven Fridays in. Still arguing about Jason.</strong></div><p>Bobby's Part V score: <b>3.3</b>. Lisa's Part II score: <b>7.8</b>. Nobody said movie night had to be peaceful.</p></div></section>
@@ -66,20 +66,22 @@ dialog{border:1px solid #805455;background:#191418;color:#efe6db;padding:0;width
 (function(){
 'use strict';
 const MOVIES=JSON.parse(document.getElementById('vault-data').textContent);
+document.addEventListener('error',e=>{const t=e.target;if(t&&t.tagName==='IMG'&&t.hasAttribute('data-backup')){if(t.dataset.backup&&!t.dataset.tried){t.dataset.tried='1';t.src=t.dataset.backup;}else{t.style.display='none';}}},true);
 const grid=document.getElementById('movie-grid'),input=document.getElementById('search'),sort=document.getElementById('sort'),dialog=document.getElementById('movie-modal'),content=document.getElementById('modal-content');
 let filter='all';
 const rankings=[...MOVIES].sort((x,y)=>(y.b+y.l)-(x.b+x.l)||y.b-x.b||x.title.localeCompare(y.title));
 const rankById=new Map(rankings.map((m,i)=>[m.id,i+1]));
 const avg=m=>(m.b+m.l)/2;
 const fmt=n=>Number(n).toFixed(1);
+const fmtCombined=n=>Number(n).toFixed(2);
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=v=>v?esc(v):'<span>Not logged yet</span>';
-const image=m=>'<img src="'+esc(m.poster)+'" loading="lazy" referrerpolicy="no-referrer" alt="'+esc(m.title)+' movie poster" onerror="this.style.display=\'none\'">';
+const image=m=>'<img src="'+esc(m.poster)+'" data-backup="'+esc(m.posterBackup||'')+'" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="'+esc(m.title)+' theatrical movie poster">';
 function card(m,i){
 return '<button type="button" class="movie" data-id="'+m.id+'" aria-label="Open '+esc(m.title)+' review">'+
 '<div class="poster"><div class="poster-fallback">'+esc(m.title)+'</div>'+image(m)+
-'<span class="badge-round">'+(m.franchise==='Friday the 13th'?'RANK #'+(sort.value==='top'?rankById.get(m.id):i+1):'RANK #'+(sort.value==='top'?rankById.get(m.id):i+1))+'</span>'+
-'<span class="poster-score">'+fmt(avg(m))+' <small>/ 10</small></span></div>'+
+'<span class="badge-round">#'+(sort.value==='top'?rankById.get(m.id):i+1)+'</span>'+
+'<span class="poster-score">'+fmtCombined(avg(m))+' <small>/ 10</small></span></div>'+
 '<div class="name">'+esc(m.title)+'</div>'+
 '<div class="meta">'+esc(m.year)+' &nbsp;·&nbsp; '+esc(m.genre)+'</div>'+
 '<div class="ratings"><span>BOBBY <b>'+fmt(m.b)+'</b></span><span>LISA <b class="lisa">'+fmt(m.l)+'</b></span></div></button>';
@@ -101,6 +103,7 @@ default:a.sort((x,y)=>avg(y)-avg(x)||y.b-x.b||x.title.localeCompare(y.title))
 }
 grid.innerHTML=a.length?a.map((m,i)=>card(m,i)).join(''):'<div class="empty">No screenings found. Try a different search.</div>';
 document.getElementById('count-label').textContent=a.length+' '+(a.length===1?'title':'titles')+' in the archive';
+document.getElementById('order-note').textContent=({top:'Combined average • Highest to lowest',newest:'Recently watched first',bobby:'Bobby’s scores • Highest to lowest',lisa:'Lisa’s scores • Highest to lowest',split:'Biggest disagreements first',year:'Release year • Oldest first'})[sort.value];
 }
 function openReview(id){
 const m=MOVIES.find(m=>m.id===Number(id));if(!m)return;
