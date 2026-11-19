@@ -201,7 +201,7 @@ function card(m,i){
 return '<button type="button" class="movie" data-id="'+m.id+'" aria-label="Open '+esc(m.title)+' review">'+
 '<div class="poster"><div class="poster-fallback">'+esc(m.title)+'</div>'+image(m)+
 '<span class="badge-round">#'+(sort.value==='top'?rankById.get(m.id):i+1)+'</span>'+
-'<span class="poster-score">'+fmtCombined(avg(m))+' <small>/ 10</small></span></div>'+
+'<span class="poster-score">'+(sort.value==='bobby'?fmt(m.b):sort.value==='lisa'?fmt(m.l):fmtCombined(avg(m)))+' <small>/ 10</small></span></div>'+
 '<div class="name">'+esc(m.title)+'</div>'+
 '<div class="meta">'+esc(m.year)+' &nbsp;·&nbsp; '+esc(m.genre)+'</div>'+
 '<div class="ratings"><span>BOBBY <b>'+fmt(m.b)+'</b></span><span>LISA <b class="lisa">'+fmt(m.l)+'</b></span></div></button>';
@@ -219,6 +219,7 @@ case 'bobby':a.sort((x,y)=>y.b-x.b||avg(y)-avg(x));break;
 case 'lisa':a.sort((x,y)=>y.l-x.l||avg(y)-avg(x));break;
 case 'split':a.sort((x,y)=>Math.abs(y.b-y.l)-Math.abs(x.b-x.l));break;
 case 'year':a.sort((x,y)=>x.year-y.year);break;
+case 'newest':a.sort((x,y)=>y.id-x.id);break;
 default:a.sort((x,y)=>avg(y)-avg(x)||y.b-x.b||x.title.localeCompare(y.title))
 }
 grid.innerHTML=a.length?a.map((m,i)=>card(m,i)).join(''):'<div class="empty">No screenings found. Try a different search.</div>';
