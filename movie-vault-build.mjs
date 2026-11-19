@@ -8,6 +8,10 @@ const match = source.match(/<script id="vault-data" type="application\/json">([\
 if (!match) throw new Error('Missing Movie Vault source data');
 const films = JSON.parse(match[1]);
 if (films.length !== 17) throw new Error('Expected 17 recorded movies');
+if (films.some(f => !f.posterSource || !f.poster.startsWith('https://'))) throw new Error('A movie is missing a verified HTTPS poster source');
+if (/pinimg\\.com|blogspot\\.com|etsystatic\\.com|squarespace-cdn\\.com/i.test(source)) throw new Error('Unverified image host found in movie vault');
+if (!source.includes('<option value="top" selected>')) throw new Error('Movie vault must default to highest combined rating');
+if (!source.includes('rankById.get(m.id)')) throw new Error('Movie cards must display ranking positions');
 if (new Set(films.map(f => f.id)).size !== films.length) throw new Error('Duplicate film IDs');
 if (films.some(f => typeof f.b !== 'number' || typeof f.l !== 'number' || f.b < 0 || f.l > 10)) throw new Error('Invalid personal movie ratings');
 
