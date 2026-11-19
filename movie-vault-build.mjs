@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { Script } from 'node:vm';
+import sharp from 'sharp';
 
 // The movie vault and both ranking pages are unlisted, noindex and
 // independent of BBB's navigation, football assets, and searchable sitemap.
@@ -17,6 +18,7 @@ if (films.some(f => typeof f.b !== 'number' || typeof f.l !== 'number' || f.b < 
 
 function verifyPage(html, label) {
   if (!html.includes('noindex,nofollow,noarchive')) throw new Error('Missing noindex: ' + label);
+  if (!html.includes('href="/midnight-archive/favicon.svg"') || !html.includes('href="/midnight-archive/favicon-32.png"')) throw new Error('Missing Midnight Star favicon links: ' + label);
   for (const script of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)) {
     if (script[0].includes('application/json')) continue;
     new Script(script[1], { filename: label + '.browser.js' });
@@ -26,6 +28,12 @@ verifyPage(source, 'movie-vault');
 
 const output = '.vercel/output/static/midnight-archive';
 await mkdir(output, { recursive: true });
+const midnightStar = await readFile('midnight-star.svg');
+if (!midnightStar.toString().includes('<svg') || !midnightStar.toString().includes('The Midnight Star')) throw new Error('Invalid Midnight Star favicon source');
+await writeFile(output + '/favicon.svg', midnightStar);
+await sharp(midnightStar).resize(16, 16).png().toFile(output + '/favicon-16.png');
+await sharp(midnightStar).resize(32, 32).png().toFile(output + '/favicon-32.png');
+await sharp(midnightStar).resize(180, 180).png().toFile(output + '/apple-touch-icon.png');
 await writeFile(output + '/index.html', source);
 
 const rankingsTemplate = await readFile('movie-vault-rankings.template.html', 'utf8');
@@ -48,4 +56,4 @@ for (const { name, key, otherName, otherKey } of [
   await mkdir(dir, { recursive: true });
   await writeFile(dir + '/index.html', page);
 }
-console.log('Built unlisted /midnight-archive/ with ' + films.length + ' reviews and separate /bobby/ and /lisa/ rankings. All pages noindex; no changes to main sitemap or navigation.');
+console.log('Built unlisted /midnight-archive/ with ' + films.length + ' reviews, Bobby/Lisa ranking pages, and isolated Midnight Star SVG/PNG favicons. All pages noindex; no changes to main BBB favicon, sitemap or navigation.');
